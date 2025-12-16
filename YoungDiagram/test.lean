@@ -92,7 +92,7 @@ def signature (c : Chromosome) : ℚ × ℚ :=
   c.sum (fun g count ↦ (count : ℚ) • g.Signature)
 
 noncomputable def primeGene (g : Gene) : Chromosome :=
-  if h : g.rank > 1 then
+  if h : 1 < g.rank then
     single ⟨g.rank - 1, g.type, Nat.le_sub_one_of_lt h⟩ 1
   else 0
 
@@ -100,9 +100,25 @@ noncomputable def prime (c : Chromosome) : Chromosome :=
   c.sum (fun g m ↦ m • primeGene g)
 
 def dominates (X Y : Chromosome) : Prop :=
-  ∀ k : ℕ, signature (prime^[k] X) ≤ signature (prime^[k] Y)
+  ∀ k : ℕ, signature (prime^[k] Y) ≤ signature (prime^[k] X)
 
+instance : Preorder Chromosome where
+  le a b := b.dominates a
+  le_refl a _ := le_refl _
+  lt a b := b.dominates a ∧ ¬a.dominates b
+  le_trans _ _ _ hab hbc k := le_trans (hab k) (hbc k)
 
+def IsOdd (c : Chromosome) : Prop :=
+  c.filter (Odd ·.rank) = c
+
+def IsEven (c : Chromosome) : Prop :=
+  c.filter (Even ·.rank) = c
+
+def IsPolarized (c : Chromosome) : Prop :=
+  c.filter (·.type ≠ .NonPolarized) = c
+
+def IsNonPolarized (c : Chromosome) : Prop :=
+  c.filter (·.type = .NonPolarized) = c
 
 end Chromosome
 
