@@ -44,17 +44,27 @@ def Gene.toList {g : Gene} (_ : g.type ≠ .NonPolarized := by decide) : List Bo
 #eval [true, false, true].toGen.toList
 #eval [false, true, false].toGen.toList
 
-end polarized
+def Gene.Signature (g : Gene) : ℚ × ℚ :=
+  match hg : g.type with
+  | .NonPolarized => (g.rank / 2, g.rank / 2)
+  | .Positive =>
+    let l := g.toList <|
+      (congrArg (fun _a ↦ _a ≠ .NonPolarized) hg).mpr
+      (not_eq_of_beq_eq_false rfl)
+    (l.count true, l.count false)
+  | .Negative =>
+    let l := g.toList <|
+      (congrArg (fun _a ↦ _a ≠ .NonPolarized) hg).mpr
+      (not_eq_of_beq_eq_false rfl)
+    (l.count true, l.count false)
 
-abbrev Chromosome := Gene →₀ ℕ
-
-namespace Chromosome
-
-#check Prod.le_def
-#check Prod.instPartialOrder
+#eval [true].toGen.Signature
+#eval [true, false].toGen.Signature
+#eval [true, false, true].toGen.Signature
+#eval [false, true, false].toGen.Signature
 
 def geneSignature (g : Gene) : ℚ × ℚ :=
-  let n := (g.rank : ℚ)
+  let n : ℚ := g.rank
   match g.type with
   | .NonPolarized => (n / 2, n / 2)
   | .Positive =>
@@ -64,30 +74,35 @@ def geneSignature (g : Gene) : ℚ × ℚ :=
       if g.rank % 2 == 0 then (n / 2, n / 2)
       else ((n - 1) / 2, (n + 1) / 2)
 
+#eval geneSignature [true].toGen
+#eval geneSignature [true, false].toGen
+#eval geneSignature [true, false, true].toGen
+#eval geneSignature [false, true, false].toGen
+
+end polarized
+
+abbrev Chromosome := Gene →₀ ℕ
+
+namespace Chromosome
+
+#check Prod.le_def
+#check Prod.instPartialOrder
+
 def signature (c : Chromosome) : ℚ × ℚ :=
-  c.sum (fun g count ↦ (count : ℚ) • geneSignature g)
+  c.sum (fun g count ↦ (count : ℚ) • g.Signature)
 
 noncomputable def primeGene (g : Gene) : Chromosome :=
   if h : g.rank > 1 then
-    let newGene : Gene := {
-      rank := g.rank - 1,
-      type := g.type,
-      rank_pos := Nat.le_sub_one_of_lt h
-    }
-    single newGene 1
-  else
-    0
+    single ⟨g.rank - 1, g.type, Nat.le_sub_one_of_lt h⟩ 1
+  else 0
 
 noncomputable def prime (c : Chromosome) : Chromosome :=
-  c.sum (fun g m => m • primeGene g)
-
-noncomputable def iteratePrime (c : Chromosome) (k : ℕ) : Chromosome :=
-  match k with
-  | 0 => c
-  | k + 1 => prime (iteratePrime c k)
+  c.sum (fun g m ↦ m • primeGene g)
 
 def dominates (X Y : Chromosome) : Prop :=
-  ∀ k : ℕ, signature (iteratePrime Y k) ≤ signature (iteratePrime X k)
+  ∀ k : ℕ, signature (prime^[k] X) ≤ signature (prime^[k] Y)
+
+
 
 end Chromosome
 
