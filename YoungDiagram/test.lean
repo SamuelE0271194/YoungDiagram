@@ -85,9 +85,6 @@ abbrev Chromosome := Gene →₀ ℕ
 
 namespace Chromosome
 
-#check Prod.le_def
-#check Prod.instPartialOrder
-
 def signature (c : Chromosome) : ℚ × ℚ :=
   c.sum (fun g count ↦ (count : ℚ) • g.Signature)
 
@@ -108,11 +105,18 @@ instance : Preorder Chromosome where
   lt a b := b.dominates a ∧ ¬a.dominates b
   le_trans _ _ _ hab hbc k := le_trans (hab k) (hbc k)
 
-def IsOdd (c : Chromosome) : Prop :=
-  c.filter (Odd ·.rank) = c
+abbrev o (c : Chromosome) : Chromosome := c.filter (Odd  ·.rank)
+abbrev e (c : Chromosome) : Chromosome := c.filter (Even ·.rank)
 
-def IsEven (c : Chromosome) : Prop :=
-  c.filter (Even ·.rank) = c
+def IsOdd (c : Chromosome) : Prop  := o c = c
+def IsEven (c : Chromosome) : Prop := e c = c
+
+lemma parityDecomposition (c : Chromosome) : c = o c + e c := by
+  simp [o, e]
+  conv =>
+    enter [2, 2, 1, a]
+    rw [← Nat.not_odd_iff_even]
+  rw [filter_pos_add_filter_neg]
 
 def IsPolarized (c : Chromosome) : Prop :=
   c.filter (·.type ≠ .NonPolarized) = c
@@ -120,8 +124,43 @@ def IsPolarized (c : Chromosome) : Prop :=
 def IsNonPolarized (c : Chromosome) : Prop :=
   c.filter (·.type = .NonPolarized) = c
 
-end Chromosome
+abbrev variety := AddSubmonoid Chromosome
 
+def Lambda : variety where
+  carrier := {c : Chromosome | IsPolarized c}
+  add_mem' {a b} ha hb := by
+    simp [IsPolarized] at *
+    rw [ha, hb]
+  zero_mem' := by
+    simp [IsPolarized, filter_zero]
+
+def Pi : variety where
+  carrier := {c : Chromosome | IsNonPolarized c}
+  add_mem' {a b} ha hb := by
+    simp [IsNonPolarized] at *
+    rw [ha, hb]
+  zero_mem' := by
+    simp [IsNonPolarized, filter_zero]
+
+def Mix (v : variety × variety) : variety where
+  carrier := {c : Chromosome | e c ∈ v.1 ∧ o c ∈ v.2}
+  add_mem' {a b} ha hb := by
+    simp [o, e] at *
+    exact ⟨add_mem ha.1 hb.1, add_mem ha.2 hb.2⟩
+  zero_mem' := by
+    simp [o, e, filter_zero]
+
+open Pointwise
+
+#check Pi
+#check Mix (Lambda, Pi)
+#check Mix (Pi, Lambda)
+#check Mix (2 • Lambda, Pi)
+#check Mix (Pi, 2 • Lambda)
+
+#synth SMul ℕ variety
+
+end Chromosome
 
 section Legacy
 
