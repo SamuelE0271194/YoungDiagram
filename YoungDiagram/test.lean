@@ -27,7 +27,8 @@ abbrev List.isAlt {l : List Bool} (hl : l ≠ [] := by decide) : Prop :=
 
 def List.toGen {l : List Bool} (hl : l ≠ [] := by decide)
     (_ : l.isAlt hl := by decide) : Gene :=
-  ⟨l.length, if l.head hl = true then .Positive else .Negative, List.length_pos_iff.2 hl⟩
+  --                ↓ head or last?
+  ⟨l.length, if l.getLast hl = true then .Positive else .Negative, List.length_pos_iff.2 hl⟩
 
 #eval [true].toGen
 #eval [true, false].toGen
@@ -37,7 +38,8 @@ def List.toGen {l : List Bool} (hl : l ≠ [] := by decide)
 def Gene.toList {g : Gene} (_ : g.type ≠ .NonPolarized := by decide) : List Bool :=
   List.iterate not
     (match g.type with | .Positive => true | .Negative => false | .NonPolarized => by tauto)
-    g.rank
+    g.rank |>.reverse
+    --          ↑ head or last?
 
 #eval [true].toGen.toList
 #eval [true, false].toGen.toList
@@ -126,7 +128,7 @@ def IsNonPolarized (c : Chromosome) : Prop :=
 
 abbrev variety := AddSubmonoid Chromosome
 
-def Lambda : variety where
+def Pi : variety where
   carrier := {c : Chromosome | IsPolarized c}
   add_mem' {a b} ha hb := by
     simp [IsPolarized] at *
@@ -134,7 +136,7 @@ def Lambda : variety where
   zero_mem' := by
     simp [IsPolarized, filter_zero]
 
-def Pi : variety where
+def Lambda : variety where
   carrier := {c : Chromosome | IsNonPolarized c}
   add_mem' {a b} ha hb := by
     simp [IsNonPolarized] at *
