@@ -1,5 +1,7 @@
 import Mathlib
 
+section signature_eq_pos_aux
+
 lemma alt_list_aux_1 {n : ℕ} (hn : ¬ Even n) :
     List.iterate not true (n + 1) = List.iterate not true n ++ [false] := by
   have h := List.iterate_add not true n 1
@@ -40,21 +42,25 @@ lemma signature_eq_pos_aux {n : ℕ} :
   | succ n hn =>
     split_ifs with h
     · replace h : ¬ Even n := Nat.even_add_one.mp h
-      simp only [h, ↓reduceIte, Prod.mk.injEq] at hn ⊢
-      split_ands
-      · rw [Nat.cast_add, Nat.cast_one, ← hn.1, alt_list_aux_1 h]; simp
-      · rw [Nat.cast_add, Nat.cast_one, ← hn.1, alt_list_aux_2,
-          alt_list_aux_1 h, Nat.cast_sub]
-        · simp [hn]; linarith
-        nth_rw 2 [← List.length_iterate not true n]; exact List.count_le_length
+      simp only [h, ↓reduceIte, Prod.mk.injEq, Nat.cast_add, Nat.cast_one] at hn ⊢
+      have : List.count true (List.iterate not true (n + 1)) = (n + 1 : ℚ) / 2 := by
+        rw [← hn.1, alt_list_aux_1 h]; simp
+      refine ⟨this, ?_⟩
+      rw [alt_list_aux_4, Nat.cast_sub, this, Nat.cast_add]
+      · linarith
+      nth_rw 2 [← List.length_iterate not true (n + 1)]; exact List.count_le_length
     · replace h : Even n := Nat.not_odd_iff_even.mp <| Nat.odd_add_one.mp <|
         Nat.not_even_iff_odd.1 h
-      simp only [h, ↓reduceIte, Prod.mk.injEq] at hn ⊢
-      split_ands
-      · rw [Nat.cast_add, Nat.cast_one, add_assoc, add_div,
-          add_self_div_two, ← hn.1, alt_list_aux_3 h]; simp
-      · rw [Nat.cast_add, Nat.cast_one, add_sub_cancel_right,
-          ← hn.2, alt_list_aux_4, alt_list_aux_3 h, Nat.cast_sub]
-        · simp [hn]; linarith
-        simp; nth_rw 2 [← List.length_iterate not true n]
-        exact List.count_le_length
+      simp only [h, ↓reduceIte, Prod.mk.injEq, Nat.cast_add, Nat.cast_one] at hn ⊢
+      have : List.count true (List.iterate not true (n + 1)) =
+          ((n : ℚ) + 1 + 1) / 2 := by
+        rw [add_assoc, add_div, add_self_div_two, ← hn.1, alt_list_aux_3 h]; simp
+      refine ⟨this, ?_⟩
+      rw [alt_list_aux_4, Nat.cast_sub, this, Nat.cast_add]
+      · linarith
+      nth_rw 2 [← List.length_iterate not true (n + 1)]
+      exact List.count_le_length
+
+end signature_eq_pos_aux
+
+section
