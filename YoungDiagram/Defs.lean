@@ -149,6 +149,24 @@ def geneSignature (g : Gene) : ℚ × ℚ :=
       if g.rank % 2 == 0 then (n / 2, n / 2)
       else ((n - 1) / 2, (n + 1) / 2)
 
+lemma signature_eq_nonpolarized {g : Gene} (hg : g.type = .NonPolarized) :
+    g.Signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
+  simp [Gene.Signature]
+  split <;> simp_all only [reduceCtorEq]
+
+lemma signature_eq_pos {g : Gene} (hg : g.type = .Positive) :
+  g.Signature =
+    if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
+    else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2) := by
+  simp [Gene.Signature]
+  split <;> simp_all only [reduceCtorEq]
+  next hg =>
+    simp [Gene.toList, hg]
+    split_ifs with h
+    · simp only [Prod.mk.injEq]
+
+  sorry
+
 end polarized
 
 /--

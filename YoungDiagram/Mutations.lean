@@ -64,13 +64,26 @@ lemma type_1_is_mutation_ne {ε : GeneType}
         omega
     omega
 
+lemma signature_it_signle_pos {k : ℕ} (hk : 1 ≤ k) :
+  (Gene.ofRank k .Positive).signature = (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := sorry
+
+lemma signature_it_signle_neg {k : ℕ} (hk : 1 ≤ k) :
+  (Gene.ofRank k .Negative).signature = (Gene.ofRank (k - 1) .Positive).signature + (0, 1) := sorry
+
+lemma type_1_is_mutation_sign_eq {ε : GeneType} {hε : ε ≠ .NonPolarized}
+  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
+    (Gene.ofRank m ε + Gene.ofRank n (- ε)).signature =
+    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε).signature := by
+
+  sorry
+
 lemma type_1_is_mutation_le {ε : GeneType} {hε : ε ≠ .NonPolarized}
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
     (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
   have h_n : n ≠ 0 := by omega
   have h_m  : m ≠ 0 := by omega
-  simp [h_n, h_m, dominates]
+  simp [h_n, h_m]
   split_ifs with h <;> intro k
-  ·
-  sorry
+  · sorry
+  · sorry
