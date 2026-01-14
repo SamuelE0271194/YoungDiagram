@@ -19,8 +19,6 @@ lemma IsMutation_of_add {X Y Z : Chromosome}
   ne := by simpa using h.ne
   sign_eq := by simpa using h.sign_eq
 
-#exit
-
 inductive PrimitiveMutation : Chromosome → Chromosome → Prop
   | type_1 {ε : GeneType} {hε : ε ≠ .NonPolarized}
     {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
@@ -38,12 +36,33 @@ inductive PrimitiveMutation : Chromosome → Chromosome → Prop
         (Gene.ofRank' m ε + Gene.ofRank' n (- ε))
         (Gene.ofRank' (m - 1) ε + Gene.ofRank' (n + 1) (- ε))
 
-lemma type_1_is_mutation_ne {ε : GeneType} {hε : ε ≠ .NonPolarized}
+lemma type_1_is_mutation_ne {ε : GeneType}
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
     (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≠
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
-
-  sorry
+  have h_n : n ≠ 0 := by omega
+  have h_m : m ≠ 0 := by omega
+  simp [h_n, h_m]
+  split_ifs with h
+  · by_contra!
+    replace this := (Finsupp.ext_iff.1 this) ⟨m, ε, hm⟩
+    simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_eq_same, zero_add] at this
+    convert_to 1 + _ = 0 at this
+    · refine Finsupp.single_eq_of_ne ?_
+      simp only [ne_eq, Gene.mk.injEq, and_true]
+      omega
+    omega
+  · by_contra!
+    replace this := (Finsupp.ext_iff.1 this) ⟨m, ε, hm⟩
+    simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_eq_same] at this
+    convert_to 1 + _ = 0 at this
+    · rw [Nat.add_eq_zero_iff]
+      split_ands <;> refine Finsupp.single_eq_of_ne ?_
+      · simp only [ne_eq, Gene.mk.injEq, not_and]
+        omega
+      · simp only [ne_eq, Gene.mk.injEq, and_true]
+        omega
+    omega
 
 lemma type_1_is_mutation_le {ε : GeneType} {hε : ε ≠ .NonPolarized}
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
