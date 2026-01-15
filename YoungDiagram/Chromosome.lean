@@ -17,7 +17,7 @@ noncomputable abbrev Gene.ofRank (n : ℕ) (ε : GeneType) : Chromosome :=
 noncomputable abbrev Gene.ofRank' (n : ℕ) (ε : GeneType) : Chromosome :=
   Gene.ofRank n ((- 1) ^ (n - 1) • ε)
 
-@[simp low] lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
+lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
   Gene.ofRank n ε = if h : n = 0 then 0
     else single ⟨n, ε, Nat.pos_of_ne_zero h⟩ 1 := rfl
 
@@ -42,7 +42,7 @@ def signature (c : Chromosome) : ℚ × ℚ :=
 
 @[simp] lemma signature_ofRank_zero {ε : GeneType} :
     (Gene.ofRank 0 ε).signature = 0 := by
-  dsimp [signature]
+  dsimp [signature, Gene.ofRank_def]
 
 @[simp] lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   (Gene.ofRank n ε).signature =
@@ -124,6 +124,8 @@ This operation corresponds to taking the derivative of the chromosome.
 noncomputable def prime (c : Chromosome) : Chromosome :=
   c.sum (fun g m ↦ m • primeGene g)
 
+@[simp] lemma prime_zero : prime 0 = 0 := Finsupp.sum_zero_index
+
 @[simp] lemma prime_add (X Y : Chromosome) :
     prime (X + Y) = prime X + prime Y := by
   simp [prime]
@@ -138,38 +140,27 @@ noncomputable def prime (c : Chromosome) : Chromosome :=
   | zero => simp
   | succ n hn => simp [hn]
 
-/--
-Applying the prime operation $n-1$ times to a gene of rank $n$ results in a gene of rank 1.
--/
-lemma single_prime_it_pred_rank (g : Gene) :
-    prime^[g.rank - 1] (single g 1) = Gene.ofRank 1 g.type := by
-  induction hg : g.rank using Nat.strong_induction_on generalizing g
+lemma prime_ofRank {n : ℕ} {ε : GeneType} :
+    (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
+  by_cases hn : n = 0
+  · simp [hn, Gene.ofRank_def]
+  rw [prime, Gene.ofRank_def]
+  simp only [hn, ↓reduceDIte, zero_nsmul, sum_single_index, one_smul]
+  rfl
+
+lemma prime_ofRank_it {k n : ℕ} {ε : GeneType} :
+    prime^[k] (Gene.ofRank n ε) = Gene.ofRank (n - k) ε := by
+  induction hk : k using Nat.strong_induction_on generalizing k
   expose_names
-  by_cases hn : n = 1
-  · subst hn; simp [← hg]
-  have rank_pos := g.rank_pos
-  specialize h (n - 1) (by omega) ⟨g.rank - 1, g.type, by omega⟩
-  simp [hg] at h
-  rw [show n - 1 = n - 1 - 1 + 1 by omega, Function.iterate_succ_apply]
-  simp [prime, primeGene, show g.rank - 1 ≠ 0 by omega]
-  simp_rw [hg, h]
-
-/--
-Applying the prime operation $n$ times to a gene of rank $n$ results in the zero chromosome.
--/
-lemma single_prime_it_rank (g : Gene) :
-    prime^[g.rank] (single g 1) = 0 := by
-  rw [(Nat.sub_eq_iff_eq_add g.rank_pos).mp rfl, add_comm,
-    Function.iterate_add_apply, single_prime_it_pred_rank]
-  simp [prime, primeGene]
-
-/--
-Applying the prime operation $k$ times to a gene of rank $n$ (where $k \ge n$) results in zero.
--/
-lemma single_prime_it_rank_le (g : Gene) {k : ℕ} (hk : g.rank ≤ k) :
-    prime^[k] (single g 1) = 0 := by
-  rw [(Nat.sub_eq_iff_eq_add hk).mp rfl, Function.iterate_add_apply,
-    single_prime_it_rank, Function.iterate_fixed rfl]
+  subst hk
+  match k with
+  | 0 => rw [Function.iterate_zero, id_eq, tsub_zero]
+  | 1 => simp [prime_ofRank]
+  | w + 2 =>
+    specialize @h (w + 1) (Nat.lt_add_one _) (w + 1) rfl
+    change prime^[w + 1 + 1] (Gene.ofRank n ε) = _
+    rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h, prime_ofRank]
+    ac_rfl
 
 end signature
 

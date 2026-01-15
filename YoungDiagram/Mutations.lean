@@ -42,7 +42,7 @@ lemma type_1_is_mutation_ne {ε : GeneType}
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
   have h_n : n ≠ 0 := by omega
   have h_m : m ≠ 0 := by omega
-  simp [h_n, h_m]
+  simp [h_n, h_m, Gene.ofRank_def]
   split_ifs with h
   · by_contra!
     replace this := (Finsupp.ext_iff.1 this) ⟨m, ε, hm⟩
@@ -85,7 +85,6 @@ lemma type_1_is_mutation_le {ε : GeneType} {hε : ε ≠ .NonPolarized}
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
   have h_n : n ≠ 0 := by omega
   have h_m  : m ≠ 0 := by omega
-  simp [h_n, h_m]
-  split_ifs with h <;> intro k
-  · sorry
-  · sorry
+  rw [le_iff_dominates]
+  intro k
+  sorry
