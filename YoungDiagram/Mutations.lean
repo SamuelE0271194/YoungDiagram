@@ -1,4 +1,4 @@
-import YoungDiagram.Defs
+import YoungDiagram.Chromosome
 
 open Chromosome
 
@@ -63,9 +63,6 @@ lemma type_1_is_mutation_ne {ε : GeneType}
       · simp only [ne_eq, Gene.mk.injEq, and_true]
         omega
     omega
-
-lemma signature_it_signle_pos {k : ℕ} (hk : 1 ≤ k) :
-  (Gene.ofRank k .Positive).signature = (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := sorry
 
 lemma signature_it_signle_neg {k : ℕ} (hk : 1 ≤ k) :
   (Gene.ofRank k .Negative).signature = (Gene.ofRank (k - 1) .Positive).signature + (0, 1) := sorry

@@ -17,7 +17,7 @@ noncomputable abbrev Gene.ofRank (n : ℕ) (ε : GeneType) : Chromosome :=
 noncomputable abbrev Gene.ofRank' (n : ℕ) (ε : GeneType) : Chromosome :=
   Gene.ofRank n ((- 1) ^ (n - 1) • ε)
 
-@[simp] lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
+@[simp low] lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
   Gene.ofRank n ε = if h : n = 0 then 0
     else single ⟨n, ε, Nat.pos_of_ne_zero h⟩ 1 := rfl
 
@@ -31,25 +31,51 @@ The signature of a chromosome is the weighted sum of the signatures of its const
 def signature (c : Chromosome) : ℚ × ℚ :=
   c.sum (fun g count ↦ (count : ℚ) • g.Signature)
 
-@[simp]
-lemma signature_add (X Y : Chromosome) :
+@[simp] lemma signature_add (X Y : Chromosome) :
     (X + Y).signature = X.signature + Y.signature := by
   dsimp [signature]
   refine Finsupp.sum_add_index' ?_ ?_
   · simp
-  intro a b₁ b₂
+  intro a _ _
   simp only [Nat.cast_add]
   exact Module.add_smul _ _ a.Signature
 
-@[simp]
-lemma signature_ofRank {n : ℕ} {ε : GeneType} :
+@[simp] lemma signature_ofRank_zero {ε : GeneType} :
+    (Gene.ofRank 0 ε).signature = 0 := by
+  dsimp [signature]
+
+@[simp] lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   (Gene.ofRank n ε).signature =
     if h : n = 0 then 0
     else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).Signature := by
   dsimp [signature]
-  by_cases hn : n = 0
-  · subst hn; simp only [↓reduceDIte, sum_zero_index]
-  · simp [hn]
+  split_ifs
+  · rfl
+  · simp
+
+@[simp] lemma signature_single {k : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
+    signature (single (⟨k, ε, hk⟩ : Gene) 1) =
+    (⟨k, ε, hk⟩ : Gene).Signature := by
+  simp [signature]
+
+lemma signature_it_ofRank_pos {k : ℕ} (hk : 1 ≤ k) :
+    (Gene.ofRank k .Positive).signature =
+    (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := by
+  have hk' : k ≠ 0 := by omega
+  simp [hk']
+  split_ifs with h
+  · replace hk : k = 1 := by omega
+    simp [signature_eq_pos, hk]
+  · simp [signature_eq_pos]
+    split_ifs with h1
+    · have : ¬ Even (k - 1) := by
+        rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one] at h1
+      simp [signature_eq_neg, this, Nat.cast_pred hk]
+      linarith
+    · have : Even (k - 1) := by
+        rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one, not_not] at h1
+      simp [signature_eq_neg, this, Nat.cast_pred hk]
+      linarith
 
 /--
 The "prime" operation on a single gene $g$, denoted $g'$ in [Djoković 1980, (8.2)].
@@ -66,16 +92,15 @@ This operation corresponds to taking the derivative of the chromosome.
 noncomputable def prime (c : Chromosome) : Chromosome :=
   c.sum (fun g m ↦ m • primeGene g)
 
-@[simp]
-lemma prime_add (X Y : Chromosome) : prime (X + Y) = prime X + prime Y := by
+@[simp] lemma prime_add (X Y : Chromosome) :
+    prime (X + Y) = prime X + prime Y := by
   simp [prime]
   refine Finsupp.sum_add_index' ?_ ?_
   · simp
   intro a b₁ b₂
   exact add_nsmul (primeGene a) b₁ b₂
 
-@[simp]
-lemma prime_it_add (X Y : Chromosome) (k : ℕ) :
+@[simp] lemma prime_it_add (X Y : Chromosome) (k : ℕ) :
     prime^[k] (X + Y) = prime^[k] X + prime^[k] Y := by
   induction k generalizing X Y with
   | zero => simp
@@ -136,8 +161,7 @@ instance : Preorder Chromosome where
   lt a b := b.dominates a ∧ ¬a.dominates b
   le_trans _ _ _ hab hbc k := le_trans (hab k) (hbc k)
 
-@[simp]
-lemma le_iff_dominates {X Y : Chromosome} : X ≤ Y ↔
+@[simp] lemma le_iff_dominates {X Y : Chromosome} : X ≤ Y ↔
   ∀ k : ℕ, signature (prime^[k] X) ≤ signature (prime^[k] Y) := .rfl
 
 instance : AddRightMono Chromosome where
