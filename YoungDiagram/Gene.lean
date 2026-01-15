@@ -11,6 +11,11 @@ instance : Neg GeneType where
     | .NonPolarized => .NonPolarized
     | .Positive => .Negative | .Negative => .Positive
 
+instance : InvolutiveNeg GeneType where
+  neg_neg
+    | .NonPolarized => rfl
+    | .Positive => rfl | .Negative => rfl
+
 instance : SMul ℤ GeneType where
   smul n ε := if n = - 1 then - ε else ε
 
@@ -63,12 +68,12 @@ def Gene.Signature (g : Gene) : ℚ × ℚ :=
       (not_eq_of_beq_eq_false rfl)
     (l.count true, l.count false)
 
-lemma signature_eq_nonpolarized {g : Gene} (hg : g.type = .NonPolarized) :
+lemma Gene.signature_eq_nonpolarized {g : Gene} (hg : g.type = .NonPolarized) :
     g.Signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
   simp [Gene.Signature]
   split <;> simp_all only [reduceCtorEq]
 
-lemma signature_eq_pos {g : Gene} (hg : g.type = .Positive) :
+lemma Gene.signature_eq_pos {g : Gene} (hg : g.type = .Positive) :
   g.Signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2) := by
@@ -78,7 +83,7 @@ lemma signature_eq_pos {g : Gene} (hg : g.type = .Positive) :
     simp [Gene.toList, hg]
     exact signature_eq_pos_aux
 
-lemma signature_eq_neg {g : Gene} (hg : g.type = .Negative) :
+lemma Gene.signature_eq_neg {g : Gene} (hg : g.type = .Negative) :
   g.Signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2) := by
@@ -87,3 +92,7 @@ lemma signature_eq_neg {g : Gene} (hg : g.type = .Negative) :
   next hg =>
     simp [Gene.toList, hg]
     exact signature_eq_neg_aux
+
+lemma Gene.signature_nonneg (g : Gene) : 0 ≤ g.Signature := by
+  simp [Gene.Signature]
+  split <;> exact Prod.le_def.mpr ⟨by positivity, by positivity⟩

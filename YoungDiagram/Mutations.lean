@@ -19,22 +19,7 @@ lemma IsMutation_of_add {X Y Z : Chromosome}
   ne := by simpa using h.ne
   sign_eq := by simpa using h.sign_eq
 
-inductive PrimitiveMutation : Chromosome → Chromosome → Prop
-  | type_1 {ε : GeneType} {hε : ε ≠ .NonPolarized}
-    {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
-      PrimitiveMutation
-        (Gene.ofRank m ε + Gene.ofRank n (- ε))
-        (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε)
-  | type_2 {ε : GeneType} {hε : ε ≠ .NonPolarized}
-    {m n : ℕ} (hle : m ≤ n) (hm : 1 < m) :
-      PrimitiveMutation
-        (Gene.ofRank m ε + Gene.ofRank n (- ε))
-        (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε)
-  | type_3 {ε : GeneType} {hε : ε ≠ .NonPolarized}
-    {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
-      PrimitiveMutation
-        (Gene.ofRank' m ε + Gene.ofRank' n (- ε))
-        (Gene.ofRank' (m - 1) ε + Gene.ofRank' (n + 1) (- ε))
+section type_1_isMutation
 
 lemma type_1_is_mutation_ne {ε : GeneType}
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
@@ -64,7 +49,7 @@ lemma type_1_is_mutation_ne {ε : GeneType}
         omega
     omega
 
-lemma type_1_is_mutation_sign_eq {ε : GeneType} {hε : ε ≠ .NonPolarized}
+lemma type_1_is_mutation_sign_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
     (Gene.ofRank m ε + Gene.ofRank n (- ε)).signature =
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε).signature := by
@@ -79,12 +64,97 @@ lemma type_1_is_mutation_sign_eq {ε : GeneType} {hε : ε ≠ .NonPolarized}
       Nat.add_sub_cancel]
     ac_rfl
 
-lemma type_1_is_mutation_le {ε : GeneType} {hε : ε ≠ .NonPolarized}
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
-    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
-  have h_n : n ≠ 0 := by omega
-  have h_m  : m ≠ 0 := by omega
+lemma type_1_is_mutation_le_pos {m n : ℕ} (h_le : m ≤ n) :
+    (Gene.ofRank m .Positive + Gene.ofRank n (- .Positive)) ≤
+    (Gene.ofRank (m - 1) (- .Positive) + Gene.ofRank (n + 1) .Positive) := by
   rw [le_iff_dominates]
   intro k
-  sorry
+  repeat first | rw [prime_it_add] | rw [prime_ofRank_it] | rw [signature_add]
+  by_cases hk1 : k < m
+  · rw [signature_it_ofRank_pos (by omega), GeneType.neg_pos_eq_neg,
+      signature_it_ofRank_pos (by omega)]
+    convert_to _ ≤
+      (Gene.ofRank (m - k - 1) .Negative).signature +
+      ((Gene.ofRank (n - k) .Negative).signature + (1, 0))
+    · congr 3
+      · omega
+      · congr 1; omega
+    group; exact le_refl _
+  by_cases hk2 : k < n
+  · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
+      Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
+      zero_add, signature_it_ofRank_pos (by omega), GeneType.neg_pos_eq_neg]
+    convert_to _ ≤ (Gene.ofRank (n - k) .Negative).signature + (1, 0)
+    · congr 3; omega
+    simp; exact posPart_eq_self.mp rfl
+  · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
+      Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
+      zero_add, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk2,
+      signature_ofRank_zero]
+    exact signature_nonneg _
+
+lemma type_1_is_mutation_le_neg {m n : ℕ} (h_le : m ≤ n) :
+    (Gene.ofRank m .Negative + Gene.ofRank n (- .Negative)) ≤
+    (Gene.ofRank (m - 1) (- .Negative) + Gene.ofRank (n + 1) .Negative) := by
+  rw [le_iff_dominates]
+  intro k
+  repeat first | rw [prime_it_add] | rw [prime_ofRank_it] | rw [signature_add]
+  by_cases hk1 : k < m
+  · rw [signature_it_ofRank_neg (by omega), GeneType.neg_neg_eq_pos,
+      signature_it_ofRank_neg (by omega)]
+    convert_to _ ≤
+      (Gene.ofRank (m - k - 1) .Positive).signature +
+      ((Gene.ofRank (n - k) .Positive).signature + (0, 1))
+    · congr 3
+      · omega
+      · congr 1; omega
+    group; exact le_refl _
+  by_cases hk2 : k < n
+  · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
+      Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
+      zero_add, signature_it_ofRank_neg (by omega), GeneType.neg_neg_eq_pos]
+    convert_to _ ≤ (Gene.ofRank (n - k) .Positive).signature + (0, 1)
+    · congr 3; omega
+    simp; exact posPart_eq_self.mp rfl
+  · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
+      Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
+      zero_add, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk2,
+      signature_ofRank_zero]
+    exact signature_nonneg _
+
+lemma type_1_is_mutation_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
+  {m n : ℕ} (h_le : m ≤ n) :
+    (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
+    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) :=
+  match ε with
+  | .NonPolarized => by absurd hε; decide
+  | .Positive => type_1_is_mutation_le_pos h_le
+  | .Negative => type_1_is_mutation_le_neg h_le
+
+end type_1_isMutation
+
+inductive PrimitiveMutation : Chromosome → Chromosome → Prop
+  | type_1 {ε : GeneType} (hε : ε ≠ .NonPolarized)
+    {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
+      PrimitiveMutation
+        (Gene.ofRank m ε + Gene.ofRank n (- ε))
+        (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε)
+  | type_2 {ε : GeneType} (hε : ε ≠ .NonPolarized)
+    {m n : ℕ} (hle : m ≤ n) (hm : 1 < m) :
+      PrimitiveMutation
+        (Gene.ofRank m ε + Gene.ofRank n (- ε))
+        (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε)
+  | type_3 {ε : GeneType} (hε : ε ≠ .NonPolarized)
+    {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
+      PrimitiveMutation
+        (Gene.ofRank' m ε + Gene.ofRank' n (- ε))
+        (Gene.ofRank' (m - 1) ε + Gene.ofRank' (n + 1) (- ε))
+
+lemma PrimitiveMutation_isMutation {X Y : Chromosome} (h : PrimitiveMutation X Y) :
+    IsMutation X Y := by
+  cases h with
+  | @type_1 ε hε m n hle hm =>
+    exact ⟨type_1_is_mutation_le hε hle,
+      type_1_is_mutation_ne hle hm, type_1_is_mutation_sign_eq hε hle hm⟩
+  | @type_2 ε hε m n hle hm => sorry
+  | @type_3 ε hε m n hle hm => sorry

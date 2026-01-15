@@ -31,6 +31,11 @@ The signature of a chromosome is the weighted sum of the signatures of its const
 def signature (c : Chromosome) : ℚ × ℚ :=
   c.sum (fun g count ↦ (count : ℚ) • g.Signature)
 
+lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
+  dsimp [signature]
+  exact sum_nonneg' fun g ↦
+    smul_nonneg Rat.natCast_nonneg g.signature_nonneg
+
 @[simp] lemma signature_add (X Y : Chromosome) :
     (X + Y).signature = X.signature + Y.signature := by
   dsimp [signature]
@@ -64,7 +69,7 @@ lemma signature_ofRank_nonpol {n : ℕ} :
   simp
   split_ifs
   · rfl
-  · rw [signature_eq_nonpolarized rfl]; rfl
+  · rw [Gene.signature_eq_nonpolarized rfl]; rfl
 
 lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n (- ε)).signature = (Gene.ofRank n ε).signature.swap := by
@@ -73,13 +78,13 @@ lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
   · simp
     split_ifs
     · rfl
-    · rw [signature_eq_neg rfl, signature_eq_pos rfl]
+    · rw [Gene.signature_eq_neg rfl, Gene.signature_eq_pos rfl]
       simp only
       split_ifs <;> rfl
   · simp
     split_ifs
     · rfl
-    · rw [signature_eq_pos rfl, signature_eq_neg rfl]
+    · rw [Gene.signature_eq_pos rfl, Gene.signature_eq_neg rfl]
       simp only
       split_ifs <;> rfl
 
@@ -90,16 +95,16 @@ lemma signature_it_ofRank_pos {k : ℕ} (hk : 1 ≤ k) :
   simp [hk']
   split_ifs with h
   · replace hk : k = 1 := by omega
-    simp [signature_eq_pos, hk]
-  · simp [signature_eq_pos]
+    simp [Gene.signature_eq_pos, hk]
+  · simp [Gene.signature_eq_pos]
     split_ifs with h1
     · have : ¬ Even (k - 1) := by
         rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one] at h1
-      simp [signature_eq_neg, this, Nat.cast_pred hk]
+      simp [Gene.signature_eq_neg, this, Nat.cast_pred hk]
       linarith
     · have : Even (k - 1) := by
         rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one, not_not] at h1
-      simp [signature_eq_neg, this, Nat.cast_pred hk]
+      simp [Gene.signature_eq_neg, this, Nat.cast_pred hk]
       linarith
 
 lemma signature_it_ofRank_neg {k : ℕ} (hk : 1 ≤ k) :
