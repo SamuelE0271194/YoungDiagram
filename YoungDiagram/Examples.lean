@@ -1,4 +1,5 @@
-import YoungDiagram.Defs
+import YoungDiagram.Gene
+import YoungDiagram.Chromosome
 
 #eval [true].isAlt
 #eval [true, true].isAlt
@@ -20,11 +21,6 @@ import YoungDiagram.Defs
 #eval [true, false].toGene.Signature
 #eval [true, false, true].toGene.Signature
 #eval [false, true, false].toGene.Signature
-
-#eval geneSignature [true].toGene
-#eval geneSignature [true, false].toGene
-#eval geneSignature [true, false, true].toGene
-#eval geneSignature [false, true, false].toGene
 
 open Chromosome Pointwise
 

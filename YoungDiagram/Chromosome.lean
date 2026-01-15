@@ -34,12 +34,22 @@ def signature (c : Chromosome) : ℚ × ℚ :=
 @[simp]
 lemma signature_add (X Y : Chromosome) :
     (X + Y).signature = X.signature + Y.signature := by
-  simp [signature]
+  dsimp [signature]
   refine Finsupp.sum_add_index' ?_ ?_
   · simp
   intro a b₁ b₂
   simp only [Nat.cast_add]
   exact Module.add_smul _ _ a.Signature
+
+@[simp]
+lemma signature_ofRank {n : ℕ} {ε : GeneType} :
+  (Gene.ofRank n ε).signature =
+    if h : n = 0 then 0
+    else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).Signature := by
+  dsimp [signature]
+  by_cases hn : n = 0
+  · subst hn; simp only [↓reduceDIte, sum_zero_index]
+  · simp [hn]
 
 /--
 The "prime" operation on a single gene $g$, denoted $g'$ in [Djoković 1980, (8.2)].
