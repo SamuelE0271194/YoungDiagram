@@ -54,7 +54,7 @@ def Gene.toList {g : Gene} (_ : g.type ≠ .NonPolarized := by decide) : List Bo
     (match g.type with | .Positive => true | .Negative => false | .NonPolarized => by tauto)
     g.rank |>.reverse
 
-def Gene.Signature (g : Gene) : ℚ × ℚ :=
+def Gene.signature (g : Gene) : ℚ × ℚ :=
   match hg : g.type with
   | .NonPolarized => (g.rank / 2, g.rank / 2)
   | .Positive =>
@@ -69,30 +69,30 @@ def Gene.Signature (g : Gene) : ℚ × ℚ :=
     (l.count true, l.count false)
 
 lemma Gene.signature_eq_nonpolarized {g : Gene} (hg : g.type = .NonPolarized) :
-    g.Signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
-  simp [Gene.Signature]
+    g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
+  simp [Gene.signature]
   split <;> simp_all only [reduceCtorEq]
 
 lemma Gene.signature_eq_pos {g : Gene} (hg : g.type = .Positive) :
-  g.Signature =
+  g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2) := by
-  simp [Gene.Signature]
+  simp [Gene.signature]
   split <;> simp_all only [reduceCtorEq]
   next hg =>
     simp [Gene.toList, hg]
     exact signature_eq_pos_aux
 
 lemma Gene.signature_eq_neg {g : Gene} (hg : g.type = .Negative) :
-  g.Signature =
+  g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2) := by
-  simp [Gene.Signature]
+  simp [Gene.signature]
   split <;> simp_all only [reduceCtorEq]
   next hg =>
     simp [Gene.toList, hg]
     exact signature_eq_neg_aux
 
-lemma Gene.signature_nonneg (g : Gene) : 0 ≤ g.Signature := by
-  simp [Gene.Signature]
+lemma Gene.signature_nonneg (g : Gene) : 0 ≤ g.signature := by
+  simp [Gene.signature]
   split <;> exact Prod.le_def.mpr ⟨by positivity, by positivity⟩

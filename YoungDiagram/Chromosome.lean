@@ -31,7 +31,7 @@ section signature
 The signature of a chromosome is the weighted sum of the signatures of its constituent genes.
 -/
 def signature (c : Chromosome) : ℚ × ℚ :=
-  c.sum (fun g count ↦ (count : ℚ) • g.Signature)
+  c.sum (fun g count ↦ (count : ℚ) • g.signature)
 
 lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
   dsimp [signature]
@@ -45,7 +45,7 @@ lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
   · simp
   intro a _ _
   simp only [Nat.cast_add]
-  exact Module.add_smul _ _ a.Signature
+  exact Module.add_smul _ _ a.signature
 
 @[simp] lemma signature_ofRank_zero {ε : GeneType} :
     (Gene.ofRank 0 ε).signature = 0 := by
@@ -54,7 +54,7 @@ lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
 @[simp] lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   (Gene.ofRank n ε).signature =
     if h : n = 0 then 0
-    else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).Signature := by
+    else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).signature := by
   dsimp [signature]
   split_ifs
   · rfl
@@ -62,7 +62,7 @@ lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
 
 @[simp] lemma signature_single {k : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
     signature (single (⟨k, ε, hk⟩ : Gene) 1) =
-    (⟨k, ε, hk⟩ : Gene).Signature := by
+    (⟨k, ε, hk⟩ : Gene).signature := by
   simp [signature]
 
 lemma signature_ofRank_nonpol {n : ℕ} :
@@ -229,14 +229,12 @@ lemma parityDecomposition (c : Chromosome) : c = o c + e c := by
 
 /--
 Predicate for polarized chromosomes (containing no `NonPolarized` genes).
-Denoted by $\Lambda$ in your code (but $\Pi$ in the paper).
 -/
 def IsPolarized (c : Chromosome) : Prop :=
   c.filter (·.type ≠ .NonPolarized) = c
 
 /--
 Predicate for non-polarized chromosomes (containing only `NonPolarized` genes).
-Denoted by $\Pi$ in your code (but $\Lambda$ in the paper).
 -/
 def IsNonPolarized (c : Chromosome) : Prop :=
   c.filter (·.type = .NonPolarized) = c
@@ -245,7 +243,7 @@ def IsNonPolarized (c : Chromosome) : Prop :=
 abbrev variety := AddSubmonoid Chromosome
 
 /--
-The variety $\Pi$ of polarized chromosomes (following the corrected naming convention).
+The variety $\Pi$ of polarized chromosomes.
 [Djoković 1980, p. 72].
 -/
 def Pi : variety where

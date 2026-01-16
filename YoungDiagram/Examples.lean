@@ -16,10 +16,10 @@ import YoungDiagram
 #eval [true, false, true].toGene.toList
 #eval [false, true, false].toGene.toList
 
-#eval [true].toGene.Signature
-#eval [true, false].toGene.Signature
-#eval [true, false, true].toGene.Signature
-#eval [false, true, false].toGene.Signature
+#eval [true].toGene.signature
+#eval [true, false].toGene.signature
+#eval [true, false, true].toGene.signature
+#eval [false, true, false].toGene.signature
 
 open Chromosome Pointwise
 
@@ -41,8 +41,8 @@ abbrev Y₁ := Gene.ofRank 6 .Negative +
 
 example : IsMutation X Y₁ := by
   rw [X, Y₁, add_comm, ← add_assoc, IsMutation_iff_add]
-  set m := @PrimitiveMutation.type_1 .Negative (by decide) 1 5 NeZero.one_le NeZero.one_le
-  have := PrimitiveMutation_isMutation m
+  have primMut := @PrimitiveMutation.type_1 .Negative (by decide) 1 5 NeZero.one_le NeZero.one_le
+  have := PrimitiveMutation_isMutation primMut
   simp at this
   exact this
 
