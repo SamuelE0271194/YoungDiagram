@@ -26,7 +26,7 @@ lemma rankDecomposition (c : Chromosome) (k : ℕ) :
 
 lemma prime_elim (c : Chromosome) (k : ℕ) :
     prime^[k] c = prime^[k] (c.above k) := by
-  nth_rw 1 [rankDecomposition c k, ← zero_add (prime^[k] (c.above k))]
+  nth_rw 1 [rankDecomposition c k, ← zero_add (prime^[k] (c.above k)), iterate_map_add]
   congr
   induction c using Finsupp.induction with
   | zero =>

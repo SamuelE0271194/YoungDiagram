@@ -131,7 +131,7 @@ The "prime" operation extended linearly to all chromosomes: $X' = \sum m_i g_i'$
 This operation corresponds to taking the derivative of the chromosome.
 -/
 noncomputable def prime : Chromosome →+ Chromosome where
-  toFun := fun c ↦ c.sum (fun g m ↦ m • primeGene g)
+  toFun c := c.sum (fun g m ↦ m • primeGene g)
   map_zero' := sum_zero_index
   map_add' X Y := sum_add_index' (by simp)
     fun a _ _ ↦ add_nsmul (primeGene a) _ _
