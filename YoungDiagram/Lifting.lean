@@ -45,68 +45,64 @@ lemma prime_elim (c : Chromosome) (k : ℕ) :
     · exact ⟨rfl, hf⟩
     exact hg_rank
 
-lemma prime_lift_eq_id : prime ∘ lift = id := by
-  funext x
+lemma prime_lift_LeftInverse : Function.LeftInverse prime lift := by
+  intro x
   induction x using Finsupp.induction with
-  | zero => simp only [Function.comp_apply, map_zero, id_eq]
+  | zero => simp only [map_zero]
   | single_add a m f ha hm hf =>
-    rw [Function.comp_apply, id_eq] at hf
-    rw [Function.comp_apply, map_add, map_add, hf, id_eq, add_left_inj]
+    rw [map_add, map_add, hf, add_left_inj]
     simp [prime, lift, liftGene, primeGene]
     split_ifs with h
     · rw [← Gene.ofRank_eq_gene', h, Gene.ofRank_zero, smul_zero]
     · rfl
 
+lemma prime_lift_LeftInverse_it (k : ℕ) :
+    Function.LeftInverse prime^[k] lift^[k] :=
+  Function.LeftInverse.iterate prime_lift_LeftInverse k
+
 end Chromosome
 
-
-#exit
 namespace Lifting
 
 open Chromosome
 
-@[simp] lemma lifting_single {g : Gene} {k : ℕ} :
-    lifting k (single g 1) = single (g.lifting k) 1 := by
-  simp [lifting]
-
-@[simp] lemma lifting_zero {X : Chromosome} : X.lifting 0 = X := by
-  simp [lifting]
-
-lemma lifting_it (X : Chromosome) (k n : ℕ) :
-    X.lifting (k + n) = (X.lifting k).lifting n := by
-  induction X using Finsupp.induction with
-  | zero => simp
-  | single_add a m f ha hm hf =>
-    simp [hf]
-    rw [← mul_one m, ← smul_single', map_nsmul, map_nsmul, map_nsmul,
-      nsmul_right_inj hm, lifting_single, lifting_single, lifting_single,
-      ← Gene.lifting_it]
-
-lemma prime_lifting {k n : ℕ} (X : Chromosome) (h : ) : prime^[k] (X.lifting n) =
+lemma IsMutation_lift (X Y : Chromosome) (h : IsMutation X Y) :
+    IsMutation X.lift Y.lift where
+  le := by
+    intro k
+    have hle := h.le k
+    by_cases hk : k = 0
+    · subst hk
+      rw [Function.iterate_zero, id_eq, id_eq] at hle ⊢
+      sorry
+    sorry
+  ne := sorry
+  sign_eq := sorry
 
 lemma IsMutation_lifting (X Y : Chromosome) (k : ℕ) (h : IsMutation X Y) :
-    IsMutation (X.lifting k) (Y.lifting k) := by
+    IsMutation (lift^[k] X) (lift^[k] Y) := by
   induction k with
-  | zero => rwa [lifting_zero, lifting_zero]
+  | zero =>
+    rwa [Function.iterate_zero, id_eq, id_eq]
   | succ n hn =>
-    rw [lifting_it, lifting_it]
-    set A := X.lifting n
-    set B := Y.lifting n
-    refine ⟨?_, ?_, ?_⟩
-    · simp
+    rw [add_comm, Function.iterate_add_apply, Function.iterate_add_apply,
+      Function.iterate_one]
+    set A := lift^[n] X
+    set B := lift^[n] Y
     sorry
 
 variable {X U : Chromosome} {k : ℕ} (h : IsMutation (prime^[k] X) U)
 
-local notation "Z" => X.below k + U.lifting k
+local notation "Z" => X.below k + lift^[k] U
 
 lemma Z_isMutation : IsMutation X Z := by
   nth_rw 1 [rankDecomposition X k, add_comm (X.below k),
     add_comm (X.below k), IsMutation_iff_add]
+  sorry
 
 
-theorem lifting_property {X U : Chromosome} {k : ℕ} (h : IsMutation (prime^[k] X) U) :
-  ∃ Z : Chromosome, IsMutation X Z ∧ prime^[k] Z = U ∧
+theorem lifting_property :
+  IsMutation X Z ∧ prime^[k] Z = U ∧
     ∀ i ≤ k, (prime^[i] X).signature = (prime^[i] Z).signature := sorry
 
 end Lifting
