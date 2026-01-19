@@ -8,9 +8,12 @@ def Gene.lifting (g : Gene) (k : ℕ) : Gene :=
 
 namespace Chromosome
 
-noncomputable def lifting (c : Chromosome)
-    (k : ℕ) : Chromosome :=
-  c.sum (fun g count ↦ single (g.lifting k) count)
+noncomputable def lifting (k : ℕ) : Chromosome →+ Chromosome where
+  toFun c := c.sum (fun g count ↦ single (g.lifting k) count)
+  map_zero' := sum_zero_index
+  map_add' _ _ :=
+    sum_add_index' (fun a ↦ single_zero (a.lifting k)) fun a _ _ ↦
+      single_add (a.lifting k) _ _
 
 abbrev below (c : Chromosome) (k : ℕ) : Chromosome := c.filter (·.rank ≤ k)
 

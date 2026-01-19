@@ -43,7 +43,7 @@ The signature of a chromosome is the weighted sum of the signatures of its const
 def signature : Chromosome →+ ℚ × ℚ where
   toFun c := c.sum (fun g count ↦ (count : ℚ) • g.signature)
   map_zero' := sum_zero_index
-  map_add' X Y := by
+  map_add' _ _ := by
     refine Finsupp.sum_add_index' (by simp) fun a _ _ ↦ ?_
     simp only [Nat.cast_add]
     exact Module.add_smul _ _ a.signature
@@ -134,7 +134,7 @@ This operation corresponds to taking the derivative of the chromosome.
 noncomputable def prime : Chromosome →+ Chromosome where
   toFun c := c.sum (fun g m ↦ m • primeGene g)
   map_zero' := sum_zero_index
-  map_add' X Y := sum_add_index' (by simp)
+  map_add' _ _ := sum_add_index' (fun a ↦ zero_nsmul (primeGene a))
     fun a _ _ ↦ add_nsmul (primeGene a) _ _
 
 lemma prime_ofRank {n : ℕ} {ε : GeneType} :
