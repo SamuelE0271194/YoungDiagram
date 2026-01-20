@@ -3,3 +3,4 @@ import YoungDiagram.Gene
 import YoungDiagram.Chromosome
 import YoungDiagram.Mutations
 import YoungDiagram.Lifting
+import YoungDiagram.Variety

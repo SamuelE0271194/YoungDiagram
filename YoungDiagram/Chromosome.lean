@@ -24,6 +24,9 @@ lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
   Gene.ofRank n ε = if h : n = 0 then 0
     else single ⟨n, ε, Nat.pos_of_ne_zero h⟩ 1 := rfl
 
+lemma Gene.ofRank'_def {n : ℕ} {ε : GeneType} :
+  Gene.ofRank' n ε = Gene.ofRank n ((- 1) ^ (n - 1) • ε) := rfl
+
 @[simp] lemma Gene.ofRank_zero {ε : GeneType} : Gene.ofRank 0 ε = 0 := rfl
 
 lemma Gene.ofRank_eq_gene {g : Gene} :
@@ -52,7 +55,7 @@ def signature : Chromosome →+ ℚ × ℚ where
     simp only [Nat.cast_add]
     exact Module.add_smul ..
 
-lemma signature_nonneg (c : Chromosome) : 0 ≤ c.signature := by
+lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
   dsimp [signature]
   exact sum_nonneg' fun g ↦
     smul_nonneg Rat.natCast_nonneg g.signature_nonneg
@@ -201,83 +204,5 @@ instance : AddRightReflectLE Chromosome where
     intro _ _ _ h; simpa using h
 
 end order
-
-section variety
-
-/-- The odd part of a chromosome $o(X)$, containing only genes of odd rank. -/
-abbrev o (c : Chromosome) : Chromosome := c.filter (Odd  ·.rank)
-
-/-- The even part of a chromosome $e(X)$, containing only genes of even rank. -/
-abbrev e (c : Chromosome) : Chromosome := c.filter (Even ·.rank)
-
-/-- Predicate for chromosomes consisting solely of genes with odd rank. -/
-def IsOdd (c : Chromosome) : Prop  := o c = c
-
-/-- Predicate for chromosomes consisting solely of genes with even rank. -/
-def IsEven (c : Chromosome) : Prop := e c = c
-
-/--
-Every chromosome decomposes uniquely into an odd part and an even part: $X = o(X) + e(X)$.
-See [Djoković 1980, p. 72].
--/
-lemma parityDecomposition (c : Chromosome) : c = o c + e c := by
-  simp [o, e]
-  conv =>
-    enter [2, 2, 1, a]
-    rw [← Nat.not_odd_iff_even]
-  rw [filter_pos_add_filter_neg]
-
-/--
-Predicate for polarized chromosomes (containing no `NonPolarized` genes).
--/
-def IsPolarized (c : Chromosome) : Prop :=
-  c.filter (·.type ≠ .NonPolarized) = c
-
-/--
-Predicate for non-polarized chromosomes (containing only `NonPolarized` genes).
--/
-def IsNonPolarized (c : Chromosome) : Prop :=
-  c.filter (·.type = .NonPolarized) = c
-
-/-- A variety is a submonoid of the set of chromosomes. -/
-abbrev variety := AddSubmonoid Chromosome
-
-/--
-The variety $\Pi$ of polarized chromosomes.
-[Djoković 1980, p. 72].
--/
-def Pi : variety where
-  carrier := {c : Chromosome | IsPolarized c}
-  add_mem' {a b} ha hb := by
-    simp [IsPolarized] at *
-    rw [ha, hb]
-  zero_mem' := by
-    simp [IsPolarized, filter_zero]
-
-/--
-The variety $\Lambda$ of non-polarized chromosomes.
-[Djoković 1980, p. 72].
--/
-def Lambda : variety where
-  carrier := {c : Chromosome | IsNonPolarized c}
-  add_mem' {a b} ha hb := by
-    simp [IsNonPolarized] at *
-    rw [ha, hb]
-  zero_mem' := by
-    simp [IsNonPolarized, filter_zero]
-
-/--
-Constructs a mixed variety $(\Phi, \Psi)$ consisting of chromosomes $X$ such that
-$e(X) \in \Phi$ and $o(X) \in \Psi$. See [Djoković 1980, p. 72].
--/
-def Mix (v : variety × variety) : variety where
-  carrier := {c : Chromosome | e c ∈ v.1 ∧ o c ∈ v.2}
-  add_mem' {a b} ha hb := by
-    simp [o, e] at *
-    exact ⟨add_mem ha.1 hb.1, add_mem ha.2 hb.2⟩
-  zero_mem' := by
-    simp [o, e, filter_zero]
-
-end variety
 
 end Chromosome

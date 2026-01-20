@@ -33,6 +33,9 @@ instance : SMul ℤ GeneType where
   · simp [h]
   · simp [Nat.not_even_iff_odd.1 h]
 
+lemma GeneType.nonpolarized_iff_neg_non {ε : GeneType} :
+    ε ≠ .NonPolarized ↔ - ε ≠ .NonPolarized := by cases ε <;> decide
+
 /--
 A gene is an isomorphism class of strings, defined by its rank (size) and type.
 -/
