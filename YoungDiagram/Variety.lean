@@ -270,6 +270,28 @@ lemma IsNonPolarized_iff_nsmul {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
     rw [add_nsmul, one_nsmul, IsNonPolarized_iff_add, hm]
     tauto
 
+lemma IsNonPolarized_iff_lift {X : Chromosome} :
+    X.lift.IsNonPolarized ↔ X.IsNonPolarized := by
+  constructor <;> intro h
+  · induction X using Finsupp.induction
+    · exact IsNonPolarized_zero
+    · expose_names
+      rw [map_add, IsNonPolarized_iff_add] at h
+      specialize h_3 h.2
+      refine IsNonPolarized_iff_add.2 ⟨?_, h_3⟩
+      replace h := h.1
+      simp [lift, liftGene] at h
+      rwa [← smul_single_one, IsNonPolarized_iff_nsmul h_2, IsNonPolarized_single] at h ⊢
+  · induction X using Finsupp.induction
+    · exact IsNonPolarized_zero
+    · expose_names
+      rw [map_add, IsNonPolarized_iff_add]
+      rw [IsNonPolarized_iff_add] at h
+      refine ⟨?_, h_3 h.2⟩
+      replace h := h.1
+      simp [lift, liftGene]
+      rwa [← smul_single_one, IsNonPolarized_iff_nsmul h_2, IsNonPolarized_single] at h ⊢
+
 end nonpolarized
 
 def Pi : variety where
@@ -307,6 +329,28 @@ def Lambda : variety where
   zero_mem' := IsNonPolarized_zero
 
 lemma mem_Lambda_iff {X : Chromosome} : X ∈ Lambda ↔ X.IsNonPolarized := .rfl
+
+lemma prime_Lambda : Lambda.prime = Lambda := by
+  refine le_antisymm ?_ ?_ <;> intro x hx
+  · rw [variety.prime_def, AddSubmonoid.mem_map] at hx
+    rcases hx with ⟨y, ⟨h1, h2⟩⟩
+    rw [mem_Lambda_iff, ← h2]
+    induction y using Finsupp.induction generalizing x
+    · exact IsNonPolarized_zero
+    · expose_names
+      rw [mem_Lambda_iff, IsNonPolarized_iff_add, ← @mem_Lambda_iff f] at h1
+      rw [map_add, IsNonPolarized_iff_add]
+      refine ⟨?_, @h_2 (prime f) h1.2 rfl⟩
+      simp [prime, primeGene]
+      split_ifs
+      · exact IsNonPolarized_zero
+      · rw [← smul_single_one, IsNonPolarized_iff_nsmul h_1,
+          IsNonPolarized_single] at h1 ⊢
+        exact h1.1
+  · rw [variety.prime_def, AddSubmonoid.mem_map]
+    use x.lift
+    refine ⟨mem_Lambda_iff.2 <| IsNonPolarized_iff_lift.2 <|
+      mem_Lambda_iff.1 hx, prime_lift_LeftInverse x⟩
 
 def Mix (v : variety × variety) : variety where
   carrier := {X : Chromosome | X.e ∈ v.1 ∧ X.o ∈ v.2}
