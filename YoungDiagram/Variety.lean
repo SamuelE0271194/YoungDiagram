@@ -1,14 +1,76 @@
 import Mathlib.Algebra.GroupWithZero.Submonoid.Pointwise
 import YoungDiagram.Chromosome
 
+noncomputable def liftGene (g : Gene) : Chromosome :=
+  Gene.ofRank (g.rank + 1) g.type
+
 abbrev variety := AddSubmonoid Chromosome
 
 noncomputable def variety.prime (v : variety) : variety :=
   v.map Chromosome.prime
 
+lemma variety.prime_def (v : variety) :
+  v.prime = v.map Chromosome.prime := rfl
+
 open Finsupp
 
 namespace Chromosome
+
+section lift
+
+noncomputable def lift : Chromosome →+ Chromosome where
+  toFun c := c.sum (fun g count ↦ count • liftGene g)
+  map_zero' := sum_zero_index
+  map_add' _ _ := sum_add_index' (fun _ ↦ zero_nsmul _)
+    fun _ _ _ ↦ add_nsmul ..
+
+abbrev below (X : Chromosome) (k : ℕ) : Chromosome := X.filter (·.rank ≤ k)
+
+abbrev above (X : Chromosome) (k : ℕ) : Chromosome := X.filter (k < ·.rank)
+
+lemma rankDecomposition (X : Chromosome) (k : ℕ) :
+    X = X.below k + X.above k := by
+  simp [below, above]
+  conv =>
+    enter [2, 2, 1, a]
+    rw [lt_iff_not_ge]
+  rw [filter_pos_add_filter_neg]
+
+lemma prime_elim (X : Chromosome) (k : ℕ) :
+    prime^[k] X = prime^[k] (X.above k) := by
+  nth_rw 1 [rankDecomposition X k]
+  simp only [iterate_map_add, add_eq_right]
+  induction X using Finsupp.induction with
+  | zero => simp [below, filter_zero]
+  | single_add g n f hg hn hf =>
+    simp [below]
+    by_cases hg_rank : g.rank ≤ k
+    · rw [filter_single_of_pos, ← Gene.ofRank_eq_gene', iterate_map_nsmul]
+      · refine ⟨?_, hf⟩
+        rw [IsAddTorsionFree.nsmul_eq_zero_iff, prime_ofRank_it,
+          Nat.sub_eq_zero_of_le hg_rank, Gene.ofRank_zero]
+        exact Or.inl rfl
+      exact hg_rank
+    · rw [filter_single_of_neg, iterate_map_zero]
+      · exact ⟨rfl, hf⟩
+      exact hg_rank
+
+lemma prime_lift_LeftInverse : Function.LeftInverse prime lift := by
+  intro x
+  induction x using Finsupp.induction with
+  | zero => simp only [map_zero]
+  | single_add a m f ha hm hf =>
+    rw [map_add, map_add, hf, add_left_inj]
+    simp [prime, lift, liftGene, primeGene]
+    split_ifs with h
+    · rw [← Gene.ofRank_eq_gene', h, Gene.ofRank_zero, smul_zero]
+    · rfl
+
+lemma prime_lift_LeftInverse_it (k : ℕ) :
+    Function.LeftInverse prime^[k] lift^[k] :=
+  Function.LeftInverse.iterate prime_lift_LeftInverse k
+
+end lift
 
 abbrev o (X : Chromosome) : Chromosome := X.filter (Odd  ·.rank)
 abbrev e (X : Chromosome) : Chromosome := X.filter (Even ·.rank)
@@ -105,6 +167,39 @@ lemma IsPolarized_iff_add {X Y : Chromosome} :
       (Nat.one_le_iff_ne_zero.2 hn)]
     tauto
 
+lemma IsPolarized_iff_nsmul {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
+    (n • X).IsPolarized ↔ X.IsPolarized := by
+  induction n using Nat.twoStepInduction with
+  | zero => tauto
+  | one => rw [one_nsmul]
+  | more m _ hm =>
+    specialize hm (by omega)
+    change ((m + 1 + 1) • X).IsPolarized ↔ _
+    rw [add_nsmul, one_nsmul, IsPolarized_iff_add, hm]
+    tauto
+
+lemma IsPolarized_iff_lift {X : Chromosome} :
+    X.lift.IsPolarized ↔ X.IsPolarized := by
+  constructor <;> intro h
+  · induction X using Finsupp.induction
+    · exact IsPolarized_zero
+    · expose_names
+      rw [map_add, IsPolarized_iff_add] at h
+      specialize h_3 h.2
+      refine IsPolarized_iff_add.2 ⟨?_, h_3⟩
+      replace h := h.1
+      simp [lift, liftGene] at h
+      rwa [← smul_single_one, IsPolarized_iff_nsmul h_2, IsPolarized_single] at h ⊢
+  · induction X using Finsupp.induction
+    · exact IsPolarized_zero
+    · expose_names
+      rw [map_add, IsPolarized_iff_add]
+      rw [IsPolarized_iff_add] at h
+      refine ⟨?_, h_3 h.2⟩
+      replace h := h.1
+      simp [lift, liftGene]
+      rwa [← smul_single_one, IsPolarized_iff_nsmul h_2, IsPolarized_single] at h ⊢
+
 end polarized
 
 section nonpolarized
@@ -164,6 +259,17 @@ lemma IsNonPolarized_iff_add {X Y : Chromosome} :
       (Nat.one_le_iff_ne_zero.2 hn)]
     tauto
 
+lemma IsNonPolarized_iff_nsmul {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
+    (n • X).IsNonPolarized ↔ X.IsNonPolarized := by
+  induction n using Nat.twoStepInduction with
+  | zero => tauto
+  | one => rw [one_nsmul]
+  | more m _ hm =>
+    specialize hm (by omega)
+    change ((m + 1 + 1) • X).IsNonPolarized ↔ _
+    rw [add_nsmul, one_nsmul, IsNonPolarized_iff_add, hm]
+    tauto
+
 end nonpolarized
 
 def Pi : variety where
@@ -172,6 +278,28 @@ def Pi : variety where
   zero_mem' := IsPolarized_zero
 
 lemma mem_Pi_iff {X : Chromosome} : X ∈ Pi ↔ X.IsPolarized := .rfl
+
+lemma prime_Pi : Pi.prime = Pi := by
+  refine le_antisymm ?_ ?_ <;> intro x hx
+  · rw [variety.prime_def, AddSubmonoid.mem_map] at hx
+    rcases hx with ⟨y, ⟨h1, h2⟩⟩
+    rw [mem_Pi_iff, ← h2]
+    induction y using Finsupp.induction generalizing x
+    · exact IsPolarized_zero
+    · expose_names
+      rw [mem_Pi_iff, IsPolarized_iff_add, ← @mem_Pi_iff f] at h1
+      rw [map_add, IsPolarized_iff_add]
+      refine ⟨?_, @h_2 (prime f) h1.2 rfl⟩
+      simp [prime, primeGene]
+      split_ifs
+      · exact IsPolarized_zero
+      · rw [← smul_single_one, IsPolarized_iff_nsmul h_1,
+          IsPolarized_single] at h1 ⊢
+        exact h1.1
+  · rw [variety.prime_def, AddSubmonoid.mem_map]
+    use x.lift
+    refine ⟨mem_Pi_iff.2 <| IsPolarized_iff_lift.2 <|
+      mem_Pi_iff.1 hx, prime_lift_LeftInverse x⟩
 
 def Lambda : variety where
   carrier := {X : Chromosome | IsNonPolarized X}
