@@ -205,30 +205,6 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
 
 end IsFiltered
 
-section parity
-
-abbrev o (X : Chromosome) : Chromosome := X.filter (Odd  ·.rank)
-abbrev e (X : Chromosome) : Chromosome := X.filter (Even ·.rank)
-
-def IsOdd (X : Chromosome) : Prop  := X.o = X
-
-lemma IsOdd_def {X : Chromosome} :
-  X.IsOdd ↔ X.filter (Odd  ·.rank) = X := .rfl
-
-def IsEven (X : Chromosome) : Prop := X.e = X
-
-lemma IsEven_def {X : Chromosome} :
-  X.IsEven ↔ X.filter (Even ·.rank) = X := .rfl
-
-lemma parityDecomposition (X : Chromosome) : X = X.o + X.e := by
-  simp [o, e]
-  conv =>
-    enter [2, 2, 1, a]
-    rw [← Nat.not_odd_iff_even]
-  rw [filter_pos_add_filter_neg]
-
-end parity
-
 section polarized
 
 def IsPolarized (X : Chromosome) : Prop := X.IsFiltered (·.type ≠ .NonPolarized)
@@ -319,21 +295,100 @@ lemma prime_Lambda : Lambda.prime = Lambda := prime_varietyOfFilter (fun _ ↦ .
 
 end Lambda
 
+section parity
+
+def o : Chromosome →+ Chromosome where
+  toFun c := c.filter (Odd  ·.rank)
+  map_zero' := filter_zero _
+  map_add' _ _ := filter_add
+
+def e : Chromosome →+ Chromosome where
+  toFun c := c.filter (Even  ·.rank)
+  map_zero' := filter_zero _
+  map_add' _ _ := filter_add
+
+lemma parityDecomposition (X : Chromosome) : X = X.o + X.e := by
+  simp [o, e]
+  conv =>
+    enter [2, 2, 1, a]
+    rw [← Nat.not_odd_iff_even]
+  rw [filter_pos_add_filter_neg]
+
+lemma e_single {g : Gene} : e (single g 1) =
+    if Even g.rank then single g 1 else 0 := by
+  split_ifs with h
+  · exact filter_single_of_pos _ h
+  · exact filter_single_of_neg _ h
+
+lemma o_single {g : Gene} : o (single g 1) =
+    if Even g.rank then 0 else single g 1 := by
+  split_ifs with h
+  · exact filter_single_of_neg _ <| Nat.not_odd_iff_even.2 h
+  · exact filter_single_of_pos _ <| Nat.not_even_iff_odd.1 h
+
+lemma e_prime {X : Chromosome} : X.prime.e = X.o.prime := by
+  induction X using Finsupp.induction
+  · repeat rw [map_zero]
+  · expose_names
+    repeat rw [map_add]
+    rw [h_2, add_left_inj, ← smul_single_one, map_nsmul, map_nsmul,
+      map_nsmul, map_nsmul, nsmul_right_inj h_1, o_single]
+    split_ifs with ha
+    · simp [prime, primeGene]
+      split_ifs
+      · exact map_zero _
+      · simp [e_single, Nat.even_add_one.1 ((Nat.sub_add_cancel a.rank_pos) ▸ ha)]
+    · simp [prime, primeGene]
+      split_ifs
+      · exact map_zero _
+      · simp [e_single, (Nat.even_sub a.rank_pos).2 <|
+          (iff_false_right Nat.not_even_one).2 ha]
+
+lemma o_prime {X : Chromosome} : X.prime.o = X.e.prime := by
+  induction X using Finsupp.induction
+  · repeat rw [map_zero]
+  · expose_names
+    repeat rw [map_add]
+    rw [h_2, add_left_inj, ← smul_single_one, map_nsmul, map_nsmul,
+      map_nsmul, map_nsmul, nsmul_right_inj h_1, e_single]
+    split_ifs with ha
+    · simp [prime, primeGene]
+      split_ifs
+      · exact map_zero _
+      · simp [o_single, Nat.even_add_one.1 ((Nat.sub_add_cancel a.rank_pos) ▸ ha)]
+    · simp [prime, primeGene]
+      split_ifs
+      · exact map_zero _
+      · simp [o_single, (Nat.even_sub a.rank_pos).2 <|
+          (iff_false_right Nat.not_even_one).2 ha]
+
+end parity
+
 section Mix
 
 def Mix (v : variety × variety) : variety where
   carrier := {X : Chromosome | X.e ∈ v.1 ∧ X.o ∈ v.2}
   add_mem' ha hb := by
-    simp at *
+    simp only [Set.mem_setOf_eq, map_add]
     exact ⟨add_mem ha.1 hb.1, add_mem ha.2 hb.2⟩
-  zero_mem' := by simp [filter_zero]
+  zero_mem' := by
+    simp only [Set.mem_setOf_eq, map_zero, zero_mem, and_self]
 
 lemma mem_Mix_iff {X : Chromosome} {v : variety × variety} :
   X ∈ Mix v ↔ X.e ∈ v.1 ∧ X.o ∈ v.2 := .rfl
 
 lemma prime_Mix {v : variety × variety} :
     (Mix v).prime = Mix ⟨v.2.prime, v.1.prime⟩ := by
-  sorry
+  refine le_antisymm ?_ ?_ <;> intro x hx
+  · change x.e ∈ v.2.prime ∧ x.o ∈ v.1.prime
+    obtain ⟨y, ⟨h1 : y.e ∈ v.1 ∧ y.o ∈ v.2, h2⟩⟩ := hx
+    rw [← h2, e_prime, o_prime]
+    exact ⟨⟨y.o, ⟨h1.2, rfl⟩⟩, ⟨y.e, ⟨h1.1, rfl⟩⟩⟩
+  · obtain ⟨⟨y₁, ⟨h11, h12⟩⟩, ⟨y₂, ⟨h21, h22⟩⟩⟩ := hx
+    refine ⟨y₂ + y₁, ?_, ?_⟩
+    · simp [Mix]
+      sorry
+    · rw [map_add, h12, h22, ← parityDecomposition]
 
 end Mix
 
