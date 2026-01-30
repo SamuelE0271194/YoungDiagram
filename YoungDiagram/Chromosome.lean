@@ -38,7 +38,7 @@ lemma Gene.ofRank_eq_gene {g : Gene} :
 
 lemma Gene.ofRank_eq_gene' {g : Gene} {m : ℕ} :
     m • Gene.ofRank g.rank g.type = single g m := by
-  rw [← mul_one m, ← smul_single', ofRank_eq_gene, mul_one]
+  rw [← smul_single_one, ofRank_eq_gene]
 
 namespace Chromosome
 

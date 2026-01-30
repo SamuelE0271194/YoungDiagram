@@ -307,13 +307,13 @@ def e : Chromosome →+ Chromosome where
   map_zero' := filter_zero _
   map_add' _ _ := filter_add
 
-lemma e_it {X : Chromosome} : X.e.e = X.e := by
+lemma e_it {X : Chromosome} : e (e X) = e X := by
   refine (filter_eq_self_iff (Even ·.rank) (filter (Even ·.rank) X)).2 ?_
   intro _ hx
   by_contra!
   exact hx (filter_apply_neg _ X this)
 
-lemma o_it {X : Chromosome} : X.o.o = X.o := by
+lemma o_it {X : Chromosome} : o (o X) = o X := by
   refine (filter_eq_self_iff (Odd ·.rank) (filter (Odd ·.rank) X)).2 ?_
   intro _ hx
   by_contra!
@@ -357,25 +357,49 @@ lemma e_prime {X : Chromosome} : X.prime.e = X.o.prime := by
           (iff_false_right Nat.not_even_one).2 ha]
 
 lemma o_prime {X : Chromosome} : X.prime.o = X.e.prime := by
-  induction X using Finsupp.induction
-  · repeat rw [map_zero]
-  · expose_names
-    repeat rw [map_add]
-    rw [h_2, add_left_inj, ← smul_single_one, map_nsmul, map_nsmul,
-      map_nsmul, map_nsmul, nsmul_right_inj h_1, e_single]
-    split_ifs with ha
-    · simp [prime, primeGene]
-      split_ifs
-      · exact map_zero _
-      · simp [o_single, Nat.even_add_one.1 ((Nat.sub_add_cancel a.rank_pos) ▸ ha)]
-    · simp [prime, primeGene]
-      split_ifs
-      · exact map_zero _
-      · simp [o_single, (Nat.even_sub a.rank_pos).2 <|
-          (iff_false_right Nat.not_even_one).2 ha]
+  have := X.prime.parityDecomposition
+  nth_rw 1 [X.parityDecomposition, map_add, e_prime, add_comm,
+    add_left_inj] at this
+  exact this.symm
 
-lemma prime_eq_o {X Y : Chromosome} (h : X.prime = Y.o) : X.e = X := by
-  sorry
+lemma prime_of_odd {X : Chromosome} : X.IsFiltered (Odd ·.rank) ↔
+    X.prime.IsFiltered (Even ·.rank) := by
+  constructor <;> intro h
+  · change X.prime.e = X.prime
+    change X.o = X at h
+    nth_rw 2 [X.prime.parityDecomposition]
+    simp only [right_eq_add]
+    nth_rw 2 [X.parityDecomposition] at h
+    simp only [left_eq_add] at h
+    rw [o_prime, h, map_zero]
+  · induction X using Finsupp.induction
+    · exact IsFiltered_zero
+    · expose_names
+      rw [map_add, IsFiltered_iff_add] at h
+      refine IsFiltered_iff_add.2 ⟨?_, h_3 h.2⟩
+      replace h := h.1
+      rw [← Gene.ofRank_eq_gene', map_nsmul,
+        IsFiltered_iff_nsmul h_2, prime_ofRank, IsFiltered_def, Gene.ofRank_def] at h
+      rw [← Gene.ofRank_eq_gene', IsFiltered_iff_nsmul h_2, Gene.ofRank_eq_gene,
+        IsFiltered_def]
+      by_cases ha : Odd a.rank
+      · rwa [filter_single_of_pos]
+      · split_ifs at h with hr
+        · simp [(Nat.sub_one_cancel Nat.one_pos a.rank_pos hr.symm).symm] at ha
+        · rw [filter_single_of_neg] at h
+          · symm at h; rw [single_eq_zero] at h; tauto
+          · exact Nat.not_even_iff_odd.mpr <| Nat.Even.sub_odd a.rank_pos
+              (Nat.not_odd_iff_even.mp ha) <| Nat.odd_iff.mpr rfl
+
+lemma prime_of_even {X : Chromosome} (h : X.IsFiltered (Even ·.rank)) :
+    X.prime.IsFiltered (Odd ·.rank) := by
+  change X.prime.o = X.prime
+  change X.e = X at h
+  nth_rw 2 [X.prime.parityDecomposition]
+  simp only [left_eq_add]
+  nth_rw 2 [X.parityDecomposition] at h
+  simp only [right_eq_add] at h
+  rw [e_prime, h, map_zero]
 
 end parity
 
@@ -392,18 +416,22 @@ def Mix (v : variety × variety) : variety where
 lemma mem_Mix_iff {X : Chromosome} {v : variety × variety} :
   X ∈ Mix v ↔ X.e ∈ v.1 ∧ X.o ∈ v.2 := .rfl
 
-lemma prime_Mix {v : variety × variety} :
+lemma prime_Mix_1 {v : variety × variety} :
+    (Mix v).prime ≤ Mix ⟨v.2.prime, v.1.prime⟩ := by
+  intro x hx
+  change x.e ∈ v.2.prime ∧ x.o ∈ v.1.prime
+  obtain ⟨y, ⟨h1 : y.e ∈ v.1 ∧ y.o ∈ v.2, h2⟩⟩ := hx
+  rw [← h2, e_prime, o_prime]
+  exact ⟨⟨y.o, ⟨h1.2, rfl⟩⟩, ⟨y.e, ⟨h1.1, rfl⟩⟩⟩
+
+lemma prime_Mix_2 {v : variety × variety}
+    (hv1 : ∀ x ∈ v.1, x.o ∈ v.1 ∧ x.e ∈ v.1)
+    (hv2 : ∀ x ∈ v.2, x.o ∈ v.1 ∧ x.e ∈ v.1) :
     (Mix v).prime = Mix ⟨v.2.prime, v.1.prime⟩ := by
-  refine le_antisymm ?_ ?_ <;> intro x hx
-  · change x.e ∈ v.2.prime ∧ x.o ∈ v.1.prime
-    obtain ⟨y, ⟨h1 : y.e ∈ v.1 ∧ y.o ∈ v.2, h2⟩⟩ := hx
-    rw [← h2, e_prime, o_prime]
-    exact ⟨⟨y.o, ⟨h1.2, rfl⟩⟩, ⟨y.e, ⟨h1.1, rfl⟩⟩⟩
-  · obtain ⟨⟨y₁, ⟨h11, h12⟩⟩, ⟨y₂, ⟨h21, h22⟩⟩⟩ := hx
-    refine ⟨y₂ + y₁, ?_, ?_⟩
-    · simp [Mix]
-      sorry
-    · rw [map_add, h12, h22, ← parityDecomposition]
+  refine le_antisymm prime_Mix_1 (fun x hx ↦ ?_)
+  obtain ⟨⟨y₁, ⟨h11, h12⟩⟩, ⟨y₂, ⟨h21, h22⟩⟩⟩ := hx
+  sorry
+
 
 end Mix
 
