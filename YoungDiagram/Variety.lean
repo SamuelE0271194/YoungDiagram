@@ -19,11 +19,19 @@ namespace Chromosome
 /- Comment: tons of Mathlib lemmas rely on partial order for no reason.
 For example `Finsupp.sum_le_sum`, which is obviously still true under pre-order.
 These lemmas could make proving a lot less painful. A pull request in mathlib
-is already opened to address the issue. For the time being we'll just leave a
-sorry here.-/
+is already opened to address the issue. For the time being we'll just use induction here.-/
 lemma filtered_sig_leq (X : Chromosome) (p : Gene → Prop) [DecidablePred p] :
     signature (X.filter p) ≤ X.signature := by
-  sorry
+  induction X using Finsupp.induction
+  · rw [filter_zero]
+  · expose_names
+    rw [filter_add, map_add, map_add]
+    refine add_le_add ?_ h_2
+    by_cases ha : p a
+    · rwa [filter_single_of_pos]
+    · rw [filter_single_of_neg, map_zero]
+      · exact signature_nonneg _
+      exact ha
 
 section lift
 
