@@ -40,6 +40,9 @@ lemma Gene.ofRank_eq_gene' {g : Gene} {m : ℕ} :
     m • Gene.ofRank g.rank g.type = single g m := by
   rw [← smul_single_one, ofRank_eq_gene]
 
+def max_rank (c : Chromosome) : ℕ :=
+  c.support.sup (fun g ↦ g.rank)
+
 namespace Chromosome
 
 section signature
