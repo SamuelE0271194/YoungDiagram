@@ -181,3 +181,5 @@ lemma cond15_8 : (X Y : Chromosome) → (h : X ≤ Y) →
   ∀ k : ℕ, sigma_k X k ≤ sigma_k Y k := by
   intro X Y h k
   sorry
+
+end Chromosome
