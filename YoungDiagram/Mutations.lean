@@ -144,4 +144,11 @@ lemma MutationStep_isMutation {X Y : Pi}
 
 end Pi
 
+def MutationStep : (i : Fin 5) → (VarietyLabel i) → (VarietyLabel i) → Prop
+  | 0 => Pi.MutationStep
+  | 1 => sorry
+  | 2 => sorry
+  | 3 => sorry
+  | 4 => sorry
+
 end Chromosome

@@ -490,7 +490,7 @@ lemma prime_Mix_2 {v : variety × variety}
 
 end Mix
 
-lemma prime_smul {v : variety} {n : ℕ} :
+lemma variety_prime_smul {v : variety} {n : ℕ} :
     (n • v).prime = n • v.prime := by
   ext x; constructor <;> intro hx
   · obtain ⟨y, ⟨⟨z, ⟨hz, hyz : n • z = y⟩⟩, heq⟩⟩ := hx
@@ -531,8 +531,20 @@ lemma VarietyLabel.prime_eq_prime {i : Fin 5} :
   | 3 =>
     change (Mix (2 • Lambda, Pi)).prime = Mix (Pi, 2 • Lambda)
     rw [prime_Mix_2 Lambda_closed_under_parityDecomp' Pi_closed_under_parityDecomp,
-      prime_Pi, prime_smul, prime_Lambda]
+      prime_Pi, variety_prime_smul, prime_Lambda]
   | 4 =>
     change (Mix (Pi, 2 • Lambda)).prime = Mix (2 • Lambda, Pi)
     rw [prime_Mix_2 Pi_closed_under_parityDecomp Lambda_closed_under_parityDecomp',
-      prime_Pi, prime_smul, prime_Lambda]
+      prime_Pi, variety_prime_smul, prime_Lambda]
+
+noncomputable def VarietyLabel.of_mem_prime_iter {i : Fin 5} {k : ℕ} {X : Chromosome}
+  (hX : X ∈ VarietyLabel i) :
+    VarietyLabel (VarietyLabel.prime^[k] i) := by
+  use Chromosome.prime^[k] X
+  induction k generalizing i X
+  · rwa [Function.iterate_zero, Function.iterate_zero]
+  · expose_names
+    rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
+    refine @h (prime i) X.prime ?_
+    rw [← VarietyLabel.prime_eq_prime]
+    refine ⟨X, hX, rfl⟩
