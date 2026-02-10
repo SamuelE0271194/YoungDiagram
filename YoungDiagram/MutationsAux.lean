@@ -3,7 +3,7 @@ import Mathlib.Tactic
 
 open Chromosome
 
-section type_1_isMutation
+section type1_isMutation
 
 lemma mutation_type1_ne {ε : GeneType}
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
@@ -115,4 +115,4 @@ lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   | .Positive => mutation_type1_le_positive h_le
   | .Negative => mutation_type1_le_negative h_le
 
-end type_1_isMutation
+end type1_isMutation
