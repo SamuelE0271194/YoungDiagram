@@ -234,3 +234,5 @@ lemma cond15_8 : (X Y : Chromosome) → (h : X ≤ Y) →
   sorry
 
 end Sigma
+
+lemma theorem_6 : (X Y : Chromosome) → (hX : X ∈ Pi) → (hY : Y ∈ Pi)

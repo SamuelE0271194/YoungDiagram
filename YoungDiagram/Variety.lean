@@ -92,6 +92,7 @@ end lift
 section IsFiltered
 
 variable {p : Gene → Prop} [DecidablePred p] {X : Chromosome}
+variable {q : Gene → Prop} [DecidablePred q] {X : Chromosome}
 
 variable (p X) in
 def IsFiltered : Prop := X.filter p = X
@@ -181,6 +182,20 @@ def varietyOfFilter : Variety where
   carrier := {X : Chromosome | X.IsFiltered p}
   add_mem' ha hb := IsFiltered_iff_add.2 ⟨ha, hb⟩
   zero_mem' := IsFiltered_zero
+
+variable (p q) in
+def varietyOfFilter_2 : Variety where
+  carrier := {X : Chromosome | X.IsFiltered p ∧ X.IsFiltered q}
+  add_mem' := by
+    intro a b ha hb
+    rcases ha with ⟨hap, haq⟩
+    rcases hb with ⟨hbp, hbq⟩
+    exact ⟨
+      IsFiltered_iff_add.2 ⟨hap, hbp⟩,
+      IsFiltered_iff_add.2 ⟨haq, hbq⟩
+    ⟩
+  zero_mem' := by
+    exact ⟨IsFiltered_zero, IsFiltered_zero⟩
 
 lemma mem_varietyOfFilter_iff {X : Chromosome} :
   X ∈ varietyOfFilter p ↔ X.IsFiltered p := .rfl
@@ -389,6 +404,8 @@ open Chromosome
 section Pi
 
 def Pi : Variety := varietyOfFilter (·.type ≠ .NonPolarized)
+
+def Pi_n (n : ℕ) : Variety := varietyOfFilter_2 (·.type ≠ .NonPolarized) (·.rank = n)
 
 lemma mem_Pi_iff {X : Chromosome} :
   X ∈ Pi ↔ IsPolarized X := mem_varietyOfFilter_iff
