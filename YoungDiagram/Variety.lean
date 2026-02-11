@@ -395,8 +395,7 @@ section Pi
 
 def Pi : Variety := varietyOfFilter (·.type ≠ .NonPolarized)
 
-def Pi_n (n : ℕ) : Variety :=
-  varietyOfFilter <| fun g ↦ g.type ≠ .NonPolarized ∧ g.rank = n
+def Pi_n (n : ℕ) : AddSubmonoid Pi := sorry
 
 lemma mem_Pi_iff {X : Chromosome} :
   X ∈ Pi ↔ IsPolarized X := mem_varietyOfFilter_iff

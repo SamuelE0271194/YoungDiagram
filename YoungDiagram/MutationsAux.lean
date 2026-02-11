@@ -41,12 +41,10 @@ lemma mutation_type1_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
   · tauto
   · rw [map_add, map_add, signature_ofRank_positive_eq hm,
       signature_ofRank_positive_eq (Nat.le_add_right_of_le <| hm.trans h_le),
-      Nat.add_sub_cancel]
-    ac_rfl
+      Nat.add_sub_cancel]; ac_rfl
   · rw [map_add, map_add, signature_ofRank_negative_eq hm,
       signature_ofRank_negative_eq (Nat.le_add_right_of_le <| hm.trans h_le),
-      Nat.add_sub_cancel]
-    ac_rfl
+      Nat.add_sub_cancel]; ac_rfl
 
 lemma mutation_type1_le_positive {m n : ℕ} (h_le : m ≤ n) :
     (Gene.ofRank m .Positive + Gene.ofRank n (- .Positive)) ≤
@@ -63,7 +61,7 @@ lemma mutation_type1_le_positive {m n : ℕ} (h_le : m ≤ n) :
     · congr 3
       · omega
       · congr 1; omega
-    group; exact le_refl _
+    group; rfl
   by_cases hk2 : k < n
   · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
       Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
@@ -92,7 +90,7 @@ lemma mutation_type1_le_negative {m n : ℕ} (h_le : m ≤ n) :
     · congr 3
       · omega
       · congr 1; omega
-    group; exact le_refl _
+    group; rfl
   by_cases hk2 : k < n
   · rw [Nat.sub_right_comm, Nat.sub_eq_zero_of_le <| Nat.le_of_not_lt hk1,
       Nat.zero_sub, signature_ofRank_zero, signature_ofRank_zero, zero_add,
@@ -110,10 +108,9 @@ lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) :
     (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) :=
-  match ε with
-  | .NonPolarized => by absurd hε; decide
-  | .Positive => mutation_type1_le_positive h_le
-  | .Negative => mutation_type1_le_negative h_le
+  match ε, hε with
+  | .Positive, _ => mutation_type1_le_positive h_le
+  | .Negative, _ => mutation_type1_le_negative h_le
 
 end type1_isMutation
 
@@ -145,10 +142,9 @@ lemma mutation_type2_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
     (Gene.ofRank m ε + Gene.ofRank n ε) ≤
     (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε) :=
-  match ε with
-  | .NonPolarized => by absurd hε; decide
-  | .Positive => mutation_type2_le_positive h_le hm
-  | .Negative => mutation_type2_le_negative h_le hm
+  match ε, hε with
+  | .Positive, _ => mutation_type2_le_positive h_le hm
+  | .Negative, _ => mutation_type2_le_negative h_le hm
 
 end type2_isMutation
 

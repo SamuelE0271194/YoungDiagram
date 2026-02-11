@@ -40,13 +40,15 @@ lemma Gene.ofRank_eq_gene_smul {g : Gene} {m : ℕ} :
     m • Gene.ofRank g.rank g.type = single g m := by
   rw [← smul_single_one, ofRank_eq_gene]
 
+namespace Chromosome
+
 def maxRank (c : Chromosome) : ℕ :=
   c.support.sup (fun g ↦ g.rank)
 
-def rank (c : Chromosome) : ℕ :=
-  c.sum (fun g count ↦ (count : ℕ) • g.rank)
-
-namespace Chromosome
+def rank : Chromosome →+ ℕ where
+  toFun c := c.sum (fun g count ↦ count • g.rank)
+  map_zero' := sum_zero_index
+  map_add' _ _ := sum_add_index' (fun _ ↦ zero_smul ..) (fun _ _ _ ↦ add_smul ..)
 
 section signature
 
@@ -57,7 +59,7 @@ def signature : Chromosome →+ ℚ × ℚ where
   toFun c := c.sum (fun g count ↦ (count : ℚ) • g.signature)
   map_zero' := sum_zero_index
   map_add' _ _ := by
-    refine Finsupp.sum_add_index' (by simp) fun _ _ _ ↦ ?_
+    refine sum_add_index' (by simp) fun _ _ _ ↦ ?_
     simp only [Nat.cast_add]
     exact Module.add_smul ..
 

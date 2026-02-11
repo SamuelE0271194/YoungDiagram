@@ -239,9 +239,9 @@ end Sigma
 
 open Variety Mutation
 
-lemma rank_0 : (X : Chromosome) → (h : rank X = 0) → X = 0 := by
+lemma rank_0 : (X : Chromosome) → (h : X.rank = 0) → X = 0 := by
   intro X h
-  rw [rank] at h
+  rw [Chromosome.rank] at h
   rw [Finsupp.sum] at h
   have h' : ∀ a ∈ X.support, 1 ≤ a.rank := by
     intro a
@@ -254,9 +254,9 @@ lemma rank_0 : (X : Chromosome) → (h : rank X = 0) → X = 0 := by
 
 lemma pi_0_is_nothing : (X : Chromosome) → (hX : X ∈ Pi_n 0) → X = 0 := by
   intro X h
-  have h' : rank X = 0 := by
+  have h' : X.rank = 0 := by
     simp [Pi_n, Chromosome.varietyOfFilter, Chromosome.IsFiltered_def'] at h
-    rw [rank, Finsupp.sum]
+    rw [Chromosome.rank, Finsupp.sum]
     refine Finset.sum_eq_zero fun g hg ↦ ?_
     rw [(h g (Finsupp.mem_support_iff.1 hg)).2, smul_zero]
   apply rank_0 X h'
