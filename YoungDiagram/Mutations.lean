@@ -65,10 +65,14 @@ noncomputable section type2
 
 variable (hle : m ≤ n) (hm : 1 < m)
 
-def X2 : Pi := X1 hε hle (le_of_lt hm)
+def X2 : Pi := by
+  use Gene.ofRank m ε + Gene.ofRank n ε
+  rw [mem_Pi_iff, IsPolarized_iff_add]
+  exact ⟨by rwa [IsPolarized_ofRank (le_of_lt hm)],
+    by rwa [IsPolarized_ofRank ((le_of_lt hm).trans hle)]⟩
 
 lemma X2_eq : X2 hε hle hm =
-  Gene.ofRank m ε + Gene.ofRank n (- ε) := rfl
+  Gene.ofRank m ε + Gene.ofRank n ε := rfl
 
 def Y2 : Pi := by
   use Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε
@@ -100,15 +104,15 @@ lemma X3_eq : X3 hε hle hm =
   Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε) := rfl
 
 def Y3 : Pi := by
-  use Gene.ofRankAlt (m - 1) ε + Gene.ofRankAlt (n + 1) (- ε)
+  use Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε
   rw [mem_Pi_iff, IsPolarized_iff_add]
-  refine ⟨?_, by rwa [IsPolarized_ofRankAlt (by omega),
-    ← GeneType.ne_nonPolarized_iff_neg_ne]⟩
+  refine ⟨?_, by rwa [IsPolarized_ofRankAlt (by omega)]⟩
   match m with
   | 1 =>
     rw [Nat.sub_self, Gene.ofRankAlt_def, Gene.ofRank_zero, ← mem_Pi_iff]
     exact zero_mem _
-  | m + 2 => rwa [IsPolarized_ofRankAlt (by omega)]
+  | m + 2 => rwa [IsPolarized_ofRankAlt (by omega),
+    GeneType.ne_nonPolarized_iff_neg_ne, neg_neg]
 
 end type3
 
