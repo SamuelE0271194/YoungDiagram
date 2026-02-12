@@ -57,6 +57,10 @@ lemma GeneType.ne_nonPolarized_iff_one_pow_smul_ne {n : ℕ} {ε : GeneType} :
   · rfl
   · exact GeneType.ne_nonPolarized_iff_neg_ne
 
+lemma Nat.even_sub_one {n : ℕ} (hn : 1 ≤ n) :
+    Even n ↔ ¬ Even (n - 1) := by
+  nth_rw 1 [← Nat.sub_add_cancel hn, Nat.even_add_one]
+
 /--
 A gene is an isomorphism class of strings, defined by its rank (size) and type.
 -/

@@ -193,24 +193,47 @@ private lemma mutation_type3_iterate_signature_eq_case1
   simp [Gene.ofRankAlt_def, GeneType.neg_one_pow_smul]
   conv =>
     enter [2, 2, 2, 1]
-    rw [(Nat.sub_eq_iff_eq_add h_le).1 rfl, Nat.even_add_one]
+    rw [Nat.even_sub_one h_le]
   cases ε
   · absurd hε; rfl
   all_goals
     split_ifs with h1
-    · simp [signature_ofRank, show n ≠ 0 by omega, Gene.signature_eq_positive,
-        Gene.signature_eq_negative, Nat.even_add_one, - Nat.not_even_iff_odd]
-      split_ifs
-      · absurd h1
-        refine Nat.even_add_one.1 ?_
-        rwa [Nat.sub_add_cancel h_le]
-      · simp; ring
-    · simp [signature_ofRank, show n ≠ 0 by omega, Gene.signature_eq_positive,
-        Gene.signature_eq_negative, Nat.even_add_one, - Nat.not_even_iff_odd]
-      split_ifs with h2
-      · simp; ring
-      · absurd h2
-        rwa [← Nat.sub_add_cancel h_le, Nat.even_add_one]
+    · have := (iff_not_comm.1 (Nat.even_sub_one h_le)).1 h1
+      simp [signature_ofRank, show n ≠ 0 by omega, Gene.signature_eq_positive,
+        Gene.signature_eq_negative, Nat.even_add_one, this]; ring
+    · have := (Nat.even_sub_one h_le).2 h1
+      simp [signature_ofRank, show n ≠ 0 by omega, Gene.signature_eq_positive,
+        Gene.signature_eq_negative, Nat.even_add_one, this]; ring
+
+private lemma mutation_type3_iterate_signature_eq_case2 {ε : GeneType} (hε : ε ≠ .NonPolarized)
+  {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
+    (Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)).signature =
+    (Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε).signature := by
+  have m_neq : m ≠ 0 := Nat.ne_zero_of_lt hm
+  replace h_m : m - 1 ≠ 0 := Nat.sub_ne_zero_iff_lt.2 hm
+  have h_n : n ≠ 0 := Nat.ne_zero_of_lt <| Nat.lt_of_lt_of_le hm h_le
+  simp [Gene.ofRankAlt_def, signature_ofRank, h_n, m_neq, h_m, GeneType.neg_one_pow_smul]
+  have iff1 : Even (m - 1 - 1) ↔ ¬ Even (m - 1) := iff_not_comm.1 (Nat.even_sub_one (by omega))
+  have iff2 : Even (n - 1) ↔ ¬ Even n := iff_not_comm.1 (Nat.even_sub_one (by omega))
+  have iff3 : Even (m - 1) ↔ ¬ Even m := iff_not_comm.1 (Nat.even_sub_one (by omega))
+  simp_rw [iff1, iff2, iff3, not_not]
+  match ε, hε with
+  | .Positive, _ =>
+    split_ifs with h1 h2 h3
+    · simp [Gene.signature_eq_negative, Gene.signature_eq_positive, h1, h2,
+        Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_negative, h1, h2, Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_positive, h1, h3, Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_negative, Gene.signature_eq_positive, h1, h3,
+        Nat.even_add_one, iff3, hm.le]; ring
+  | .Negative, _ =>
+    split_ifs with h1 h2 h3
+    · simp [Gene.signature_eq_negative, Gene.signature_eq_positive, h1, h2,
+        Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_positive, h1, h2, Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_negative, h1, h3, Nat.even_add_one, iff3, hm.le]; ring
+    · simp [Gene.signature_eq_negative, Gene.signature_eq_positive, h1, h3,
+        Nat.even_add_one, iff3, hm.le]; ring
 
 lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :
@@ -220,24 +243,10 @@ lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
       Gene.ofRankAlt (n + k + 1) ((- 1) ^ k • ε))).signature := by
   by_cases hk : k = 0 <;> by_cases h_m : m = 1
   · subst hk h_m
-    rw [Nat.eq_zero_of_le_zero hi, Function.iterate_zero_apply, Function.iterate_zero_apply,
-      pow_zero, add_zero, add_zero, GeneType.one_smul, GeneType.one_smul, Nat.sub_self,
-      Gene.ofRankAlt_zero, zero_add, mutation_type3_iterate_signature_eq_case1 hε h_le]
+    simpa [Nat.eq_zero_of_le_zero hi] using mutation_type3_iterate_signature_eq_case1 hε h_le
   · subst hk
-    simp [Nat.eq_zero_of_le_zero hi, Gene.ofRankAlt_def,
-      signature_ofRank_eq hm (GeneType.ne_nonPolarized_iff_one_pow_smul_ne.1 hε),
-      signature_ofRank_eq (k := n + 1) (by omega)
-      (GeneType.ne_nonPolarized_iff_one_pow_smul_ne.1 hε)]
-    stop
-    rw [Nat.eq_zero_of_le_zero hi, Function.iterate_zero_apply, Function.iterate_zero_apply,
-      pow_zero, add_zero, add_zero, GeneType.one_smul, GeneType.one_smul, Gene.ofRankAlt_def,
-      Gene.ofRankAlt_def, Gene.ofRankAlt_def, Gene.ofRankAlt_def, map_add, map_add,
-      signature_ofRank_eq hm (GeneType.ne_nonPolarized_iff_one_pow_smul_ne.1 hε),
-      signature_ofRank_eq (k := n + 1) (by omega)
-      (GeneType.ne_nonPolarized_iff_one_pow_smul_ne.1 hε), Nat.add_sub_cancel,
-      GeneType.neg_neg_one_pow_smul]
-
-    sorry
+    simpa [Nat.eq_zero_of_le_zero hi] using
+      mutation_type3_iterate_signature_eq_case2 hε h_le (by omega)
   · subst h_m
     sorry
   · sorry
