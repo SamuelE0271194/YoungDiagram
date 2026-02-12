@@ -71,7 +71,7 @@ lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
 @[simp] lemma signature_ofRank_zero {ε : GeneType} :
     (Gene.ofRank 0 ε).signature = 0 := rfl
 
-@[simp] lemma signature_ofRank {n : ℕ} {ε : GeneType} :
+lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   (Gene.ofRank n ε).signature =
     if h : n = 0 then 0
     else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).signature := by
@@ -79,6 +79,14 @@ lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
   split_ifs
   · rfl
   · simp
+
+@[simp] lemma signature_ofRank_one_positive :
+    (Gene.ofRank 1 .Positive).signature = (1, 0) := by
+  simp [signature_ofRank]; rfl
+
+@[simp] lemma signature_ofRank_one_negative :
+    (Gene.ofRank 1 .Negative).signature = (0, 1) := by
+  simp [signature_ofRank]; rfl
 
 @[simp] lemma signature_single {k : ℕ} {n : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
     signature (single (⟨k, ε, hk⟩ : Gene) n) =
@@ -88,7 +96,7 @@ lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
 lemma signature_ofRank_nonPolarized {n : ℕ} :
     (Gene.ofRank n .NonPolarized).signature =
     (Gene.ofRank n .NonPolarized).signature.swap := by
-  simp
+  simp [signature_ofRank]
   split_ifs
   · rfl
   · rw [Gene.signature_eq_nonPolarized rfl]; rfl
@@ -98,7 +106,7 @@ lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
   cases ε
   · exact signature_ofRank_nonPolarized
   all_goals
-    simp; split_ifs
+    simp [signature_ofRank]; split_ifs
     · rfl
     · first | rw [Gene.signature_eq_negative rfl, Gene.signature_eq_positive rfl] |
         rw [Gene.signature_eq_positive rfl, Gene.signature_eq_negative rfl]
@@ -108,7 +116,7 @@ lemma signature_ofRank_positive_eq {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := by
   have hk' : k ≠ 0 := by omega
-  simp [hk']
+  simp [hk', signature_ofRank]
   split_ifs with h
   · replace hk : k = 1 := by omega
     simp [Gene.signature_eq_positive, hk]
@@ -117,11 +125,11 @@ lemma signature_ofRank_positive_eq {k : ℕ} (hk : 1 ≤ k) :
     · have : ¬ Even (k - 1) := by
         rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one] at h1
       simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]
-      linarith
+      ring
     · have : Even (k - 1) := by
         rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one, not_not] at h1
       simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]
-      linarith
+      ring
 
 lemma signature_ofRank_negative_eq {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Negative).signature =
@@ -129,6 +137,24 @@ lemma signature_ofRank_negative_eq {k : ℕ} (hk : 1 ≤ k) :
   rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
     signature_ofRank_positive_eq hk, Prod.swap_add, ← signature_ofRank_swap]
   rfl
+
+lemma signature_ofRank_positive_eq₂ {k : ℕ} (hk : 2 ≤ k) :
+    (Gene.ofRank k .Positive).signature =
+    (Gene.ofRank (k - 2) .Positive).signature + (1, 1) := by
+  change _ = (Gene.ofRank (k - 1 - 1) .Positive).signature + _
+  rw [signature_ofRank_positive_eq (Nat.one_le_of_lt hk),
+    signature_ofRank_negative_eq (Nat.le_sub_one_of_lt hk), add_assoc,
+    Prod.mk_add_mk 0 1, zero_add, add_zero]
+
+lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRank k ε).signature =
+    (Gene.ofRank (k - 2) ε).signature + (1, 1) := by
+  match ε, hε with
+  | .Positive, _ => exact signature_ofRank_positive_eq₂ hk
+  | .Negative, _ =>
+    rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
+      signature_ofRank_positive_eq₂ hk, Prod.swap_add, ← signature_ofRank_swap]
+    rfl
 
 end signature
 
@@ -155,7 +181,7 @@ noncomputable def prime : Chromosome →+ Chromosome where
 lemma prime_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
   by_cases hn : n = 0
-  · simp [hn, Gene.ofRank_def]
+  · simp [hn]
   rw [prime, Gene.ofRank_def]
   simp [hn]
   rfl
