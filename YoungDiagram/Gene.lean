@@ -45,17 +45,17 @@ lemma GeneType.neg_one_pow_smul' {n : ℕ} {ε : GeneType} :
   rw [GeneType.neg_one_pow_smul]
   exact ite_cond_congr <| propext <| Int.even_coe_nat n
 
-lemma GeneType.neg_one_pow_smul_smul {m n : ℤ} {ε : GeneType} :
-    (m + n).negOnePow • ε = m.negOnePow • n.negOnePow • ε := by
+@[simp] lemma GeneType.neg_one_pow_smul_smul {m n : ℤ} {ε : GeneType} :
+    m.negOnePow • n.negOnePow • ε = (m + n).negOnePow • ε := by
   rw [Int.negOnePow_add, mul_smul]
 
 @[simp] lemma GeneType.neg_neg_one_pow_smul {n : ℤ} {ε : GeneType} :
     - (n.negOnePow • ε) = (n + 1).negOnePow • ε := by
-  rw [add_comm, neg_one_pow_smul_smul]; rfl
+  rw [add_comm, ← neg_one_pow_smul_smul]; rfl
 
 @[simp] lemma GeneType.neg_one_pow_smul_neg {n : ℤ} {ε : GeneType} :
     n.negOnePow • (- ε) = (n + 1).negOnePow • ε := by
-  rw [neg_one_pow_smul_smul]; rfl
+  rw [← neg_one_pow_smul_smul]; rfl
 
 lemma GeneType.ne_nonPolarized_iff_neg_ne {ε : GeneType} :
     ε ≠ .NonPolarized ↔ - ε ≠ .NonPolarized := by cases ε <;> decide

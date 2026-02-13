@@ -237,7 +237,22 @@ private lemma mutation_type3_iterate_signature_eq_case3 {ε : GeneType} (hε : �
     (prime^[i] (Gene.ofRankAlt (1 + k - 1) (Int.negOnePow k • - ε) +
       Gene.ofRankAlt (n + k + 1) (Int.negOnePow k • ε))).signature := by
   simp [Gene.ofRankAlt_def, prime_iterate_ofRank]
-  sorry
+  have le1 : 1 ≤ 1 + k - i := by omega
+  have le2 : 1 ≤ n + k + 1 - i := by omega
+  have eq1 : 1 + k - i - 1 = k - i := by omega
+  have eq2 : n + k + 1 - i - 1 = n + k - i := by omega
+  rw [← Nat.cast_add, ← Nat.cast_add, ← Nat.cast_add, ← Nat.mul_two, add_assoc, ← Nat.mul_two,
+    mul_comm, Nat.cast_mul, Nat.cast_two, Int.negOnePow_two_mul, one_smul, Nat.cast_add,
+    Int.negOnePow_add, Nat.cast_mul, Nat.cast_two, Int.negOnePow_two_mul, mul_one,
+    GeneType.neg_one_pow_smul', signature_ofRank_eq' (k := 1 + k - i) le1 hε,
+    signature_ofRank_eq' (k := n + k + 1 - i) le2, eq1, eq2,
+    add_assoc (signature (Gene.ofRank (k - i) ε)), add_right_inj,
+    add_comm _ (signature (Gene.ofRank (n + k - i) _)), add_right_inj, Nat.add_sub_assoc hi,
+    add_comm 1, add_comm (n + k), Nat.add_sub_assoc (by omega), add_comm 1]
+  · simp_rw [Nat.even_add_one, @Nat.add_sub_assoc k i hi, Nat.even_add, not_iff,
+      iff_iff_and_or_not_and_not, not_not, ite_or, ite_and]
+    split_ifs <;> first | tauto | rw [neg_neg]
+  · rwa [← GeneType.neg_one_pow_smul', ← GeneType.ne_nonPolarized_iff_one_pow_smul_ne]
 
 lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :

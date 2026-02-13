@@ -124,14 +124,10 @@ lemma signature_ofRank_positive_eq {k : ℕ} (hk : 1 ≤ k) :
     simp [Gene.signature_eq_positive, hk]
   · simp [Gene.signature_eq_positive]
     split_ifs with h1
-    · have : ¬ Even (k - 1) := by
-        rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one] at h1
-      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]
-      ring
-    · have : Even (k - 1) := by
-        rwa [(Nat.sub_eq_iff_eq_add hk).mp rfl, Nat.even_add_one, not_not] at h1
-      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]
-      ring
+    · have : ¬ Even (k - 1) := (Nat.even_sub_one hk).1 h1
+      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]; ring
+    · have : Even (k - 1) := (iff_not_comm.1 (Nat.even_sub_one hk)).2 h1
+      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]; ring
 
 lemma signature_ofRank_negative_eq {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Negative).signature =
@@ -146,6 +142,29 @@ lemma signature_ofRank_eq {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠
   match ε, hε with
   | .Positive, _ => simp [signature_ofRank_positive_eq hk]
   | .Negative, _ => simp [signature_ofRank_negative_eq hk]
+
+lemma signature_ofRank_positive_eq' {k : ℕ} (hk : 1 ≤ k) :
+    (Gene.ofRank k .Positive).signature =
+    (Gene.ofRank (k - 1) .Positive).signature + if Even k then (0, 1) else (1, 0) := by
+  have hk' : k ≠ 0 := by omega
+  simp [hk', signature_ofRank]
+  by_cases hk'' : k = 1
+  · subst hk''
+    simp only [tsub_self, ↓reduceDIte, Nat.not_even_one, ↓reduceIte, zero_add]; rfl
+  · replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
+      Nat.lt_of_le_of_ne hk fun a ↦ hk'' a.symm
+    simp [hk'', Gene.signature_eq_positive, Nat.even_sub_one hk, - Nat.not_even_iff_odd]
+    split_ifs with h <;> (simp [hk]; ring)
+
+lemma signature_ofRank_eq' {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRank k ε).signature = (Gene.ofRank (k - 1) ε).signature +
+    if Even k then (Gene.ofRank 1 (- ε)).signature else (Gene.ofRank 1 ε).signature := by
+  match ε, hε with
+  | .Positive, _ => simp [signature_ofRank_positive_eq' hk]
+  | .Negative, _ =>
+    rw [← GeneType.neg_pos_eq_neg, neg_neg, signature_ofRank_swap, signature_ofRank_swap,
+      signature_ofRank_positive_eq' hk, Prod.swap_add, add_right_inj]
+    split_ifs <;> simp
 
 lemma signature_ofRank_positive_eq₂ {k : ℕ} (hk : 2 ≤ k) :
     (Gene.ofRank k .Positive).signature =
