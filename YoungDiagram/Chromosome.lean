@@ -129,19 +129,14 @@ lemma signature_ofRank_positive_eq {k : ℕ} (hk : 1 ≤ k) :
     · have : Even (k - 1) := (iff_not_comm.1 (Nat.even_sub_one hk)).2 h1
       simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]; ring
 
-lemma signature_ofRank_negative_eq {k : ℕ} (hk : 1 ≤ k) :
-    (Gene.ofRank k .Negative).signature =
-    (Gene.ofRank (k - 1) .Positive).signature + (0, 1) := by
-  rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
-    signature_ofRank_positive_eq hk, Prod.swap_add, ← signature_ofRank_swap]
-  rfl
-
 lemma signature_ofRank_eq {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature =
     (Gene.ofRank (k - 1) (- ε)).signature + (Gene.ofRank 1 ε).signature := by
   match ε, hε with
   | .Positive, _ => simp [signature_ofRank_positive_eq hk]
-  | .Negative, _ => simp [signature_ofRank_negative_eq hk]
+  | .Negative, _ =>
+    rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
+      signature_ofRank_positive_eq hk, Prod.swap_add, ← signature_ofRank_swap]; simp
 
 lemma signature_ofRank_positive_eq' {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
@@ -171,8 +166,7 @@ lemma signature_ofRank_positive_eq₂ {k : ℕ} (hk : 2 ≤ k) :
     (Gene.ofRank (k - 2) .Positive).signature + (1, 1) := by
   change _ = (Gene.ofRank (k - 1 - 1) .Positive).signature + _
   rw [signature_ofRank_positive_eq (Nat.one_le_of_lt hk),
-    signature_ofRank_negative_eq (Nat.le_sub_one_of_lt hk), add_assoc,
-    Prod.mk_add_mk 0 1, zero_add, add_zero]
+    signature_ofRank_eq (Nat.le_sub_one_of_lt hk) (by decide), add_assoc]; simp
 
 lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature =

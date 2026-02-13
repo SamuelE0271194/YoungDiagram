@@ -38,7 +38,6 @@ lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) :
     (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
     (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
-  rw [le_iff_dominates]
   intro k
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : k < m
@@ -105,10 +104,18 @@ lemma mutation_type2_le_negative {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
 lemma mutation_type2_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
     (Gene.ofRank m ε + Gene.ofRank n ε) ≤
-    (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε) :=
-  match ε, hε with
-  | .Positive, _ => mutation_type2_le_positive h_le hm
-  | .Negative, _ => mutation_type2_le_negative h_le hm
+    (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε) := by
+  intro k
+  simp only [iterate_map_add, map_add, prime_iterate_ofRank]
+  by_cases hk1 : k < m - 3
+  · sorry
+  by_cases hk2 : k < m - 1
+  · sorry
+  by_cases hk3 : k < n - 1
+  · sorry
+  by_cases hk4 : k < n + 1
+  · sorry
+  · sorry
 
 end type2_isMutation
 
