@@ -1,8 +1,5 @@
-import Mathlib.Algebra.CharP.Defs
-import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.Normed.Field.Lemmas
 import Mathlib.Data.List.Iterate
-import Mathlib.Data.Rat.Star
 
 abbrev List.IsAlt {l : List Bool} (hl : l ≠ [] := by decide) : Prop :=
   l = List.iterate not (l.head hl) l.length

@@ -1,6 +1,4 @@
 import Mathlib.Algebra.Order.Monoid.Prod
-import Mathlib.Algebra.Star.Module
-import Mathlib.Analysis.Normed.Module.Basic
 import Mathlib.Data.Finsupp.Order
 import YoungDiagram.Gene
 
