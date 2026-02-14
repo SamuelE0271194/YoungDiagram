@@ -23,34 +23,53 @@ private lemma Pi_mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
   generalize U_def : (⟨U, hU⟩ : Label 0) = U' at hMu
   cases hMu with
   | mk α β γ h =>
+    have mem1 : lift^[k] γ + (X.below k) ∈ Pi :=
+      add_mem (IsPolarized_iff_iterate_lift.2 γ.2) (IsPolarized_filter hX)
     cases h with
     | @type1 ε hε m n hle hm =>
       have le1 := Nat.add_le_add_right hle k
-      have le2 : 1 ≤ m + k := by omega
+      have le2 : 1 ≤ m + k := Nat.le_add_right_of_le hm
       rw [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.X1_eq hε hle hm,
         lift_prime, iterate_map_add, iterate_map_add, lift_iterate_ofRank (by omega),
-        lift_iterate_ofRank (by omega), ← Pi.X1_eq hε le1 le2] at X_def
+        lift_iterate_ofRank (by omega), ← Pi.X1_eq hε le1 le2, add_assoc] at X_def
       replace U_def : U = Gene.ofRank (m - 1) (-ε) + Gene.ofRank (n + 1) ε + γ := by
         rwa [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.Y1_eq hε hle hm] at U_def
-      set Zk := Pi.Y1 hε le1 le2 with Zk_def
-      set Z : Chromosome := Zk + (lift^[k] γ + (X.below k)) with Z_def
-      have mem1 : lift^[k] γ + (X.below k) ∈ Pi :=
-        add_mem (IsPolarized_iff_iterate_lift.2 γ.2) (IsPolarized_filter hX)
+      set ζ := Pi.Y1 hε le1 le2 with ζ_def
+      set Z : Chromosome := ζ + (lift^[k] γ + (X.below k)) with Z_def
       have hZ : Z ∈ Pi := add_mem (SetLike.coe_mem _) mem1
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
-      · convert Pi.Step.mk (Pi.X1 hε le1 le2) Zk ⟨lift^[k] γ + (X.below k), mem1⟩
+      · convert Pi.Step.mk (Pi.X1 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type1 ε hε le1 le2)
-        nth_rw 1 [X_def, AddSubmonoid.coe_add, add_assoc]
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
-          prime_below le_rfl, add_zero, Zk_def, Pi.Y1_eq, iterate_map_add,
+          prime_below le_rfl, add_zero, ζ_def, Pi.Y1_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
         congr 2 <;> omega
       · intro i hi
-        rw [X_def, Z_def, add_assoc, iterate_map_add, iterate_map_add (x := Zk.1),
-          map_add, map_add, add_left_inj, Zk_def]
+        rw [X_def, Z_def, iterate_map_add, iterate_map_add (x := ζ.1),
+          map_add, map_add, add_left_inj, ζ_def]
         exact mutation_type1_iterate_signature_eq hε hle hm i k hi
     | @type2 ε hε m n hle hm =>
-      sorry
+      have le1 := Nat.add_le_add_right hle k
+      have le2 : 1 < m + k := Nat.lt_add_right k hm
+      rw [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.X2_eq hε hle hm,
+        lift_prime, iterate_map_add, iterate_map_add, lift_iterate_ofRank (by omega),
+        lift_iterate_ofRank (by omega), ← Pi.X2_eq hε le1 le2, add_assoc] at X_def
+      replace U_def : U = Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε + γ := by
+        rwa [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.Y2_eq hε hle hm] at U_def
+      set ζ := Pi.Y2 hε le1 le2 with ζ_def
+      set Z : Chromosome := ζ + (lift^[k] γ + (X.below k)) with Z_def
+      have hZ : Z ∈ Pi := add_mem (SetLike.coe_mem _) mem1
+      refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
+      · convert Pi.Step.mk (Pi.X2 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
+          (Pi.Primitive.type2 ε hε le1 le2)
+      · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
+          prime_below le_rfl, add_zero, ζ_def, Pi.Y2_eq, iterate_map_add,
+          prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
+        congr 2 <;> omega
+      · intro i hi
+        rw [X_def, Z_def, iterate_map_add, iterate_map_add (x := ζ.1),
+          map_add, map_add, add_left_inj, ζ_def]
+        exact mutation_type2_iterate_signature_eq hε hle hm i k hi
     | @type3 ε hε m n hle hm =>
       sorry
 
