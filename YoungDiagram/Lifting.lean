@@ -129,14 +129,11 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ φ idx),
     ∀ i ≤ k, signature (Chromosome.prime^[i] X) = signature (Chromosome.prime^[i] Z) := by
   match idx with
   | 0 =>
-    replace hU : U ∈ Pi := ((congrArg (U ∈ ·)
-      (congrArg Label Label.prime_iterate_zero).symm)).mpr hU
-    have hXk := Label.prime_iterate_zero ▸ Label.prime_eq_iterate ▸
-      (mem_prime_iterate hX (k := k))
-    have hMu' : Step 0 ⟨Chromosome.prime^[k] X, hXk⟩ ⟨U, hU⟩ := by
-      convert hMu
+    refine Pi_mutation_lifting hX ?_ ?_
+    · exact congrArg (U ∈ ·)
+        (congrArg Label Label.prime_iterate_zero).symm |>.mpr hU
+    · convert hMu
       exact Label.prime_iterate_zero.symm
-    exact Pi_mutation_lifting hX hU hMu'
   | 1 => sorry
   | 2 => sorry
   | 3 => sorry
