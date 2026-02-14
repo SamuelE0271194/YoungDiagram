@@ -60,7 +60,7 @@ end signature_eq_pos
 
 section signature_eq_neg
 
-lemma iterate_not_false_eq_map_not_iterate_not_true {n : ℕ} :
+lemma iterate_not_false_eq_map_not {n : ℕ} :
     List.iterate not false n = List.map not (List.iterate not true n) := by
   rw [← List.range_map_iterate, ← List.range_map_iterate, ← List.comp_map]
   congr
@@ -76,7 +76,7 @@ lemma count_true_iterate_not_false {n : ℕ} :
     List.count_eq_length_filter]
   have := List.filter_map (f := not) (p := fun x ↦ x == true)
     (l := List.iterate not true n)
-  rw [iterate_not_false_eq_map_not_iterate_not_true, this, List.length_map]
+  rw [iterate_not_false_eq_map_not, this, List.length_map]
   congr
   funext x
   simp only [beq_true, Function.comp_apply, beq_false]

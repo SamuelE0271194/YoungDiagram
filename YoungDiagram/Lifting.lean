@@ -9,17 +9,17 @@ section Pi
 variable {k : ℕ} {X U : Chromosome} (hX : X ∈ Pi) (hU : U ∈ Pi)
 
 include hX in
-private lemma Pi_mem_Xk : Chromosome.prime^[k] X ∈ Pi :=
-  (Function.iterate_fixed prime_Pi _) ▸ (mem_prime_iterate hX (k := k))
+private lemma prime_iterate_mem_Pi : Chromosome.prime^[k] X ∈ Pi :=
+  (Function.iterate_fixed prime_Pi _) ▸ (prime_iterate_mem hX)
 
-variable (hMu : Step 0 ⟨Chromosome.prime^[k] X, Pi_mem_Xk hX⟩ ⟨U, hU⟩)
+variable (hMu : Step 0 ⟨Chromosome.prime^[k] X, prime_iterate_mem_Pi hX⟩ ⟨U, hU⟩)
 
 include hU hMu in
-private lemma Pi_mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
+private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
     Step 0 ⟨X, hX⟩ ⟨Z, hZ⟩ ∧
     Chromosome.prime^[k] Z = U ∧
     ∀ i ≤ k, signature (Chromosome.prime^[i] X) = signature (Chromosome.prime^[i] Z) := by
-  generalize X_def : (⟨Chromosome.prime^[k] X, Pi_mem_Xk hX⟩ : Label 0) = Xk at hMu
+  generalize X_def : (⟨Chromosome.prime^[k] X, prime_iterate_mem_Pi hX⟩ : Label 0) = Xk at hMu
   generalize U_def : (⟨U, hU⟩ : Label 0) = U' at hMu
   cases hMu with
   | mk α β γ h =>
@@ -74,7 +74,7 @@ private lemma Pi_mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       have le1 := Nat.add_le_add_right hle k
       have le2 : 1 ≤ m + k := Nat.le_add_right_of_le hm
       have eq1 : Int.negOnePow k • ε ≠ .NonPolarized :=
-        GeneType.ne_nonPolarized_iff_one_pow_smul_ne.1 hε
+        GeneType.smul_ne_nonPolarized_iff.1 hε
       rw [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.X3_eq hε hle hm,
         lift_prime, iterate_map_add, iterate_map_add, lift_iterate_ofRank (by omega),
         lift_iterate_ofRank (by omega), ← Gene.ofRankAlt_shift_negOnePow_smul,
@@ -93,12 +93,12 @@ private lemma Pi_mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
         congr 2
         · omega
-        · rw [GeneType.smul_neg, GeneType.neg_one_pow_smul_smul, GeneType.smul_neg,
+        · rw [GeneType.smul_neg, GeneType.negOnePow_smul_smul, GeneType.smul_neg,
             Nat.cast_sub le2, Nat.cast_sub hm, Nat.cast_add]
           ring_nf
           rw [mul_comm, Int.negOnePow_add, Int.negOnePow_two_mul, mul_one]
         · omega
-        · rw [GeneType.neg_one_pow_smul_smul, Nat.cast_add, Nat.cast_add, Nat.cast_add]
+        · rw [GeneType.negOnePow_smul_smul, Nat.cast_add, Nat.cast_add, Nat.cast_add]
           ring_nf
           rw [mul_comm, Int.negOnePow_add, Int.negOnePow_two_mul, mul_one]
       · intro i hi
@@ -128,7 +128,7 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ φ idx),
     ∀ i ≤ k, signature (Chromosome.prime^[i] X) = signature (Chromosome.prime^[i] Z) := by
   match idx with
   | 0 =>
-    refine Pi_mutation_lifting hX ?_ ?_
+    refine mutation_lifting_Pi hX ?_ ?_
     · exact congrArg (U ∈ ·)
         (congrArg Label Label.prime_iterate_zero).symm |>.mpr hU
     · convert hMu

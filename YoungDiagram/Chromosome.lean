@@ -45,7 +45,7 @@ lemma Gene.ofRankAlt_shift_negOnePow_smul {n k : ℕ} {ε : GeneType} :
     Gene.ofRank (n + k) (Int.negOnePow (n - 1) • ε) := by
   unfold Gene.ofRankAlt
   congr 1
-  rw [GeneType.neg_one_pow_smul_smul, Nat.cast_add, sub_add_eq_add_sub,
+  rw [GeneType.negOnePow_smul_smul, Nat.cast_add, sub_add_eq_add_sub,
     add_assoc, ← two_mul, add_comm, add_sub_assoc, Int.negOnePow_add,
     Int.negOnePow_two_mul, one_mul]
 
@@ -108,7 +108,7 @@ lemma signature_ofRank_nonPolarized {n : ℕ} :
   simp [signature_ofRank]
   split_ifs
   · rfl
-  · rw [Gene.signature_eq_nonPolarized rfl]; rfl
+  · rw [Gene.signature_of_nonPolarized rfl]; rfl
 
 lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n (- ε)).signature = (Gene.ofRank n ε).signature.swap := by
@@ -117,35 +117,35 @@ lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
   all_goals
     simp [signature_ofRank]; split_ifs
     · rfl
-    · first | rw [Gene.signature_eq_negative rfl, Gene.signature_eq_positive rfl] |
-        rw [Gene.signature_eq_positive rfl, Gene.signature_eq_negative rfl]
+    · first | rw [Gene.signature_of_negative rfl, Gene.signature_of_positive rfl] |
+        rw [Gene.signature_of_positive rfl, Gene.signature_of_negative rfl]
       simp only; split_ifs <;> rfl
 
-lemma signature_ofRank_positive_eq {k : ℕ} (hk : 1 ≤ k) :
+lemma signature_ofRank_positive {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := by
   have hk' : k ≠ 0 := by omega
   simp [hk', signature_ofRank]
   split_ifs with h
   · replace hk : k = 1 := by omega
-    simp [Gene.signature_eq_positive, hk]
-  · simp [Gene.signature_eq_positive]
+    simp [Gene.signature_of_positive, hk]
+  · simp [Gene.signature_of_positive]
     split_ifs with h1
     · have : ¬ Even (k - 1) := (Nat.even_sub_one hk).1 h1
-      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]; ring
+      simp [Gene.signature_of_negative, this, Nat.cast_pred hk]; ring
     · have : Even (k - 1) := (iff_not_comm.1 (Nat.even_sub_one hk)).2 h1
-      simp [Gene.signature_eq_negative, this, Nat.cast_pred hk]; ring
+      simp [Gene.signature_of_negative, this, Nat.cast_pred hk]; ring
 
 lemma signature_ofRank_eq {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature =
     (Gene.ofRank (k - 1) (- ε)).signature + (Gene.ofRank 1 ε).signature := by
   match ε, hε with
-  | .Positive, _ => simp [signature_ofRank_positive_eq hk]
+  | .Positive, _ => simp [signature_ofRank_positive hk]
   | .Negative, _ =>
-    rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
-      signature_ofRank_positive_eq hk, Prod.swap_add, ← signature_ofRank_swap]; simp
+    rw [← GeneType.neg_positive, signature_ofRank_swap,
+      signature_ofRank_positive hk, Prod.swap_add, ← signature_ofRank_swap]; simp
 
-lemma signature_ofRank_positive_eq' {k : ℕ} (hk : 1 ≤ k) :
+lemma signature_ofRank_positive' {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Positive).signature + if Even k then (0, 1) else (1, 0) := by
   have hk' : k ≠ 0 := by omega
@@ -155,34 +155,34 @@ lemma signature_ofRank_positive_eq' {k : ℕ} (hk : 1 ≤ k) :
     simp only [tsub_self, ↓reduceDIte, Nat.not_even_one, ↓reduceIte, zero_add]; rfl
   · replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
       Nat.lt_of_le_of_ne hk fun a ↦ hk'' a.symm
-    simp [hk'', Gene.signature_eq_positive, Nat.even_sub_one hk, - Nat.not_even_iff_odd]
+    simp [hk'', Gene.signature_of_positive, Nat.even_sub_one hk, - Nat.not_even_iff_odd]
     split_ifs with h <;> (simp [hk]; ring)
 
 lemma signature_ofRank_eq' {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature = (Gene.ofRank (k - 1) ε).signature +
     if Even k then (Gene.ofRank 1 (- ε)).signature else (Gene.ofRank 1 ε).signature := by
   match ε, hε with
-  | .Positive, _ => simp [signature_ofRank_positive_eq' hk]
+  | .Positive, _ => simp [signature_ofRank_positive' hk]
   | .Negative, _ =>
-    rw [← GeneType.neg_pos_eq_neg, neg_neg, signature_ofRank_swap, signature_ofRank_swap,
-      signature_ofRank_positive_eq' hk, Prod.swap_add, add_right_inj]
+    rw [← GeneType.neg_positive, neg_neg, signature_ofRank_swap, signature_ofRank_swap,
+      signature_ofRank_positive' hk, Prod.swap_add, add_right_inj]
     split_ifs <;> simp
 
-lemma signature_ofRank_positive_eq₂ {k : ℕ} (hk : 2 ≤ k) :
+lemma signature_ofRank_positive₂ {k : ℕ} (hk : 2 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 2) .Positive).signature + (1, 1) := by
   change _ = (Gene.ofRank (k - 1 - 1) .Positive).signature + _
-  rw [signature_ofRank_positive_eq (Nat.one_le_of_lt hk),
+  rw [signature_ofRank_positive (Nat.one_le_of_lt hk),
     signature_ofRank_eq (Nat.le_sub_one_of_lt hk) (by decide), add_assoc]; simp
 
 lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature =
     (Gene.ofRank (k - 2) ε).signature + (1, 1) := by
   match ε, hε with
-  | .Positive, _ => exact signature_ofRank_positive_eq₂ hk
+  | .Positive, _ => exact signature_ofRank_positive₂ hk
   | .Negative, _ =>
-    rw [← GeneType.neg_pos_eq_neg, signature_ofRank_swap,
-      signature_ofRank_positive_eq₂ hk, Prod.swap_add, ← signature_ofRank_swap]
+    rw [← GeneType.neg_positive, signature_ofRank_swap,
+      signature_ofRank_positive₂ hk, Prod.swap_add, ← signature_ofRank_swap]
     rfl
 
 end signature

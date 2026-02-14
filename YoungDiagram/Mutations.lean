@@ -18,7 +18,7 @@ def X1 : Pi := by
   rw [mem_Pi_iff, IsPolarized_iff_add]
   exact ⟨by rwa [IsPolarized_ofRank hm],
     by rwa [IsPolarized_ofRank (hm.trans hle),
-      ← GeneType.ne_nonPolarized_iff_neg_ne]⟩
+      ← GeneType.neg_ne_nonPolarized_iff]⟩
 
 lemma X1_eq : X1 hε hle hm =
   Gene.ofRank m ε + Gene.ofRank n (- ε) := rfl
@@ -33,7 +33,7 @@ def Y1 : Pi := by
     exact zero_mem _
   | m + 2 =>
     rwa [IsPolarized_ofRank (Nat.le_of_ble_eq_true rfl),
-      ← GeneType.ne_nonPolarized_iff_neg_ne]
+      ← GeneType.neg_ne_nonPolarized_iff]
 
 lemma Y1_eq : Y1 hε hle hm =
   Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε := rfl
@@ -77,7 +77,7 @@ def X3 : Pi := by
   rw [mem_Pi_iff, IsPolarized_iff_add]
   exact ⟨by rwa [IsPolarized_ofRankAlt hm], by
     rwa [IsPolarized_ofRankAlt (hm.trans hle),
-      ← GeneType.ne_nonPolarized_iff_neg_ne]⟩
+      ← GeneType.neg_ne_nonPolarized_iff]⟩
 
 lemma X3_eq : X3 hε hle hm =
   Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε) := rfl
@@ -91,7 +91,7 @@ def Y3 : Pi := by
     rw [Nat.sub_self, Gene.ofRankAlt_def, Gene.ofRank_zero, ← mem_Pi_iff]
     exact zero_mem _
   | m + 2 => rwa [IsPolarized_ofRankAlt (by omega),
-    GeneType.ne_nonPolarized_iff_neg_ne, neg_neg]
+    GeneType.neg_ne_nonPolarized_iff, neg_neg]
 
 lemma Y3_eq : Y3 hε hle hm =
   Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε := rfl
@@ -117,29 +117,29 @@ end Pi
 
 end Variety
 
-structure Mutation.IsMutation (X Y : Chromosome) : Prop where
+structure IsMutation (X Y : Chromosome) : Prop where
   le : X ≤ Y
   ne : X ≠ Y
   signature_eq : signature X = signature Y
 
-lemma Mutation.IsMutation_add {X Y : Chromosome} (Z : Chromosome)
+lemma IsMutation.add_right {X Y : Chromosome} (Z : Chromosome)
     (h : IsMutation X Y) : IsMutation (X + Z) (Y + Z) where
   le := add_le_add_right h.le Z
   ne := by simp [h.ne]
   signature_eq := by simp [h.signature_eq]
 
-lemma Mutation.IsMutation_of_add {X Y Z : Chromosome}
+lemma IsMutation.of_add_right {X Y Z : Chromosome}
     (h : IsMutation (X + Z) (Y + Z)) : IsMutation X Y where
   le := le_of_add_le_add_right h.le
   ne := by simpa using h.ne
   signature_eq := by simpa using h.signature_eq
 
-lemma Mutation.IsMutation_iff_add {X Y Z : Chromosome} :
+lemma IsMutation.iff_add_right {X Y Z : Chromosome} :
     IsMutation (X + Z) (Y + Z) ↔ IsMutation X Y :=
-  ⟨IsMutation_of_add, IsMutation_add Z⟩
+  ⟨.of_add_right, .add_right Z⟩
 
-lemma Variety.Pi.Primitive_isMutation {X Y : Pi} (h : Primitive X Y) :
-    Mutation.IsMutation X Y := by
+lemma Pi.Primitive.isMutation {X Y : Pi} (h : Variety.Pi.Primitive X Y) :
+    IsMutation X Y := by
   cases h with
   | type1 ε hε hle hm =>
     exact ⟨mutation_type1_le hε hle,
@@ -151,11 +151,11 @@ lemma Variety.Pi.Primitive_isMutation {X Y : Pi} (h : Primitive X Y) :
     exact ⟨mutation_type3_le hε hle hm,
       mutation_type3_ne hle hm, mutation_type3_signature_eq hε hle hm⟩
 
-lemma Variety.Pi.Step_isMutation {X Y : Pi} (h : Step X Y) :
-    Mutation.IsMutation X Y := by
+lemma Pi.Step.isMutation {X Y : Pi} (h : Variety.Pi.Step X Y) :
+    IsMutation X Y := by
   cases h with
   | mk X Y Z h =>
-    exact Mutation.IsMutation_add _ (Primitive_isMutation h)
+    exact .add_right _ (Pi.Primitive.isMutation h)
 
 def Mutation.Step : (i : Fin 5) → (Label i) → (Label i) → Prop
   | 0 => Pi.Step

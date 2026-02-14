@@ -82,7 +82,7 @@ lemma rank_decomposition (X : Chromosome) (k : ℕ) :
     rw [lt_iff_not_ge]
   rw [filter_pos_add_filter_neg]
 
-lemma prime_elim (X : Chromosome) (k : ℕ) :
+lemma prime_iterate_eq_prime_iterate_above (X : Chromosome) (k : ℕ) :
     prime^[k] X = prime^[k] (X.above k) := by
   nth_rw 1 [rank_decomposition X k]
   simp only [iterate_map_add, add_eq_right]
@@ -285,7 +285,7 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
     refine ⟨?_, prime_lift_leftInverse x⟩
     exact (IsFiltered_iff_lift hp).2 hx
 
-lemma varietyOfFilter_closed_under_filter (q : Gene → Prop) [DecidablePred q]
+lemma filter_mem_smul_varietyOfFilter (q : Gene → Prop) [DecidablePred q]
   {n : ℕ} (h : X ∈ n • (varietyOfFilter p)) :
     X.filter q ∈ n • (varietyOfFilter p) := by
   obtain ⟨Y, ⟨h1, h2 : n • Y = X⟩⟩ := h
@@ -361,14 +361,14 @@ lemma oddPart_prime {X : Chromosome} : X.prime.oddPart = X.evenPart.prime := by
     add_left_inj] at this
   exact this.symm
 
-lemma oddPart_evenPart_eq_zero {X : Chromosome} : oddPart (evenPart X) = 0 := by
+lemma oddPart_evenPart {X : Chromosome} : oddPart (evenPart X) = 0 := by
   simp [oddPart, evenPart, filter_eq_zero_iff, filter_apply]
   intro _ ho he
   rw [Nat.odd_iff] at ho
   rw [Nat.even_iff, ho] at he
   tauto
 
-lemma evenPart_oddPart_eq_zero {X : Chromosome} : evenPart (oddPart X) = 0 := by
+lemma evenPart_oddPart {X : Chromosome} : evenPart (oddPart X) = 0 := by
   simp [oddPart, evenPart, filter_eq_zero_iff, filter_apply]
   intro _ he ho
   rw [Nat.odd_iff] at ho
@@ -411,10 +411,10 @@ lemma IsPolarized_ofRank' {k : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized)
 lemma IsPolarized_ofRankAlt {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) :
     (Gene.ofRankAlt k ε).IsPolarized ↔ ε ≠ .NonPolarized := by
   rw [Gene.ofRankAlt_def, IsPolarized_ofRank hk,
-    GeneType.neg_one_pow_smul]
+    GeneType.negOnePow_smul]
   split_ifs
   · rfl
-  · exact GeneType.ne_nonPolarized_iff_neg_ne.symm
+  · exact GeneType.neg_ne_nonPolarized_iff.symm
 
 lemma IsPolarized_ofRankAlt' {k : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) :
     (Gene.ofRankAlt k ε).IsPolarized :=
@@ -492,12 +492,12 @@ lemma mem_Pi_iff {X : Chromosome} :
 
 lemma prime_Pi : Pi.prime = Pi := prime_varietyOfFilter (fun _ ↦ .rfl)
 
-lemma Pi_closed_under_parityDecomp {X : Chromosome} {n : ℕ} (h : X ∈ n • Pi) :
+lemma parityDecomp_mem_smul_Pi {X : Chromosome} {n : ℕ} (h : X ∈ n • Pi) :
   oddPart X ∈ n • Pi ∧ evenPart X ∈ n • Pi :=
-  ⟨varietyOfFilter_closed_under_filter (Odd ·.rank) h,
-    varietyOfFilter_closed_under_filter (Even ·.rank) h⟩
+  ⟨filter_mem_smul_varietyOfFilter (Odd ·.rank) h,
+    filter_mem_smul_varietyOfFilter (Even ·.rank) h⟩
 
-lemma Pi_closed_under_parityDecomp₁ {X : Chromosome} (h : X ∈ Pi) :
+lemma parityDecomp_mem_Pi {X : Chromosome} (h : X ∈ Pi) :
     oddPart X ∈ Pi ∧ evenPart X ∈ Pi :=
   ⟨IsFiltered_filter h, IsFiltered_filter h⟩
 
@@ -512,12 +512,12 @@ lemma mem_Lambda_iff {X : Chromosome} :
 
 lemma prime_Lambda : Lambda.prime = Lambda := prime_varietyOfFilter (fun _ ↦ .rfl)
 
-lemma Lambda_closed_under_parityDecomp {X : Chromosome} {n : ℕ} (h : X ∈ n • Lambda) :
+lemma parityDecomp_mem_smul_Lambda {X : Chromosome} {n : ℕ} (h : X ∈ n • Lambda) :
   oddPart X ∈ n • Lambda ∧ evenPart X ∈ n • Lambda :=
-  ⟨varietyOfFilter_closed_under_filter (Odd ·.rank) h,
-    varietyOfFilter_closed_under_filter (Even ·.rank) h⟩
+  ⟨filter_mem_smul_varietyOfFilter (Odd ·.rank) h,
+    filter_mem_smul_varietyOfFilter (Even ·.rank) h⟩
 
-lemma Lambda_closed_under_parityDecomp₁ {X : Chromosome} (h : X ∈ Lambda) :
+lemma parityDecomp_mem_Lambda {X : Chromosome} (h : X ∈ Lambda) :
     oddPart X ∈ Lambda ∧ evenPart X ∈ Lambda :=
   ⟨IsFiltered_filter h, IsFiltered_filter h⟩
 
@@ -554,17 +554,17 @@ lemma prime_Mix_eq {v : Variety × Variety}
     apply_fun evenPart at h12
     rwa [y₁.parity_decomposition, map_add, map_add, ← oddPart_prime,
       ← evenPart_prime, evenPart_idempotent, evenPart_idempotent,
-      evenPart_oddPart_eq_zero, add_zero, evenPart_prime] at h12
+      evenPart_oddPart, add_zero, evenPart_prime] at h12
   have eq2 : (evenPart y₂).prime = oddPart x := by
     apply_fun oddPart at h22
     rwa [y₂.parity_decomposition, map_add, map_add, ← oddPart_prime,
-      ← evenPart_prime, oddPart_idempotent, oddPart_idempotent, oddPart_evenPart_eq_zero,
+      ← evenPart_prime, oddPart_idempotent, oddPart_idempotent, oddPart_evenPart,
       zero_add, oddPart_prime] at h22
   refine ⟨y₁.oddPart + y₂.evenPart, ⟨add_mem ⟨?_, ?_⟩ ⟨?_, ?_⟩, ?_⟩⟩
-  · rw [evenPart_oddPart_eq_zero]; exact zero_mem _
+  · rw [evenPart_oddPart]; exact zero_mem _
   · rw [oddPart_idempotent]; exact (hv2 h11).1
   · rw [evenPart_idempotent]; exact (hv1 h21).2
-  · rw [oddPart_evenPart_eq_zero]; exact zero_mem _
+  · rw [oddPart_evenPart]; exact zero_mem _
   · rw [map_add, eq1, eq2, add_comm]; exact x.parity_decomposition.symm
 
 end Mix
@@ -597,20 +597,20 @@ lemma Label.prime_eq {i : Fin 5} :
   | 0 => exact prime_Pi
   | 1 =>
     change (Mix (Lambda, Pi)).prime = Mix (Pi, Lambda)
-    rw [prime_Mix_eq Lambda_closed_under_parityDecomp₁
-      Pi_closed_under_parityDecomp₁, prime_Pi, prime_Lambda]
+    rw [prime_Mix_eq parityDecomp_mem_Lambda
+      parityDecomp_mem_Pi, prime_Pi, prime_Lambda]
   | 2 =>
     change (Mix (Pi, Lambda)).prime = Mix (Lambda, Pi)
-    rw [prime_Mix_eq Pi_closed_under_parityDecomp₁
-      Lambda_closed_under_parityDecomp₁, prime_Pi, prime_Lambda]
+    rw [prime_Mix_eq parityDecomp_mem_Pi
+      parityDecomp_mem_Lambda, prime_Pi, prime_Lambda]
   | 3 =>
     change (Mix (2 • Lambda, Pi)).prime = Mix (Pi, 2 • Lambda)
-    rw [prime_Mix_eq Lambda_closed_under_parityDecomp
-      Pi_closed_under_parityDecomp₁, prime_Pi, variety_prime_smul, prime_Lambda]
+    rw [prime_Mix_eq parityDecomp_mem_smul_Lambda
+      parityDecomp_mem_Pi, prime_Pi, variety_prime_smul, prime_Lambda]
   | 4 =>
     change (Mix (Pi, 2 • Lambda)).prime = Mix (2 • Lambda, Pi)
-    rw [prime_Mix_eq Pi_closed_under_parityDecomp₁
-      Lambda_closed_under_parityDecomp, prime_Pi, variety_prime_smul, prime_Lambda]
+    rw [prime_Mix_eq parityDecomp_mem_Pi
+      parityDecomp_mem_smul_Lambda, prime_Pi, variety_prime_smul, prime_Lambda]
 
 lemma Label.prime_eq_iterate {i : Fin 5} {k : ℕ} :
     Label (prime^[k] i) = Variety.prime^[k] (Label i) := by
@@ -621,7 +621,7 @@ lemma Label.prime_eq_iterate {i : Fin 5} {k : ℕ} :
       ← Label.prime_eq, h, Function.iterate_add_apply, Function.iterate_one]
     exact (Function.iterate_succ_apply' ..).symm
 
-lemma mem_prime_iterate {k : ℕ} {X : Chromosome} {V : Variety} (hX : X ∈ V) :
+lemma prime_iterate_mem {k : ℕ} {X : Chromosome} {V : Variety} (hX : X ∈ V) :
     Chromosome.prime^[k] X ∈ Variety.prime^[k] V := by
   induction k generalizing V X
   · rwa [Function.iterate_zero, Function.iterate_zero]
@@ -633,7 +633,7 @@ noncomputable def Label.of_mem_prime_iterate {i : Fin 5} {k : ℕ} {X : Chromoso
     (hX : X ∈ Label i) : Label (Label.prime^[k] i) := by
   use Chromosome.prime^[k] X
   rw [Label.prime_eq_iterate]
-  exact mem_prime_iterate hX
+  exact prime_iterate_mem hX
 
 lemma Label.prime_iterate_zero {k : ℕ} : Label.prime^[k] 0 = 0 :=
   Function.iterate_fixed rfl k
