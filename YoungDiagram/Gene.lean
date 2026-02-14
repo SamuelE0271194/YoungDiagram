@@ -106,12 +106,12 @@ def Gene.signature (g : Gene) : ℚ × ℚ :=
   | .NonPolarized => (g.rank / 2, g.rank / 2)
   | .Positive =>
     let l := g.toList <|
-      (congrArg (fun _a ↦ _a ≠ .NonPolarized) hg).mpr
+      (congrArg (· ≠ .NonPolarized) hg).mpr
       (not_eq_of_beq_eq_false rfl)
     (l.count true, l.count false)
   | .Negative =>
     let l := g.toList <|
-      (congrArg (fun _a ↦ _a ≠ .NonPolarized) hg).mpr
+      (congrArg (· ≠ .NonPolarized) hg).mpr
       (not_eq_of_beq_eq_false rfl)
     (l.count true, l.count false)
 

@@ -95,7 +95,6 @@ private lemma Pi_mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
         · omega
         · rw [GeneType.smul_neg, GeneType.neg_one_pow_smul_smul, GeneType.smul_neg,
             Nat.cast_sub le2, Nat.cast_sub hm, Nat.cast_add]
-          congr 2
           ring_nf
           rw [mul_comm, Int.negOnePow_add, Int.negOnePow_two_mul, mul_one]
         · omega
