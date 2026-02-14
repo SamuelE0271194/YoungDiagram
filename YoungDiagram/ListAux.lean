@@ -47,7 +47,7 @@ lemma count_iterate_not_true {n : ℕ} :
       refine ⟨this, ?_⟩
       rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, this,
         List.length_iterate, Nat.cast_add]
-      linarith
+      ring
     · replace h : Even n := Nat.not_odd_iff_even.mp <| Nat.odd_add_one.mp <|
         Nat.not_even_iff_odd.1 h
       simp only [h, ↓reduceIte, Prod.mk.injEq, Nat.cast_add, Nat.cast_one] at hn ⊢
@@ -57,7 +57,7 @@ lemma count_iterate_not_true {n : ℕ} :
       refine ⟨this, ?_⟩
       rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, this,
         List.length_iterate, Nat.cast_add]
-      linarith
+      ring
 
 end signature_eq_pos
 
@@ -92,10 +92,10 @@ lemma count_iterate_not_false {n : ℕ} :
   have := @count_iterate_not_true n
   split_ifs with h
   all_goals
-    simp [h] at this ⊢
+    simp only [h, ↓reduceIte, Prod.mk.injEq] at this ⊢
     split_ands
     · rw [count_true_iterate_not_false, Nat.cast_sub, this.1]
-      · linarith
+      · ring
       convert List.count_le_length; exact (List.length_iterate _ _ _).symm
     · rw [count_false_eq_length_sub_count_true, List.length_iterate, count_true_iterate_not_false,
         Nat.sub_sub_self, this.1]
