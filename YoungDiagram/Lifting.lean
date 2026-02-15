@@ -32,8 +32,8 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       rw [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.X1_eq hε hle hm,
         lift_prime, iterate_map_add, iterate_map_add, lift_iterate_ofRank (by omega),
         lift_iterate_ofRank (by omega), ← Pi.X1_eq hε le1 le2, add_assoc] at X_def
-      replace U_def : U = Gene.ofRank (m - 1) (-ε) + Gene.ofRank (n + 1) ε + γ := by
-        rwa [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.Y1_eq hε hle hm] at U_def
+      replace U_def : U = Gene.ofRank (m - 1) (-ε) + Gene.ofRank (n + 1) ε + γ :=
+        Subtype.val_inj.2 U_def
       set ζ := Pi.Y1 hε le1 le2 with ζ_def
       set Z : Chromosome := ζ + (lift^[k] γ + (X.below k)) with Z_def
       have hZ : Z ∈ Pi := add_mem (SetLike.coe_mem _) mem1
@@ -54,8 +54,8 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       rw [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.X2_eq hε hle hm,
         lift_prime, iterate_map_add, iterate_map_add, lift_iterate_ofRank (by omega),
         lift_iterate_ofRank (by omega), ← Pi.X2_eq hε le1 le2, add_assoc] at X_def
-      replace U_def : U = Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε + γ := by
-        rwa [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.Y2_eq hε hle hm] at U_def
+      replace U_def : U = Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε + γ :=
+        Subtype.val_inj.2 U_def
       set ζ := Pi.Y2 hε le1 le2 with ζ_def
       set Z : Chromosome := ζ + (lift^[k] γ + (X.below k)) with Z_def
       have hZ : Z ∈ Pi := add_mem (SetLike.coe_mem _) mem1
@@ -80,8 +80,8 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
         lift_iterate_ofRank (by omega), ← Gene.ofRankAlt_shift_negOnePow_smul,
         ← Gene.ofRankAlt_shift_negOnePow_smul, GeneType.smul_neg,
         ← Pi.X3_eq eq1 le1 le2, add_assoc] at X_def
-      replace U_def : U = Gene.ofRankAlt (m - 1) (-ε) + Gene.ofRankAlt (n + 1) ε + γ := by
-        rwa [← Subtype.val_inj, AddSubmonoid.coe_add, Pi.Y3_eq] at U_def
+      replace U_def : U = Gene.ofRankAlt (m - 1) (-ε) + Gene.ofRankAlt (n + 1) ε + γ :=
+        Subtype.val_inj.2 U_def
       set ζ := Pi.Y3 eq1 le1 le2 with ζ_def
       set Z : Chromosome := ζ + (lift^[k] γ + (X.below k)) with Z_def
       have hZ : Z ∈ Pi := add_mem (SetLike.coe_mem _) mem1
