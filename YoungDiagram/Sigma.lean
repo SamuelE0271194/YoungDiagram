@@ -182,7 +182,6 @@ lemma max_rank_prime_minus1 : (X : Chromosome) → (h : maxRank X = n + 1) →
     intro g' hg'
     have hg'_ne : (prime X) g' ≠ 0 := Finsupp.mem_support_iff.mp hg'
     sorry
-
   have h_2 :(Finsupp.sum X fun g m ↦ m • primeGene g).maxRank ≥ n := by
     have : (primeGene g).rank = n := by
       sorry
@@ -322,3 +321,4 @@ lemma theorem_6 : (n : ℕ) → (X Y : Chromosome) → (hX : X.rank = n) → (hY
     rw [x_0, y_0] at hlt
     exact False.elim <| (Std.not_gt_of_lt hlt) hlt
   | succ n ih =>
+    sorry
