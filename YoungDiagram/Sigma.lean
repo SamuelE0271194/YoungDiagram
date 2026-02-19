@@ -124,7 +124,34 @@ lemma exist_gene_with_maxRank : (X : Chromosome) → (h : maxRank X = n + 1) →
   intro X h
   have h' : maxRank X > 0 := by
     simp [h]
-  sorry
+  have h'' : X.support.Nonempty := by
+    rw [maxRank] at h
+    classical
+    by_contra h_empty
+    have h_empty' : X.support = ∅ := by
+      simpa [Finset.not_nonempty_empty] using h_empty
+    have : X.support.sup (fun g => g.rank) = 0 := by
+      simp [h_empty']
+    have : n + 1 = 0 := by
+      rw [h] at this
+      exact this
+    exact Nat.succ_ne_zero n this
+  obtain ⟨g, hg_mem, hg_max⟩ :=
+    Finset.exists_max_image X.support (fun g => g.rank) h''
+  use g
+  constructor
+  · exact hg_mem
+  · have : g.rank = X.maxRank := by
+      rw [maxRank] at h
+      have hyp : g.rank ≤ X.support.sup (fun g => g.rank) :=
+        Finset.le_sup hg_mem
+      have hyp2 : X.support.sup (fun g => g.rank) ≤ g.rank :=
+        Finset.sup_le hg_max
+      have : g.rank = X.support.sup (fun g => g.rank) :=
+        le_antisymm hyp hyp2
+      rw [this]
+      rw [maxRank]
+    simpa [h] using this
 
 lemma max_rank_prime_minus1 : (X : Chromosome) → (h : maxRank X = n + 1) →
   maxRank (prime X) = n := by
