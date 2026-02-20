@@ -187,6 +187,7 @@ lemma max_rank_prime_minus1 : (X : Chromosome) → (h : maxRank X = n + 1) →
     apply Finset.sup_le
     intro g' hg'
     have hg'_ne : (prime X) g' ≠ 0 := Finsupp.mem_support_iff.mp hg'
+    sorry
   have h_2 :(Finsupp.sum X fun g m ↦ m • primeGene g).maxRank ≥ n := by
     have : (primeGene g).rank = n := by
       sorry
