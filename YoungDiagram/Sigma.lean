@@ -119,6 +119,12 @@ lemma gene_rank_leq_chrom_maxRank : (X : Chromosome) → (g : Gene) → (h : X g
   apply Finset.le_sup
   simp [h]
 
+lemma gene_leq_max_rank : (X : Chromosome) → ∀ g ∈ X.support, g.rank ≤ maxRank X := by
+  intro X g h
+  simp [maxRank]
+  apply Finset.le_sup
+  simp [h]
+
 lemma exist_gene_with_maxRank : (X : Chromosome) → (h : maxRank X = n + 1) →
   ∃ g ∈ X.support, g.rank = n + 1:= by
   intro X h
@@ -181,12 +187,10 @@ lemma max_rank_prime_minus1 : (X : Chromosome) → (h : maxRank X = n + 1) →
     apply Finset.sup_le
     intro g' hg'
     have hg'_ne : (prime X) g' ≠ 0 := Finsupp.mem_support_iff.mp hg'
-    sorry
   have h_2 :(Finsupp.sum X fun g m ↦ m • primeGene g).maxRank ≥ n := by
     have : (primeGene g).rank = n := by
       sorry
     sorry
-
   exact le_antisymm h_1 h_2
 
 lemma sig_prime_rank_eq_0 : ∀ k : ℕ, ∀ X : Chromosome, (h : maxRank X = k) →
