@@ -16,10 +16,6 @@ open Finsupp Pointwise
 
 namespace Chromosome
 
-/- Comment: tons of Mathlib lemmas rely on partial order for no reason.
-For example `Finsupp.sum_le_sum`, which is obviously still true under pre-order.
-These lemmas could make proving a lot less painful. A pull request in mathlib
-is already opened to address the issue. For the time being we'll just use induction here.-/
 lemma signature_filter_le (X : Chromosome) (p : Gene → Prop) [DecidablePred p] :
     signature (X.filter p) ≤ X.signature := by
   induction X using Finsupp.induction
@@ -44,7 +40,7 @@ noncomputable def lift : Chromosome →+ Chromosome where
 lemma lift_ofRank {n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     (Gene.ofRank n ε).lift = Gene.ofRank (n + 1) ε := by
   rw [lift, Gene.ofRank_def]
-  simp [hn]; rfl
+  simp [hn, one_nsmul]; rfl
 
 lemma lift_iterate_ofRank {k n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     lift^[k] (Gene.ofRank n ε) = Gene.ofRank (n + k) ε := by
@@ -76,7 +72,7 @@ lemma above_def {k : ℕ} {X : Chromosome} :
 
 lemma rank_decomposition (X : Chromosome) (k : ℕ) :
     X = X.below k + X.above k := by
-  simp [below, above]
+  simp only [below, AddMonoidHom.coe_mk, ZeroHom.coe_mk, above]
   conv =>
     enter [2, 2, 1, a]
     rw [lt_iff_not_ge]
@@ -89,11 +85,11 @@ lemma prime_iterate_eq_prime_iterate_above (X : Chromosome) (k : ℕ) :
   induction X using Finsupp.induction with
   | zero => simp [below, filter_zero]
   | single_add g n f hg hn hf =>
-    simp [below]
+    simp only [below, AddMonoidHom.coe_mk, ZeroHom.coe_mk, filter_add, iterate_map_add, add_eq_zero]
     by_cases hg_rank : g.rank ≤ k
     · rw [filter_single_of_pos, ← Gene.ofRank_eq_gene_smul, iterate_map_nsmul]
       · refine ⟨?_, hf⟩
-        rw [IsAddTorsionFree.nsmul_eq_zero_iff, prime_iterate_ofRank,
+        rw [nsmul_eq_zero_iff, prime_iterate_ofRank,
           Nat.sub_eq_zero_of_le hg_rank, Gene.ofRank_zero]
         exact Or.inl rfl
       exact hg_rank
@@ -125,7 +121,7 @@ lemma prime_below {k n : ℕ} {X : Chromosome} (h : n ≤ k) :
     by_cases ha : a.rank ≤ n
     · have eq : a.rank - k = 0 := by omega
       rwa [filter_single_of_pos, ← Gene.ofRank_eq_gene_smul, iterate_map_nsmul,
-        prime_iterate_ofRank, IsAddTorsionFree.nsmul_eq_zero_iff_right hm, eq,
+        prime_iterate_ofRank, nsmul_eq_zero_iff_right hm, eq,
         Gene.ofRank_zero]
     · rwa [filter_single_of_neg, iterate_map_zero]
 
@@ -182,9 +178,10 @@ lemma IsFiltered_add_single {g : Gene} {n : ℕ} (hn : 1 ≤ n) :
     IsFiltered p (X + single g n) ↔ X.IsFiltered p ∧ p g := by
   constructor <;> intro h
   · by_cases hg : p g
-    · simp [IsFiltered, hg] at h
+    · simp only [IsFiltered, filter_add, hg, filter_single_of_pos, add_left_inj] at h
       exact ⟨h, hg⟩
-    · simp [IsFiltered, hg] at h
+    · simp only [IsFiltered, filter_add, hg, not_false_eq_true, filter_single_of_neg,
+      add_zero] at h
       apply_fun signature at h
       have := h ▸ (signature_filter_le X p)
       rw [map_add, signature_single g.rank_pos,
@@ -232,7 +229,9 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       specialize h_3 h.2
       refine IsFiltered_iff_add.2 ⟨?_, h_3⟩
       replace h := h.1
-      simp [lift, liftGene] at h
+      simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
+        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+        single_zero, sum_single_index] at h
       rw [← smul_single_one, IsFiltered_iff_nsmul h_2, IsFiltered_single] at h ⊢
       exact (hp _).2 h
   · induction X using Finsupp.induction
@@ -242,7 +241,9 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       rw [IsFiltered_iff_add] at h
       refine ⟨?_, h_3 h.2⟩
       replace h := h.1
-      simp [lift, liftGene]
+      simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
+        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+        single_zero, sum_single_index]
       rw [← smul_single_one, IsFiltered_iff_nsmul h_2, IsFiltered_single] at h ⊢
       exact (hp _).1 h
 
@@ -273,7 +274,8 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
       rw [mem_varietyOfFilter_iff, IsFiltered_iff_add] at h1
       rw [map_add, IsFiltered_iff_add]
       refine ⟨?_, h_2 h1.2 rfl⟩
-      simp [prime, primeGene]
+      simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+        AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index]
       split_ifs with h
       · exact IsFiltered_zero
       · rw [← smul_single_one, IsFiltered_iff_nsmul h_1, IsFiltered_single] at h1 ⊢
@@ -319,7 +321,7 @@ lemma oddPart_idempotent {X : Chromosome} : oddPart (oddPart X) = oddPart X := b
   exact hx (filter_apply_neg _ X this)
 
 lemma parity_decomposition (X : Chromosome) : X = X.oddPart + X.evenPart := by
-  simp [oddPart, evenPart]
+  simp only [oddPart, AddMonoidHom.coe_mk, ZeroHom.coe_mk, evenPart]
   conv =>
     enter [2, 2, 1, a]
     rw [← Nat.not_odd_iff_even]
@@ -345,11 +347,14 @@ lemma evenPart_prime {X : Chromosome} : X.prime.evenPart = X.oddPart.prime := by
     rw [h_2, add_left_inj, ← smul_single_one, map_nsmul, map_nsmul,
       map_nsmul, map_nsmul, nsmul_right_inj h_1, oddPart_single]
     split_ifs with ha
-    · simp [prime, primeGene]
+    · simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+      AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index,
+      sum_zero_index]
       split_ifs
       · exact map_zero _
       · simp [evenPart_single, Nat.even_add_one.1 ((Nat.sub_add_cancel a.rank_pos) ▸ ha)]
-    · simp [prime, primeGene]
+    · simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+      AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index]
       split_ifs
       · exact map_zero _
       · simp [evenPart_single, (Nat.even_sub a.rank_pos).2 <|
@@ -362,14 +367,16 @@ lemma oddPart_prime {X : Chromosome} : X.prime.oddPart = X.evenPart.prime := by
   exact this.symm
 
 lemma oddPart_evenPart {X : Chromosome} : oddPart (evenPart X) = 0 := by
-  simp [oddPart, evenPart, filter_eq_zero_iff, filter_apply]
+  simp only [oddPart, evenPart, AddMonoidHom.coe_mk, ZeroHom.coe_mk, filter_eq_zero_iff,
+    filter_apply, ite_eq_right_iff]
   intro _ ho he
   rw [Nat.odd_iff] at ho
   rw [Nat.even_iff, ho] at he
   tauto
 
 lemma evenPart_oddPart {X : Chromosome} : evenPart (oddPart X) = 0 := by
-  simp [oddPart, evenPart, filter_eq_zero_iff, filter_apply]
+  simp only [evenPart, oddPart, AddMonoidHom.coe_mk, ZeroHom.coe_mk, filter_eq_zero_iff,
+    filter_apply, ite_eq_right_iff]
   intro _ he ho
   rw [Nat.odd_iff] at ho
   rw [Nat.even_iff, ho] at he

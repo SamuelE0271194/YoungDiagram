@@ -23,7 +23,7 @@ lemma prime_prime_other : (k : ℕ) → (X : Chromosome) → prime^[k + 1] X = p
     rfl
   | succ n ih =>
     intro X
-    simp
+    simp only [Function.iterate_succ, Function.comp_apply]
     rw [← ih (prime X)]
     simp
 
@@ -96,7 +96,7 @@ lemma sig_rank_0_eq_0 : (X : Chromosome) → (h : maxRank X = 0) → signature X
   intro X h
   rw [maxRank] at h
   rw [signature]
-  simp
+  simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk]
   have h1 : ∀ g ∈ X.support, g.rank = 0 := by
     intro g h''
     have := Finset.le_sup (s := X.support) (f := fun g => g.rank) h''
@@ -115,7 +115,7 @@ lemma sig_rank_0_eq_0 : (X : Chromosome) → (h : maxRank X = 0) → signature X
 lemma gene_rank_leq_chrom_maxRank : (X : Chromosome) → (g : Gene) → (h : X g ≠ 0) →
   g.rank ≤ maxRank X := by
   intro X g h
-  simp [maxRank]
+  simp only [maxRank]
   apply Finset.le_sup
   simp [h]
 
@@ -200,11 +200,11 @@ lemma sig_prime_rank_eq_0 : ∀ k : ℕ, ∀ X : Chromosome, (h : maxRank X = k)
   induction k with
   | zero =>
     intro X h
-    simp
+    simp only [Function.iterate_zero, id_eq]
     apply sig_rank_0_eq_0 X h
   | succ n ih =>
     intro X h
-    simp
+    simp only [Function.iterate_succ, Function.comp_apply]
     apply ih (prime X)
     apply max_rank_prime_minus1 X h
 
@@ -228,19 +228,19 @@ lemma cond15_2_and_3 : ∀ k : ℕ, ∀ X : Chromosome, (sigma_k X k) ≥ (sigma
     intro X
     rw [sigma_k]
     rw [sigma_k]
-    simp
+    simp only [Function.iterate_zero, id_eq, zero_add, Function.iterate_one, ge_iff_le]
     apply sig_prime_le_sig X
   | succ n ih =>
     intro X
     rw [sigma_k]
     rw [sigma_k]
-    simp
+    simp only [Function.iterate_succ, Function.comp_apply, ge_iff_le]
     apply ih
 
 lemma signature_of_zero : (X : Chromosome) → (X = 0) → signature X = (0, 0) := by
   intro X h
   rw [signature]
-  simp
+  simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk]
   rw [h]
   sorry
   -- i keep getting sum 0 = 0 instead of sum 0 = (0, 0)
@@ -268,7 +268,8 @@ lemma cond15_4_and_5_1 : ∀ k : ℕ, ∀ X : Chromosome,
     rw [sigma_k]
     rw [sigma_k]
     rw [prime]
-    simp
+    simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, Function.iterate_zero, id_eq, zero_add,
+      Function.iterate_one, ge_iff_le]
     rw [signature]
     simp [primeGene, Gene.signature]
     sorry
@@ -297,7 +298,7 @@ lemma cond15_8 : (X Y : Chromosome) → (h : X < Y) →
   ∀ k : ℕ, sigma_k X k ≤ sigma_k Y k := by
   intro X Y h k
   have h' : X ≤ Y := by exact le_of_lt h
-  simp [sigma_k]
+  simp only [sigma_k, ge_iff_le]
   exact le_iff_dominates.mp h' k
 
 end Sigma
@@ -308,8 +309,7 @@ lemma rank_0 : (X : Chromosome) → (h : X.rank = 0) → X = 0 := by
   intro X h
   simp [Chromosome.rank, Finsupp.sum] at h
   have h' : ∀ a ∈ X.support, 1 ≤ a.rank := by
-    intro a
-    intro h''
+    intro a h''
     exact a.rank_pos
   apply Finsupp.ext
   intro a

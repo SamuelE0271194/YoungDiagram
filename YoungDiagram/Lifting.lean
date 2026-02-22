@@ -40,6 +40,7 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X1 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type1 ε hε le1 le2)
+        exact Subtype.val_inj.1 X_def
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y1_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
@@ -62,6 +63,7 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X2 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type2 ε hε le1 le2)
+        exact Subtype.val_inj.1 X_def
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y2_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
@@ -88,6 +90,7 @@ private lemma mutation_lifting_Pi : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X3 eq1 le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type3 (Int.negOnePow k • ε) eq1 le1 le2)
+        exact Subtype.val_inj.1 X_def
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y3_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]

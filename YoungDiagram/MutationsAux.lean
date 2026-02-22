@@ -13,7 +13,8 @@ lemma mutation_type1_ne {ε : GeneType}
   replace h := congr_arg (· ⟨m, ε, hm⟩) h
   have h_n : n ≠ 0 := by omega
   have h_m : m ≠ 0 := by omega
-  simp [h_n, h_m, Gene.ofRank_def] at h
+  simp only [Gene.ofRank_def, h_m, ↓reduceDIte, h_n, Finsupp.coe_add, Pi.add_apply,
+    Finsupp.single_eq_same, Nat.add_eq_zero_iff, one_ne_zero, and_self] at h
   split_ifs at h <;> (simp [Finsupp.single_apply] at h; grind)
 
 lemma mutation_type1_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
@@ -42,17 +43,19 @@ lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : n < k
   · have eq1 : m - 1 - k = 0 := by omega
-    simp [Nat.sub_eq_zero_iff_le.2 (h_le.trans hk1.le), eq1, Nat.sub_eq_zero_of_le hk1.le]
+    simp only [Nat.sub_eq_zero_iff_le.2 (h_le.trans hk1.le), Gene.ofRank_zero, map_zero,
+      Nat.sub_eq_zero_of_le hk1.le, add_zero, eq1, zero_add, ge_iff_le]
     exact signature_nonneg _
   by_cases hk2 : m ≤ k
   · have eq1 : m - 1 - k = 0 := by omega
     rw [signature_ofRank_eq (k := n + 1 - k) (by omega) hε, Nat.succ_sub_sub_succ]
-    simp [Nat.sub_eq_zero_of_le hk2, eq1]
+    simp only [Nat.sub_eq_zero_of_le hk2, Gene.ofRank_zero, map_zero, zero_add, eq1, Nat.sub_zero,
+      le_add_iff_nonneg_right, ge_iff_le]
     exact signature_nonneg _
   · have le1 : 1 ≤ m - k := by omega
     have le2 : 1 ≤ n + 1 - k := by omega
     rw [signature_ofRank_eq le1 hε, signature_ofRank_eq le2 hε,
-      Nat.succ_sub_sub_succ, Nat.sub_zero, Nat.sub_right_comm]
+      Nat.succ_sub_sub_succ, Nat.sub_zero, Nat.sub_right_comm, Nat.sub_zero (n - k)]
     exact le_of_eq <| by ac_rfl
 
 end type1_isMutation
@@ -67,7 +70,8 @@ lemma mutation_type2_ne {ε : GeneType}
   replace h := congr_arg (· ⟨m, ε, le_of_lt hm⟩) h
   have h_n : n ≠ 0 := by omega
   have h_m : m ≠ 0 := by omega
-  simp [h_n, h_m, Gene.ofRank_def] at h
+  simp only [Gene.ofRank_def, h_m, ↓reduceDIte, h_n, Finsupp.coe_add, Pi.add_apply,
+    Finsupp.single_eq_same, Nat.add_eq_zero_iff, OfNat.ofNat_ne_zero, and_self] at h
   split_ifs at h <;> (simp [Finsupp.single_apply] at h; grind)
 
 lemma mutation_type2_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
@@ -130,7 +134,7 @@ lemma mutation_type3_ne {ε : GeneType}
     simp [Finsupp.single_apply, Nat.le_antisymm (Nat.le_of_sub_eq_zero h_2) hm, h_1] at this
   · intro h
     have := congr_arg Finsupp.toMultiset h
-    simp [Multiset.cons_eq_cons] at this
+    simp [Multiset.cons_eq_cons, one_nsmul] at this
     omega
 
 lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
@@ -139,7 +143,9 @@ lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
       Gene.ofRankAlt (n + k) (Int.negOnePow k • - ε))).signature =
     (prime^[i] (Gene.ofRankAlt (m + k - 1) (Int.negOnePow k • - ε) +
       Gene.ofRankAlt (n + k + 1) (Int.negOnePow k • ε))).signature := by
-  simp [Gene.ofRankAlt_def, prime_iterate_ofRank]
+  simp only [Gene.ofRankAlt_def, Nat.cast_add, GeneType.negOnePow_smul_smul,
+    GeneType.negOnePow_smul_neg, sub_add_add_cancel, iterate_map_add, prime_iterate_ofRank, map_add,
+    Nat.cast_one, add_sub_cancel_right]
   have le1 : 1 ≤ m + k - i := by omega
   have le2 : 1 ≤ n + k + 1 - i := by omega
   rw [signature_ofRank_eq' le1 (GeneType.smul_ne_nonPolarized_iff.1 hε),
@@ -155,7 +161,7 @@ lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
     · rw [GeneType.neg_negOnePow_smul]
       congr 2; omega
     · omega
-  · congr 5 <;> rw [two_mul, add_assoc]
+  · congr 5 <;> rw [two_mul (k : ℤ), add_assoc]
   · rw [Int.negOnePow_add, Int.negOnePow_add, Int.negOnePow_add, Int.negOnePow_two_mul, mul_one,
       mul_one, mul_one, Int.negOnePow_sub, Int.negOnePow_one, mul_neg_one, ← GeneType.neg_smul]
     have iff1 := @Nat.even_sub (n + k + 1 - i) (m + k - i) (by omega)
@@ -192,11 +198,14 @@ lemma mutation_type3_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : n < k
   · have eq1 : m - 1 - k = 0 := by omega
-    simp [Nat.sub_eq_zero_iff_le.2 (h_le.trans hk1.le), eq1, Nat.sub_eq_zero_of_le hk1.le]
+    simp only [Nat.sub_eq_zero_iff_le.2 (h_le.trans hk1.le), Gene.ofRank_zero, map_zero,
+      Nat.sub_eq_zero_of_le hk1.le, GeneType.negOnePow_smul_neg, sub_add_cancel, add_zero, eq1,
+      Nat.cast_add, Nat.cast_one, add_sub_cancel_right, zero_add, ge_iff_le]
     exact signature_nonneg _
   by_cases hk2 : m ≤ k
   · have eq1 : m - 1 - k = 0 := by omega
-    simp [eq1, Nat.sub_eq_zero_of_le hk2]
+    simp only [Nat.sub_eq_zero_of_le hk2, Gene.ofRank_zero, map_zero, GeneType.negOnePow_smul_neg,
+      sub_add_cancel, zero_add, eq1, Nat.cast_add, Nat.cast_one, add_sub_cancel_right, ge_iff_le]
     rw [signature_ofRank_eq' (k := n + 1 - k) (by omega), Nat.succ_sub_sub_succ,
       Nat.sub_zero, le_add_iff_nonneg_right]
     · split_ifs <;> exact signature_nonneg _

@@ -105,7 +105,7 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
 lemma signature_ofRank_nonPolarized {n : ℕ} :
     (Gene.ofRank n .NonPolarized).signature =
     (Gene.ofRank n .NonPolarized).signature.swap := by
-  simp [signature_ofRank]
+  simp only [signature_ofRank]
   split_ifs
   · rfl
   · rw [Gene.signature_of_nonPolarized rfl]; rfl
@@ -115,7 +115,7 @@ lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
   cases ε
   · exact signature_ofRank_nonPolarized
   all_goals
-    simp [signature_ofRank]; split_ifs
+    simp only [GeneType.neg_positive, signature_ofRank]; split_ifs
     · rfl
     · first | rw [Gene.signature_of_negative rfl, Gene.signature_of_positive rfl] |
         rw [Gene.signature_of_positive rfl, Gene.signature_of_negative rfl]
@@ -125,7 +125,7 @@ lemma signature_ofRank_positive {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := by
   have hk' : k ≠ 0 := by omega
-  simp [hk', signature_ofRank]
+  simp only [signature_ofRank, hk', ↓reduceDIte]
   split_ifs with h
   · replace hk : k = 1 := by omega
     simp [Gene.signature_of_positive, hk]
@@ -149,13 +149,13 @@ lemma signature_ofRank_positive' {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Positive).signature + if Even k then (0, 1) else (1, 0) := by
   have hk' : k ≠ 0 := by omega
-  simp [hk', signature_ofRank]
+  simp only [signature_ofRank, hk', ↓reduceDIte]
   by_cases hk'' : k = 1
   · subst hk''
     simp only [tsub_self, ↓reduceDIte, Nat.not_even_one, ↓reduceIte, zero_add]; rfl
   · replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
       Nat.lt_of_le_of_ne hk fun a ↦ hk'' a.symm
-    simp [hk'', Gene.signature_of_positive, Nat.even_sub_one hk, - Nat.not_even_iff_odd]
+    simp only [Gene.signature_of_positive, Nat.even_sub_one hk, ite_not, hk'', ↓reduceDIte]
     split_ifs with h <;> (simp [hk]; ring)
 
 lemma signature_ofRank_eq' {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
@@ -212,7 +212,7 @@ lemma prime_ofRank {n : ℕ} {ε : GeneType} :
   by_cases hn : n = 0
   · simp [hn]
   rw [prime, Gene.ofRank_def]
-  simp [hn]
+  simp [hn, one_nsmul]
   rfl
 
 lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
@@ -221,7 +221,7 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
   expose_names
   subst hk
   match k with
-  | 0 => rw [Function.iterate_zero_apply, tsub_zero]
+  | 0 => rw [Function.iterate_zero_apply, Nat.sub_zero]
   | 1 => simp [prime_ofRank]
   | w + 2 =>
     specialize @h (w + 1) (Nat.lt_add_one _) (w + 1) rfl
@@ -256,15 +256,11 @@ instance : Preorder Chromosome where
 @[simp] lemma le_iff_dominates {X Y : Chromosome} : X ≤ Y ↔
   ∀ k : ℕ, signature (prime^[k] X) ≤ signature (prime^[k] Y) := .rfl
 
-instance : AddRightMono Chromosome where
-  elim := by
-    dsimp [Covariant, Function.swap_def]
-    intros; simpa
-
-instance : AddRightReflectLE Chromosome where
-  elim := by
-    dsimp [Contravariant]
-    intro _ _ _ h; simpa using h
+instance : IsOrderedCancelAddMonoid Chromosome where
+  add_le_add_left _ _ _ _ := by
+    simpa only [le_iff_dominates, iterate_map_add, map_add, add_le_add_iff_right]
+  le_of_add_le_add_left a b c h := by
+    simpa only [le_iff_dominates, iterate_map_add, map_add, add_le_add_iff_left] using h
 
 end order
 

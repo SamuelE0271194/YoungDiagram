@@ -124,7 +124,7 @@ structure IsMutation (X Y : Chromosome) : Prop where
 
 lemma IsMutation.add_right {X Y : Chromosome} (Z : Chromosome)
     (h : IsMutation X Y) : IsMutation (X + Z) (Y + Z) where
-  le := add_le_add_right h.le Z
+  le := add_le_add_left h.le Z
   ne := by simp [h.ne]
   signature_eq := by simp [h.signature_eq]
 
