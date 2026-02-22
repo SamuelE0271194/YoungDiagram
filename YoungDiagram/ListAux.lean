@@ -26,7 +26,7 @@ lemma count_false_eq_length_sub_count_true {l : List Bool} :
   rw [List.count_eq_length_filter, List.count_eq_length_filter]
   refine (Nat.sub_eq_of_eq_add ?_).symm
   rw [List.length_eq_length_filter_add id]
-  simp; ac_rfl
+  simp only [id_eq, beq_false, beq_true]; ac_rfl
 
 lemma count_iterate_not_true {n : ℕ} :
   (↑(List.count true (List.iterate not true n)),
@@ -93,9 +93,9 @@ lemma count_iterate_not_false {n : ℕ} :
     split_ands
     · rw [count_true_iterate_not_false, Nat.cast_sub, this.1]
       · ring
-      convert List.count_le_length; exact (List.length_iterate _ _ _).symm
+      convert List.count_le_length; exact (List.length_iterate ..).symm
     · rw [count_false_eq_length_sub_count_true, List.length_iterate, count_true_iterate_not_false,
         Nat.sub_sub_self, this.1]
-      convert List.count_le_length; exact (List.length_iterate _ _ _).symm
+      convert List.count_le_length; exact (List.length_iterate ..).symm
 
 end signature_eq_neg

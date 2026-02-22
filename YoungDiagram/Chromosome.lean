@@ -68,9 +68,8 @@ def signature : Chromosome →+ ℚ × ℚ where
   toFun c := c.sum (fun g count ↦ (count : ℚ) • g.signature)
   map_zero' := sum_zero_index
   map_add' _ _ := by
-    refine sum_add_index' (by simp) fun _ _ _ ↦ ?_
-    simp only [Nat.cast_add]
-    exact Module.add_smul ..
+    refine sum_add_index' (fun _ ↦ smul_eq_zero_of_left rfl _) (fun _ _ _ ↦ ?_)
+    rw [Nat.cast_add, Module.add_smul]
 
 lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
   dsimp [signature]
@@ -87,20 +86,22 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   dsimp [signature]
   split_ifs
   · rfl
-  · simp
+  · rw [sum_single_index, Nat.cast_one, one_smul]
+    · exact smul_eq_zero_of_left rfl _
 
 @[simp] lemma signature_ofRank_one_positive :
     (Gene.ofRank 1 .Positive).signature = (1, 0) := by
-  simp [signature_ofRank]; rfl
+  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte]; rfl
 
 @[simp] lemma signature_ofRank_one_negative :
     (Gene.ofRank 1 .Negative).signature = (0, 1) := by
-  simp [signature_ofRank]; rfl
+  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte]; rfl
 
 @[simp] lemma signature_single {k : ℕ} {n : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
     signature (single (⟨k, ε, hk⟩ : Gene) n) =
     n * (⟨k, ε, hk⟩ : Gene).signature := by
-  simp [signature]; rfl
+  dsimp [signature]
+  exact sum_single_index <| smul_eq_zero_of_left rfl _
 
 lemma signature_ofRank_nonPolarized {n : ℕ} :
     (Gene.ofRank n .NonPolarized).signature =
@@ -156,7 +157,7 @@ lemma signature_ofRank_positive' {k : ℕ} (hk : 1 ≤ k) :
   · replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
       Nat.lt_of_le_of_ne hk fun a ↦ hk'' a.symm
     simp only [Gene.signature_of_positive, Nat.even_sub_one hk, ite_not, hk'', ↓reduceDIte]
-    split_ifs with h <;> (simp [hk]; ring)
+    split_ifs <;> (simp [hk]; ring)
 
 lemma signature_ofRank_eq' {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature = (Gene.ofRank (k - 1) ε).signature +
@@ -210,7 +211,7 @@ noncomputable def prime : Chromosome →+ Chromosome where
 lemma prime_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
   by_cases hn : n = 0
-  · simp [hn]
+  · simp only [hn, Gene.ofRank_zero, map_zero, zero_le, Nat.sub_eq_zero_of_le]
   rw [prime, Gene.ofRank_def]
   simp [hn, one_nsmul]
   rfl
@@ -222,7 +223,7 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
   subst hk
   match k with
   | 0 => rw [Function.iterate_zero_apply, Nat.sub_zero]
-  | 1 => simp [prime_ofRank]
+  | 1 => simp only [Function.iterate_one, prime_ofRank]
   | w + 2 =>
     specialize @h (w + 1) (Nat.lt_add_one _) (w + 1) rfl
     change prime^[w + 1 + 1] (Gene.ofRank n ε) = _
