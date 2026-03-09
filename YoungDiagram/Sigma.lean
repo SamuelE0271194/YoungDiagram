@@ -226,10 +226,15 @@ lemma disjoint_2_1 : (X Y : Pi) → (X < Y) → (∀ g ∈ X.val.support, g ∉ 
   simp_all
   sorry
 
+-- Not really needed, just want to show disjoint is symmetric
 lemma disjoint_2_2 : (X Y : Pi) → (X < Y) → (∀ g ∈ Y.val.support, g ∉ X.val.support) →
-  ∀ g ∈ (prime Y).support, g ∉ (prime X).support := by
+  ∀ g ∈ X.val.support, g ∉ Y.val.support := by
   intro X Y hlt h
-  sorry
+  by_contra
+  simp_all
+  rcases this with ⟨x, hxX, hxY⟩
+  have hX0 : X.val x = 0 := h x hxY
+  exact hxX hX0
 
 lemma disjoint_2_3 : (k : ℕ) → (X Y : Pi) → (X < Y) → (∀ g ∈ X.val.support, g ∉ Y.val.support) →
   ∀ g ∈ (Chromosome.prime^[k] X).support, g ∉ (Chromosome.prime^[k] Y).support := by
@@ -242,5 +247,15 @@ lemma disjoint_2_3 : (k : ℕ) → (X Y : Pi) → (X < Y) → (∀ g ∈ X.val.s
     sorry
     --exact disjoint_2_1 n (Chromosome.prime^[i] X) (Chromosome.prime^[i] Y) + induction hypothesis
     -- prime (Pi) doesn't play well
+
+lemma step15_9 : (n : ℕ) → (X Y : Pi) → (hX : rank X = n) → (hY : rank Y = n) → (hlt : X < Y) →
+  (∀ g ∈ X.val.support, g ∉ Y.val.support) → (k : ℕ) → (k ≥ 1) → (h : sigma_k X k = sigma_k Y k) →
+  (h' : sigma_k X k ≠ (0, 0)) →
+  (∃ U ∈ Pi, (IsMutation (Chromosome.prime^[k] X) U) ∧ (U ≤ Chromosome.prime^[k] Y)) →
+  ∃ Z ∈ Pi, (IsMutation X Z) ∧ (Chromosome.prime^[k] Z = U) ∧ (Z ≤ Y) := by
+  intro n X Y hX hY hlt hdis k k_1 sig_k_eq sig_k_not_0 ih
+  --apply lifting lemma on ih.
+  sorry
+--with this we can assume sigma_k X k < sigma_k Y k (element-wise)
 
 end Sigma
