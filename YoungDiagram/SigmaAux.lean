@@ -75,7 +75,7 @@ lemma gene_rank_leq_chrom_maxRank : (X : Chromosome) → (g : Gene) → (h : X g
 
 lemma gene_leq_max_rank : (X : Chromosome) → ∀ g ∈ X.support, g.rank ≤ maxRank X := by
   intro X g h
-  simp [maxRank]
+  simp only [maxRank]
   apply Finset.le_sup
   simp [h]
 
@@ -128,12 +128,12 @@ lemma prime_gene_rank : (n : ℕ) → (g : Gene) → (h : g.rank = n + 1) → (p
     simp [primeGene, h]
   | succ k ih =>
     simp [primeGene, h]
-    rw [rank_of_geneOfRank]
+    simp [rank_of_geneOfRank]
 
 lemma max_rank_prime_minus1 : (X : Chromosome) → (h : maxRank X = n + 1) →
   maxRank (prime X) = n := by
   intro X h
-  simp [prime]
+  simp only [prime]
   have gene_n_1 : ∃ g ∈ X.support, g.rank = n + 1 := by
     apply exist_gene_with_maxRank X h
   obtain ⟨g, hg_mem, hg_rank⟩ := gene_n_1
@@ -181,7 +181,7 @@ lemma sig_of_prime_k_lt_sig : (k : ℕ) → (X: Chromosome)
     simp
   | succ n ih =>
     intro X
-    simp [Function.iterate_succ_apply]
+    simp only [Function.iterate_succ_apply]
     exact ge_trans (sig_of_prime_lt_sig X) (ih (prime X))
 
 lemma rank_0 : (X : Chromosome) → (h : X.rank = 0) → X = 0 := by
