@@ -275,3 +275,139 @@ lemma sig_prime_le_snd (Y : Variety.Pi) : (signature (prime Y)).2 ≤ (signature
     intro g _
     exact Nat.cast_nonneg _
   apply mul_le_mul_of_nonneg_left (aux g (hpol g hg)) (this g hg)
+
+-- Sub-lemma for (15.4) even case:
+-- For a polarized gene g, (primeGene g).signature.2 ≤ g.signature.1.
+-- Positive/even: .2 decreases by 1, .1 stays → ≤.
+-- Positive/odd: .2 stays k, .1 increases to k+1 → ≤.
+-- Negative/even: .2 = .1 (equal).
+-- Negative/odd: .2 = .1 (equal).
+lemma gene_sig_prime_snd_le_fst (g : Gene) (hg : g.type ≠ .NonPolarized) :
+    (primeGene g).signature.2 ≤ g.signature.1 := by
+  match hg' : g.type with
+  | .NonPolarized => exact absurd hg' hg
+  | .Positive =>
+    by_cases heven : Even g.rank
+    · -- g.rank even: g.sig.1 = ↑g.rank/2, (primeGene g).sig.2 = (↑g.rank-2)/2 ≤ it
+      have hne : g.rank - 1 ≠ 0 := by
+        obtain ⟨k, hk⟩ := heven; have := g.rank_pos; omega
+      have hodd : ¬ Even (g.rank - 1) := (Nat.even_sub_one g.rank_pos).mp heven
+      simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+      rw [Gene.signature_of_positive rfl, if_neg hodd,
+          Gene.signature_of_positive hg', if_pos heven]
+      simp only [Nat.cast_pred g.rank_pos]
+      linarith
+    · -- g.rank odd: (primeGene g).sig.2 = (↑g.rank-1)/2, g.sig.1 = (↑g.rank+1)/2
+      have heven' : Even (g.rank - 1) := by
+        by_contra h; exact heven ((Nat.even_sub_one g.rank_pos).mpr h)
+      by_cases hne : g.rank - 1 = 0
+      · simp only [primeGene, hne, Gene.ofRank_zero, map_zero]
+        exact (Gene.signature_pos g).le.1
+      · simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+        rw [Gene.signature_of_positive rfl, if_pos heven',
+            Gene.signature_of_positive hg', if_neg heven]
+        simp only [Nat.cast_pred g.rank_pos]
+        linarith
+  | .Negative =>
+    by_cases heven : Even g.rank
+    · -- g.rank even: g.sig.1 = ↑g.rank/2, (primeGene g).sig.2 = (↑g.rank-1+1)/2 = ↑g.rank/2 (equal)
+      have hne : g.rank - 1 ≠ 0 := by
+        obtain ⟨k, hk⟩ := heven; have := g.rank_pos; omega
+      have hodd : ¬ Even (g.rank - 1) := (Nat.even_sub_one g.rank_pos).mp heven
+      simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+      rw [Gene.signature_of_negative rfl, if_neg hodd,
+          Gene.signature_of_negative hg', if_pos heven]
+      simp only [Nat.cast_pred g.rank_pos]
+      linarith
+    · -- g.rank odd: (primeGene g).sig.2 = (↑g.rank-1)/2 = g.sig.1 (equal)
+      have heven' : Even (g.rank - 1) := by
+        by_contra h; exact heven ((Nat.even_sub_one g.rank_pos).mpr h)
+      by_cases hne : g.rank - 1 = 0
+      · simp only [primeGene, hne, Gene.ofRank_zero, map_zero]
+        exact (Gene.signature_pos g).le.1
+      · simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+        rw [Gene.signature_of_negative rfl, if_pos heven',
+            Gene.signature_of_negative hg', if_neg heven]
+        simp only [Nat.cast_pred g.rank_pos]
+        linarith
+
+-- Chromosome-level lift of gene_sig_prime_snd_le_fst:
+-- (signature (prime Y)).2 ≤ (signature Y).1 for any Y ∈ Pi.
+-- Proof: write both sides as Finsupp.sum via signature_prime_snd / signature_fst,
+-- then apply Finsupp.sum_le_sum pointwise using gene_sig_prime_snd_le_fst.
+lemma sig_prime_snd_le_fst (Y : Variety.Pi) : (signature (prime Y)).2 ≤ (signature Y).1 := by
+  have hpol : ∀ g ∈ (↑Y : Chromosome).support, g.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (Variety.mem_Pi_iff.mp Y.property)
+  simp only [signature_fst]
+  simp only [signature_prime_snd]
+  apply Finsupp.sum_le_sum
+  intro g hg
+  apply mul_le_mul_of_nonneg_left (gene_sig_prime_snd_le_fst g (hpol g hg))
+  exact Nat.cast_nonneg _
+
+-- Sub-lemma for (15.4) odd case / (15.5) even case:
+-- For a polarized gene g, (primeGene g).signature.1 ≤ g.signature.2.
+-- Positive/even: .1 = g.sig.2 (equal, both = rank/2).
+-- Positive/odd: .1 = g.sig.2 (equal, both = (rank-1)/2).
+-- Negative/even: .1 = (rank-2)/2 ≤ rank/2 = g.sig.2.
+-- Negative/odd: .1 = (rank-1)/2 ≤ (rank+1)/2 = g.sig.2.
+lemma gene_sig_prime_fst_le_snd (g : Gene) (hg : g.type ≠ .NonPolarized) :
+    (primeGene g).signature.1 ≤ g.signature.2 := by
+  match hg' : g.type with
+  | .NonPolarized => exact absurd hg' hg
+  | .Positive =>
+    by_cases heven : Even g.rank
+    · -- g.rank even: (primeGene g).sig.1 = (↑g.rank-1+1)/2 = ↑g.rank/2 = g.sig.2 (equal)
+      have hne : g.rank - 1 ≠ 0 := by
+        obtain ⟨k, hk⟩ := heven; have := g.rank_pos; omega
+      have hodd : ¬ Even (g.rank - 1) := (Nat.even_sub_one g.rank_pos).mp heven
+      simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+      rw [Gene.signature_of_positive rfl, if_neg hodd,
+          Gene.signature_of_positive hg', if_pos heven]
+      simp only [Nat.cast_pred g.rank_pos]
+      linarith
+    · -- g.rank odd: (primeGene g).sig.1 = (↑g.rank-1)/2 = g.sig.2 (equal)
+      have heven' : Even (g.rank - 1) := by
+        by_contra h; exact heven ((Nat.even_sub_one g.rank_pos).mpr h)
+      by_cases hne : g.rank - 1 = 0
+      · simp only [primeGene, hne, Gene.ofRank_zero, map_zero]
+        exact (Gene.signature_pos g).le.2
+      · simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+        rw [Gene.signature_of_positive rfl, if_pos heven',
+            Gene.signature_of_positive hg', if_neg heven]
+        simp only [Nat.cast_pred g.rank_pos]
+        linarith
+  | .Negative =>
+    by_cases heven : Even g.rank
+    · -- g.rank even: g.sig.2 = ↑g.rank/2, (primeGene g).sig.1 = (↑g.rank-2)/2 ≤ it
+      have hne : g.rank - 1 ≠ 0 := by
+        obtain ⟨k, hk⟩ := heven; have := g.rank_pos; omega
+      have hodd : ¬ Even (g.rank - 1) := (Nat.even_sub_one g.rank_pos).mp heven
+      simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+      rw [Gene.signature_of_negative rfl, if_neg hodd,
+          Gene.signature_of_negative hg', if_pos heven]
+      simp only [Nat.cast_pred g.rank_pos]
+      linarith
+    · -- g.rank odd: g.sig.2 = (↑g.rank+1)/2, (primeGene g).sig.1 = (↑g.rank-1)/2 ≤ it
+      have heven' : Even (g.rank - 1) := by
+        by_contra h; exact heven ((Nat.even_sub_one g.rank_pos).mpr h)
+      by_cases hne : g.rank - 1 = 0
+      · simp only [primeGene, hne, Gene.ofRank_zero, map_zero]
+        exact (Gene.signature_pos g).le.2
+      · simp only [primeGene, hg', Chromosome.signature_ofRank, hne, ↓reduceDIte]
+        rw [Gene.signature_of_negative rfl, if_pos heven',
+            Gene.signature_of_negative hg', if_neg heven]
+        simp only [Nat.cast_pred g.rank_pos]
+        linarith
+
+-- Chromosome-level lift of gene_sig_prime_fst_le_snd:
+-- (signature (prime Y)).1 ≤ (signature Y).2 for any Y ∈ Pi.
+lemma sig_prime_fst_le_snd (Y : Variety.Pi) : (signature (prime Y)).1 ≤ (signature Y).2 := by
+  have hpol : ∀ g ∈ (↑Y : Chromosome).support, g.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (Variety.mem_Pi_iff.mp Y.property)
+  simp only [signature_snd]
+  simp only [signature_prime_fst]
+  apply Finsupp.sum_le_sum
+  intro g hg
+  apply mul_le_mul_of_nonneg_left (gene_sig_prime_fst_le_snd g (hpol g hg))
+  exact Nat.cast_nonneg _

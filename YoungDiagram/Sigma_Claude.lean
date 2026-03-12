@@ -95,14 +95,34 @@ lemma cond_15_3 (X : Variety.Pi) :
 lemma cond_15_4 (X : Variety.Pi) (k : ℕ) :
     if Even k then b X (k + 1) ≤ a X k
               else a X (k + 1) ≤ b X k := by
-  sorry
+  by_cases heven : Even k
+  · -- k is even: prove b X (k+1) ≤ a X k
+    simp only [if_pos heven]
+    simp only [b, sigma, a]
+    rw [prime_prime_other k X]
+    exact sig_prime_snd_le_fst ⟨prime^[k] X, prime_k_mem_pi X k⟩
+  · -- k is odd: prove a X (k+1) ≤ b X k
+    simp only [if_neg heven]
+    simp only [b, sigma, a]
+    rw [prime_prime_other k X]
+    exact sig_prime_fst_le_snd ⟨prime^[k] X, prime_k_mem_pi X k⟩
 
 -- (15.5) b₀ ≥ a₁ ≥ b₂ ≥ a₃ ≥ …
 -- At each step k: if k is even then bₖ ≥ a_{k+1}, else aₖ ≥ b_{k+1}.
 lemma cond_15_5 (X : Variety.Pi) (k : ℕ) :
     if Even k then a X (k + 1) ≤ b X k
               else b X (k + 1) ≤ a X k := by
-  sorry
+  by_cases heven : Even k
+  · -- k is even: prove a X (k+1) ≤ b X k
+    simp only [if_pos heven]
+    simp only [b, sigma, a]
+    rw [prime_prime_other k X]
+    exact sig_prime_fst_le_snd ⟨prime^[k] X, prime_k_mem_pi X k⟩
+  · -- k is odd: prove b X (k+1) ≤ a X k
+    simp only [if_neg heven]
+    simp only [b, sigma, a]
+    rw [prime_prime_other k X]
+    exact sig_prime_snd_le_fst ⟨prime^[k] X, prime_k_mem_pi X k⟩
 
 -- (15.6) a₀ − a₁ ≥ b₁ − b₂ ≥ a₂ − a₃ ≥ b₃ − b₄ ≥ …
 -- The k-th term of the chain is (aₖ − a_{k+1}) when k is even,
