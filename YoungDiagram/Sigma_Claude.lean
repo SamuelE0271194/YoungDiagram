@@ -131,12 +131,19 @@ lemma cond_15_6 (X : Variety.Pi) (k : ℕ) :
     if Even k then b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1)
               else a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1) := by
   by_cases heven : Even k
-  ·
-    simp only [if_pos heven]
+  · simp only [if_pos heven]
     simp only [a, sigma, b]
-    rw [prime_prime_other k X]
-    sorry
-  · sorry
+    -- Rewrite k+2 first so that k+1 occurrences are unified in one step
+    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    simp only [if_pos heven] at h
+    exact h
+  · simp only [if_neg heven]
+    simp only [a, sigma, b]
+    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    simp only [if_neg heven] at h
+    exact h
 
 -- (15.7) b₀ − b₁ ≥ a₁ − a₂ ≥ b₂ − b₃ ≥ a₃ − a₄ ≥ …
 -- The k-th term of the chain is (bₖ − b_{k+1}) when k is even,
@@ -144,6 +151,18 @@ lemma cond_15_6 (X : Variety.Pi) (k : ℕ) :
 lemma cond_15_7 (X : Variety.Pi) (k : ℕ) :
     if Even k then a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1)
               else b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1) := by
-  sorry
+  by_cases heven : Even k
+  · simp only [if_pos heven]
+    simp only [a, sigma, b]
+    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    simp only [if_pos heven] at h
+    exact h
+  · simp only [if_neg heven]
+    simp only [a, sigma, b]
+    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    simp only [if_neg heven] at h
+    exact h
 
 end Sigma
