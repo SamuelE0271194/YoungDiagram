@@ -287,6 +287,25 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
     refine ⟨?_, prime_lift_leftInverse x⟩
     exact (IsFiltered_iff_lift hp).2 hx
 
+lemma prime_mem_varietyOfFilter {X : Chromosome} (hp : LiftStable p)
+    (hX : X ∈ varietyOfFilter p) : X.prime ∈ varietyOfFilter p :=
+  ((congrArg (prime X ∈ ·) (prime_varietyOfFilter hp).symm)).mpr ⟨X, ⟨hX, rfl⟩⟩
+
+noncomputable def prime_on_varietyOfFilter (hp : LiftStable p) (X : varietyOfFilter p) :
+    varietyOfFilter p := ⟨X.1.prime, prime_mem_varietyOfFilter hp X.2⟩
+
+lemma prime_on_varietyOfFilter_iterate (hp : LiftStable p) (X : varietyOfFilter p) (k : ℕ) :
+    ((prime_on_varietyOfFilter hp)^[k] X).1 = Chromosome.prime^[k] X := by
+  unfold prime_on_varietyOfFilter
+  induction k with
+  | zero => rw [Function.iterate_zero_apply, Function.iterate_zero_apply]
+  | succ n hn => simp_rw [Function.iterate_succ_apply', hn]
+
+lemma prime_mem_varietyOfFilter_iterate {X : Chromosome} (hp : LiftStable p) {k : ℕ}
+    (hX : X ∈ varietyOfFilter p) : Chromosome.prime^[k] X ∈ varietyOfFilter p := by
+  convert ((prime_on_varietyOfFilter hp)^[k] ⟨X, hX⟩).2
+  exact (prime_on_varietyOfFilter_iterate hp ⟨X, hX⟩ k).symm
+
 lemma filter_mem_smul_varietyOfFilter (q : Gene → Prop) [DecidablePred q]
   {n : ℕ} (h : X ∈ n • (varietyOfFilter p)) :
     X.filter q ∈ n • (varietyOfFilter p) := by
@@ -508,6 +527,19 @@ lemma parityDecomp_mem_Pi {X : Chromosome} (h : X ∈ Pi) :
     oddPart X ∈ Pi ∧ evenPart X ∈ Pi :=
   ⟨IsFiltered_filter h, IsFiltered_filter h⟩
 
+lemma prime_mem_Pi {X : Chromosome} (hX : X ∈ Pi) : X.prime ∈ Pi :=
+  prime_mem_varietyOfFilter (fun _ ↦ .rfl) hX
+
+noncomputable def prime_on_Pi (X : Pi) : Pi := ⟨X.1.prime, prime_mem_Pi X.2⟩
+
+lemma prime_on_Pi_iterate (X : Pi) (k : ℕ) :
+    (prime_on_Pi^[k] X).1 = Chromosome.prime^[k] X :=
+  prime_on_varietyOfFilter_iterate (fun _ ↦ .rfl) X k
+
+lemma prime_mem_Pi_iterate {X : Chromosome} (hX : X ∈ Pi) {k : ℕ} :
+    Chromosome.prime^[k] X ∈ Pi :=
+  prime_mem_varietyOfFilter_iterate (fun _ ↦ .rfl) hX
+
 end Pi
 
 section Lambda
@@ -527,6 +559,19 @@ lemma parityDecomp_mem_smul_Lambda {X : Chromosome} {n : ℕ} (h : X ∈ n • L
 lemma parityDecomp_mem_Lambda {X : Chromosome} (h : X ∈ Lambda) :
     oddPart X ∈ Lambda ∧ evenPart X ∈ Lambda :=
   ⟨IsFiltered_filter h, IsFiltered_filter h⟩
+
+lemma prime_mem_Lambda {X : Chromosome} (hX : X ∈ Lambda) : X.prime ∈ Lambda :=
+  prime_mem_varietyOfFilter (fun _ ↦ .rfl) hX
+
+noncomputable def prime_on_Lambda (X : Lambda) : Lambda := ⟨X.1.prime, prime_mem_Lambda X.2⟩
+
+lemma prime_on_Lambda_iterate (X : Lambda) (k : ℕ) :
+    (prime_on_Lambda^[k] X).1 = Chromosome.prime^[k] X :=
+  prime_on_varietyOfFilter_iterate (fun _ ↦ .rfl) X k
+
+lemma prime_mem_Lambda_iterate {X : Chromosome} (hX : X ∈ Lambda) {k : ℕ} :
+    Chromosome.prime^[k] X ∈ Lambda :=
+  prime_mem_varietyOfFilter_iterate (fun _ ↦ .rfl) hX
 
 end Lambda
 

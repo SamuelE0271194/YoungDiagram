@@ -8,29 +8,13 @@ open Variety
 
 open Finsupp Pointwise
 
-lemma prime_mem_pi (X : Pi) : prime X ∈ Pi := by
-  have := Variety.prime_Pi
-  simp [Variety.prime] at this
-  have h : prime ↑X ∈ AddSubmonoid.map Chromosome.prime Variety.Pi :=
-  ⟨↑X, X.property, rfl⟩
-  simpa [this] using h
-
-lemma prime_k_mem_pi (X : Pi) (k : ℕ) : Chromosome.prime^[k] X ∈ Pi := by
-  induction k with
-  | zero => simp
-  | succ n ih =>
-    have h : prime ((Chromosome.prime^[n]) ↑X) ∈ Pi :=
-      prime_mem_pi ⟨(Chromosome.prime^[n]) ↑X, ih⟩
-    rw [Function.iterate_succ']
-    exact h
-
-noncomputable def Pi_prime (X : Pi) : Pi := ⟨prime X, prime_mem_pi X⟩
+-- prime_on_Pi
+noncomputable def Pi_prime (X : Pi) : Pi := ⟨prime X, prime_mem_Pi X.2⟩
 
 lemma Pi_prime_a_b : (X : Pi) → (a b : ℕ) →
   Pi_prime^[a] (Pi_prime^[b] X) = Pi_prime^[a + b] X := by
   intro X a b
   simp [Function.iterate_add]
-
 
 lemma Pi_prime_prime : (X : Pi) → (k : ℕ) →
   Pi_prime^[k + 1] X = Pi_prime^[k] (Pi_prime X) := by
@@ -75,7 +59,7 @@ lemma prime_prime_other : (k : ℕ) → (X : Pi) →
   | succ n ih =>
     intro X
     simp only [Function.iterate_succ, Function.comp_apply]
-    rw [← ih ⟨(Chromosome.prime X), prime_mem_pi X⟩]
+    rw [← ih ⟨(Chromosome.prime X), prime_mem_Pi X.2⟩]
     simp
 
 -- The first component of a chromosome's signature equals the Finsupp.sum of
