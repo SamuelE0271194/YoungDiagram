@@ -51,15 +51,40 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
     cases n with
     | zero =>
       -- X, Y ∈ Π(1): every element is a single polarized gene of rank 1.
-      -- Decide whether X and Y share a common gene.
+      -- In both sub-cases the same rank argument applies:
+      --   rank is additive and X ≤ Y, so rank(Y − X) = rank Y − rank X = 0,
+      --   hence Y − X = 0 by rank_0, i.e. X = Y, contradicting X < Y.
       by_cases hcommon :
           ∃ g : Gene, 0 < X.val g ∧ 0 < Y.val g
-      · -- Case 1: shared gene g.
+      · -- Case 1: shared gene g (rank argument still gives the contradiction).
         obtain ⟨g, hgX, hgY⟩ := hcommon
-        sorry
-      · -- Case 2: disjoint supports.
+        exfalso
+        have hle : X.val ≤ Y.val := hXY.le
+        -- Build Y.val = X.val + (Y.val - X.val) pointwise using Nat.add_sub_cancel'.
+        have hdec : X.val + (Y.val - X.val) = Y.val :=
+          add_tsub_cancel_of_le hle
+        have hrank_diff : (Y.val - X.val).rank = 0 := by
+          have h : X.val.rank + (Y.val - X.val).rank = Y.val.rank := by
+            have := congr_arg Chromosome.rank hdec; rwa [map_add] at this
+          have hXr : X.val.rank = 1 := hX
+          have hYr : Y.val.rank = 1 := hY
+          omega
+        rw [rank_0 _ hrank_diff, add_zero] at hdec
+        exact absurd (Subtype.ext hdec) (ne_of_lt hXY)
+      · -- Case 2: disjoint supports (same rank argument applies).
         push_neg at hcommon
-        sorry
+        exfalso
+        have hle : X.val ≤ Y.val := hXY.le
+        have hdec : X.val + (Y.val - X.val) = Y.val := by
+          exact add_tsub_cancel_of_le (X.val) (Y.val)
+        have hrank_diff : (Y.val - X.val).rank = 0 := by
+          have h : X.val.rank + (Y.val - X.val).rank = Y.val.rank := by
+            have := congr_arg Chromosome.rank hdec; rwa [map_add] at this
+          have hXr : X.val.rank = 1 := hX
+          have hYr : Y.val.rank = 1 := hY
+          omega
+        rw [rank_0 _ hrank_diff, add_zero] at hdec
+        exact absurd (Subtype.ext hdec) (ne_of_lt hXY)
     | succ m =>
       -- X, Y ∈ Π(m+2): the full inductive step with IH available at rank m+1.
       -- Decide whether X and Y share a common gene.

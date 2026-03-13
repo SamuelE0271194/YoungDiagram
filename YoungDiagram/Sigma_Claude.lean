@@ -29,7 +29,7 @@ lemma cond_15_2_antitone (X : Variety.Pi) : ∀ k, a X (k + 1) ≤ a X k := fun 
   simp only [a]
   simp only [sigma]
   rw [prime_prime_other k X]
-  exact sig_prime_le_fst ⟨prime^[k] X, prime_k_mem_pi X k⟩
+  exact sig_prime_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.2) aₖ = 0 for large k.
 lemma cond_15_2_eventually_zero (X : Variety.Pi) : ∃ K, ∀ k ≥ K, a X k = 0 := by
@@ -65,7 +65,7 @@ lemma cond_15_3_antitone (X : Variety.Pi) : ∀ k, b X (k + 1) ≤ b X k := fun 
   simp only [b]
   simp only [sigma]
   rw [prime_prime_other k X]
-  exact sig_prime_le_snd ⟨prime^[k] X, prime_k_mem_pi X k⟩
+  exact sig_prime_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.3) bₖ = 0 for large k.
 lemma cond_15_3_eventually_zero (X : Variety.Pi) : ∃ K, ∀ k ≥ K, b X k = 0 := by
@@ -100,12 +100,12 @@ lemma cond_15_4 (X : Variety.Pi) (k : ℕ) :
     simp only [if_pos heven]
     simp only [b, sigma, a]
     rw [prime_prime_other k X]
-    exact sig_prime_snd_le_fst ⟨prime^[k] X, prime_k_mem_pi X k⟩
+    exact sig_prime_snd_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
   · -- k is odd: prove a X (k+1) ≤ b X k
     simp only [if_neg heven]
     simp only [b, sigma, a]
     rw [prime_prime_other k X]
-    exact sig_prime_fst_le_snd ⟨prime^[k] X, prime_k_mem_pi X k⟩
+    exact sig_prime_fst_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.5) b₀ ≥ a₁ ≥ b₂ ≥ a₃ ≥ …
 -- At each step k: if k is even then bₖ ≥ a_{k+1}, else aₖ ≥ b_{k+1}.
@@ -117,12 +117,12 @@ lemma cond_15_5 (X : Variety.Pi) (k : ℕ) :
     simp only [if_pos heven]
     simp only [b, sigma, a]
     rw [prime_prime_other k X]
-    exact sig_prime_fst_le_snd ⟨prime^[k] X, prime_k_mem_pi X k⟩
+    exact sig_prime_fst_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
   · -- k is odd: prove b X (k+1) ≤ a X k
     simp only [if_neg heven]
     simp only [b, sigma, a]
     rw [prime_prime_other k X]
-    exact sig_prime_snd_le_fst ⟨prime^[k] X, prime_k_mem_pi X k⟩
+    exact sig_prime_snd_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.6) a₀ − a₁ ≥ b₁ − b₂ ≥ a₂ − a₃ ≥ b₃ − b₄ ≥ …
 -- The k-th term of the chain is (aₖ − a_{k+1}) when k is even,
@@ -135,13 +135,13 @@ lemma cond_15_6 (X : Variety.Pi) (k : ℕ) :
     simp only [a, sigma, b]
     -- Rewrite k+2 first so that k+1 occurrences are unified in one step
     rw [prime_prime_other (k + 1) X, prime_prime_other k X]
-    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_pos heven] at h
     exact h
   · simp only [if_neg heven]
     simp only [a, sigma, b]
     rw [prime_prime_other (k + 1) X, prime_prime_other k X]
-    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_neg heven] at h
     exact h
 
@@ -155,13 +155,13 @@ lemma cond_15_7 (X : Variety.Pi) (k : ℕ) :
   · simp only [if_pos heven]
     simp only [a, sigma, b]
     rw [prime_prime_other (k + 1) X, prime_prime_other k X]
-    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_pos heven] at h
     exact h
   · simp only [if_neg heven]
     simp only [a, sigma, b]
     rw [prime_prime_other (k + 1) X, prime_prime_other k X]
-    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, prime_k_mem_pi X k⟩ k
+    have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_neg heven] at h
     exact h
 
