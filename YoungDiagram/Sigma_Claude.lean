@@ -165,4 +165,19 @@ lemma cond_15_7 (X : Variety.Pi) (k : ℕ) :
     simp only [if_neg heven] at h
     exact h
 
+/--
+(15.8) If `X < Y` in `Π` then `aₖ ≤ cₖ` and `bₖ ≤ dₖ` for all `k`,
+where `(aₖ, bₖ) = σ(X)ₖ` and `(cₖ, dₖ) = σ(Y)ₖ`.
+
+Proof: `X < Y` implies `X ≤ Y` (dominance), so by `le_iff_dominates`,
+`sig(prime^[k] X) ≤ sig(prime^[k] Y)` componentwise for every `k`.
+-/
+lemma cond_15_8 {X Y : Variety.Pi} (h : X < Y) (k : ℕ) :
+    a X k ≤ a Y k ∧ b X k ≤ b Y k := by
+  have h' : X ≤ Y := le_of_lt h
+  have hle : sigma X k ≤ sigma Y k := by
+    simp only [sigma]
+    exact le_iff_dominates.mp h' k
+  exact ⟨hle.1, hle.2⟩
+
 end Sigma
