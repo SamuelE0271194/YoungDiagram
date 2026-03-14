@@ -1,6 +1,7 @@
 import YoungDiagram.Chromosome
 import YoungDiagram.Variety
 import YoungDiagram.Mutations
+import YoungDiagram.Lifting
 import YoungDiagram.SigmaAux_Claude
 import YoungDiagram.Sigma_Claude
 
@@ -214,4 +215,68 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           exact h
       · -- Case 2: disjoint supports.
         push_neg at hcommon
-        sorry
+        -- Sub-case split: does there exist k with sigma X k = sigma Y k?
+        by_cases hsigeq : ∃ k : ℕ, Sigma.sigma X k = Sigma.sigma Y k
+        · -- Sub-case 2a: some sigma column agrees.
+          obtain ⟨k, hk⟩ := hsigeq
+          -- Unfold Sigma.sigma to expose Chromosome.signature directly
+          simp only [Sigma.sigma] at hk
+          -- hk : Chromosome.signature (prime^[k] X.val) = Chromosome.signature (prime^[k] Y.val)
+          -- prime^[k] X and prime^[k] Y remain in Pi
+          have hXkPi : Chromosome.prime^[k] X.val ∈ Variety.Pi := prime_mem_Pi_iterate X.2
+          have hYkPi : Chromosome.prime^[k] Y.val ∈ Variety.Pi := prime_mem_Pi_iterate Y.2
+          set Xk : Variety.Pi := ⟨Chromosome.prime^[k] X.val, hXkPi⟩
+          set Yk : Variety.Pi := ⟨Chromosome.prime^[k] Y.val, hYkPi⟩
+          -- rank(Xk) = rank(Yk): from hk and signature_sum_eq_rank
+          have hXkrank : Xk.val.rank = Yk.val.rank := by
+            have heq : Chromosome.signature Xk.val = Chromosome.signature Yk.val := hk
+            have h1 := Sigma.signature_sum_eq_rank Xk _ rfl
+            have h2 := Sigma.signature_sum_eq_rank Yk _ rfl
+            -- Equality holds in ℚ (via linarith), then cast back to ℕ
+            have hq : (Xk.val.rank : ℚ) = Yk.val.rank := by
+              linarith [congr_arg Prod.fst heq, congr_arg Prod.snd heq]
+            exact_mod_cast hq
+          -- rank(Xk) < m + 2 (prime^[k] strictly reduces rank when k ≥ 1 and X ≠ 0)
+          have hrankk : Xk.val.rank < m + 2 := by sorry
+          -- prime^[k] X < prime^[k] Y (monotonicity of prime^[k] w.r.t. dominance order)
+          have hltk : Xk < Yk := by sorry
+          -- Apply IH at rank Xk.val.rank to get U : Pi with
+          --   IsMutation (prime^[k] X) U  and  U ≤ Yk
+          obtain ⟨U, hmuU, hleU⟩ :=
+            ih Xk.val.rank hrankk Xk Yk rfl hXkrank.symm hltk
+          -- Apply mutation lifting: a Pi.Step (prime^[k] X → U) lifts to
+          --   a Pi.Step (X → Z) with prime^[k] Z = U and
+          --   signature(prime^[i] X) = signature(prime^[i] Z) for all i ≤ k
+          obtain ⟨Z, hZ, hStepXZ, hpkZ, hsigXZ⟩ : ∃ (Z : Chromosome) (hZ : Z ∈ Variety.Pi),
+              Pi.Step X ⟨Z, hZ⟩ ∧ Chromosome.prime^[k] Z = U.val ∧
+              ∀ i ≤ k, Chromosome.signature (Chromosome.prime^[i] X.val) =
+                       Chromosome.signature (Chromosome.prime^[i] Z) := by
+            -- mutation_lifting (idx=0) applied to the Pi.Step Xk → U from IH
+            sorry
+          -- IsMutation X.val Z from the Pi.Step
+          refine ⟨⟨Z, hZ⟩, Pi.Step.isMutation hStepXZ, ?_⟩
+          -- Z ≤ Y: split on whether j ≤ k or j > k
+          change Z ≤ Y.val
+          rw [le_iff_dominates]
+          intro j
+          by_cases hj : j ≤ k
+          · -- j ≤ k: signature(prime^[j] Z) = signature(prime^[j] X) ≤ signature(prime^[j] Y)
+            rw [← hsigXZ j hj]
+            exact (le_iff_dominates.mp hXY.le) j
+          · -- j > k: prime^[j] Z = prime^[j-k] (prime^[k] Z) = prime^[j-k] U
+            --   U ≤ Yk, so signature(prime^[j-k] U) ≤ signature(prime^[j-k] Yk)
+            --                                         = signature(prime^[j] Y)
+            push_neg at hj
+            have hj' : k ≤ j := Nat.le_of_lt hj
+            rw [show j = (j - k) + k from (Nat.sub_add_cancel hj').symm,
+                Function.iterate_add_apply, hpkZ]
+            -- Coerce hleU to Chromosome inequality to apply le_iff_dominates
+            have hleU_chr : U.val ≤ Yk.val := hleU
+            have h := (le_iff_dominates.mp hleU_chr) (j - k)
+            simp only [Yk] at h
+            rw [← Function.iterate_add_apply, Nat.sub_add_cancel hj'] at h
+            simp_all
+            --rwa [← Function.iterate_add_apply, Nat.sub_add_cancel hj'] at h
+        · -- Sub-case 2b: all sigma columns differ.
+          push_neg at hsigeq
+          sorry

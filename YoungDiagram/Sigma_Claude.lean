@@ -165,6 +165,36 @@ lemma cond_15_7 (X : Variety.Pi) (k : ℕ) :
     simp only [if_neg heven] at h
     exact h
 
+/-- For a polarized gene `g`, `g.signature.1 + g.signature.2 = g.rank`. -/
+lemma gene_signature_sum_eq_rank (g : Gene) (hg : g.type ≠ .NonPolarized) :
+    g.signature.1 + g.signature.2 = (g.rank : ℚ) := by
+  cases h : g.type with
+  | NonPolarized => exact absurd h hg
+  | Positive =>
+    rw [Gene.signature_of_positive h]
+    split_ifs <;> ring
+  | Negative =>
+    rw [Gene.signature_of_negative h]
+    split_ifs <;> ring
+
+/-- If `X ∈ Π` has rank `n`, then `(signature X).1 + (signature X).2 = n`. -/
+lemma signature_sum_eq_rank (X : Variety.Pi) (n : ℕ) (hX : X.val.rank = n) :
+    (Chromosome.signature X.val).1 + (Chromosome.signature X.val).2 = n := by
+  rw [← hX]
+  -- All genes in X's support are polarized
+  have hpol : ∀ g ∈ X.val.support, g.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (Variety.mem_Pi_iff.mp X.2)
+  -- Expand each component as a Finsupp.sum over genes
+  rw [signature_fst X, signature_snd X]
+  simp only [Finsupp.sum, ← Finset.sum_add_distrib, ← smul_add]
+  -- Replace g.signature.1 + g.signature.2 with g.rank for each polarized gene
+  rw [show X.val.support.sum (fun g => (X.val g : ℚ) • (g.signature.1 + g.signature.2)) =
+        X.val.support.sum (fun g => (X.val g : ℚ) • (g.rank : ℚ)) from
+      Finset.sum_congr rfl (fun g hg => by rw [gene_signature_sum_eq_rank g (hpol g hg)])]
+  -- Identify with Chromosome.rank cast to ℚ
+  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
+             Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
+
 /--
 (15.8) If `X < Y` in `Π` then `aₖ ≤ cₖ` and `bₖ ≤ dₖ` for all `k`,
 where `(aₖ, bₖ) = σ(X)ₖ` and `(cₖ, dₖ) = σ(Y)ₖ`.
