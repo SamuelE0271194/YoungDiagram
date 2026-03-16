@@ -201,11 +201,11 @@ lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε 
 
 lemma signature_fst {X : Chromosome} :
     (Chromosome.signature X).1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) :=
-  map_sum (AddMonoidHom.fst ℚ ℚ) _ _
+  map_sum (AddMonoidHom.fst ..) ..
 
 lemma signature_snd {X : Chromosome} :
     (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
-  map_sum (AddMonoidHom.snd ℚ ℚ) _ _
+  map_sum (AddMonoidHom.snd ..) ..
 
 lemma signature_sum_eq_rank {X : Chromosome} :
     X.signature.1 + X.signature.2 = X.rank := by
@@ -288,7 +288,7 @@ instance : Preorder Chromosome where
 instance : IsOrderedCancelAddMonoid Chromosome where
   add_le_add_left _ _ _ _ := by
     simpa only [le_iff_dominates, iterate_map_add, map_add, add_le_add_iff_right]
-  le_of_add_le_add_left a b c h := by
+  le_of_add_le_add_left _ _ _ h := by
     simpa only [le_iff_dominates, iterate_map_add, map_add, add_le_add_iff_left] using h
 
 end order
