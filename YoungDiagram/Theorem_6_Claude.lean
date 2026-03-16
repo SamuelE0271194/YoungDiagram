@@ -216,9 +216,9 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
       · -- Case 2: disjoint supports.
         push_neg at hcommon
         -- Sub-case split: does there exist k with sigma X k = sigma Y k?
-        by_cases hsigeq : ∃ k : ℕ, Sigma.sigma X k = Sigma.sigma Y k
-        · -- Sub-case 2a: some sigma column agrees.
-          obtain ⟨k, hk⟩ := hsigeq
+        by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Sigma.sigma X k = Sigma.sigma Y k
+        · -- Sub-case 2a: some positive sigma column agrees.
+          obtain ⟨k, hkpos, hk⟩ := hsigeq
           -- Unfold Sigma.sigma to expose Chromosome.signature directly
           simp only [Sigma.sigma] at hk
           -- hk : Chromosome.signature (prime^[k] X.val) = Chromosome.signature (prime^[k] Y.val)
@@ -237,9 +237,104 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               linarith [congr_arg Prod.fst heq, congr_arg Prod.snd heq]
             exact_mod_cast hq
           -- rank(Xk) < m + 2 (prime^[k] strictly reduces rank when k ≥ 1 and X ≠ 0)
-          have hrankk : Xk.val.rank < m + 2 := by sorry
+          have hrankk : Xk.val.rank < m + 2 := by
+            -- X.val ≠ 0 since rank = m + 2 > 0
+            have hXne : X.val ≠ 0 := by
+              intro h
+              have h0 : X.val.rank = 0 := by simp [h, map_zero Chromosome.rank]
+              have h2 : X.val.rank = m + 2 := hX
+              omega
+            -- Key lemma: rank(prime Z) = Z.sum (fun g c => c * (g.rank - 1))
+            have rank_prime_eq : ∀ Z : Chromosome,
+                (Chromosome.prime Z).rank = Z.sum (fun g c => c * (g.rank - 1)) := fun Z => by
+              simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+              simp only [Finsupp.sum]
+              rw [map_sum Chromosome.rank]
+              apply Finset.sum_congr rfl
+              intro g _
+              rw [map_nsmul, nsmul_eq_mul]
+              congr 1
+              -- primeGene g = Gene.ofRank (g.rank - 1) g.type; case-split on whether rank-1 = 0
+              simp only [primeGene, Gene.ofRank_def]
+              split_ifs with h
+              · -- g.rank - 1 = 0: chromosome is 0, so rank = 0 = g.rank - 1
+                simp [h]
+              · -- g.rank - 1 ≠ 0: chromosome is single gene with that rank
+                simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+                rw [Finsupp.sum_single_index (by simp)]
+                simp
+            -- rank(Z) = Z.sum (fun g c => c * g.rank)
+            have rank_eq : ∀ Z : Chromosome,
+                Z.rank = Z.sum (fun g c => c * g.rank) := fun Z => by
+              simp [Chromosome.rank, Finsupp.sum]
+            -- rank(prime Z) < rank(Z) for Z ≠ 0
+            have rank_prime_lt : ∀ Z : Chromosome, Z ≠ 0 →
+                (Chromosome.prime Z).rank < Z.rank := fun Z hZ => by
+              rw [rank_prime_eq, rank_eq]
+              simp only [Finsupp.sum]
+              apply Finset.sum_lt_sum
+              · intro g _
+                exact Nat.mul_le_mul_left _ (Nat.sub_le _ _)
+              · obtain ⟨g₀, hg₀⟩ : Z.support.Nonempty :=
+                    Finsupp.support_nonempty_iff.mpr hZ
+                refine ⟨g₀, hg₀, ?_⟩
+                have hg₀_pos : 0 < Z g₀ :=
+                  Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg₀)
+                exact mul_lt_mul_of_pos_left
+                  (Nat.sub_lt g₀.rank_pos Nat.one_pos) hg₀_pos
+            -- rank is non-increasing under prime iterations
+            have rank_iter_le : ∀ (j : ℕ) (Z : Chromosome),
+                (Chromosome.prime^[j] Z).rank ≤ Z.rank := by
+              intro j Z; induction j with
+              | zero => simp
+              | succ i ih =>
+                simp only [Function.iterate_succ', Function.comp_apply]
+                rcases eq_or_ne (Chromosome.prime^[i] Z) 0 with h | h
+                · simp [h, map_zero Chromosome.prime, map_zero Chromosome.rank]
+                · exact Nat.le_trans
+                    (Nat.le_of_lt (rank_prime_lt _ h)) ih
+            -- For k = j + 1: prime^[j+1] X = prime^[j] (prime X)
+            -- rank(prime^[j+1] X) ≤ rank(prime X) < rank(X) = m + 2
+            simp only [Xk]
+            obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+            rw [Function.iterate_succ, Function.comp_apply]
+            have h1 : (Chromosome.prime^[j] (Chromosome.prime X.val)).rank ≤
+                (Chromosome.prime X.val).rank :=
+              rank_iter_le j (Chromosome.prime X.val)
+            have h2 : (Chromosome.prime X.val).rank < X.val.rank :=
+              rank_prime_lt X.val hXne
+            have hXrank : X.val.rank = m + 2 := hX
+            omega
           -- prime^[k] X < prime^[k] Y (monotonicity of prime^[k] w.r.t. dominance order)
-          have hltk : Xk < Yk := by sorry
+          have hltk : Xk < Yk := by
+            -- Xk < Yk ↔ Yk.val.Dominates Xk.val ∧ ¬Xk.val.Dominates Yk.val
+            constructor
+            · -- Yk.val.Dominates Xk.val:
+              -- ∀ j, sig(prime^[j] Xk.val) ≤ sig(prime^[j] Yk.val)
+              -- = ∀ j, sig(prime^[j+k] X.val) ≤ sig(prime^[j+k] Y.val)
+              -- which follows from hXY.le restricted to indices ≥ k
+              intro j
+              simp only [Xk, Yk, ← Function.iterate_add_apply]
+              exact le_iff_dominates.mp hXY.le (j + k)
+            · -- ¬Xk.val.Dominates Yk.val:
+              -- hXY : Y.Dominates X ∧ ¬X.Dominates Y, so hXY.2 : ¬X.Dominates Y.
+              -- Assume hdom : Xk.Dominates Yk = ∀ j, sig(prime^[j+k] Y) ≤ sig(prime^[j+k] X).
+              -- We apply hXY.2 and construct X.Dominates Y:
+              --   i ≥ k: use hdom at j = i - k directly.
+              --   i < k: use rank equality at step 0 (hX, hY) to show sig(X) = sig(Y).
+              intro hdom
+              apply hXY.2
+              -- Goal: (↑X).Dominates ↑Y = ∀ i, sig(prime^[i] Y.val) ≤ sig(prime^[i] X.val)
+              intro i
+              simp only [Chromosome.Dominates, Xk, Yk] at hdom
+              by_cases hi : k ≤ i
+              · -- i ≥ k: directly from hdom at j = i - k
+                have h := hdom (i - k)
+                simp only [← Function.iterate_add_apply, Nat.sub_add_cancel hi] at h
+                exact h
+              · -- i < k: use rank X = rank Y at step i = 0 to force sig(X) = sig(Y)
+                push_neg at hi
+                sorry
           -- Apply IH at rank Xk.val.rank to get U : Pi with
           --   IsMutation (prime^[k] X) U  and  U ≤ Yk
           obtain ⟨U, hmuU, hleU⟩ :=
