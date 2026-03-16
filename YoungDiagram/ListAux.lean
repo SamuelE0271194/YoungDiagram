@@ -1,8 +1,31 @@
-import Mathlib.Analysis.Normed.Field.Lemmas
 import Mathlib.Data.List.Iterate
+import YoungDiagram.Gene
 
 abbrev List.IsAlt {l : List Bool} (hl : l ≠ [] := by decide) : Prop :=
   l = List.iterate not (l.head hl) l.length
+
+def List.toGene {l : List Bool} (hl : l ≠ [] := by decide)
+    (_ : l.IsAlt hl := by decide) : Gene :=
+  ⟨l.length, if l.getLast hl = true then .Positive else .Negative, List.length_pos_iff.2 hl⟩
+
+def Gene.toList {g : Gene} (_ : g.type ≠ .NonPolarized := by decide) : List Bool :=
+  List.iterate not
+    (match g.type with | .Positive => true | .Negative => false | .NonPolarized => by tauto)
+    g.rank |>.reverse
+
+def Gene.signature_list (g : Gene) : ℚ × ℚ :=
+  match hg : g.type with
+  | .NonPolarized => (g.rank / 2, g.rank / 2)
+  | .Positive =>
+    let l := g.toList <|
+      (congrArg (· ≠ .NonPolarized) hg).mpr
+      (not_eq_of_beq_eq_false rfl)
+    (l.count true, l.count false)
+  | .Negative =>
+    let l := g.toList <|
+      (congrArg (· ≠ .NonPolarized) hg).mpr
+      (not_eq_of_beq_eq_false rfl)
+    (l.count true, l.count false)
 
 section signature_eq_pos
 
@@ -29,30 +52,29 @@ lemma count_false_eq_length_sub_count_true {l : List Bool} :
   simp only [id_eq, beq_false, beq_true]; ac_rfl
 
 lemma count_iterate_not_true {n : ℕ} :
+  (if Even n then ((n : ℚ) / 2, (n : ℚ) / 2)
+    else (((n : ℚ) + 1) / 2, ((n : ℚ) - 1) / 2)) =
   (↑(List.count true (List.iterate not true n)),
-   ↑(List.count false (List.iterate not true n))) =
-    if Even n then ((n : ℚ) / 2, (n : ℚ) / 2)
-    else (((n : ℚ) + 1) / 2, ((n : ℚ) - 1) / 2) := by
+   ↑(List.count false (List.iterate not true n))) := by
   induction n with
   | zero => simp
   | succ n hn =>
     split_ifs with h
     · replace h : ¬ Even n := Nat.even_add_one.mp h
       simp only [h, ↓reduceIte, Prod.mk.injEq, Nat.cast_add, Nat.cast_one] at hn ⊢
-      have : List.count true (List.iterate not true (n + 1)) = (n + 1 : ℚ) / 2 := by
-        rw [← hn.1, iterate_not_true_succ_of_odd h]; simp
+      have : (n + 1 : ℚ) / 2 = List.count true (List.iterate not true (n + 1)) := by
+        rw [hn.1, iterate_not_true_succ_of_odd h]; simp
       refine ⟨this, ?_⟩
-      rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, this,
+      rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, ← this,
         List.length_iterate, Nat.cast_add]
       ring
     · replace h : Even n := Nat.not_odd_iff_even.mp <| Nat.odd_add_one.mp <|
         Nat.not_even_iff_odd.1 h
       simp only [h, ↓reduceIte, Prod.mk.injEq, Nat.cast_add, Nat.cast_one] at hn ⊢
-      have : List.count true (List.iterate not true (n + 1)) =
-          ((n : ℚ) + 1 + 1) / 2 := by
-        rw [add_assoc, add_div, add_self_div_two, ← hn.1, iterate_not_true_succ_of_even h]; simp
+      have : ((n : ℚ) + 1 + 1) / 2 = List.count true (List.iterate not true (n + 1)) := by
+        rw [add_assoc, add_div, add_self_div_two, hn.1, iterate_not_true_succ_of_even h]; simp
       refine ⟨this, ?_⟩
-      rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, this,
+      rw [count_false_eq_length_sub_count_true, Nat.cast_sub List.count_le_length, ← this,
         List.length_iterate, Nat.cast_add]
       ring
 
@@ -82,16 +104,16 @@ lemma count_true_iterate_not_false {n : ℕ} :
   simp only [beq_true, Function.comp_apply, beq_false]
 
 lemma count_iterate_not_false {n : ℕ} :
+  (if Even n then ((n : ℚ) / 2, (n : ℚ) / 2)
+    else (((n : ℚ) - 1) / 2, ((n : ℚ) + 1) / 2)) =
   (↑(List.count true (List.iterate not false n)),
-   ↑(List.count false (List.iterate not false n))) =
-    if Even n then ((n : ℚ) / 2, (n : ℚ) / 2)
-    else (((n : ℚ) - 1) / 2, ((n : ℚ) + 1) / 2) := by
+   ↑(List.count false (List.iterate not false n))) := by
   have := @count_iterate_not_true n
   split_ifs with h
   all_goals
     simp only [h, ↓reduceIte, Prod.mk.injEq] at this ⊢
     split_ands
-    · rw [count_true_iterate_not_false, Nat.cast_sub, this.1]
+    · rw [count_true_iterate_not_false, Nat.cast_sub, ← this.1]
       · ring
       convert List.count_le_length; exact (List.length_iterate ..).symm
     · rw [count_false_eq_length_sub_count_true, List.length_iterate, count_true_iterate_not_false,
@@ -99,3 +121,17 @@ lemma count_iterate_not_false {n : ℕ} :
       convert List.count_le_length; exact (List.length_iterate ..).symm
 
 end signature_eq_neg
+
+lemma Gene.def_eq_of_list {g : Gene} :
+    g.signature = g.signature_list := by
+  unfold Gene.signature_list
+  split
+  · rwa [signature_of_nonPolarized]
+  · next hg =>
+    unfold Gene.signature
+    simp only [toList, hg, List.count_reverse]
+    exact count_iterate_not_true
+  · next hg =>
+    unfold Gene.signature
+    simp only [toList, hg, List.count_reverse]
+    exact count_iterate_not_false

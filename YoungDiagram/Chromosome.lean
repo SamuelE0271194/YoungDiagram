@@ -91,11 +91,13 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
 
 @[simp] lemma signature_ofRank_one_positive :
     (Gene.ofRank 1 .Positive).signature = (1, 0) := by
-  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte]; rfl
+  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte, Gene.signature_of_positive,
+    Nat.not_even_one, ↓reduceIte, Nat.cast_one, add_self_div_two, sub_self, zero_div]
 
 @[simp] lemma signature_ofRank_one_negative :
     (Gene.ofRank 1 .Negative).signature = (0, 1) := by
-  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte]; rfl
+  simp only [signature_ofRank, one_ne_zero, ↓reduceDIte, Gene.signature_of_negative,
+    Nat.not_even_one, ↓reduceIte, Nat.cast_one, sub_self, zero_div, add_self_div_two]
 
 @[simp] lemma signature_single {k : ℕ} {n : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
     signature (single (⟨k, ε, hk⟩ : Gene) n) =
@@ -150,11 +152,12 @@ lemma signature_ofRank_positive' {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Positive).signature + if Even k then (0, 1) else (1, 0) := by
   have hk' : k ≠ 0 := by omega
-  simp only [signature_ofRank, hk', ↓reduceDIte]
   by_cases hk'' : k = 1
   · subst hk''
-    simp only [tsub_self, ↓reduceDIte, Nat.not_even_one, ↓reduceIte, zero_add]; rfl
-  · replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
+    simp only [signature_ofRank_one_positive, tsub_self, Gene.ofRank_zero, map_zero,
+      Nat.not_even_one, ↓reduceIte, zero_add]
+  · simp only [signature_ofRank, hk', ↓reduceDIte]
+    replace hk'' : k - 1 ≠ 0 := Nat.sub_ne_zero_of_lt <|
       Nat.lt_of_le_of_ne hk fun a ↦ hk'' a.symm
     simp only [Gene.signature_of_positive, Nat.even_sub_one hk, ite_not, hk'', ↓reduceDIte]
     split_ifs <;> (simp [hk]; ring)
@@ -185,6 +188,23 @@ lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε 
     rw [← GeneType.neg_positive, signature_ofRank_swap,
       signature_ofRank_positive₂ hk, Prod.swap_add, ← signature_ofRank_swap]
     rfl
+
+lemma signature_fst {X : Chromosome} :
+    (Chromosome.signature X).1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) := by
+  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
+  exact map_sum (AddMonoidHom.fst ℚ ℚ) _ _
+
+lemma signature_snd {X : Chromosome} :
+    (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) := by
+  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
+  exact map_sum (AddMonoidHom.snd ℚ ℚ) _ _
+
+lemma signature_sum_eq_rank {X : Chromosome} :
+    X.signature.1 + X.signature.2 = X.rank := by
+  simp_rw [signature_fst, signature_snd, Finsupp.sum,
+    ← Finset.sum_add_distrib, ← smul_add, Gene.signature_sum_eq_rank]
+  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
+    Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
 
 end signature
 

@@ -28,7 +28,7 @@ noncomputable def b (X : Variety.Pi) (k : ℕ) : ℚ := (sigma X k).2
 lemma cond_15_2_antitone (X : Variety.Pi) : ∀ k, a X (k + 1) ≤ a X k := fun k => by
   simp only [a]
   simp only [sigma]
-  rw [prime_prime_other k X]
+  rw [Function.iterate_succ_apply']
   exact sig_prime_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.2) aₖ = 0 for large k.
@@ -64,7 +64,7 @@ lemma cond_15_2 (X : Variety.Pi) :
 lemma cond_15_3_antitone (X : Variety.Pi) : ∀ k, b X (k + 1) ≤ b X k := fun k => by
   simp only [b]
   simp only [sigma]
-  rw [prime_prime_other k X]
+  rw [Function.iterate_succ_apply']
   exact sig_prime_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.3) bₖ = 0 for large k.
@@ -99,12 +99,12 @@ lemma cond_15_4 (X : Variety.Pi) (k : ℕ) :
   · -- k is even: prove b X (k+1) ≤ a X k
     simp only [if_pos heven]
     simp only [b, sigma, a]
-    rw [prime_prime_other k X]
+    rw [Function.iterate_succ_apply']
     exact sig_prime_snd_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
   · -- k is odd: prove a X (k+1) ≤ b X k
     simp only [if_neg heven]
     simp only [b, sigma, a]
-    rw [prime_prime_other k X]
+    rw [Function.iterate_succ_apply']
     exact sig_prime_fst_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.5) b₀ ≥ a₁ ≥ b₂ ≥ a₃ ≥ …
@@ -116,12 +116,12 @@ lemma cond_15_5 (X : Variety.Pi) (k : ℕ) :
   · -- k is even: prove a X (k+1) ≤ b X k
     simp only [if_pos heven]
     simp only [b, sigma, a]
-    rw [prime_prime_other k X]
+    rw [Function.iterate_succ_apply']
     exact sig_prime_fst_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
   · -- k is odd: prove b X (k+1) ≤ a X k
     simp only [if_neg heven]
     simp only [b, sigma, a]
-    rw [prime_prime_other k X]
+    rw [Function.iterate_succ_apply']
     exact sig_prime_snd_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
 
 -- (15.6) a₀ − a₁ ≥ b₁ − b₂ ≥ a₂ − a₃ ≥ b₃ − b₄ ≥ …
@@ -134,13 +134,13 @@ lemma cond_15_6 (X : Variety.Pi) (k : ℕ) :
   · simp only [if_pos heven]
     simp only [a, sigma, b]
     -- Rewrite k+2 first so that k+1 occurrences are unified in one step
-    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    simp_rw [Function.iterate_succ_apply']
     have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_pos heven] at h
     exact h
   · simp only [if_neg heven]
     simp only [a, sigma, b]
-    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    simp_rw [Function.iterate_succ_apply']
     have h := cond_15_6_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_neg heven] at h
     exact h
@@ -154,46 +154,16 @@ lemma cond_15_7 (X : Variety.Pi) (k : ℕ) :
   by_cases heven : Even k
   · simp only [if_pos heven]
     simp only [a, sigma, b]
-    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    simp_rw [Function.iterate_succ_apply']
     have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_pos heven] at h
     exact h
   · simp only [if_neg heven]
     simp only [a, sigma, b]
-    rw [prime_prime_other (k + 1) X, prime_prime_other k X]
+    simp_rw [Function.iterate_succ_apply']
     have h := cond_15_7_Pi ⟨Chromosome.prime^[k] ↑X, Variety.prime_mem_Pi_iterate X.property⟩ k
     simp only [if_neg heven] at h
     exact h
-
-/-- For a polarized gene `g`, `g.signature.1 + g.signature.2 = g.rank`. -/
-lemma gene_signature_sum_eq_rank (g : Gene) (hg : g.type ≠ .NonPolarized) :
-    g.signature.1 + g.signature.2 = (g.rank : ℚ) := by
-  cases h : g.type with
-  | NonPolarized => exact absurd h hg
-  | Positive =>
-    rw [Gene.signature_of_positive h]
-    split_ifs <;> ring
-  | Negative =>
-    rw [Gene.signature_of_negative h]
-    split_ifs <;> ring
-
-/-- If `X ∈ Π` has rank `n`, then `(signature X).1 + (signature X).2 = n`. -/
-lemma signature_sum_eq_rank (X : Variety.Pi) (n : ℕ) (hX : X.val.rank = n) :
-    (Chromosome.signature X.val).1 + (Chromosome.signature X.val).2 = n := by
-  rw [← hX]
-  -- All genes in X's support are polarized
-  have hpol : ∀ g ∈ X.val.support, g.type ≠ .NonPolarized :=
-    IsPolarized_def'.mp (Variety.mem_Pi_iff.mp X.2)
-  -- Expand each component as a Finsupp.sum over genes
-  rw [signature_fst X, signature_snd X]
-  simp only [Finsupp.sum, ← Finset.sum_add_distrib, ← smul_add]
-  -- Replace g.signature.1 + g.signature.2 with g.rank for each polarized gene
-  rw [show X.val.support.sum (fun g => (X.val g : ℚ) • (g.signature.1 + g.signature.2)) =
-        X.val.support.sum (fun g => (X.val g : ℚ) • (g.rank : ℚ)) from
-      Finset.sum_congr rfl (fun g hg => by rw [gene_signature_sum_eq_rank g (hpol g hg)])]
-  -- Identify with Chromosome.rank cast to ℚ
-  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
-             Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
 
 /--
 (15.8) If `X < Y` in `Π` then `aₖ ≤ cₖ` and `bₖ ≤ dₖ` for all `k`,

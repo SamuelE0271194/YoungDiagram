@@ -8,70 +8,6 @@ open Variety
 
 open Finsupp Pointwise
 
--- prime_on_Pi
-noncomputable def Pi_prime (X : Pi) : Pi := ⟨prime X, prime_mem_Pi X.2⟩
-
-lemma Pi_prime_a_b : (X : Pi) → (a b : ℕ) →
-  Pi_prime^[a] (Pi_prime^[b] X) = Pi_prime^[a + b] X := by
-  intro X a b
-  simp [Function.iterate_add]
-
-lemma Pi_prime_prime : (X : Pi) → (k : ℕ) →
-  Pi_prime^[k + 1] X = Pi_prime^[k] (Pi_prime X) := by
-  intro X k
-  induction k with
-  | zero => rfl
-  | succ n ih => simp
-
-lemma Pi_prime_prime_other : (k : ℕ) → (X : Pi) →
-  Pi_prime^[k + 1] X = Pi_prime (Pi_prime^[k] X) := by
-  intro k
-  induction k with
-  | zero =>
-    intro X
-    rfl
-  | succ n ih =>
-    intro X
-    simp only [Function.iterate_succ, Function.comp_apply]
-    rw [← ih (Pi_prime X)]
-    simp
-
-lemma prime_a_b : (X : Pi) → (a b : ℕ) →
-  Chromosome.prime^[a] (Chromosome.prime^[b] X) = Chromosome.prime^[a + b] X := by
-  intro X a b
-  simp [Function.iterate_add]
-
-
-lemma prime_prime : (X : Pi) → (k : ℕ) →
-  Chromosome.prime^[k + 1] X = Chromosome.prime^[k] (Chromosome.prime X) := by
-  intro X k
-  induction k with
-  | zero => rfl
-  | succ n ih => simp
-
-lemma prime_prime_other : (k : ℕ) → (X : Pi) →
-  Chromosome.prime^[k + 1] X = Chromosome.prime (Chromosome.prime^[k] X) := by
-  intro k
-  induction k with
-  | zero =>
-    intro X
-    rfl
-  | succ n ih =>
-    intro X
-    simp only [Function.iterate_succ, Function.comp_apply]
-    rw [← ih ⟨(Chromosome.prime X), prime_mem_Pi X.2⟩]
-    simp
-
--- The first component of a chromosome's signature equals the Finsupp.sum of
--- the first components of each gene's signature, weighted by multiplicity.
--- Proof: .1 is an AddMonoidHom (AddMonoidHom.fst), so it commutes with Finset.sum.
-lemma signature_fst (X : Variety.Pi) :
-    (Chromosome.signature X).1 = X.val.sum (fun g n ↦ (n : ℚ) • g.signature.1) := by
-  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
-  -- (AddMonoidHom.fst ℚ ℚ) p = p.1 definitionally, and (c • p).1 = c • p.1 definitionally,
-  -- so the goal is definitionally equal to what map_sum gives.
-  exact map_sum (AddMonoidHom.fst ℚ ℚ) _ _
-
 -- The first component of signature(prime X) equals the Finsupp.sum of
 -- the first components of each primeGene's signature, weighted by multiplicity.
 -- Proof: push signature through the sum (map_finsupp_sum + map_nsmul),
@@ -167,8 +103,7 @@ lemma sig_prime_le_fst (Y : Variety.Pi) : (signature (prime Y)).1 ≤ (signature
   -- Step 2: All genes in Y's support are polarized (since Y ∈ Pi).
   have hpol : ∀ g ∈ (↑Y : Chromosome).support, g.type ≠ .NonPolarized :=
     IsPolarized_def'.mp (Variety.mem_Pi_iff.mp Y.property)
-  simp only [signature_fst]
-  simp only [signature_prime_fst]
+  rw [@signature_fst Y.1, signature_prime_fst]
   -- Step 3: Pointwise comparison: each gene's contribution to prime is ≤ the original,
   -- since aux gives (primeGene g).signature.1 ≤ g.signature.1 for polarized g,
   -- and the scalar (Y.val g : ℚ) is non-negative.
@@ -178,12 +113,6 @@ lemma sig_prime_le_fst (Y : Variety.Pi) : (signature (prime Y)).1 ≤ (signature
     intro g _
     exact Nat.cast_nonneg _
   apply mul_le_mul_of_nonneg_left (aux g (hpol g hg)) (this g hg)
-
--- same as signature_fst
-lemma signature_snd (X : Variety.Pi) :
-    (Chromosome.signature X).2 = X.val.sum (fun g n ↦ (n : ℚ) • g.signature.2) := by
-  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
-  exact map_sum (AddMonoidHom.snd ℚ ℚ) _ _
 
 -- same as signature_prime_fst
 lemma signature_prime_snd (X : Chromosome) :
@@ -251,8 +180,7 @@ lemma sig_prime_le_snd (Y : Variety.Pi) : (signature (prime Y)).2 ≤ (signature
           linarith
   have hpol : ∀ g ∈ (↑Y : Chromosome).support, g.type ≠ .NonPolarized :=
     IsPolarized_def'.mp (Variety.mem_Pi_iff.mp Y.property)
-  simp only [signature_snd]
-  simp only [signature_prime_snd]
+  rw [@signature_snd Y.1, signature_prime_snd _]
   apply Finsupp.sum_le_sum
   intro g hg
   have : ∀ g ∈ Y.val.support, (0 : ℚ) ≤ (Y.val g) := by
@@ -644,7 +572,7 @@ lemma cond_15_6_Pi (Y : Pi) (k : ℕ) :
     -- Expand double-prime term first (before signature_prime_snd can match it),
     -- then expand remaining terms, then unfold Finsupp.sum to Finset.sum
     rw [signature_prime_prime_snd (↑Y), signature_prime_snd (↑Y),
-        signature_prime_fst (↑Y), signature_fst Y]
+        signature_prime_fst (↑Y), signature_fst]
     simp only [Finsupp.sum]
     -- Group: sum f + sum g = sum (f + g)
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
@@ -661,7 +589,7 @@ lemma cond_15_6_Pi (Y : Pi) (k : ℕ) :
                  (signature Y).2 + (signature (prime (prime Y))).1 by linarith
     -- Expand double-prime term first, then remaining terms, then unfold to Finset.sum
     rw [signature_prime_prime_fst (↑Y), signature_prime_fst (↑Y),
-        signature_prime_snd (↑Y), signature_snd Y]
+        signature_prime_snd (↑Y), signature_snd]
     simp only [Finsupp.sum]
     -- Group: sum f + sum g = sum (f + g)
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
@@ -689,7 +617,7 @@ lemma cond_15_7_Pi (Y : Pi) (k : ℕ) :
     suffices h : (signature (prime Y)).1 + (signature (prime Y)).2 ≤
                  (signature Y).2 + (signature (prime (prime Y))).1 by linarith
     rw [signature_prime_prime_fst (↑Y), signature_prime_fst (↑Y),
-        signature_prime_snd (↑Y), signature_snd Y]
+        signature_prime_snd (↑Y), signature_snd]
     simp only [Finsupp.sum]
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
     apply Finset.sum_le_sum
@@ -703,7 +631,7 @@ lemma cond_15_7_Pi (Y : Pi) (k : ℕ) :
     suffices h : (signature (prime Y)).2 + (signature (prime Y)).1 ≤
                  (signature Y).1 + (signature (prime (prime Y))).2 by linarith
     rw [signature_prime_prime_snd (↑Y), signature_prime_snd (↑Y),
-        signature_prime_fst (↑Y), signature_fst Y]
+        signature_prime_fst (↑Y), signature_fst]
     simp only [Finsupp.sum]
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
     apply Finset.sum_le_sum

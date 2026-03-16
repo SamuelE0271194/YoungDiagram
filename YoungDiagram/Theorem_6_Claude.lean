@@ -230,11 +230,12 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           -- rank(Xk) = rank(Yk): from hk and signature_sum_eq_rank
           have hXkrank : Xk.val.rank = Yk.val.rank := by
             have heq : Chromosome.signature Xk.val = Chromosome.signature Yk.val := hk
-            have h1 := Sigma.signature_sum_eq_rank Xk _ rfl
-            have h2 := Sigma.signature_sum_eq_rank Yk _ rfl
+            have h1 := Xk.1.signature_sum_eq_rank
+            have h2 := Yk.1.signature_sum_eq_rank
             -- Equality holds in ℚ (via linarith), then cast back to ℕ
             have hq : (Xk.val.rank : ℚ) = Yk.val.rank := by
-              linarith [congr_arg Prod.fst heq, congr_arg Prod.snd heq]
+              rw [← h1, ← h2]
+              congr
             exact_mod_cast hq
           -- rank(Xk) < m + 2 (prime^[k] strictly reduces rank when k ≥ 1 and X ≠ 0)
           have hrankk : Xk.val.rank < m + 2 := by

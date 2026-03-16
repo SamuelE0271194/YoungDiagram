@@ -1,5 +1,5 @@
-import YoungDiagram.ListAux
 import Mathlib.Algebra.Ring.NegOnePow
+import Mathlib.Analysis.Normed.Field.Lemmas
 
 inductive GeneType
   | NonPolarized
@@ -91,57 +91,46 @@ structure Gene where
   rank_pos : 1 ≤ rank := by decide
 deriving DecidableEq, Repr
 
-def List.toGene {l : List Bool} (hl : l ≠ [] := by decide)
-    (_ : l.IsAlt hl := by decide) : Gene :=
-  ⟨l.length, if l.getLast hl = true then .Positive else .Negative, List.length_pos_iff.2 hl⟩
-
-def Gene.toList {g : Gene} (_ : g.type ≠ .NonPolarized := by decide) : List Bool :=
-  List.iterate not
-    (match g.type with | .Positive => true | .Negative => false | .NonPolarized => by tauto)
-    g.rank |>.reverse
-
 def Gene.signature (g : Gene) : ℚ × ℚ :=
-  match hg : g.type with
+  match g.type with
   | .NonPolarized => (g.rank / 2, g.rank / 2)
   | .Positive =>
-    let l := g.toList <|
-      (congrArg (· ≠ .NonPolarized) hg).mpr
-      (not_eq_of_beq_eq_false rfl)
-    (l.count true, l.count false)
+    if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
+    else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2)
   | .Negative =>
-    let l := g.toList <|
-      (congrArg (· ≠ .NonPolarized) hg).mpr
-      (not_eq_of_beq_eq_false rfl)
-    (l.count true, l.count false)
+    if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
+    else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2)
 
 lemma Gene.signature_of_nonPolarized {g : Gene} (hg : g.type = .NonPolarized) :
     g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
   unfold Gene.signature
-  split <;> first | rfl | rw [hg] at *; contradiction
+  simp only [hg]
 
 lemma Gene.signature_of_positive {g : Gene} (hg : g.type = .Positive) :
   g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2) := by
   unfold Gene.signature
-  split
-  · rw [hg] at *; contradiction
-  · next hg =>
-    simp only [toList, hg, List.count_reverse]
-    exact count_iterate_not_true
-  · rw [hg] at *; contradiction
+  simp only [hg]
 
 lemma Gene.signature_of_negative {g : Gene} (hg : g.type = .Negative) :
   g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2) := by
   unfold Gene.signature
-  split
-  · rw [hg] at *; contradiction
-  · rw [hg] at *; contradiction
-  next hg =>
-    simp only [toList, hg, List.count_reverse]
-    exact count_iterate_not_false
+  simp only [hg]
+
+lemma Gene.signature_sum_eq_rank (g : Gene) :
+    g.signature.1 + g.signature.2 = (g.rank : ℚ) := by
+  match h : g.type with
+  | .NonPolarized =>
+    rw [signature_of_nonPolarized h, add_halves]
+  | .Positive =>
+    rw [Gene.signature_of_positive h]
+    split_ifs <;> ring
+  | .Negative =>
+    rw [Gene.signature_of_negative h]
+    split_ifs <;> ring
 
 lemma Gene.signature_pos (g : Gene) : 0 < g.signature := by
   match hg : g.type with
