@@ -1,8 +1,3 @@
-import YoungDiagram.Chromosome
-import YoungDiagram.Variety
-import YoungDiagram.Mutations
-import YoungDiagram.Lifting
-import YoungDiagram.SigmaAux_Claude
 import YoungDiagram.Sigma_Claude
 
 open Chromosome Variety
@@ -12,17 +7,6 @@ open Chromosome Variety
 This corresponds to `Π(n)` in the paper.
 -/
 def Pi_n (n : ℕ) : Set Variety.Pi := { X | X.val.rank = n }
-
-lemma rank_0 (X : Chromosome) (h : X.rank = 0) : X = 0 := by
-  simp [Chromosome.rank, Finsupp.sum] at h
-  have h' : ∀ a ∈ X.support, 1 ≤ a.rank := by
-    intro a h''
-    exact a.rank_pos
-  apply Finsupp.ext
-  intro a
-  simp
-  simp_all
-
 
 /-- A rank-1 polarized chromosome is `Gene.ofRank 1 ε` for some polarized type ε. -/
 lemma rank_eq_one_pi_single (C : Chromosome) (hC : C ∈ Variety.Pi) (hr : C.rank = 1) :
@@ -45,7 +29,7 @@ lemma rank_eq_one_pi_single (C : Chromosome) (hC : C ∈ Variety.Pi) (hr : C.ran
     have hmul : n * g.rank = 1 := by omega
     have hn1 : n = 1 := Nat.dvd_one.mp ⟨g.rank, hmul.symm⟩
     have hgr1 : g.rank = 1 := by rw [hn1, one_mul] at hmul; exact hmul
-    have hfeq : f = 0 := rank_0 f hf0
+    have hfeq : f = 0 := rank_zero hf0
     have hmem : g ∈ (Finsupp.single g n + f).support := by
       apply Finsupp.mem_support_iff.mpr
       simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_eq_same]
@@ -99,8 +83,8 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
   | zero =>
     -- rank 0 forces X = Y = 0, contradicting X < Y.
     exfalso
-    have hX0 : X.val = 0 := rank_0 X.val hX
-    have hY0 : Y.val = 0 := rank_0 Y.val hY
+    have hX0 : X.val = 0 := rank_zero hX
+    have hY0 : Y.val = 0 := rank_zero hY
     exact absurd (Subtype.ext (hX0.trans hY0.symm)) (ne_of_lt hXY)
   | succ n =>
     cases n with

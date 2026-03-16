@@ -59,6 +59,16 @@ def rank : Chromosome →+ ℕ where
   map_zero' := sum_zero_index
   map_add' _ _ := sum_add_index' (fun _ ↦ zero_smul ..) (fun _ _ _ ↦ add_smul ..)
 
+lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 := by
+  simp only [rank, sum, smul_eq_mul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+    Finset.sum_eq_zero_iff, mem_support_iff, ne_eq, mul_eq_zero] at h
+  rw [← Finsupp.support_eq_empty]
+  by_contra!
+  obtain ⟨a, ha⟩ := this
+  absurd ((h a (mem_support_iff.1 ha)).resolve_left
+    (mem_support_iff.1 ha)) ▸ a.rank_pos
+  omega
+
 section signature
 
 /--
@@ -190,14 +200,12 @@ lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε 
     rfl
 
 lemma signature_fst {X : Chromosome} :
-    (Chromosome.signature X).1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) := by
-  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
-  exact map_sum (AddMonoidHom.fst ℚ ℚ) _ _
+    (Chromosome.signature X).1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) :=
+  map_sum (AddMonoidHom.fst ℚ ℚ) _ _
 
 lemma signature_snd {X : Chromosome} :
-    (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) := by
-  simp only [Chromosome.signature, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum]
-  exact map_sum (AddMonoidHom.snd ℚ ℚ) _ _
+    (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
+  map_sum (AddMonoidHom.snd ℚ ℚ) _ _
 
 lemma signature_sum_eq_rank {X : Chromosome} :
     X.signature.1 + X.signature.2 = X.rank := by

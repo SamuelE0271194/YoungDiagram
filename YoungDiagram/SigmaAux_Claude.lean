@@ -1,7 +1,4 @@
-import YoungDiagram.Chromosome
-import YoungDiagram.Variety
 import YoungDiagram.Mutations
-import Mathlib.Algebra.GroupWithZero.Submonoid.Pointwise
 
 open Chromosome
 open Variety

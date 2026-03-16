@@ -1,6 +1,3 @@
-import YoungDiagram.Chromosome
-import YoungDiagram.Variety
-import YoungDiagram.Mutations
 import YoungDiagram.SigmaAux_Claude
 
 open Chromosome
@@ -15,7 +12,7 @@ Represented as a function `ℕ → ℚ × ℚ`, where the first component is `a�
 and the second is `bₖ`.
 -/
 noncomputable def sigma (X : Variety.Pi) : ℕ → ℚ × ℚ :=
-  fun k => signature (prime^[k] X)
+  fun k ↦ signature (prime^[k] X)
 
 /-- The `aₖ` entry of σ(X): the first component of sig X^(k). -/
 noncomputable def a (X : Variety.Pi) (k : ℕ) : ℚ := (sigma X k).1
