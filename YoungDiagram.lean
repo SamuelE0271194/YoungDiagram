@@ -6,3 +6,5 @@ import YoungDiagram.MutationsAux
 import YoungDiagram.Mutations
 import YoungDiagram.Lifting
 import YoungDiagram.Sigma
+import YoungDiagram.NilpotentOrbit
+import YoungDiagram.LieAlgebra

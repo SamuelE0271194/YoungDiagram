@@ -9,7 +9,7 @@ This Lean 4 project aims to formalize parts of Dragomir Djokovic's paper *Closur
 
 ## Current state
 
-The project is still at an early stage, but the basic combinatorial infrastructure is already present:
+### Combinatorial layer (fully proved)
 
 - `YoungDiagram/Gene.lean` defines genes and their signatures.
 - `YoungDiagram/Chromosome.lean` defines chromosomes, rank, signature, and the prime operation.
@@ -17,7 +17,12 @@ The project is still at an early stage, but the basic combinatorial infrastructu
 - `YoungDiagram/Mutations*.lean` formalizes several primitive mutation patterns.
 - `YoungDiagram/Sigma*.lean` contains work toward the sigma conditions and orbit-order arguments.
 
-In terms of the paper, the present code is mainly setting up the framework around the chromosome partial order and the mutation-based approach to orbit closure.
+### Nilpotent orbit bridge (statements + sorry'd proofs)
+
+- `YoungDiagram/NilpotentOrbit.lean` — Defines `SeriesIndex` (j ∈ {4,6,7,9,10}), `NilpotentBlock`, `NilpotentType`, and the block-to-chromosome map `toChromosome` following Table IV (§5). States Lemma 4 (chromosome bijection, §7) as `toChromosome_injective` / `toChromosome_surjective`.
+- `YoungDiagram/LieAlgebra/ClassicalSetup.lean` — Bundles the Lie algebra data (`ClassicalSetup`): base field F, vector space V, Lie subalgebra L ⊆ End_F(V), and form signature sig(f). Connects j = 6, 9 to mathlib's `skewAdjointLieSubalgebra`; j = 4 (hermitian) and j = 7, 10 (quaternionic) are deferred.
+- `YoungDiagram/LieAlgebra/JordanBlock.lean` — Declares `jordanPartition` and `extractNilpotentType` (§5): given a nilpotent x ∈ L, extract its combinatorial type Δ(x). Sorry'd pending mathlib Jordan normal form theory.
+- `YoungDiagram/LieAlgebra/OrbitClosure.lean` — States Theorem 5 (§7): orbit closure ↔ chromosome dominance (`orbit_closure_iff_dominance`). Defines the adjoint action, nilpotent orbits, and orbit closure relation.
 
 ## Building
 
