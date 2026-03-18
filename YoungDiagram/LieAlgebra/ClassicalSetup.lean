@@ -31,34 +31,6 @@ from `NilpotentOrbit.lean` and mathlib's Lie algebra infrastructure.
 
 namespace YoungDiagram.LieAlgebra
 
-/-! ### The Lie algebra of a bilinear form
-
-For j = 6 (symmetric bilinear form over ℝ) and j = 9 (skew-symmetric
-bilinear form over ℝ), the Lie algebra L is directly
-`skewAdjointLieSubalgebra B` from mathlib.
-
-Recall: `skewAdjointLieSubalgebra B` consists of those `f : End R M` satisfying
-`B (f v) w + B v (f w) = 0` for all `v, w`. -/
-
-section BilinearForm
-
-variable (R : Type*) [CommRing R]
-variable {V : Type*} [AddCommGroup V] [Module R V]
-
-/-- The Lie algebra of the classical group preserving a bilinear form B.
-This is `{x ∈ End(V) | B(xv, w) + B(v, xw) = 0 ∀ v, w}`. -/
-def lieAlgebraOfBilinForm (B : LinearMap.BilinForm R V) :
-    LieSubalgebra R (Module.End R V) :=
-  skewAdjointLieSubalgebra B
-
-/-- An element x of `lieAlgebraOfBilinForm B` is nilpotent when it is
-nilpotent as an endomorphism of V. -/
-def lieAlgebraOfBilinForm.IsNilpotent (B : LinearMap.BilinForm R V)
-    (x : lieAlgebraOfBilinForm R B) : Prop :=
-  _root_.IsNilpotent (x.val : Module.End R V)
-
-end BilinearForm
-
 /-! ### Sesquilinear form case (j = 4)
 
 For G = U(p,q), the Lie algebra consists of endomorphisms x satisfying
@@ -109,6 +81,11 @@ that `JordanBlock.lean` and `OrbitClosure.lean` can depend on. -/
 Bundles a commutative field F, a finite-dimensional F-vector space V,
 the Lie subalgebra L ⊆ End_F(V), and the form signature sig(f).
 
+The signature is stored as `formSigNat : ℕ × ℕ` to avoid unnecessary `ℚ`.
+- For j = 4, 6, 10: `formSigNat = (p, q)` where `sig(f) = (p, q)`.
+- For j = 7, 9: `formSigNat = (n, n)` where `sig(f) = (n/2, n/2)`.
+Use `formSig` to obtain the rational `ℚ × ℚ` signature.
+
 Note: For the quaternionic series (j = 7, 10), F should be ℍ (a division
 ring, not a field). We use `Field` as a temporary placeholder. -/
 structure ClassicalSetup (j : SeriesIndex) where
@@ -122,9 +99,10 @@ structure ClassicalSetup (j : SeriesIndex) where
   [instFD : FiniteDimensional F V]
   /-- The Lie algebra L ⊆ End_F(V) -/
   L : LieSubalgebra F (Module.End F V)
-  /-- The form signature sig(f) = (p, q) from Table I -/
-  formSig : ℚ × ℚ
-  formSig_nonneg : 0 ≤ formSig.1 ∧ 0 ≤ formSig.2
+  /-- The form signature stored as natural numbers. [§1 Table I]
+      For j = 4, 6, 10: `(p, q)` directly.
+      For j = 7, 9: `(n, n)` encoding `sig(f) = (n/2, n/2)`. -/
+  formSigNat : ℕ × ℕ
 
 namespace ClassicalSetup
 
@@ -136,14 +114,26 @@ instance : AddCommGroup S.V := S.instACG
 instance : Module S.F S.V := S.instMod
 instance : FiniteDimensional S.F S.V := S.instFD
 
+/-- The rational form signature `sig(f) : ℚ × ℚ`, derived from `formSigNat`.
+For j = 7, 9 this divides by 2; for other series it is a direct cast. -/
+noncomputable def formSig : ℚ × ℚ :=
+  match j with
+  | .Ostar | .SpR => ((S.formSigNat.1 : ℚ) / 2, (S.formSigNat.2 : ℚ) / 2)
+  | _              => (↑S.formSigNat.1, ↑S.formSigNat.2)
+
+lemma formSig_nonneg : 0 ≤ S.formSig.1 ∧ 0 ≤ S.formSig.2 := by
+  simp only [formSig]
+  split <;> refine ⟨?_, ?_⟩ <;> positivity
+
 /-- The F-dimension of V. -/
 noncomputable def dim : ℕ := Module.finrank S.F S.V
 
 /-- An element of the Lie algebra, viewed as an endomorphism of V. -/
 abbrev Elem := S.L
 
-/-- An element x ∈ L is nilpotent (as an endomorphism of V). -/
-def IsNilpotentElem (x : S.Elem) : Prop :=
+/-- An element x ∈ L is nilpotent (as an endomorphism of V).
+Defined as `abbrev` so that mathlib's `IsNilpotent` lemmas apply directly. -/
+abbrev IsNilpotentElem (x : S.Elem) : Prop :=
   IsNilpotent (x.val : Module.End S.F S.V)
 
 /-- The set of nilpotent elements in L. -/
@@ -161,28 +151,27 @@ end ClassicalSetup
 Each series j determines a specific classical group and form type.
 The full construction requires:
 - j = 4: hermitian form over ℂ → `lieAlgebra_U`
-- j = 6: symmetric bilinear form over ℝ → `lieAlgebraOfBilinForm`
+- j = 6: symmetric bilinear form over ℝ → `skewAdjointLieSubalgebra`
 - j = 7: skew-hermitian form over ℍ → TODO
-- j = 9: skew-symmetric bilinear form over ℝ → `lieAlgebraOfBilinForm`
+- j = 9: skew-symmetric bilinear form over ℝ → `skewAdjointLieSubalgebra`
 - j = 10: hermitian form over ℍ → TODO
 
 For now we provide sorry'd existence statements. -/
 
-/-- A form signature is admissible for series j when it satisfies the
-constraints from Table I (§1) and §7:
-- j = 4, 6, 10: sig(f) = (k, n−k) where k, n−k ∈ ℕ with k + (n−k) ≥ 1
-- j = 7, 9: sig(f) = (n/2, n/2) where n ≥ 1 (p.227: "When j = 7 or 9
-  we have sig(f) = (n/2, n/2)") -/
-def ClassicalSetup.IsAdmissibleSig (j : SeriesIndex) (sig : ℚ × ℚ) : Prop :=
+/-- A natural-number form signature is admissible for series j when it satisfies
+the constraints from Table I (§1) and §7:
+- j = 4, 6, 10: `(p, q)` with `p + q ≥ 1`
+- j = 7, 9: `(n, n)` with `n ≥ 1` (encoding `sig(f) = (n/2, n/2)`) -/
+def ClassicalSetup.IsAdmissibleSig (j : SeriesIndex) (sig : ℕ × ℕ) : Prop :=
   0 < sig.1 + sig.2 ∧
   match j with
-  | .U | .O | .SpH => ∃ p q : ℕ, sig = (↑p, ↑q)
-  | .Ostar | .SpR  => ∃ n : ℕ, sig = ((n : ℚ) / 2, (n : ℚ) / 2)
+  | .Ostar | .SpR => sig.1 = sig.2
+  | _ => True
 
 /-- Every admissible form signature admits a classical setup of the given series. -/
-theorem ClassicalSetup.exists (j : SeriesIndex) (sig : ℚ × ℚ)
+theorem ClassicalSetup.exists (j : SeriesIndex) (sig : ℕ × ℕ)
     (hsig : ClassicalSetup.IsAdmissibleSig j sig) :
-    ∃ S : ClassicalSetup j, S.formSig = sig := by
+    ∃ S : ClassicalSetup j, S.formSigNat = sig := by
   sorry
 
 end YoungDiagram.LieAlgebra

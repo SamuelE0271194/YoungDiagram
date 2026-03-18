@@ -18,14 +18,17 @@ where X(θ) is the chromosome of the orbit and ≤ is the dominance order.
 
 ## Main definitions
 
-* `ClassicalSetup.adjointAction`: The adjoint action of G on L.
-* `ClassicalSetup.nilpotentOrbit`: The G-orbit of a nilpotent element.
-* `ClassicalSetup.orbitChromosome`: The chromosome X(θ) of an orbit.
+* `adjointAction`: The adjoint action of G on L.
+* `NilpotentOrbit`: The quotient type of nilpotent orbits (equivalence classes). [§7]
+* `orbitChromosome`: The chromosome X(x) of a nilpotent element (on representatives).
+* `orbitChromosomeQuot`: The chromosome X(θ) lifted to orbits. [§7 Lemma 4]
+* `chromosomeSet`: The target set {X ∈ Φⱼ | sig(X) = sig(f)}. [§7 Lemma 4]
 
 ## Main results (sorry'd)
 
 * `extractNilpotentType_orbit_invariant`: Nilpotent type is constant on orbits.
-* `orbit_closure_iff_dominance`: Theorem 5 — orbit closure ↔ chromosome dominance.
+* `lemma4_chromosome_bijection`: θ ↦ X(θ) is a bijection onto chromosomeSet. [§7 Lemma 4]
+* `orbit_closure_iff_dominance`: Theorem 5 — orbit closure ↔ chromosome dominance. [§7]
 
 ## Proof structure for Theorem 5
 
@@ -44,7 +47,7 @@ sorry'd components.
 
 ## References
 
-* [Djoković 1982, §7 Theorem 5, §§9–12]
+* [Djoković 1982, §7 Lemma 4, §7 Theorem 5, §§9–12]
 -/
 
 namespace YoungDiagram.LieAlgebra
@@ -73,25 +76,44 @@ theorem adjointAction_preserves_nilpotent
     S.IsNilpotentElem (adjointAction S g x) := by
   sorry
 
-/-! ### Nilpotent orbits -/
+/-! ### The adjoint action as a MulAction
 
-/-- Two nilpotent elements are in the same G-orbit if one is conjugate
-to the other by an element of G. -/
-def NilpotentOrbitRel : S.nilpotentSet → S.nilpotentSet → Prop :=
-  fun ⟨x, _⟩ ⟨y, _⟩ =>
-    ∃ g : classicalGroup S, adjointAction S g x = y
+We equip the Lie algebra elements and the nilpotent set with a group action
+by the classical group, using mathlib's `MulAction` infrastructure.
+This gives us `MulAction.orbitRel` and `MulAction.orbitRel.Quotient` for free. -/
 
-/-- The orbit relation is an equivalence relation. -/
-theorem nilpotentOrbitRel_equivalence :
-    Equivalence (NilpotentOrbitRel S) := by
-  sorry
+/-- The conjugation action of G on L: g • x = Ad(g)(x) = g·x·g⁻¹. -/
+noncomputable instance adjointSMul : SMul (classicalGroup S) S.Elem where
+  smul g x := adjointAction S g x
+
+/-- The adjoint action is a group action. -/
+noncomputable instance adjointMulAction : MulAction (classicalGroup S) S.Elem where
+  one_smul := sorry
+  mul_smul := sorry
+
+/-- The adjoint action restricts to nilpotent elements. -/
+noncomputable instance nilpotentSMul : SMul (classicalGroup S) S.nilpotentSet where
+  smul g p := ⟨g • p.1, adjointAction_preserves_nilpotent S g p.1 p.2⟩
+
+/-- The restricted action on nilpotent elements is a group action. -/
+noncomputable instance nilpotentMulAction :
+    MulAction (classicalGroup S) S.nilpotentSet where
+  one_smul := sorry
+  mul_smul := sorry
+
+/-! ### Nilpotent orbits
+
+Using mathlib's `MulAction.orbitRel.Quotient`, the orbit equivalence relation
+and quotient type come for free from the group action. -/
 
 /-- The nilpotent type is constant on G-orbits:
-if y = Ad(g)(x) then Δ(y) = Δ(x). -/
+if y = g • x then Δ(y) = Δ(x). -/
 theorem extractNilpotentType_orbit_invariant
-    (x y : S.Elem) (hx : S.IsNilpotentElem x) (hy : S.IsNilpotentElem y)
-    (g : classicalGroup S) (hg : adjointAction S g x = y) :
-    extractNilpotentType S x hx = extractNilpotentType S y hy := by
+    (x : S.Elem) (hx : S.IsNilpotentElem x)
+    (g : classicalGroup S) :
+    extractNilpotentType S (g • x)
+      (adjointAction_preserves_nilpotent S g x hx) =
+    extractNilpotentType S x hx := by
   sorry
 
 /-- The chromosome X(θ) of a nilpotent orbit θ.
@@ -99,6 +121,73 @@ Well-defined by `extractNilpotentType_orbit_invariant`. -/
 noncomputable def orbitChromosome
     (x : S.Elem) (hx : S.IsNilpotentElem x) : Chromosome :=
   (extractNilpotentType S x hx).toChromosome
+
+/-- The chromosome of an orbit is well-defined (independent of representative).
+This combines `extractNilpotentType_orbit_invariant` with `toChromosome`. -/
+theorem orbitChromosome_eq_of_smul
+    (x : S.Elem) (hx : S.IsNilpotentElem x)
+    (g : classicalGroup S) :
+    orbitChromosome S (g • x)
+      (adjointAction_preserves_nilpotent S g x hx) =
+    orbitChromosome S x hx := by
+  simp only [orbitChromosome]
+  rw [extractNilpotentType_orbit_invariant S x hx g]
+
+/-- The set of nilpotent G-orbits in L, using mathlib's orbit quotient. [§7]
+Each element of this type is an equivalence class θ = G · x. -/
+noncomputable abbrev NilpotentOrbit :=
+  MulAction.orbitRel.Quotient (classicalGroup S) S.nilpotentSet
+
+/-- The chromosome map X(θ) lifted to orbits (equivalence classes).
+Well-defined by `orbitChromosome_eq_of_smul`. [§7 Lemma 4] -/
+noncomputable def orbitChromosomeQuot : NilpotentOrbit S → Chromosome :=
+  Quotient.lift
+    (fun (p : S.nilpotentSet) => orbitChromosome S p.1 p.2)
+    (fun a b h => by
+      -- h : a ∈ MulAction.orbit (classicalGroup S) b, i.e. ∃ g, g • b = a
+      -- The proof uses orbitChromosome_eq_of_smul and the fact that
+      -- conjugate elements have the same nilpotent type.
+      sorry)
+
+/-! ### The target set of Lemma 4
+
+The chromosome bijection lands in {X ∈ Φⱼ | sig(X) = sig(f)}. -/
+
+/-- The set of chromosomes with the right variety and signature. [§7 Lemma 4]
+This is the codomain of the chromosome bijection. -/
+def chromosomeSet : Set Chromosome :=
+  {X : Chromosome | X ∈ j.variety ∧ X.signature = S.formSig}
+
+/-- The chromosome of any orbit lands in `chromosomeSet`. -/
+theorem orbitChromosome_mem_chromosomeSet
+    (x : S.Elem) (hx : S.IsNilpotentElem x) :
+    orbitChromosome S x hx ∈ chromosomeSet S := by
+  exact ⟨extractNilpotentType_mem_variety S x hx,
+         extractNilpotentType_signature S x hx⟩
+
+/-! ### Lemma 4: The Chromosome Bijection [§7 Lemma 4]
+
+The map θ ↦ X(θ) is a bijection from `NilpotentOrbit S` onto `chromosomeSet S`.
+
+The proof assembles four components:
+- **Well-definedness**: `orbitChromosome_eq_of_orbit` (orbit invariance)
+- **Image containment**: `orbitChromosome_mem_chromosomeSet`
+- **Injectivity**: `toChromosome_injective` (combinatorial, NilpotentOrbit.lean) +
+  `extractNilpotentType_orbit_invariant` (elements with same type are in same orbit)
+- **Surjectivity**: `toChromosome_surjective` (combinatorial, NilpotentOrbit.lean) +
+  `realizeNilpotentType` (every valid type is realized, JordanBlock.lean)
+-/
+
+/-- **[§7 Lemma 4]** The chromosome map θ ↦ X(θ) is an equivalence
+from the set of nilpotent G-orbits in L to {X ∈ Φⱼ | sig(X) = sig(f)}.
+
+This packages the full content of Lemma 4 as an `Equiv`:
+- `chromosomeBijection.toFun`: orbit → chromosome (via `orbitChromosomeQuot`)
+- `chromosomeBijection.invFun`: chromosome → orbit (realizability, §5)
+- `chromosomeBijection.left_inv` / `right_inv`: the two directions cancel -/
+noncomputable def chromosomeBijection :
+    NilpotentOrbit S ≃ chromosomeSet S := by
+  sorry
 
 /-! ### Orbit closure -/
 

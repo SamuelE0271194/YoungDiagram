@@ -1,3 +1,4 @@
+import Mathlib.Combinatorics.Enumerative.Partition.Basic
 import YoungDiagram.LieAlgebra.ClassicalSetup
 
 /-!
@@ -56,34 +57,21 @@ where ⟨vᵢ⟩ = span{vᵢ, xvᵢ, …, x^{mᵢ}vᵢ} has dimension mᵢ + 1.
 
 The Jordan block sizes form a partition of n = dim V. -/
 
-/-- The Jordan partition of a nilpotent endomorphism: the multiset of
-block sizes, sorted in decreasing order.
+/-- The Jordan partition of a nilpotent endomorphism: a partition of dim V
+whose parts are the Jordan block sizes.
 
 This is the partition λ such that dim(ker x^k) = λ₁' + … + λₖ'
 where λ' is the conjugate partition.
+
+Using `Nat.Partition` from mathlib bundles positivity (`parts_pos`) and
+the sum condition (`parts_sum`) automatically.
 
 TODO: Define via `Module.End.genEigenspace` and generalized eigenspaces
 in mathlib. -/
 noncomputable def jordanPartition
     {F : Type*} {V : Type*} [Field F] [AddCommGroup V] [Module F V]
     [FiniteDimensional F V]
-    (x : Module.End F V) (hx : IsNilpotent x) : Multiset ℕ :=
-  sorry
-
-/-- The Jordan partition is a partition of dim V. -/
-theorem jordanPartition_sum
-    {F : Type*} {V : Type*} [Field F] [AddCommGroup V] [Module F V]
-    [FiniteDimensional F V]
-    (x : Module.End F V) (hx : IsNilpotent x) :
-    (jordanPartition x hx).sum = Module.finrank F V := by
-  sorry
-
-/-- All parts of the Jordan partition are positive. -/
-theorem jordanPartition_pos
-    {F : Type*} {V : Type*} [Field F] [AddCommGroup V] [Module F V]
-    [FiniteDimensional F V]
-    (x : Module.End F V) (hx : IsNilpotent x) :
-    ∀ m ∈ jordanPartition x hx, 0 < m := by
+    (x : Module.End F V) (hx : IsNilpotent x) : Nat.Partition (Module.finrank F V) :=
   sorry
 
 /-- The rank of x^k equals the sum of (block_size - k) over blocks of size > k. -/
@@ -92,7 +80,7 @@ theorem jordanPartition_rank
     [FiniteDimensional F V]
     (x : Module.End F V) (hx : IsNilpotent x) (k : ℕ) :
     Module.finrank F (LinearMap.range (x ^ k)) =
-      (((jordanPartition x hx).filter (· > k)).map (· - k)).sum := by
+      (((jordanPartition x hx).parts.filter (· > k)).map (· - k)).sum := by
   sorry
 
 /-! ### Extraction of nilpotent types
@@ -146,5 +134,40 @@ theorem extractNilpotentType_mem_variety
     (x : S.Elem) (hx : S.IsNilpotentElem x) :
     (extractNilpotentType S x hx).toChromosome ∈ j.variety := by
   exact NilpotentType.toChromosome_mem_variety _ (extractNilpotentType_valid S x hx)
+
+/-! ### Realizability of nilpotent types [§5, representative triples]
+
+The converse of extraction: every valid `NilpotentType` with the right
+dimension and signature is realized by an actual nilpotent element in L.
+
+This is proved in the paper by explicit construction of representative
+triples (V, f, x) for each indecomposable type (§5, formulas (5.1)–(5.2),
+and the Δₘ(0,0) descriptions on p.225). -/
+
+/-- [§5] Every valid nilpotent type with matching dimension and signature
+is realized by some nilpotent element x ∈ L.
+
+This is the reverse direction of `extractNilpotentType`: given the
+combinatorial data Δ, construct an actual element x ∈ L whose Jordan
+block decomposition recovers Δ.
+
+The proof constructs explicit representative matrices from §5. -/
+theorem realizeNilpotentType
+    (Δ : NilpotentType j) (hΔ : Δ.IsValid)
+    (hdim : Δ.totalDim = S.dim)
+    (hsig : Δ.toChromosome.signature = S.formSig) :
+    ∃ (x : S.Elem) (hx : S.IsNilpotentElem x),
+      extractNilpotentType S x hx = Δ := by
+  sorry
+
+/-- [§5] The extraction map is surjective onto valid types with the right
+dimension and signature. This is the `Function.Surjective` packaging of
+`realizeNilpotentType`. -/
+theorem extractNilpotentType_surjective :
+    ∀ Δ : NilpotentType j, Δ.IsValid → Δ.totalDim = S.dim →
+      Δ.toChromosome.signature = S.formSig →
+      ∃ (x : S.Elem) (hx : S.IsNilpotentElem x),
+        extractNilpotentType S x hx = Δ :=
+  fun Δ hΔ hdim hsig => realizeNilpotentType S Δ hΔ hdim hsig
 
 end YoungDiagram.LieAlgebra
