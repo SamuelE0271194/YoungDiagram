@@ -4,6 +4,12 @@ import YoungDiagram.Gene
 
 open Finsupp
 
+lemma Finsupp.support_ofNat {M : Type*} {N₁ N₂ : M →₀ ℕ} [DecidableEq M] :
+    (N₁ + N₂).support = (N₁.support ∪ N₂.support : Finset M) := by
+  refine le_antisymm support_add (Finset.le_iff_subset.2 (Finset.union_subset ?_ ?_))
+  · exact support_mono le_self_add
+  · exact support_mono <| CanonicallyOrderedAdd.le_add_self ..
+
 /--
 A chromosome is a non-negative integral linear combination of genes.
 It forms a free commutative monoid on the set of genes.

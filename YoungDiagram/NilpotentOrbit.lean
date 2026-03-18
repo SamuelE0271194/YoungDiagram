@@ -27,11 +27,11 @@ are characterized by chromosome dominance. [§1 Table I]
 | `SpH`         | 10 | Sp(k, n−k)  | ℍ | hermitian         |
 -/
 inductive SeriesIndex
-  | U     -- j = 4
-  | O     -- j = 6
-  | Ostar -- j = 7
-  | SpR   -- j = 9
-  | SpH   -- j = 10
+  | U
+  | O
+  | Ostar
+  | SpR
+  | SpH
   deriving DecidableEq, Repr
 
 namespace SeriesIndex
@@ -47,18 +47,18 @@ def isPolarizedBlock : SeriesIndex → ℕ → Prop
   | .SpR,   m => Odd m
   | .SpH,   m => Even m
 
-instance (j : SeriesIndex) (m : ℕ) : Decidable (j.isPolarizedBlock m) := by
-  cases j <;> simp only [isPolarizedBlock] <;> infer_instance
+instance {j : SeriesIndex} {m : ℕ} : Decidable (j.isPolarizedBlock m) := by
+  cases j <;> dsimp only [isPolarizedBlock] <;> infer_instance
 
 /-- The variety Φⱼ associated to each series. [§5 Table IV, last column; §6 formula (6.2)]
 
-| j    | Variety  | Label     |
-|------|----------|-----------|
-| j=4  | Π        | `Label 0` |
-| j=6  | (2Λ, Π)  | `Label 3` |
-| j=7  | (Π, Λ)   | `Label 2` |
-| j=9  | (Π, 2Λ)  | `Label 4` |
-| j=10 | (Λ, Π)   | `Label 1` |
+| `SeriesIndex`  | Variety                 | Label     |
+|----------------|-------------------------|-----------|
+| `U`            | `Pi`                    | 0         |
+| `O`            | `Mix (2 • Lambda, Pi)`  | 3         |
+| `Ostar`        | `Mix (Pi, Lambda)`      | 2         |
+| `SpR`          | `Mix (Pi, 2 • Lambda)`  | 4         |
+| `SpH`          | `Mix (Lambda, Pi)`      | 1         |
 -/
 noncomputable def variety : SeriesIndex → Variety
   | .U     => .Label 0
@@ -66,6 +66,8 @@ noncomputable def variety : SeriesIndex → Variety
   | .Ostar => .Label 2
   | .SpR   => .Label 4
   | .SpH   => .Label 1
+
+lemma variety_def_U : variety .U = .Pi := rfl
 
 end SeriesIndex
 
@@ -87,6 +89,8 @@ structure NilpotentBlock (j : SeriesIndex) where
   sign : GeneType
   deriving DecidableEq, Repr
 
+open Variety
+
 namespace NilpotentBlock
 
 variable {j : SeriesIndex}
@@ -95,29 +99,11 @@ variable {j : SeriesIndex}
 - Polarized (`isPolarizedBlock j m`) → type Δᵉₘ(0), ε = ±
 - NonPolarized → type Δₘ(0,0) -/
 def IsValid (b : NilpotentBlock j) : Prop :=
-  if j.isPolarizedBlock b.param
-  then b.sign ≠ .NonPolarized
-  else b.sign = .NonPolarized
+  if j.isPolarizedBlock b.param then b.sign ≠ .NonPolarized
+    else b.sign = .NonPolarized
 
-instance (b : NilpotentBlock j) : Decidable b.IsValid := by
-  simp only [IsValid]; split_ifs <;> infer_instance
-
-/-- Construct a valid polarized block (Δᵉₘ(0) type). [§5 Table IV] -/
-def mkPolarized (m : ℕ) (ε : GeneType)
-    (_ : j.isPolarizedBlock m) (_ : ε ≠ .NonPolarized) : NilpotentBlock j :=
-  ⟨m, ε⟩
-
-/-- Construct a valid nonpolarized block (Δₘ(0,0) type). [§5 Table IV] -/
-def mkNonpolarized (m : ℕ) (_ : ¬j.isPolarizedBlock m) : NilpotentBlock j :=
-  ⟨m, .NonPolarized⟩
-
-lemma mkPolarized_isValid {m : ℕ} {ε : GeneType} {hpol : j.isPolarizedBlock m}
-    {hε : ε ≠ .NonPolarized} : (mkPolarized m ε hpol hε).IsValid := by
-  simp [IsValid, mkPolarized, hpol, hε]
-
-lemma mkNonpolarized_isValid {m : ℕ} {hnpol : ¬j.isPolarizedBlock m} :
-    (mkNonpolarized m hnpol : NilpotentBlock j).IsValid := by
-  simp [IsValid, mkNonpolarized, hnpol]
+instance {b : NilpotentBlock j} : Decidable b.IsValid := by
+  dsimp only [IsValid]; split_ifs <;> infer_instance
 
 /-- The dimension of the indecomposable subspace for a block. [§5, representative triples]
 
@@ -155,15 +141,20 @@ noncomputable def toChromosome (b : NilpotentBlock j) : Chromosome :=
   | .SpH   => if Even b.param then Gene.ofRank (b.param + 1) b.sign
               else Gene.ofRank (b.param + 1) .NonPolarized
 
-/-- For j = U (series 4), the chromosome is simply the gene gᵉ(m+1). [§5 Table IV, j=4 row] -/
-@[simp] lemma toChromosome_U (b : NilpotentBlock .U) :
-    b.toChromosome = Gene.ofRank (b.param + 1) b.sign := rfl
+lemma toChromosome_def_U (b : NilpotentBlock .U) :
+  b.toChromosome = Gene.ofRank (b.param + 1) b.sign := rfl
 
 /-- A valid block's chromosome lies in the variety Φⱼ.
 [§5 Table IV: the Φⱼ column records exactly which variety each indecomposable type belongs to] -/
 theorem toChromosome_mem_variety (b : NilpotentBlock j) (hb : b.IsValid) :
     b.toChromosome ∈ j.variety := by
-  sorry
+  cases j
+  · rwa [toChromosome_def_U, SeriesIndex.variety_def_U,
+      mem_Pi_iff, IsPolarized_ofRank (Nat.le_add_left ..)]
+  · sorry
+  · sorry
+  · sorry
+  · sorry
 
 end NilpotentBlock
 
@@ -183,6 +174,11 @@ variable {j : SeriesIndex}
 [§5 Table IV: each indecomposable summand must satisfy the sign constraint for its j and m] -/
 def IsValid (Δ : NilpotentType j) : Prop :=
   ∀ b ∈ Δ.support, b.IsValid
+
+lemma IsValid_iff_add {Δ₁ Δ₂ : NilpotentType j} :
+    (Δ₁ + Δ₂).IsValid ↔ Δ₁.IsValid ∧ Δ₂.IsValid := by
+  unfold IsValid
+  rw [support_ofNat, Finset.forall_mem_union]
 
 /-- The chromosome X(Δ) of a nilpotent type, extended linearly from blocks.
 [§6: X(Δ) is defined as the sum of the chromosomes of its indecomposable summands;
@@ -209,7 +205,26 @@ lemma toChromosome_single (b : NilpotentBlock j) (n : ℕ) :
  so X(Δ) = ΣX(Δᵢ) ∈ Φⱼ whenever each indecomposable X(Δᵢ) ∈ Φⱼ] -/
 theorem toChromosome_mem_variety (Δ : NilpotentType j) (hΔ : Δ.IsValid) :
     Δ.toChromosome ∈ j.variety := by
-  sorry
+  cases j
+  · induction Δ using Finsupp.induction
+    · simp only [map_zero, zero_mem]
+    · expose_names
+      rw [map_add]
+      refine add_mem ?_ ?_
+      · rw [toChromosome_single]
+        refine nsmul_mem ?_ b
+        have := (IsValid_iff_add.1 hΔ).1
+        simp [IsValid] at this
+        specialize hΔ a ?_
+        · rw [support_ofNat]
+          refine Finset.mem_union_left f.support ?_
+          simp [h_1]
+        exact NilpotentBlock.toChromosome_mem_variety a hΔ
+      · exact h_2 (IsValid_iff_add.1 hΔ).2
+  · sorry
+  · sorry
+  · sorry
+  · sorry
 
 /-- The rank of the chromosome equals the total dimension of V. [§6: r(X) = n where dim V = n;
  §5 Table IV: rank of X(Δᵉₘ) = m+1 and rank of X(Δₘ(0,0)) = 2(m+1) for j=6,9] -/
@@ -219,31 +234,9 @@ lemma toChromosome_rank (Δ : NilpotentType j) :
 
 end NilpotentType
 
-/-! ## Combinatorial core of the chromosome bijection [§5 Table IV; used by §7 Lemma 4]
-
-The paper's Lemma 4 (§7) states that θ ↦ X(θ) is a bijection from nilpotent
-G-orbits onto {X ∈ Φⱼ | sig(X) = sig(f)}.  The **full** Lemma 4 on orbits
-is stated as `chromosomeBijection` in `LieAlgebra/OrbitClosure.lean`.
-
-This section provides the **combinatorial core**: the map `NilpotentType → Chromosome`
-is injective on valid types, and every X ∈ Φⱼ arises from some valid type.
-These are purely combinatorial facts about Table IV, independent of Lie theory. -/
-
-/-- [§7 Lemma 4, injectivity] Different valid nilpotent types produce different
-chromosomes. This is a purely combinatorial fact about Table IV: each gene in
-the chromosome uniquely determines the block that produced it (via rank, type,
-and parity). The Lie-algebraic statement (orbits biject with types) is in
-`LieAlgebra/JordanBlock.lean`. -/
-theorem NilpotentType.toChromosome_injective (j : SeriesIndex) :
-    Function.Injective
-      (fun (Δ : {Δ : NilpotentType j // Δ.IsValid}) ↦ Δ.1.toChromosome) := by
-  sorry
-
-/-- [§7 Lemma 4, surjectivity] Every chromosome in Φⱼ arises from some valid
-nilpotent type. This is a purely combinatorial fact: the variety constraints
-(e.g., even multiplicities in 2Λ) exactly match the structure of Table IV,
-so any X ∈ Φⱼ can be decomposed into valid blocks. [§5 Table IV; §6 (6.2)] -/
-theorem NilpotentType.toChromosome_surjective (j : SeriesIndex)
-    (X : Chromosome) (hX : X ∈ j.variety) :
-    ∃ Δ : NilpotentType j, Δ.IsValid ∧ Δ.toChromosome = X := by
-  sorry
+noncomputable def NilpotentType.toChromosome_bijective (j : SeriesIndex) :
+    {Δ : NilpotentType j | Δ.IsValid} ≃ j.variety := by
+  refine Equiv.ofBijective (fun Δ ↦
+    ⟨Δ.1.toChromosome, Δ.1.toChromosome_mem_variety Δ.2⟩) ⟨?_, ?_⟩
+  · sorry
+  · sorry
