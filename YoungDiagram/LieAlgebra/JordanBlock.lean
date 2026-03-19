@@ -133,7 +133,7 @@ theorem extractNilpotentType_signature
 theorem extractNilpotentType_mem_variety
     (x : S.Elem) (hx : S.IsNilpotentElem x) :
     (extractNilpotentType S x hx).toChromosome ∈ j.variety := by
-  exact NilpotentType.toChromosome_mem_variety _ (extractNilpotentType_valid S x hx)
+  exact NilpotentType.toChromosome_mem_variety (extractNilpotentType_valid S x hx)
 
 /-! ### Realizability of nilpotent types [§5, representative triples]
 
