@@ -4,7 +4,9 @@ import YoungDiagram.Gene
 
 open Finsupp
 
-lemma Finsupp.support_ofNat {M : Type*} {N₁ N₂ : M →₀ ℕ} [DecidableEq M] :
+lemma Finsupp.support_add_eq' {α M : Type*} [AddCommMonoid α] [PartialOrder α]
+  [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] [AddLeftMono α]
+  {N₁ N₂ : M →₀ α} [DecidableEq M] :
     (N₁ + N₂).support = (N₁.support ∪ N₂.support : Finset M) := by
   refine le_antisymm support_add (Finset.le_iff_subset.2 (Finset.union_subset ?_ ?_))
   · exact support_mono le_self_add

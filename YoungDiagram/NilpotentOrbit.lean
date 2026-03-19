@@ -144,17 +144,33 @@ noncomputable def toChromosome (b : NilpotentBlock j) : Chromosome :=
 lemma toChromosome_def_U (b : NilpotentBlock .U) :
   b.toChromosome = Gene.ofRank (b.param + 1) b.sign := rfl
 
+lemma toChromosome_mem_variety_U {b : NilpotentBlock .U} (hb : b.IsValid) :
+    b.toChromosome ∈ SeriesIndex.U.variety := by
+  rwa [toChromosome_def_U, SeriesIndex.variety_def_U,
+      mem_Pi_iff, IsPolarized_ofRank (Nat.le_add_left ..)]
+
+lemma toChromosome_mem_variety_O {b : NilpotentBlock .O} (hb : b.IsValid) :
+    b.toChromosome ∈ SeriesIndex.O.variety := sorry
+
+lemma toChromosome_mem_variety_Ostar {b : NilpotentBlock .Ostar} (hb : b.IsValid) :
+    b.toChromosome ∈ SeriesIndex.Ostar.variety := sorry
+
+lemma toChromosome_mem_variety_SpR {b : NilpotentBlock .SpR} (hb : b.IsValid) :
+    b.toChromosome ∈ SeriesIndex.SpR.variety := sorry
+
+lemma toChromosome_mem_variety_SpH {b : NilpotentBlock .SpH} (hb : b.IsValid) :
+    b.toChromosome ∈ SeriesIndex.SpH.variety := sorry
+
 /-- A valid block's chromosome lies in the variety Φⱼ.
 [§5 Table IV: the Φⱼ column records exactly which variety each indecomposable type belongs to] -/
-theorem toChromosome_mem_variety (b : NilpotentBlock j) (hb : b.IsValid) :
-    b.toChromosome ∈ j.variety := by
-  cases j
-  · rwa [toChromosome_def_U, SeriesIndex.variety_def_U,
-      mem_Pi_iff, IsPolarized_ofRank (Nat.le_add_left ..)]
-  · sorry
-  · sorry
-  · sorry
-  · sorry
+theorem toChromosome_mem_variety {b : NilpotentBlock j} (hb : b.IsValid) :
+    b.toChromosome ∈ j.variety :=
+  match j with
+  | .U => toChromosome_mem_variety_U hb
+  | .O => toChromosome_mem_variety_O hb
+  | .Ostar => toChromosome_mem_variety_Ostar hb
+  | .SpR => toChromosome_mem_variety_SpR hb
+  | .SpH => toChromosome_mem_variety_SpH hb
 
 end NilpotentBlock
 
@@ -178,7 +194,7 @@ def IsValid (Δ : NilpotentType j) : Prop :=
 lemma IsValid_iff_add {Δ₁ Δ₂ : NilpotentType j} :
     (Δ₁ + Δ₂).IsValid ↔ Δ₁.IsValid ∧ Δ₂.IsValid := by
   unfold IsValid
-  rw [support_ofNat, Finset.forall_mem_union]
+  rw [support_add_eq', Finset.forall_mem_union]
 
 /-- The chromosome X(Δ) of a nilpotent type, extended linearly from blocks.
 [§6: X(Δ) is defined as the sum of the chromosomes of its indecomposable summands;
@@ -198,33 +214,45 @@ def totalDim (Δ : NilpotentType j) : ℕ :=
 
 lemma toChromosome_single (b : NilpotentBlock j) (n : ℕ) :
     toChromosome (single b n) = n • b.toChromosome := by
-  simp [toChromosome]
+  simp only [toChromosome, AddMonoidHom.coe_mk, ZeroHom.coe_mk, zero_nsmul, sum_single_index]
+
+lemma toChromosome_mem_variety_U {Δ : NilpotentType .U} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ SeriesIndex.U.variety := by
+  induction Δ using Finsupp.induction
+  · rw [map_zero]; exact zero_mem _
+  · expose_names
+    rw [map_add]
+    refine add_mem ?_ ?_
+    · rw [toChromosome_single]
+      refine nsmul_mem (NilpotentBlock.toChromosome_mem_variety (hΔ a ?_)) b
+      rw [support_add_eq']
+      refine Finset.mem_union_left f.support ?_
+      rwa [mem_support_iff, single_eq_same, ne_eq]
+    · exact h_2 (IsValid_iff_add.1 hΔ).2
+
+lemma toChromosome_mem_variety_O {Δ : NilpotentType .O} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ SeriesIndex.O.variety := sorry
+
+lemma toChromosome_mem_variety_Ostar {Δ : NilpotentType .Ostar} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ SeriesIndex.Ostar.variety := sorry
+
+lemma toChromosome_mem_variety_SpR {Δ : NilpotentType .SpR} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ SeriesIndex.SpR.variety := sorry
+
+lemma toChromosome_mem_variety_SpH {Δ : NilpotentType .SpH} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ SeriesIndex.SpH.variety := sorry
 
 /-- For valid nilpotent types, the chromosome lies in the variety Φⱼ.
 [§5 Table IV last column + §6 (6.2): varieties are closed under addition,
  so X(Δ) = ΣX(Δᵢ) ∈ Φⱼ whenever each indecomposable X(Δᵢ) ∈ Φⱼ] -/
-theorem toChromosome_mem_variety (Δ : NilpotentType j) (hΔ : Δ.IsValid) :
-    Δ.toChromosome ∈ j.variety := by
-  cases j
-  · induction Δ using Finsupp.induction
-    · simp only [map_zero, zero_mem]
-    · expose_names
-      rw [map_add]
-      refine add_mem ?_ ?_
-      · rw [toChromosome_single]
-        refine nsmul_mem ?_ b
-        have := (IsValid_iff_add.1 hΔ).1
-        simp [IsValid] at this
-        specialize hΔ a ?_
-        · rw [support_ofNat]
-          refine Finset.mem_union_left f.support ?_
-          simp [h_1]
-        exact NilpotentBlock.toChromosome_mem_variety a hΔ
-      · exact h_2 (IsValid_iff_add.1 hΔ).2
-  · sorry
-  · sorry
-  · sorry
-  · sorry
+theorem toChromosome_mem_variety {Δ : NilpotentType j} (hΔ : Δ.IsValid) :
+    Δ.toChromosome ∈ j.variety :=
+  match j with
+  | .U => toChromosome_mem_variety_U hΔ
+  | .O => toChromosome_mem_variety_O hΔ
+  | .Ostar => toChromosome_mem_variety_Ostar hΔ
+  | .SpR => toChromosome_mem_variety_SpR hΔ
+  | .SpH => toChromosome_mem_variety_SpH hΔ
 
 /-- The rank of the chromosome equals the total dimension of V. [§6: r(X) = n where dim V = n;
  §5 Table IV: rank of X(Δᵉₘ) = m+1 and rank of X(Δₘ(0,0)) = 2(m+1) for j=6,9] -/
