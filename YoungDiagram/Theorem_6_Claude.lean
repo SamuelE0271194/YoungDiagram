@@ -367,6 +367,44 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               0 < X.val g ∧ 0 < X.val h
           · -- X contains g⁺(k) + g⁻(k): mutation g⁺(k) + g⁻(k) → g⁺(k+1) + g⁻(k-1).
             obtain ⟨gpos, gneg, hrank, hgpos, hgneg, hXgpos, hXgneg⟩ := hXpn
+            -- Y contains no gene of rank gpos.rank:
+            -- any such gene equals gpos or gneg (by rank+type), but X already has both,
+            -- contradicting hcommon (X and Y share no gene).
+            have hY_no_gene : ∀ (g : Gene), g.rank = gpos.rank → Y.val g = 0 := by
+              intro g hgr
+              by_contra hne
+              have hYg : 0 < Y.val g := Nat.pos_of_ne_zero hne
+              have hg_pol : g.type ≠ .NonPolarized :=
+                IsPolarized_def'.mp (mem_Pi_iff.mp Y.2) g
+                  (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hYg))
+              cases ht : g.type with
+              | NonPolarized => exact hg_pol ht
+              | Positive =>
+                -- g.rank = gpos.rank and g.type = Positive = gpos.type, so g = gpos
+                have hgeq : g = gpos := by
+                  obtain ⟨rg, tg, hg_r⟩ := g
+                  obtain ⟨rp, tp, hp_r⟩ := gpos
+                  obtain rfl : rg = rp := hgr
+                  obtain rfl : tg = tp := ht.trans hgpos.symm
+                  congr 1;
+                -- After identifying g = gpos, X has gpos (hXgpos) and hcommon gives Y.val g ≤ 0
+                subst hgeq
+                -- now hXgpos : 0 < ↑X g, hcommon g hXgpos : ↑Y g ≤ 0, hYg : 0 < ↑Y g
+                have h := hcommon g hXgpos
+                omega
+              | Negative =>
+                -- g.rank = gneg.rank (via hrank) and g.type = Negative = gneg.type, so g = gneg
+                have hgeq : g = gneg := by
+                  obtain ⟨rg, tg, hg_r⟩ := g
+                  obtain ⟨rn, tn, hn_r⟩ := gneg
+                  obtain rfl : rg = rn := hgr.trans hrank
+                  obtain rfl : tg = tn := ht.trans hgneg.symm
+                  congr 1
+                -- After identifying g = gneg, X has gneg (hXgneg) and hcommon gives Y.val g ≤ 0
+                subst hgeq
+                -- now hXgneg : 0 < ↑X g, hcommon g hXgneg : ↑Y g ≤ 0, hYg : 0 < ↑Y g
+                have h := hcommon g hXgneg
+                omega
             sorry
           · -- (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1.
             push_neg at hXpn
