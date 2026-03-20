@@ -199,10 +199,11 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           exact h
       · -- Case 2: disjoint supports.
         push_neg at hcommon
-        -- Sub-case split: does there exist k with sigma X k = sigma Y k?
-        by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Sigma.sigma X k = Sigma.sigma Y k
-        · -- Sub-case 2a: some positive sigma column agrees.
-          obtain ⟨k, hkpos, hk⟩ := hsigeq
+        -- Sub-case split: does there exist k with Y^(k) ≠ 0 and sigma X k = sigma Y k?
+        by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.val ≠ 0 ∧
+           Sigma.sigma X k = Sigma.sigma Y k
+        · -- Sub-case 2a: some positive sigma column agrees (with Y^(k) ≠ 0).
+          obtain ⟨k, hkpos, hYkne, hk⟩ := hsigeq
           -- Unfold Sigma.sigma to expose Chromosome.signature directly
           simp only [Sigma.sigma] at hk
           -- hk : Chromosome.signature (prime^[k] X.val) = Chromosome.signature (prime^[k] Y.val)
@@ -301,25 +302,23 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               intro j
               simp only [Xk, Yk, ← Function.iterate_add_apply]
               exact le_iff_dominates.mp hXY.le (j + k)
-            · -- ¬Xk.val.Dominates Yk.val:
-              -- hXY : Y.Dominates X ∧ ¬X.Dominates Y, so hXY.2 : ¬X.Dominates Y.
-              -- Assume hdom : Xk.Dominates Yk = ∀ j, sig(prime^[j+k] Y) ≤ sig(prime^[j+k] X).
-              -- We apply hXY.2 and construct X.Dominates Y:
-              --   i ≥ k: use hdom at j = i - k directly.
-              --   i < k: use rank equality at step 0 (hX, hY) to show sig(X) = sig(Y).
-              intro hdom
-              apply hXY.2
-              -- Goal: (↑X).Dominates ↑Y = ∀ i, sig(prime^[i] Y.val) ≤ sig(prime^[i] X.val)
-              intro i
-              simp only [Chromosome.Dominates, Xk, Yk] at hdom
-              by_cases hi : k ≤ i
-              · -- i ≥ k: directly from hdom at j = i - k
-                have h := hdom (i - k)
-                simp only [← Function.iterate_add_apply, Nat.sub_add_cancel hi] at h
-                exact h
-              · -- i < k: use rank X = rank Y at step i = 0 to force sig(X) = sig(Y)
-                push_neg at hi
+            · intro hdom
+              rw [Dominates] at hdom
+              simp only [Xk, Yk, ← Function.iterate_add_apply] at hdom
+              -- hdom : ∀ j, sig(prime^[j+k] Y.val) ≤ sig(prime^[j+k] X.val)
+              -- Extract a witness j₀ from hXY.2
+              have hXY2 := hXY.2
+              rw [Dominates, not_forall] at hXY2
+              obtain ⟨j₀, hj₀⟩ := hXY2
+              -- hj₀ : ¬(sig(prime^[j₀] Y.val) ≤ sig(prime^[j₀] X.val))
+              by_cases hj₀k : k ≤ j₀
+              · -- j₀ ≥ k: hdom (j₀ - k) gives sig Y^j₀ ≤ sig X^j₀, contradicting hj₀
+                have h := hdom (j₀ - k)
+                rw [Nat.sub_add_cancel hj₀k] at h
+                exact hj₀ h
+              · -- j₀ < k: Xk = Yk in the dominance order; need different argument
                 sorry
+
           -- Apply IH at rank Xk.val.rank to get U : Pi with
           --   IsMutation (prime^[k] X) U  and  U ≤ Yk
           obtain ⟨U, hmuU, hleU⟩ :=
@@ -357,6 +356,28 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
             rw [← Function.iterate_add_apply, Nat.sub_add_cancel hj'] at h
             simp_all
             --rwa [← Function.iterate_add_apply, Nat.sub_add_cancel hj'] at h
-        · -- Sub-case 2b: all sigma columns differ.
+        · -- Sub-case 2b: all sigma columns differ (hsigeq :
+            --∀ k > 0, Y^(k) ≠ 0 → sigma X k ≠ sigma Y k).
           push_neg at hsigeq
-          sorry
+          -- Now assume X ⊇ g⁺(k) + g⁻(k) for some k (paper: line after 15.9).
+          -- If true, we construct a mutation g⁺(k) + g⁻(k) → g⁺(k+1) + g⁻(k-1).
+          -- If false (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1, handled separately.
+          by_cases hXpn : ∃ (g h : Gene), g.rank = h.rank ∧
+              g.type = .Positive ∧ h.type = .Negative ∧
+              0 < X.val g ∧ 0 < X.val h
+          · -- X contains g⁺(k) + g⁻(k): mutation g⁺(k) + g⁻(k) → g⁺(k+1) + g⁻(k-1).
+            obtain ⟨gpos, gneg, hrank, hgpos, hgneg, hXgpos, hXgneg⟩ := hXpn
+            sorry
+          · -- (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1.
+            push_neg at hXpn
+            -- From hsigeq: for k ≥ 1 with Y^(k) ≠ 0, sigma X k ≠ sigma Y k.
+            -- Combined with X < Y: (a_k, b_k) ≤ (c_k, d_k), so a_k < c_k or b_k < d_k.
+            -- Split: either some k has a_k < c_k, or for all such k a_k = c_k (so b_k < d_k).
+            by_cases ha : ∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.val ≠ 0 ∧
+                (Sigma.sigma X k).1 < (Sigma.sigma Y k).1
+            · -- a_k < c_k for some k ≥ 1 with Y^(k) ≠ 0 (paper: "assume a₁ < c₁", Cases 1–4).
+              obtain ⟨k, hkpos, hYkne, hak⟩ := ha
+              sorry
+            · -- For all k ≥ 1 with Y^(k) ≠ 0: a_k = c_k, so b_k < d_k (from hsigeq).
+              push_neg at ha
+              sorry
