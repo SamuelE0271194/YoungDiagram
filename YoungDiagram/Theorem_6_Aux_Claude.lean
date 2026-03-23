@@ -32,21 +32,48 @@ odd-rank genes contribute), telescoping `D(j) − D(j+2)` recovers
 -- Auxiliary lemma 1: prime^[k] coefficient formula
 -- ============================================================
 
+/-- One-step coefficient formula: `(prime C) g = C ⟨g.rank + 1, g.type, _⟩`. -/
+private lemma prime_coeff_step (C : Chromosome) (g : Gene) :
+    (Chromosome.prime C) g = C ⟨g.rank + 1, g.type, by linarith [g.rank_pos]⟩ := by
+  simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+             Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul,
+             Chromosome.primeGene]
+  rw [Finsupp.sum_eq_single (⟨g.rank + 1, g.type, by linarith [g.rank_pos]⟩ : Gene)]
+  · -- The unique contributing gene is ⟨g.rank + 1, ...⟩
+    have hrank_sub : (⟨g.rank + 1, g.type,
+          by linarith [g.rank_pos]⟩ : Gene).rank - 1 = g.rank := by simp only; omega
+    simp [hrank_sub, Gene.ofRank_eq_gene, Finsupp.single_eq_same]
+  · -- All other genes contribute 0
+    intro h _ hne
+    simp only [Gene.ofRank_def]
+    split_ifs with hZ
+    · simp [Finsupp.zero_apply]
+    · rw [Finsupp.single_apply]
+      split_ifs with heq
+      · exfalso; apply hne
+        have hr := congr_arg Gene.rank heq
+        have ht := congr_arg Gene.type heq
+        obtain ⟨rg, tg, hrg⟩ := h
+        simp only at *
+        simp only [Gene.mk.injEq]
+        exact ⟨by omega, ht⟩
+      · simp
+  · intro _; simp
+
 /-- The coefficient of gene `g` in `prime^[k] C` equals `C` at the gene
 of rank `g.rank + k` and the same type. -/
 lemma prime_iterate_coeff' (k : ℕ) (C : Chromosome) (g : Gene) :
     (Chromosome.prime^[k] C) g = C ⟨g.rank + k, g.type, by linarith [g.rank_pos]⟩ := by
+  revert C g
   induction k with
   | zero =>
+    intros C g
     simp only [Function.iterate_zero, id, Nat.add_zero]
   | succ k' ih =>
-    rw [Function.iterate_succ_apply']
-    simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
-    rw [Finsupp.sum_apply]
-    -- prime(prime^[k'] C) g  =  ∑_{h} (prime^[k'] C) h • (primeGene h) g
-    -- Only the gene h with primeGene h = g contributes, i.e. h = ⟨g.rank + 1, g.type, _⟩.
-    -- Then (prime^[k'] C) h = C ⟨g.rank + 1 + k', g.type, _⟩  by the IH.
-    sorry
+    -- ih : ∀ C g, (prime^[k'] C) g = C ⟨g.rank + k', ...⟩
+    intros C g
+    rw [Function.iterate_succ_apply, ih, prime_coeff_step]
+    congr
 
 -- ============================================================
 -- Auxiliary lemma 2: rank decomposition under prime
@@ -55,11 +82,28 @@ lemma prime_iterate_coeff' (k : ℕ) (C : Chromosome) (g : Gene) :
 /-- The rank of a chromosome decreases by the total gene count under `prime`. -/
 lemma rank_prime_decomp' (C : Chromosome) :
     C.rank = (Chromosome.prime C).rank + C.sum (fun _ m => m) := by
-  -- Proved as `hdecomp` inside prime_rank_lt in Theorem_6_Claude.lean.
-  -- Proof: rank C = C.sum (g m => m * g.rank)
-  --        rank (prime C) = C.sum (g m => m * (g.rank - 1))
-  --        difference = C.sum (g m => m * (g.rank - (g.rank - 1))) = C.sum (g m => m)
-  sorry
+  have rank_ofRank : ∀ (n : ℕ) (typ : GeneType),
+      Chromosome.rank (Gene.ofRank n typ) = n := by
+    intro n typ
+    simp only [Gene.ofRank_def]
+    split_ifs with h
+    · simp [h]
+    · simp [Chromosome.rank, Finsupp.sum_single_index]
+  have hrank_prime :
+      (Chromosome.prime C).rank = C.sum (fun g m => m * (g.rank - 1)) := by
+    simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+               Finsupp.sum, map_sum Chromosome.rank, map_nsmul, smul_eq_mul,
+               Chromosome.primeGene, rank_ofRank]
+  have hrank_C : C.rank = C.sum (fun g m => m * g.rank) := by
+    simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, smul_eq_mul]
+  rw [hrank_C, hrank_prime]
+  simp only [Finsupp.sum, ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro g _
+  have hg : g.rank - 1 + 1 = g.rank := Nat.succ_pred_eq_of_pos g.rank_pos
+  calc C g * g.rank
+      = C g * (g.rank - 1 + 1) := by rw [hg]
+    _ = C g * (g.rank - 1) + C g := by ring
 
 -- ============================================================
 -- Auxiliary lemma 3: total count of prime^[j] C via rank-shift bijection
@@ -73,17 +117,38 @@ Key: the map `g ↦ ⟨g.rank + j, g.type, _⟩` is a bijection from
 lemma prime_iterate_total_count (j : ℕ) (C : Chromosome) :
     (Chromosome.prime^[j] C).sum (fun _ m => m) =
     C.sum (fun g m => if j < g.rank then m else 0) := by
-  -- Proof strategy: `Finsupp.sum` reindexing via `Finset.sum_nbij`.
-  -- The bijection: from g ∈ supp(prime^[j] C), map to ⟨g.rank + j, g.type, _⟩ ∈ supp(C).
-  -- Injectivity: g.rank + j = h.rank + j → g.rank = h.rank, and same type.
-  -- Surjectivity: h ∈ supp(C) with h.rank > j → preimage ⟨h.rank - j, h.type, _⟩.
-  -- Value: (prime^[j] C) g = C ⟨g.rank + j, g.type, _⟩ by prime_iterate_coeff'.
-  -- Proof sketch: use Finset.sum_nbij' with
-  --   forward:  h ↦ ⟨h.rank + j, h.type, _⟩   ((prime^[j] C).support → filtered C.support)
-  --   backward: g ↦ ⟨g.rank - j, g.type, _⟩   (filtered C.support → (prime^[j] C).support)
-  -- after first rewriting RHS via Finset.sum_filter to restrict to {g | j < g.rank}.
-  -- Value equality uses prime_iterate_coeff'.
-  sorry
+  -- Unfold Finsupp.sum on both sides; convert RHS to a filter sum.
+  simp only [Finsupp.sum, ← Finset.sum_filter]
+  -- Bijection: forward g ↦ ⟨g.rank+j, g.type, _⟩, backward h ↦ ⟨max 1 (h.rank-j), h.type, _⟩.
+  -- The max-1 trick makes the backward map a pure Gene→Gene without membership proof.
+  apply Finset.sum_nbij'
+    (fun g => (⟨g.rank + j, g.type, by linarith [g.rank_pos]⟩ : Gene))
+    (fun h => (⟨max 1 (h.rank - j), h.type, Nat.le_max_left 1 _⟩ : Gene))
+  · -- Forward: g ∈ supp(prime^[j] C) → ⟨g.rank+j, …⟩ ∈ C.support.filter (j < ·.rank)
+    intro g hg
+    rw [Finset.mem_filter, Finsupp.mem_support_iff] at *
+    exact ⟨prime_iterate_coeff' j C g ▸ hg, by linarith [g.rank_pos]⟩
+  · -- Backward: h ∈ filter → ⟨max 1 (h.rank-j), …⟩ ∈ supp(prime^[j] C)
+    intro h hh
+    rw [Finset.mem_filter, Finsupp.mem_support_iff] at hh
+    obtain ⟨hC_ne, hjh⟩ := hh
+    rw [Finsupp.mem_support_iff, prime_iterate_coeff']
+    -- Simplify the gene rank: max 1 (h.rank-j) = h.rank-j, then (h.rank-j)+j = h.rank
+    have hmax : max 1 (h.rank - j) = h.rank - j := Nat.max_eq_right (by omega)
+    simp only [hmax, Nat.sub_add_cancel (Nat.le_of_lt hjh)]
+    exact hC_ne
+  · -- Left inverse: backward(forward(g)) = g for g ∈ supp(prime^[j] C)
+    intro g _
+    simp only [Nat.add_sub_cancel_right, Nat.max_eq_right g.rank_pos]
+  · -- Right inverse: forward(backward(h)) = h for h ∈ filter
+    intro h hh
+    rw [Finset.mem_filter] at hh
+    have hjh : j < h.rank := hh.2
+    have hmax : max 1 (h.rank - j) = h.rank - j := Nat.max_eq_right (by omega)
+    simp only [hmax, Nat.sub_add_cancel (Nat.le_of_lt hjh)]
+  · -- Values agree: (prime^[j] C) g = C ⟨g.rank+j, g.type, _⟩
+    intro g _
+    exact prime_iterate_coeff' j C g
 
 -- ============================================================
 -- Step D: Total gene count agrees at each rank
@@ -104,36 +169,165 @@ lemma pi_sum_per_rank {A B : Chromosome}
     have h := congr_arg (fun p : ℚ × ℚ => p.1 + p.2) (hsig_eq j)
     simp only [signature_sum_eq_rank] at h
     exact_mod_cast h
-  -- From rank_prime_decomp': rank(prime^[j] C) - rank(prime^[j+1] C) = total_count(prime^[j] C).
-  -- From hrank_eq: total_count(prime^[j] A) = total_count(prime^[j] B) for all j.
-  -- From prime_iterate_total_count: total_count(prime^[j] C) = C.sum (g m => if j < g.rank then m else 0).
-  -- Telescoping (j = r-1 minus j = r):
-  --   A.sum (g m => if g.rank = r then m else 0) = B.sum (g m => if g.rank = r then m else 0).
-  -- For Pi chromosomes (no NonPolarized): the sum equals A ⟨r, Pos⟩ + A ⟨r, Neg⟩.
-  sorry
+  -- Step C: total gene count equality at every level j.
+  have hcount_eq : ∀ j, (Chromosome.prime^[j] A).sum (fun _ m => m) =
+                         (Chromosome.prime^[j] B).sum (fun _ m => m) := fun j => by
+    have hd_A := rank_prime_decomp' (Chromosome.prime^[j] A)
+    have hd_B := rank_prime_decomp' (Chromosome.prime^[j] B)
+    -- hd_A/hd_B: rank(prime^[j] C) = rank(prime (prime^[j] C)) + count(prime^[j] C)
+    have hj := hrank_eq j
+    have hj1 : (Chromosome.prime (Chromosome.prime^[j] A)).rank =
+               (Chromosome.prime (Chromosome.prime^[j] B)).rank := by
+      have := hrank_eq (j + 1)
+      simp only [Function.iterate_succ_apply'] at this
+      exact this
+    linarith
+  -- Step C': translate to rank-filtered sums.
+  have hrank_sum_eq : ∀ j,
+      A.sum (fun g m => if j < g.rank then m else 0) =
+      B.sum (fun g m => if j < g.rank then m else 0) := fun j => by
+    rw [← prime_iterate_total_count, ← prime_iterate_total_count]
+    exact hcount_eq j
+  -- Step D prep: telescoping identity.
+  have hdecomp : ∀ (C : Chromosome),
+      C.sum (fun g m => if r - 1 < g.rank then m else 0) =
+      C.sum (fun g m => if r < g.rank then m else 0) +
+      C.sum (fun g m => if g.rank = r then m else 0) := fun C => by
+    simp only [Finsupp.sum, ← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro g _
+    split_ifs <;> omega
+  -- Step D main: telescope at j = r - 1 and j = r.
+  have hsum_rank :
+      A.sum (fun g m => if g.rank = r then m else 0) =
+      B.sum (fun g m => if g.rank = r then m else 0) := by
+    have h1 := hrank_sum_eq (r - 1)
+    have h2 := hrank_sum_eq r
+    have hA := hdecomp A
+    have hB := hdecomp B
+    omega
+  -- Step D conclude: for Pi chromosomes, the rank-r sum splits into Pos + Neg.
+  have hpi_sum : ∀ (C : Chromosome) (hC : C ∈ Variety.Pi),
+      C.sum (fun g m => if g.rank = r then m else 0) =
+      C ⟨r, .Positive, hr⟩ + C ⟨r, .Negative, hr⟩ := fun C hC => by
+    have hIsPol := mem_Pi_iff.mp hC
+    rw [Finsupp.sum, ← Finset.sum_filter]
+    -- The filter contains only Pos and Neg genes (NonPolarized genes have C g = 0 in Pi).
+    have hsubset : C.support.filter (fun g => g.rank = r) ⊆
+        ({⟨r, .Positive, hr⟩, ⟨r, .Negative, hr⟩} : Finset Gene) := by
+      intro g hg
+      simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg
+      simp only [Finset.mem_insert, Finset.mem_singleton]
+      have htype := IsPolarized_def'.mp hIsPol g (Finsupp.mem_support_iff.mpr hg.1)
+      rcases g with ⟨rg, tg, hrg⟩
+      simp only at htype hg
+      obtain ⟨_, rfl⟩ := hg
+      rcases tg with _ | _ | _
+      · exact absurd rfl htype
+      · left; rfl
+      · right; rfl
+    have hne : (⟨r, .Positive, hr⟩ : Gene) ≠ ⟨r, .Negative, hr⟩ := by
+      simp [Gene.mk.injEq]
+    calc ∑ g ∈ C.support.filter (fun g => g.rank = r), C g
+        = ∑ g ∈ ({⟨r, .Positive, hr⟩, ⟨r, .Negative, hr⟩} : Finset Gene), C g :=
+          Finset.sum_subset hsubset (fun g hg hng => by
+            simp only [Finset.mem_insert, Finset.mem_singleton] at hg
+            simp only [Finset.mem_filter, not_and] at hng
+            rcases hg with rfl | rfl
+            · exact not_not.mp (Finsupp.mem_support_iff.not.mp fun hs => absurd rfl (hng hs))
+            · exact not_not.mp (Finsupp.mem_support_iff.not.mp fun hs => absurd rfl (hng hs)))
+      _ = C ⟨r, .Positive, hr⟩ + C ⟨r, .Negative, hr⟩ := Finset.sum_pair hne
+  linarith [hpi_sum A hA, hpi_sum B hB, hsum_rank]
 
 -- ============================================================
 -- Step E: The D formula — sig.1 − sig.2 at level j
 -- ============================================================
 
+/-- For a polarized gene, `sig.1 - sig.2 = ±1` (odd rank) or `0` (even rank). -/
+private lemma gene_sig_diff_eq {g : Gene} (hpol : g.type ≠ .NonPolarized) :
+    g.signature.1 - g.signature.2 =
+    if g.rank % 2 = 1 then (if g.type = .Positive then (1 : ℚ) else -1) else 0 := by
+  match hg : g.type with
+  | .NonPolarized => exact absurd hg hpol
+  | .Positive =>
+    rw [Gene.signature_of_positive hg]
+    by_cases he : Even g.rank
+    · simp only [if_pos he, sub_self]
+      rw [if_neg (by have := Nat.even_iff.mp he; omega)]
+    · have hmod : g.rank % 2 = 1 := Nat.odd_iff.mp (Nat.not_even_iff_odd.mp he)
+      simp only [if_neg he]
+      -- After simp, g.type = .Positive is already resolved: RHS has `if True then 1 else -1`
+      rw [if_pos hmod, if_true]; ring
+  | .Negative =>
+    rw [Gene.signature_of_negative hg]
+    by_cases he : Even g.rank
+    · simp only [if_pos he, sub_self]
+      rw [if_neg (by have := Nat.even_iff.mp he; omega)]
+    · have hmod : g.rank % 2 = 1 := Nat.odd_iff.mp (Nat.not_even_iff_odd.mp he)
+      simp only [if_neg he]
+      -- After simp, g.type = .Negative is resolved: RHS has
+        --`if GeneType.Negative = GeneType.Positive then ...`
+      rw [if_pos hmod, if_neg (show GeneType.Negative ≠ GeneType.Positive from by decide)]
+      ring
+
 /-- For a Pi chromosome `C`, the difference `sig(prime^[j] C).1 − sig(prime^[j] C).2`
 equals the sum of `C g` (with sign +1 for Positive, −1 for Negative) over genes
-`g` with `g.rank > j` and `(g.rank − j)` odd.
-
-**Key fact:** `g.signature.1 − g.signature.2` equals `+1` (Positive, odd rank),
-`−1` (Negative, odd rank), or `0` (even rank or NonPolarized). -/
+`g` with `g.rank > j` and `(g.rank − j)` odd. -/
 lemma sig_diff_formula (j : ℕ) (C : Chromosome) (hC : C ∈ Variety.Pi) :
     (signature (Chromosome.prime^[j] C)).1 - (signature (Chromosome.prime^[j] C)).2 =
     C.sum (fun g m =>
       if j < g.rank ∧ (g.rank - j) % 2 = 1 then
         (m : ℚ) * (if g.type = .Positive then 1 else -1)
       else 0) := by
-  -- Expand signature using signature_fst, signature_snd.
-  -- Apply prime_iterate_coeff' to express (prime^[j] C) g = C ⟨g.rank + j, g.type, _⟩.
-  -- The map g ↦ ⟨g.rank + j, g.type, _⟩ reindexes the sum (Finset.sum_nbij).
-  -- Then g.signature.1 − g.signature.2 depends on g.rank (odd/even) and g.type.
-  -- For Pi chromosomes: no NonPolarized genes, so the (−1) branch only hits Negative.
-  sorry
+  have hIsPol := mem_Pi_iff.mp hC
+  -- Step 1: Expand LHS to a single Finset.sum
+  simp only [signature_fst, signature_snd, Finsupp.sum, smul_eq_mul,
+             ← Finset.sum_sub_distrib, ← mul_sub]
+  -- Now: ∑ g ∈ (prime^[j] C).support, (prime^[j] C) g * (g.sig.1 - g.sig.2) = RHS
+  -- Step 2: Convert RHS to filter form for the bijection
+  have hrhs : ∑ h ∈ C.support, (if j < h.rank ∧ (h.rank - j) % 2 = 1 then
+        (C h : ℚ) * (if h.type = .Positive then 1 else -1) else 0) =
+      ∑ h ∈ C.support.filter (fun h => j < h.rank), (C h : ℚ) *
+        (if (h.rank - j) % 2 = 1 then (if h.type = .Positive then 1 else -1) else 0) := by
+    conv_lhs => rw [← Finset.sum_filter]
+    conv_rhs =>
+      simp only [mul_ite, mul_zero]
+      rw [← Finset.sum_filter, Finset.filter_filter]
+    apply Finset.sum_congr rfl; intro a _; split_ifs <;> ring
+  rw [hrhs]
+  -- Step 3: Apply bijection g ↦ ⟨g.rank + j, g.type, _⟩ (same as prime_iterate_total_count)
+  apply Finset.sum_nbij'
+    (fun g => (⟨g.rank + j, g.type, by linarith [g.rank_pos]⟩ : Gene))
+    (fun h => (⟨max 1 (h.rank - j), h.type, Nat.le_max_left 1 _⟩ : Gene))
+  · -- Forward: g ∈ supp(prime^j C) → i(g) ∈ C.support.filter (j < ·.rank)
+    intro g hg
+    simp only [Finsupp.mem_support_iff] at hg
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff]
+    exact ⟨prime_iterate_coeff' j C g ▸ hg, by linarith [g.rank_pos]⟩
+  · -- Backward: h ∈ filter → j(h) ∈ supp(prime^j C)
+    intro h hh
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hh
+    simp only [Finsupp.mem_support_iff, prime_iterate_coeff']
+    have hmax : max 1 (h.rank - j) = h.rank - j := Nat.max_eq_right (by omega)
+    simp only [hmax, Nat.sub_add_cancel (Nat.le_of_lt hh.2)]
+    exact hh.1
+  · -- Left inverse
+    intro g _; simp only [Nat.add_sub_cancel_right, Nat.max_eq_right g.rank_pos]
+  · -- Right inverse
+    intro h hh
+    simp only [Finset.mem_filter] at hh
+    have hmax : max 1 (h.rank - j) = h.rank - j := Nat.max_eq_right (by omega)
+    simp only [hmax, Nat.sub_add_cancel (Nat.le_of_lt hh.2)]
+  · -- Values agree: (prime^j C) g * (g.sig.1 - g.sig.2) = C i(g) * (if g.rank%2=1 then ...)
+    intro g hg
+    simp only [Finsupp.mem_support_iff] at hg
+    rw [prime_iterate_coeff']
+    have hpol : g.type ≠ .NonPolarized :=
+      IsPolarized_def'.mp (mem_Pi_iff.mp (prime_mem_Pi_iterate hC)) g
+        (Finsupp.mem_support_iff.mpr hg)
+    simp only [Nat.add_sub_cancel_right]
+    congr 1
+    exact gene_sig_diff_eq hpol
 
 -- ============================================================
 -- Step F: Gene difference agrees at each rank by telescoping D(j) − D(j+2)
