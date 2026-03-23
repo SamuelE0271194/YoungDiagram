@@ -63,6 +63,14 @@ lemma Pi_rank_one_eq_of_sig_eq (C D : Chromosome)
   rcases εC <;> rcases εD <;>
     simp_all [signature_ofRank_one_positive, signature_ofRank_one_negative]
 
+/-- `Pi.Step` is compatible with adding a Pi element on the right. -/
+private lemma Pi.Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
+    (h : Pi.Step A B) : Pi.Step (A + W) (B + W) := by
+  cases h with
+  | mk X Y Z hPrim =>
+    rw [add_assoc, add_assoc]
+    exact Pi.Step.mk X Y (Z + W) hPrim
+
 /--
 Proposition after (15.7) [Djoković 1982, p. 29]:
 Let X, Y ∈ Π(n) with X < Y.  Then there exists a Π-mutation X → Z such that Z ≤ Y.
@@ -70,13 +78,13 @@ Let X, Y ∈ Π(n) with X < Y.  Then there exists a Π-mutation X → Z such tha
 Here:
 - `Π(n)` is the set of polarized chromosomes of rank `n`
 - `X < Y` is the pointwise (Finsupp) strict order on chromosomes
-- `IsMutation X.val Z.val` witnesses a single Π-mutation from X to Z
+- `Pi.Step X Z` witnesses a single Π-mutation step from X to Z
 - `Z ≤ Y` is the pointwise order on `Variety.Pi`
 -/
 theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
     (hX : X ∈ Pi_n n) (hY : Y ∈ Pi_n n)
     (hXY : X < Y) :
-    ∃ Z : Variety.Pi, IsMutation X.val Z.val ∧ Z ≤ Y := by
+    ∃ Z : Variety.Pi, Pi.Step X Z ∧ Z ≤ Y := by
   -- Use strong induction so that subtracting a gene of any rank stays in range.
   revert X Y hX hY hXY
   refine Nat.strongRecOn n ?_
@@ -189,9 +197,10 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
         refine ⟨⟨Z'.val + Finsupp.single g 1,
             mem_Pi_iff.mpr (IsPolarized_iff_add.mpr
               ⟨mem_Pi_iff.mp Z'.2, mem_Pi_iff.mp hg1_Pi⟩)⟩, ?_, ?_⟩
-        · -- IsMutation X.val (Z'.val + single g 1)
-          rw [show X.val = X'v + Finsupp.single g 1 from hX_eq.symm]
-          exact hmut'.add_right _
+        · -- Pi.Step X ⟨Z'.val + single g 1, _⟩
+          -- hmut' : Pi.Step ⟨X'v, _⟩ Z'; add ⟨single g 1, _⟩ to both sides, then coerce.
+          convert Pi.Step.add_right_pi ⟨Finsupp.single g 1, hg1_Pi⟩ hmut' using 1
+          exact Subtype.ext hX_eq.symm
         · -- Z' + single g 1 ≤ Y.val
           change Z'.val + Finsupp.single g 1 ≤ Y.val
           rw [← hY_eq, le_iff_dominates]
@@ -372,7 +381,55 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
             -- hdisj_k gives Yk.val g' = 0 (disjoint supports), contradicting hg'.
             have hYkg'zero : Yk.val g' = 0 := hdisj_k g' hXkg'
             omega
-          sorry
+          -- Step 4: Apply the strong induction hypothesis to Xk < Yk.
+          -- The IH now gives Pi.Step Xk U directly (theorem conclusion uses Pi.Step).
+          obtain ⟨U, hU_step, hU_le⟩ : ∃ U : Variety.Pi, Pi.Step Xk U ∧ U ≤ Yk :=
+            ih Xk.val.rank hXk_rank_lt Xk Yk rfl hXk_Yk_rank.symm hlt_k
+          -- Step 5: Lift the mutation from prime^[k] X to X via mutation_lifting.
+          -- Step 5b: Call mutation_lifting.
+          -- The membership coercion: U.2 : U.val ∈ Pi transports along
+          -- Label (Label.prime^[k] 0) = Label 0 = Pi.
+          -- The Step coercion: bridging Pi.Step Xk U to
+          -- Mutation.Step (Label.prime^[k] 0) ... requires mutation_lifting_Pi to be public.
+          obtain ⟨Z, hZ, hZ_step, hZ_prime, hZ_sig⟩ :=
+            mutation_lifting (0 : Fin 5) k X.2
+              ((congrArg (U.val ∈ ·) (congrArg Label (@Label.prime_iterate_zero k))).mpr U.2)
+              (by
+                have hU_step' : Mutation.Step (0 : Fin 5) Xk U := hU_step
+                have h0 : Label (Label.prime^[k] (0 : Fin 5)) = Label 0 :=
+                  congrArg Label Label.prime_iterate_zero
+                convert hU_step'
+                · exact Label.prime_iterate_zero
+                · exact (Subtype.heq_iff_coe_eq (fun x => Iff.of_eq (congrArg (x ∈ ·) h0))).mpr rfl
+                · exact (Subtype.heq_iff_coe_eq (fun x => Iff.of_eq (congrArg (x ∈ ·) h0))).mpr rfl)
+          -- Step 6: Construct the witness ⟨Z, hZ⟩ and prove it ≤ Y.
+          have hZ_pi : Pi.Step X ⟨Z, hZ⟩ := hZ_step
+          refine ⟨⟨Z, hZ⟩, hZ_pi, ?_⟩
+          -- Goal: ⟨Z, hZ⟩ ≤ Y in Variety.Pi, i.e., Z ≤ Y.val in Chromosome.
+          change Z ≤ Y.val
+          rw [le_iff_dominates]
+          intro j
+          by_cases hjk : j ≤ k
+          · -- j ≤ k: hZ_sig gives sig(prime^j Z) = sig(prime^j X.val),
+            --        then X ≤ Y gives sig(prime^j X.val) ≤ sig(prime^j Y.val).
+            calc signature (Chromosome.prime^[j] Z)
+                = signature (Chromosome.prime^[j] X.val) := (hZ_sig j hjk).symm
+              _ ≤ signature (Chromosome.prime^[j] Y.val) := le_iff_dominates.mp hXY.le j
+          · -- j > k: prime^[j] Z = prime^[j-k] (prime^[k] Z) = prime^[j-k] U.val,
+            --        then U ≤ Yk gives sig(prime^[j-k] U.val) ≤ sig(prime^[j-k] Yk.val),
+            --        and Yk.val = prime^[k] Y.val so sig(prime^[j-k] Yk.val) = sig(prime^j Y.val).
+            push_neg at hjk
+            have hjk' : k ≤ j := hjk.le
+            calc signature (Chromosome.prime^[j] Z)
+                = signature (Chromosome.prime^[j - k] U.val) := by
+                    conv_lhs =>
+                      rw [show j = (j - k) + k from (Nat.sub_add_cancel hjk').symm,
+                          Function.iterate_add_apply, hZ_prime]
+              _ ≤ signature (Chromosome.prime^[j - k] Yk.val) :=
+                    le_iff_dominates.mp hU_le (j - k)
+              _ = signature (Chromosome.prime^[j] Y.val) := by
+                    simp only [Yk]
+                    rw [← Function.iterate_add_apply, Nat.sub_add_cancel hjk']
         · -- Sub-case 2b: all sigma columns differ (hsigeq :
             --∀ k > 0, Y^(k) ≠ 0 → sigma X k ≠ sigma Y k).
           push_neg at hsigeq
