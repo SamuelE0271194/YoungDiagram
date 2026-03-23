@@ -333,11 +333,82 @@ lemma sig_diff_formula (j : ℕ) (C : Chromosome) (hC : C ∈ Variety.Pi) :
 -- Step F: Gene difference agrees at each rank by telescoping D(j) − D(j+2)
 -- ============================================================
 
-/-- From sigma-tower equality, the signed difference of gene counts at rank `r` agrees:
-`A ⟨r, Pos⟩ − A ⟨r, Neg⟩ = B ⟨r, Pos⟩ − B ⟨r, Neg⟩` (in ℤ).
+/-- Telescoping: `D_C(j) − D_C(j+2) = C ⟨j+1, Pos⟩ − C ⟨j+1, Neg⟩` (in ℚ). -/
+private lemma sig_diff_telesc (C : Chromosome) (hC : C ∈ Variety.Pi) (j : ℕ) :
+    ((signature (Chromosome.prime^[j] C)).1 - (signature (Chromosome.prime^[j] C)).2) -
+    ((signature (Chromosome.prime^[j + 2] C)).1 - (signature (Chromosome.prime^[j + 2] C)).2) =
+    (C ⟨j + 1, .Positive, Nat.succ_pos j⟩ : ℚ) -
+    C ⟨j + 1, .Negative, Nat.succ_pos j⟩ := by
+  have hIsPol := mem_Pi_iff.mp hC
+  rw [sig_diff_formula j C hC, sig_diff_formula (j + 2) C hC]
+  simp only [Finsupp.sum, ← Finset.sum_sub_distrib]
+  -- Each summand telescopes to the rank-(j+1) indicator
+  have hcongr : ∀ g ∈ C.support,
+      (if j < g.rank ∧ (g.rank - j) % 2 = 1 then
+          (C g : ℚ) * (if g.type = .Positive then 1 else -1) else 0) -
+      (if j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1 then
+          (C g : ℚ) * (if g.type = .Positive then 1 else -1) else 0) =
+      if g.rank = j + 1 then (C g : ℚ) * (if g.type = .Positive then 1 else -1) else 0 := by
+    intro g _
+    by_cases hc3 : g.rank = j + 1
+    · -- g.rank = j+1: first cond true, second false
+      have h1 : j < g.rank ∧ (g.rank - j) % 2 = 1 := ⟨by omega, by omega⟩
+      have h2 : ¬(j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1) := by rintro ⟨h, _⟩; omega
+      rw [if_pos h1, if_neg h2, if_pos hc3]; ring
+    · rw [if_neg hc3]
+      rcases Nat.lt_or_ge g.rank (j + 2) with hlt | hge
+      · -- g.rank ≤ j: both conditions false
+        have h1 : ¬(j < g.rank ∧ (g.rank - j) % 2 = 1) := by rintro ⟨h, _⟩; omega
+        have h2 : ¬(j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1) := by rintro ⟨h, _⟩; omega
+        rw [if_neg h1, if_neg h2, sub_self]
+      · rcases Nat.eq_or_lt_of_le hge with heq | hlt2
+        · -- g.rank = j+2: first cond fails (parity 0), second fails (not strict)
+          have h1 : ¬(j < g.rank ∧ (g.rank - j) % 2 = 1) := by rintro ⟨_, h⟩; omega
+          have h2 : ¬(j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1) := by rintro ⟨h, _⟩; omega
+          rw [if_neg h1, if_neg h2, sub_self]
+        · -- g.rank > j+2: parity same, so both conditions match → difference 0
+          have hparity : (g.rank - j) % 2 = (g.rank - (j + 2)) % 2 := by omega
+          rcases Classical.em (j < g.rank ∧ (g.rank - j) % 2 = 1) with h1 | h1
+          · have h2 : j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1 :=
+                ⟨by omega, by rw [← hparity]; exact h1.2⟩
+            rw [if_pos h1, if_pos h2, sub_self]
+          · have h2 : ¬(j + 2 < g.rank ∧ (g.rank - (j + 2)) % 2 = 1) := by
+                rintro ⟨_, h⟩; exact h1 ⟨by omega, by rw [hparity]; exact h⟩
+            rw [if_neg h1, if_neg h2, sub_self]
+  rw [Finset.sum_congr rfl hcongr, ← Finset.sum_filter]
+  -- Evaluate the rank-(j+1) sum: only Pos and Neg genes contribute in Pi
+  have hr' : 0 < j + 1 := Nat.succ_pos j
+  have hne : (⟨j + 1, .Positive, hr'⟩ : Gene) ≠ ⟨j + 1, .Negative, hr'⟩ := by
+    simp [Gene.mk.injEq]
+  have hsubset : C.support.filter (fun g => g.rank = j + 1) ⊆
+      ({⟨j + 1, .Positive, hr'⟩, ⟨j + 1, .Negative, hr'⟩} : Finset Gene) := by
+    intro g hg
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg
+    simp only [Finset.mem_insert, Finset.mem_singleton]
+    have htype := IsPolarized_def'.mp hIsPol g (Finsupp.mem_support_iff.mpr hg.1)
+    rcases g with ⟨rg, tg, hrg⟩; simp only at htype hg; obtain ⟨_, rfl⟩ := hg
+    rcases tg with _ | _ | _
+    · exact absurd rfl htype
+    · left; rfl
+    · right; rfl
+  calc ∑ g ∈ C.support.filter (fun g => g.rank = j + 1),
+          (C g : ℚ) * (if g.type = .Positive then 1 else -1)
+      = ∑ g ∈ ({⟨j + 1, .Positive, hr'⟩, ⟨j + 1, .Negative, hr'⟩} : Finset Gene),
+          (C g : ℚ) * (if g.type = .Positive then 1 else -1) :=
+        Finset.sum_subset hsubset (fun g hg hng => by
+          simp only [Finset.mem_insert, Finset.mem_singleton] at hg
+          simp only [Finset.mem_filter, not_and] at hng
+          rcases hg with rfl | rfl
+          · simp [not_not.mp (Finsupp.mem_support_iff.not.mp fun hs => absurd rfl (hng hs))]
+          · simp [not_not.mp (Finsupp.mem_support_iff.not.mp fun hs => absurd rfl (hng hs))])
+    _ = (C ⟨j + 1, .Positive, hr'⟩ : ℚ) - C ⟨j + 1, .Negative, hr'⟩ := by
+        rw [Finset.sum_pair hne]
+        have hNP : GeneType.Negative ≠ GeneType.Positive := by decide
+        simp only [if_true, if_neg hNP]
+        ring
 
-**Proof:** `D(j) − D(j+2)` telescopes to `C ⟨j+1, Pos⟩ − C ⟨j+1, Neg⟩`, since
-terms with `g.rank > j+1` cancel between `D(j)` and `D(j+2)` (same parity class). -/
+/-- From sigma-tower equality, the signed difference of gene counts at rank `r` agrees:
+`A ⟨r, Pos⟩ − A ⟨r, Neg⟩ = B ⟨r, Pos⟩ − B ⟨r, Neg⟩` (in ℤ). -/
 lemma pi_diff_per_rank {A B : Chromosome}
     (hA : A ∈ Variety.Pi) (hB : B ∈ Variety.Pi)
     (hsig_eq : ∀ j, signature (Chromosome.prime^[j] A) =
@@ -345,12 +416,28 @@ lemma pi_diff_per_rank {A B : Chromosome}
     (r : ℕ) (hr : 0 < r) :
     (A ⟨r, .Positive, hr⟩ : ℤ) - A ⟨r, .Negative, hr⟩ =
     (B ⟨r, .Positive, hr⟩ : ℤ) - B ⟨r, .Negative, hr⟩ := by
-  -- Define D(j) := sig(prime^[j] C).1 - sig(prime^[j] C).2 for C = A and C = B.
-  -- From hsig_eq: D_A(j) = D_B(j) for all j.
-  -- Apply sig_diff_formula to get the Finsupp.sum expression for D(j).
-  -- Telescoping: D(r-1) - D(r+1) = A ⟨r, Pos⟩ - A ⟨r, Neg⟩ (and same for B).
-  -- Hence equal.
-  sorry
+  -- D(j) equality from sig-tower equality
+  have hDeq : ∀ j,
+      (signature (Chromosome.prime^[j] A)).1 - (signature (Chromosome.prime^[j] A)).2 =
+      (signature (Chromosome.prime^[j] B)).1 - (signature (Chromosome.prime^[j] B)).2 := fun j => by
+    have h := hsig_eq j; simp only [Prod.ext_iff] at h; linarith [h.1, h.2]
+  -- Telescope at j = r - 1: D(r-1) - D(r-1+2) = C⟨r-1+1, ...⟩ - C⟨r-1+1, ...⟩
+  have hTA := sig_diff_telesc A hA (r - 1)
+  have hTB := sig_diff_telesc B hB (r - 1)
+  -- D(j) equalities at the two levels
+  have hD1 := hDeq (r - 1)
+  have hD2 := hDeq (r - 1 + 2)
+  -- Convert Gene index: ⟨r-1+1, t, _⟩ = ⟨r, t, hr⟩ (since r-1+1 = r)
+  have hrec : r - 1 + 1 = r := Nat.succ_pred_eq_of_pos hr
+  have hgpos : (⟨r - 1 + 1, .Positive, Nat.succ_pos (r - 1)⟩ : Gene) = ⟨r, .Positive, hr⟩ := by
+    simp [hrec]
+  have hgneg : (⟨r - 1 + 1, .Negative, Nat.succ_pos (r - 1)⟩ : Gene) = ⟨r, .Negative, hr⟩ := by
+    simp [hrec]
+  rw [hgpos, hgneg] at hTA hTB
+  -- Conclude in ℚ, then cast to ℤ
+  have hQ : (A ⟨r, .Positive, hr⟩ : ℚ) - A ⟨r, .Negative, hr⟩ =
+            (B ⟨r, .Positive, hr⟩ : ℚ) - B ⟨r, .Negative, hr⟩ := by linarith
+  exact_mod_cast hQ
 
 -- ============================================================
 -- Main theorem: Pi chromosome antisymmetry
