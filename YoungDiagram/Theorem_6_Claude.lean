@@ -657,11 +657,14 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               intro sg sg' hsg hsg'
               subst hsg hsg'
               ext g
-              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
+              simp only [Finsupp.add_apply, restval, Finsupp.tsub_apply, Finsupp.single_apply]
               split_ifs with h1 h2
               · exact absurd (h1.trans h2.symm) hne
-              · subst h1; omega
-              · subst h2; omega
+              · rw [← h1]; omega
+              · have : gneg = g := by
+                  assumption
+                rw [← this]; omega
+                -- rw [← h2]; omega
               · omega
             -- Case split on which sigma component is strict; both cases are symmetric.
             rcases hsig_lt with h_pos | h_neg
@@ -673,7 +676,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               let rest_pi : Pi := ⟨restval, rest_mem⟩
               -- X1.val = single gpos 1 + single gneg 1
               have hX1_val : X1.val = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
-                show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
+                -- show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
                 rw [Pi.X1_eq, GeneType.neg_positive, hgpos_eq, hgneg_eq]
               -- X1.val + restval = X.val
               have hX_eq : X1.val + restval = X.val := by
@@ -696,7 +699,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               let rest_pi : Pi := ⟨restval, rest_mem⟩
               -- X1.val = single gneg 1 + single gpos 1 = single gpos 1 + single gneg 1
               have hX1_val : X1.val = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
-                show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
+                -- show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
                 rw [Pi.X1_eq, GeneType.neg_negative, hgneg_eq, hgpos_eq, add_comm]
               -- X1.val + restval = X.val
               have hX_eq : X1.val + restval = X.val := by
