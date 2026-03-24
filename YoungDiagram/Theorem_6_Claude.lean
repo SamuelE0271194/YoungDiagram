@@ -479,7 +479,238 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                 -- now hXgneg : 0 < ↑X g, hcommon g hXgneg : ↑Y g ≤ 0, hYg : 0 < ↑Y g
                 have h := hcommon g hXgneg
                 omega
-            sorry
+            -- Step 1: Prove prime^[r] Y.val ≠ 0.
+            let r := gpos.rank
+            have hr : 1 ≤ r := gpos.rank_pos
+            -- Step 1a: (signature (prime^[r-1] X.val)).1 ≥ 1.
+            -- Key: prime^[r-1] gpos = Gene.ofRank 1 .Positive (by prime_iterate_ofRank),
+            -- X.val ≥ Finsupp.single gpos 1 pointwise (from hXgpos),
+            -- prime^[r-1] is an AddMonoidHom so it is monotone,
+            -- signature .1 is monotone, and signature (Gene.ofRank 1 .Positive) = (1, 0).
+            have h1a : 1 ≤ (signature (Chromosome.prime^[r - 1] X.val)).1 := by
+              -- Identify Finsupp.single gpos 1 = Gene.ofRank r .Positive as Chromosomes
+              have hgpos_single : Gene.ofRank r .Positive =
+                (Finsupp.single gpos 1 : Chromosome) := by
+                have h := Gene.ofRank_eq_gene (g := gpos)
+                rw [hgpos] at h; exact h
+              -- prime^[r-1] (Finsupp.single gpos 1) = Gene.ofRank 1 .Positive
+              have hprime_gpos : Chromosome.prime^[r - 1] (Finsupp.single gpos 1 : Chromosome) =
+                  Gene.ofRank 1 .Positive := by
+                rw [← hgpos_single, prime_iterate_ofRank, Nat.sub_sub_self hr]
+              -- X.val = Finsupp.single gpos 1 + (X.val - Finsupp.single gpos 1)
+              -- (valid since X.val gpos ≥ 1)
+              have hXeq : X.val = Finsupp.single gpos 1 + (X.val - Finsupp.single gpos 1) := by
+                apply Finsupp.ext; intro h
+                simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
+                split_ifs with heq
+                · subst heq; omega
+                · omega
+              -- signature (prime^[r-1] (X.val - single gpos 1)) ≥ 0 (all signatures nonneg)
+              have hrest_nonneg := signature_nonneg (Chromosome.prime^[r - 1]
+                (X.val - Finsupp.single gpos 1))
+              -- Combine: 1 = sig(Gene.ofRank 1 .Pos).1 = sig(prime^[r-1](single gpos 1)).1
+              --              ≤ sig(prime^[r-1] X.val).1
+              calc (1 : ℚ)
+                  = (signature (Gene.ofRank 1 .Positive : Chromosome)).1 := by
+                      simp [signature_ofRank_one_positive]
+                _ = (signature (Chromosome.prime^[r - 1] (Finsupp.single gpos 1 : Chromosome))).1
+                  := by
+                      rw [hprime_gpos]
+                _ ≤ (signature (Chromosome.prime^[r - 1] X.val)).1 := by
+                      conv_rhs => rw [hXeq]
+                      rw [iterate_map_add, map_add]
+                      exact le_add_of_nonneg_right hrest_nonneg.1
+            -- Step 1b: (signature (prime^[r-1] Y.val)).1 ≥ 1.
+            -- From le_iff_dominates.mp hXY.le (r-1) and h1a.
+            have h1b : 1 ≤ (signature (Chromosome.prime^[r - 1] Y.val)).1 := by
+              have hdom := le_iff_dominates.mp hXY.le (r - 1)
+              exact le_trans h1a hdom.1
+            -- Step 1c: prime^[r-1] Y.val ≠ 0.
+            -- If it were 0, signature 0 = (0, 0) so .1 = 0, contradicting h1b.
+            have h1c : Chromosome.prime^[r - 1] Y.val ≠ 0 := by
+              intro heq
+              have : (signature (Chromosome.prime^[r - 1] Y.val)).1 = 0 := by simp [heq]
+              linarith
+            -- Auxiliary: if C ≠ 0 and every gene in C.support has rank ≥ 2, then prime C ≠ 0.
+            have prime_ne_zero_of_rank_ge_two :
+                ∀ C : Chromosome, C ≠ 0 → (∀ g ∈ C.support, 2 ≤ g.rank) →
+                Chromosome.prime C ≠ 0 := by
+              intro C hCne hrank hcontra
+              -- Pick any g₀ in C's support
+              obtain ⟨g₀, hg₀⟩ := Finsupp.support_nonempty_iff.mpr hCne
+              have hCg₀ : 0 < C g₀ := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg₀)
+              have hg₀rank : 2 ≤ g₀.rank := hrank g₀ hg₀
+              -- Witness: h₁ = gene of rank g₀.rank − 1, same type
+              have h₁_pos : 1 ≤ g₀.rank - 1 := by omega
+              let h₁ : Gene := ⟨g₀.rank - 1, g₀.type, h₁_pos⟩
+              -- (primeGene g₀) h₁ = 1
+              have hpg₀ : (Chromosome.primeGene g₀) h₁ = 1 := by
+                simp only [Chromosome.primeGene]
+                change (Gene.ofRank h₁.rank h₁.type) h₁ = 1
+                rw [Gene.ofRank_eq_gene, Finsupp.single_eq_same]
+              -- Expand (prime C) h₁ to C.sum form (keep as Finsupp.sum, not Finset.sum)
+              have hexpand : (Chromosome.prime C) h₁ =
+                  C.sum (fun g m => m * (Chromosome.primeGene g) h₁) := by
+                simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+                           Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
+              -- C g₀ * 1 ≤ C.sum (...) and C g₀ > 0, so (prime C) h₁ > 0
+              have hlt : 0 < (Chromosome.prime C) h₁ := by
+                rw [hexpand]
+                calc 0 < C g₀ := hCg₀
+                    _ = C g₀ * (Chromosome.primeGene g₀) h₁ := by rw [hpg₀, mul_one]
+                    _ ≤ C.sum (fun g m => m * (Chromosome.primeGene g) h₁) := by
+                          simp only [Finsupp.sum]
+                          exact Finset.single_le_sum
+                            (f := fun g => C g * (Chromosome.primeGene g) h₁)
+                            (fun _ _ => Nat.zero_le _) hg₀
+              -- But prime C = 0 forces (prime C) h₁ = 0
+              have hzero : (Chromosome.prime C) h₁ = 0 := by rw [hcontra]; rfl
+              omega
+            -- Step 1d: prime^[r] Y.val ≠ 0.
+            -- Rewrite prime^[r] = prime ∘ prime^[r-1].
+            -- Every gene in (prime^[r-1] Y.val).support has rank ≥ 2 because:
+            -- Y has no genes of rank r (hY_no_gene), so all genes of Y contributing to
+            -- prime^[r-1] Y.val come from Y-genes of rank ≥ r+1, which after r-1 prime
+            -- applications land at rank ≥ 2.
+            have hYr : Chromosome.prime^[r] Y.val ≠ 0 := by
+              rw [show r = 1 + (r - 1) from by omega,
+                  Function.iterate_add_apply, Function.iterate_one]
+              apply prime_ne_zero_of_rank_ge_two _ h1c
+              -- Key induction: (prime^[j] Y.val) h = 0 when h.rank = r - j.
+              -- So no gene of rank 1 appears in (prime^[r-1] Y.val).
+              have hkey : ∀ (j : ℕ), j ≤ r - 1 → ∀ h : Gene, h.rank = r - j →
+                  (Chromosome.prime^[j] Y.val) h = 0 := by
+                intro j
+                induction j with
+                | zero =>
+                  intro _ h' hh'
+                  simp only [Function.iterate_zero, id]
+                  exact hY_no_gene h' (by omega)
+                | succ j ihj =>
+                  intro hjsucc h' hh'
+                  simp only [Function.iterate_succ', Function.comp,
+                             Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+                             Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
+                  simp only [Finsupp.sum]
+                  apply Finset.sum_eq_zero
+                  intro g hg
+                  have hg_ne : (Chromosome.prime^[j] Y.val) g ≠ 0 :=
+                    Finsupp.mem_support_iff.mp hg
+                  by_cases hrk : g.rank - 1 = h'.rank
+                  · exfalso
+                    exact hg_ne (ihj (by omega) g (by omega))
+                  · simp only [Nat.mul_eq_zero]
+                    right
+                    simp only [Chromosome.primeGene, Gene.ofRank_def]
+                    split_ifs with h0
+                    · rfl
+                    · rw [Finsupp.single_apply, if_neg]
+                      intro heq
+                      exact hrk (congrArg Gene.rank heq)
+              -- Apply hkey at j = r-1: any gene h with h.rank = 1 is 0 in prime^[r-1] Y.val.
+              intro h hmem
+              rw [Finsupp.mem_support_iff] at hmem
+              by_contra hlt
+              push_neg at hlt
+              have hh1 : h.rank = 1 := le_antisymm (by omega) h.rank_pos
+              exact hmem (hkey (r - 1) (le_refl _) h (by omega))
+            -- Step 2: Strict sigma inequality at level r.
+            have hsig_ne : Sigma.sigma X r ≠ Sigma.sigma Y r :=
+              hsigeq r gpos.rank_pos hYr
+            have hle_r : Sigma.sigma X r ≤ Sigma.sigma Y r := by
+              simp only [Sigma.sigma]
+              exact le_iff_dominates.mp hXY.le r
+            -- From ≤ and ≠, at least one component is strict.
+            have hsig_lt : (Sigma.sigma X r).1 < (Sigma.sigma Y r).1 ∨
+                           (Sigma.sigma X r).2 < (Sigma.sigma Y r).2 := by
+              rcases lt_or_eq_of_le hle_r.1 with h1 | h1
+              · exact Or.inl h1
+              · rcases lt_or_eq_of_le hle_r.2 with h2 | h2
+                · exact Or.inr h2
+                · exact absurd (Prod.ext h1 h2) hsig_ne
+            -- Step 3: Construct the mutation X → Z.
+            -- Shared setup: rest = X.val − single gpos 1 − single gneg 1.
+            let restval := X.val - Finsupp.single gpos 1 - Finsupp.single gneg 1
+            -- gpos ≠ gneg (different types).
+            have hne : gpos ≠ gneg := fun h =>
+              absurd (congrArg Gene.type h) (by rw [hgpos, hgneg]; decide)
+            -- Rewrite genes-of-rank as single chromosomes.
+            have hgpos_eq : Gene.ofRank r .Positive = (Finsupp.single gpos 1 : Chromosome) := by
+              rw [← hgpos]; exact Gene.ofRank_eq_gene
+            have hgneg_eq : Gene.ofRank r .Negative = (Finsupp.single gneg 1 : Chromosome) := by
+              have h := Gene.ofRank_eq_gene (g := gneg)
+              rw [hgneg] at h; rwa [← hrank] at h
+            -- rest ∈ Pi: all genes in rest.support ⊆ X.val.support, which is polarized.
+            have rest_mem : restval ∈ Pi := by
+              rw [mem_Pi_iff, IsPolarized_def']
+              intro g hg
+              apply IsPolarized_def'.mp (mem_Pi_iff.mp X.2) g
+              rw [Finsupp.mem_support_iff] at hg ⊢
+              intro hX0
+              apply hg
+              simp only [restval, Finsupp.tsub_apply, Finsupp.single_apply, hX0]
+              omega
+            -- Common hX_eq proof: X1.val + restval = X.val, given X1.val = sg + sg'.
+            have hX_eq_of : ∀ (sg sg' : Chromosome),
+                sg = Finsupp.single gpos 1 → sg' = Finsupp.single gneg 1 →
+                sg + sg' + restval = X.val := by
+              intro sg sg' hsg hsg'
+              subst hsg hsg'
+              ext g
+              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
+              split_ifs with h1 h2
+              · exact absurd (h1.trans h2.symm) hne
+              · subst h1; omega
+              · subst h2; omega
+              · omega
+            -- Case split on which sigma component is strict; both cases are symmetric.
+            rcases hsig_lt with h_pos | h_neg
+            · -- ε = .Positive
+              let ε : GeneType := .Positive
+              have hε : ε ≠ .NonPolarized := by decide
+              let X1 : Pi := Pi.X1 hε (le_refl r) hr
+              let Y1 : Pi := Pi.Y1 hε (le_refl r) hr
+              let rest_pi : Pi := ⟨restval, rest_mem⟩
+              -- X1.val = single gpos 1 + single gneg 1
+              have hX1_val : X1.val = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
+                show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
+                rw [Pi.X1_eq, GeneType.neg_positive, hgpos_eq, hgneg_eq]
+              -- X1.val + restval = X.val
+              have hX_eq : X1.val + restval = X.val := by
+                rw [hX1_val]; exact hX_eq_of _ _ rfl rfl
+              -- Z = Y1 + rest_pi
+              let Z : Pi := ⟨Y1.val + restval, add_mem Y1.2 rest_mem⟩
+              -- Pi.Step X Z via Pi.Primitive.type1
+              have hprim : Pi.Primitive X1 Y1 :=
+                Pi.Primitive.type1 ε hε (le_refl r) hr
+              have hstep_raw : Pi.Step (X1 + rest_pi) (Y1 + rest_pi) :=
+                Pi.Step.mk X1 Y1 rest_pi hprim
+              have hX_sub : X1 + rest_pi = X := Subtype.ext hX_eq
+              refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
+              sorry -- step 4: Z ≤ Y
+            · -- ε = .Negative (symmetric)
+              let ε : GeneType := .Negative
+              have hε : ε ≠ .NonPolarized := by decide
+              let X1 : Pi := Pi.X1 hε (le_refl r) hr
+              let Y1 : Pi := Pi.Y1 hε (le_refl r) hr
+              let rest_pi : Pi := ⟨restval, rest_mem⟩
+              -- X1.val = single gneg 1 + single gpos 1 = single gpos 1 + single gneg 1
+              have hX1_val : X1.val = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
+                show (Pi.X1 hε (le_refl r) hr : Chromosome) = _
+                rw [Pi.X1_eq, GeneType.neg_negative, hgneg_eq, hgpos_eq, add_comm]
+              -- X1.val + restval = X.val
+              have hX_eq : X1.val + restval = X.val := by
+                rw [hX1_val]; exact hX_eq_of _ _ rfl rfl
+              -- Z = Y1 + rest_pi
+              let Z : Pi := ⟨Y1.val + restval, add_mem Y1.2 rest_mem⟩
+              -- Pi.Step X Z via Pi.Primitive.type1
+              have hprim : Pi.Primitive X1 Y1 :=
+                Pi.Primitive.type1 ε hε (le_refl r) hr
+              have hstep_raw : Pi.Step (X1 + rest_pi) (Y1 + rest_pi) :=
+                Pi.Step.mk X1 Y1 rest_pi hprim
+              have hX_sub : X1 + rest_pi = X := Subtype.ext hX_eq
+              refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
+              sorry -- step 4: Z ≤ Y
           · -- (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1.
             push_neg at hXpn
             -- From hsigeq: for k ≥ 1 with Y^(k) ≠ 0, sigma X k ≠ sigma Y k.
