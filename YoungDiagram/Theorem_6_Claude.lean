@@ -690,7 +690,71 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                 Pi.Step.mk X1 Y1 rest_pi hprim
               have hX_sub : X1 + rest_pi = X := Subtype.ext hX_eq
               refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
-              sorry -- step 4: Z ≤ Y
+              -- step 4: Z ≤ Y (three subcases: j < r, j = r, j > r)
+              -- ε = .Positive: Y1.val = Gene.ofRank (r-1) .Negative + Gene.ofRank (r+1) .Positive
+              change Y1.val + restval ≤ Y.val
+              rw [le_iff_dominates]
+              intro j
+              rw [iterate_map_add, map_add]
+              have hdecomp : signature (Chromosome.prime^[j] X.val) =
+                  signature (Chromosome.prime^[j] X1.val) +
+                  signature (Chromosome.prime^[j] restval) := by
+                rw [← hX_eq, iterate_map_add, map_add]
+              have hXYj : signature (Chromosome.prime^[j] X.val) ≤
+                  signature (Chromosome.prime^[j] Y.val) :=
+                le_iff_dominates.mp hXY.le j
+              rcases lt_trichotomy j r with hjr | rfl | hjr
+              · -- Subcase j < r: sig(prime^[j] Y1) = sig(prime^[j] X1)
+                have hY1X1 : signature (Chromosome.prime^[j] Y1.val) =
+                    signature (Chromosome.prime^[j] X1.val) := by
+                  rw [Pi.Y1_eq, Pi.X1_eq]
+                  have key := mutation_type1_iterate_signature_eq hε le_rfl le_rfl j (r - 1)
+                    (by omega)
+                  simp only [show 1 + (r - 1) = r from by omega] at key
+                  exact key.symm
+                rw [hY1X1, ← hdecomp]; exact hXYj
+              · -- Subcase j = r: X1 contributes 0, Y1 contributes (1,0)
+                have hX1r : signature (Chromosome.prime^[r] X1.val) = 0 := by
+                  rw [Pi.X1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             Nat.sub_self, Gene.ofRank_zero, map_zero, add_zero]
+                have hY1r : signature (Chromosome.prime^[r] Y1.val) = (1, 0) := by
+                  rw [Pi.Y1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - 1 - r = 0 from by omega,
+                             show r + 1 - r = 1 from by omega,
+                             Gene.ofRank_zero, zero_add]
+                  exact signature_ofRank_one_positive
+                have hrest_eq : signature (Chromosome.prime^[r] restval) =
+                    signature (Chromosome.prime^[r] X.val) := by
+                  rw [hdecomp, hX1r, zero_add]
+                rw [hY1r, hrest_eq]
+                simp only [Sigma.sigma] at h_pos hle_r
+                obtain ⟨nX, hnX⟩ := signature_pi_fst_isNat (prime_mem_Pi_iterate X.2 (k := r))
+                obtain ⟨nY, hnY⟩ := signature_pi_fst_isNat (prime_mem_Pi_iterate Y.2 (k := r))
+                constructor
+                · simp only [Prod.fst_add]
+                  rw [hnX, hnY] at h_pos ⊢
+                  have hnXY : nX < nY := Nat.cast_lt.mp h_pos
+                  have hfst : (nX : ℚ) + 1 ≤ nY := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+                  linarith
+                · simp only [Prod.snd_add, zero_add]; exact hle_r.2
+              · -- Subcase j > r: both X1 and Y1 vanish under prime^[j]
+                have hX1j : signature (Chromosome.prime^[j] X1.val) = 0 := by
+                  rw [Pi.X1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - j = 0 from by omega,
+                             Gene.ofRank_zero, map_zero, add_zero]
+                have hY1j : signature (Chromosome.prime^[j] Y1.val) = 0 := by
+                  rw [Pi.Y1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - 1 - j = 0 from by omega,
+                             show r + 1 - j = 0 from by omega,
+                             Gene.ofRank_zero, map_zero, add_zero]
+                have hrestj : signature (Chromosome.prime^[j] restval) =
+                    signature (Chromosome.prime^[j] X.val) := by
+                  rw [hdecomp, hX1j, zero_add]
+                rw [hY1j, zero_add, hrestj]; exact hXYj
             · -- ε = .Negative (symmetric)
               let ε : GeneType := .Negative
               have hε : ε ≠ .NonPolarized := by decide
@@ -713,7 +777,72 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                 Pi.Step.mk X1 Y1 rest_pi hprim
               have hX_sub : X1 + rest_pi = X := Subtype.ext hX_eq
               refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
-              sorry -- step 4: Z ≤ Y
+              -- step 4: Z ≤ Y (three subcases: j < r, j = r, j > r)
+              -- ε = .Negative: Y1.val = Gene.ofRank (r-1) .Positive + Gene.ofRank (r+1) .Negative
+              change Y1.val + restval ≤ Y.val
+              rw [le_iff_dominates]
+              intro j
+              rw [iterate_map_add, map_add]
+              -- Key decomposition from hX_eq: X.val = X1.val + restval
+              have hdecomp : signature (Chromosome.prime^[j] X.val) =
+                  signature (Chromosome.prime^[j] X1.val) +
+                  signature (Chromosome.prime^[j] restval) := by
+                rw [← hX_eq, iterate_map_add, map_add]
+              have hXYj : signature (Chromosome.prime^[j] X.val) ≤
+                  signature (Chromosome.prime^[j] Y.val) :=
+                le_iff_dominates.mp hXY.le j
+              rcases lt_trichotomy j r with hjr | rfl | hjr
+              · -- Subcase j < r: sig(prime^[j] Y1) = sig(prime^[j] X1)
+                have hY1X1 : signature (Chromosome.prime^[j] Y1.val) =
+                    signature (Chromosome.prime^[j] X1.val) := by
+                  rw [Pi.Y1_eq, Pi.X1_eq]
+                  have key := mutation_type1_iterate_signature_eq hε le_rfl le_rfl j (r - 1)
+                    (by omega)
+                  simp only [show 1 + (r - 1) = r from by omega] at key
+                  exact key.symm
+                rw [hY1X1, ← hdecomp]; exact hXYj
+              · -- Subcase j = r: X1 contributes 0, Y1 contributes (0,1)
+                have hX1r : signature (Chromosome.prime^[r] X1.val) = 0 := by
+                  rw [Pi.X1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             Nat.sub_self, Gene.ofRank_zero, map_zero, zero_add]
+                have hY1r : signature (Chromosome.prime^[r] Y1.val) = (0, 1) := by
+                  rw [Pi.Y1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - 1 - r = 0 from by omega,
+                             show r + 1 - r = 1 from by omega,
+                             Gene.ofRank_zero, zero_add]
+                  exact signature_ofRank_one_negative
+                have hrest_eq : signature (Chromosome.prime^[r] restval) =
+                    signature (Chromosome.prime^[r] X.val) := by
+                  rw [hdecomp, hX1r, zero_add]
+                rw [hY1r, hrest_eq]
+                simp only [Sigma.sigma] at h_neg hle_r
+                obtain ⟨nX, hnX⟩ := signature_pi_snd_isNat (prime_mem_Pi_iterate X.2 (k := r))
+                obtain ⟨nY, hnY⟩ := signature_pi_snd_isNat (prime_mem_Pi_iterate Y.2 (k := r))
+                constructor
+                · simp only [Prod.fst_add, zero_add]; exact hle_r.1
+                · simp only [Prod.snd_add]
+                  rw [hnX, hnY] at h_neg ⊢
+                  have hnXY : nX < nY := Nat.cast_lt.mp h_neg
+                  have hsnd : (nX : ℚ) + 1 ≤ nY := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+                  linarith
+              · -- Subcase j > r: both X1 and Y1 vanish under prime^[j]
+                have hX1j : signature (Chromosome.prime^[j] X1.val) = 0 := by
+                  rw [Pi.X1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - j = 0 from by omega,
+                             Gene.ofRank_zero, map_zero, add_zero]
+                have hY1j : signature (Chromosome.prime^[j] Y1.val) = 0 := by
+                  rw [Pi.Y1_eq]
+                  simp only [iterate_map_add, prime_iterate_ofRank,
+                             show r - 1 - j = 0 from by omega,
+                             show r + 1 - j = 0 from by omega,
+                             Gene.ofRank_zero, map_zero, add_zero]
+                have hrestj : signature (Chromosome.prime^[j] restval) =
+                    signature (Chromosome.prime^[j] X.val) := by
+                  rw [hdecomp, hX1j, zero_add]
+                rw [hY1j, zero_add, hrestj]; exact hXYj
           · -- (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1.
             push_neg at hXpn
             -- From hsigeq: for k ≥ 1 with Y^(k) ≠ 0, sigma X k ≠ sigma Y k.

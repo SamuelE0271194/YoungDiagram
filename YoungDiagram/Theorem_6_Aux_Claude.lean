@@ -483,3 +483,105 @@ theorem pi_chromosome_antisymm {A B : Chromosome}
     have hD := pi_diff_per_rank hA hB hsig_eq g.rank g.rank_pos
     -- Subtracting hD from hS in ℤ: 2 * A ⟨r, Neg⟩ = 2 * B ⟨r, Neg⟩.
     omega
+
+/-- For a polarized gene, the second signature component is a natural number (as a ℚ value). -/
+lemma Gene.signature_snd_isNat {g : Gene} (hg : g.type ≠ .NonPolarized) :
+    ∃ n : ℕ, g.signature.2 = ↑n := by
+  rcases Nat.even_or_odd g.rank with ⟨m, hm⟩ | ⟨m, hm⟩
+  · have heven : Even g.rank := ⟨m, hm⟩
+    cases h : g.type with
+    | NonPolarized => exact absurd h hg
+    | Positive =>
+      exact ⟨m, by rw [Gene.signature_of_positive h, if_pos heven]; push_cast [hm]; ring⟩
+    | Negative =>
+      exact ⟨m, by rw [Gene.signature_of_negative h, if_pos heven]; push_cast [hm]; ring⟩
+  · have hodd : ¬Even g.rank := fun ⟨k, hk⟩ => by omega
+    cases h : g.type with
+    | NonPolarized => exact absurd h hg
+    | Positive =>
+      exact ⟨m, by rw [Gene.signature_of_positive h, if_neg hodd]; push_cast [hm]; ring⟩
+    | Negative =>
+      exact ⟨m + 1, by rw [Gene.signature_of_negative h, if_neg hodd]; push_cast [hm]; ring⟩
+
+/-- For a Pi chromosome, the second signature component is a natural number (as a ℚ value). -/
+lemma signature_pi_snd_isNat {C : Chromosome} (hC : C ∈ Variety.Pi) :
+    ∃ n : ℕ, (signature C).2 = ↑n := by
+  -- Define the ℕ-valued version of g.signature.2 for any gene
+  let sig2nat : Gene → ℕ := fun g =>
+    match g.type with
+    | .Negative => if Odd g.rank then (g.rank + 1) / 2 else g.rank / 2
+    | _ => g.rank / 2
+  -- For polarized g, g.signature.2 = ↑(sig2nat g)
+  have hpol_eq : ∀ g : Gene, g.type ≠ .NonPolarized → g.signature.2 = ↑(sig2nat g) := by
+    intro g hg
+    simp only [sig2nat]
+    cases h : g.type with
+    | NonPolarized => exact absurd h hg
+    | Positive =>
+      rcases Nat.even_or_odd g.rank with ⟨m, hm⟩ | ⟨m, hm⟩
+      · have hdiv : g.rank / 2 = m := by omega
+        rw [Gene.signature_of_positive h, if_pos ⟨m, hm⟩, hdiv]; push_cast [hm]; ring
+      · rw [Gene.signature_of_positive h,
+            if_neg (show ¬Even g.rank from fun ⟨k, hk⟩ => by omega)]
+        have hdiv : g.rank / 2 = m := by omega
+        rw [hdiv]; push_cast [hm]; ring
+    | Negative =>
+      rcases Nat.even_or_odd g.rank with ⟨m, hm⟩ | ⟨m, hm⟩
+      · have heven : Even g.rank := ⟨m, hm⟩
+        have hdiv : g.rank / 2 = m := by omega
+        rw [Gene.signature_of_negative h, if_pos heven,
+            if_neg (show ¬Odd g.rank from fun ⟨k, hk⟩ => by omega), hdiv]
+        push_cast [hm]; ring
+      · have hodd : Odd g.rank := ⟨m, hm⟩
+        have hdiv : (g.rank + 1) / 2 = m + 1 := by omega
+        rw [Gene.signature_of_negative h, if_neg (show ¬Even g.rank from fun ⟨k, hk⟩ => by omega),
+            if_pos hodd, hdiv]
+        push_cast [hm]; ring
+  -- Express (signature C).2 as ↑ of a ℕ sum
+  refine ⟨C.sum (fun g n => n * sig2nat g), ?_⟩
+  rw [signature_snd, Nat.cast_finsupp_sum]
+  simp only [Finsupp.sum]
+  apply Finset.sum_congr rfl
+  intro g hg
+  have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp hC) g hg
+  rw [hpol_eq g hpol, smul_eq_mul, ← Nat.cast_mul]
+
+/-- For a Pi chromosome, the first signature component is a natural number (as a ℚ value). -/
+lemma signature_pi_fst_isNat {C : Chromosome} (hC : C ∈ Variety.Pi) :
+    ∃ n : ℕ, (signature C).1 = ↑n := by
+  let sig1nat : Gene → ℕ := fun g =>
+    match g.type with
+    | .Positive => if Odd g.rank then (g.rank + 1) / 2 else g.rank / 2
+    | _ => g.rank / 2
+  have hpol_eq : ∀ g : Gene, g.type ≠ .NonPolarized → g.signature.1 = ↑(sig1nat g) := by
+    intro g hg
+    simp only [sig1nat]
+    cases h : g.type with
+    | NonPolarized => exact absurd h hg
+    | Positive =>
+      rcases Nat.even_or_odd g.rank with ⟨m, hm⟩ | ⟨m, hm⟩
+      · have hdiv : g.rank / 2 = m := by omega
+        rw [Gene.signature_of_positive h, if_pos ⟨m, hm⟩,
+            if_neg (show ¬Odd g.rank from fun ⟨k, hk⟩ => by omega), hdiv]
+        push_cast [hm]; ring
+      · have hdiv : (g.rank + 1) / 2 = m + 1 := by omega
+        rw [Gene.signature_of_positive h,
+            if_neg (show ¬Even g.rank from fun ⟨k, hk⟩ => by omega),
+            if_pos ⟨m, hm⟩, hdiv]
+        push_cast [hm]; ring
+    | Negative =>
+      rcases Nat.even_or_odd g.rank with ⟨m, hm⟩ | ⟨m, hm⟩
+      · have hdiv : g.rank / 2 = m := by omega
+        rw [Gene.signature_of_negative h, if_pos ⟨m, hm⟩, hdiv]
+        push_cast [hm]; ring
+      · have hdiv : g.rank / 2 = m := by omega
+        rw [Gene.signature_of_negative h,
+            if_neg (show ¬Even g.rank from fun ⟨k, hk⟩ => by omega), hdiv]
+        push_cast [hm]; ring
+  refine ⟨C.sum (fun g n => n * sig1nat g), ?_⟩
+  rw [signature_fst, Nat.cast_finsupp_sum]
+  simp only [Finsupp.sum]
+  apply Finset.sum_congr rfl
+  intro g hg
+  have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp hC) g hg
+  rw [hpol_eq g hpol, smul_eq_mul, ← Nat.cast_mul]
