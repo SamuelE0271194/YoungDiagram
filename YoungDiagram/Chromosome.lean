@@ -244,6 +244,8 @@ noncomputable def prime : Chromosome →+ Chromosome where
   map_add' _ _ := sum_add_index' (fun _ ↦ zero_nsmul _)
     fun _ _ _ ↦ add_nsmul ..
 
+lemma prime_def (X : Chromosome) : X.prime = X.sum (fun g m ↦ m • primeGene g) := rfl
+
 lemma prime_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
   by_cases hn : n = 0
@@ -269,15 +271,38 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
 lemma signature_prime {X : Chromosome} :
     (signature X.prime) = X.sum (fun g m ↦ m • (primeGene g).signature) := by
   simp_rw [← map_nsmul]
-  exact map_finsuppSum signature X _
+  exact map_finsuppSum signature ..
+
+lemma signature_prime_iterate {X : Chromosome} {k : ℕ} :
+    (signature (prime^[k + 1] X)) =
+    X.sum (fun g m ↦ m • (prime^[k] (primeGene g)).signature) := by
+  induction k generalizing X with
+  | zero => rw [zero_add, Function.iterate_one, signature_prime]; rfl
+  | succ k hk =>
+    have hz (i : Gene) : 0 • signature (prime^[k] (primeGene i)) = 0 := zero_nsmul _
+    rw [Function.iterate_succ_apply, hk, prime_def, Finsupp.sum_sum_index hz]
+    · refine Finsupp.sum_congr (fun _ _ ↦ ?_)
+      rw [hk, Finsupp.sum_smul_index' hz]
+      simp_rw [Finsupp.sum, ← Finset.sum_nsmul, smul_assoc]
+    · intros; exact add_nsmul ..
 
 lemma signature_prime_fst {X : Chromosome} :
     (signature X.prime).1 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.1) :=
-  signature_prime ▸ map_finsuppSum (AddMonoidHom.fst ..) X _
+  signature_prime ▸ map_finsuppSum (AddMonoidHom.fst ..) ..
 
 lemma signature_prime_snd {X : Chromosome} :
     (signature X.prime).2 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.2) :=
-  signature_prime ▸ map_finsuppSum (AddMonoidHom.snd ..) X _
+  signature_prime ▸ map_finsuppSum (AddMonoidHom.snd ..) ..
+
+lemma signature_prime_fst₂ {X : Chromosome} :
+    (signature X.prime.prime).1 =
+    X.sum (fun g m ↦ (m : ℚ) • (primeGene g).prime.signature.1) :=
+  (@signature_prime_iterate X 1) ▸ map_finsuppSum (AddMonoidHom.fst ..) ..
+
+lemma signature_prime_snd₂ {X : Chromosome} :
+    (signature X.prime.prime).2 =
+    X.sum (fun g m ↦ (m : ℚ) • (primeGene g).prime.signature.2) :=
+  (@signature_prime_iterate X 1) ▸ map_finsuppSum (AddMonoidHom.snd ..) ..
 
 lemma signature_ofRank_prime_le (g : Gene) :
     signature (Gene.ofRank g.rank g.type).prime ≤ (signature (Gene.ofRank g.rank g.type)) ⊓

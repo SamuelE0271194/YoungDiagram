@@ -200,41 +200,6 @@ lemma cond_15_6_single_gene (g : Gene) (hg : g.type ≠ .NonPolarized) (k : ℕ)
           simp only [Nat.cast_pred g.rank_pos, Nat.cast_pred (Nat.pos_of_ne_zero hne)]
           linarith
 
--- same as signature_prime_snd but applied twice
-lemma signature_prime_prime_snd (X : Chromosome) :
-    (signature (prime (prime X))).2 =
-    X.sum (fun g m ↦ (m : ℚ) • (prime (primeGene g)).signature.2) := by
-  -- Unfold the inner prime to expose X.sum, without touching the outer prime or the RHS
-  have h1 : prime X = X.sum (fun g m => m • primeGene g) := by
-    simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
-  have hg : ∀ g : Gene, signature (X g • Chromosome.prime (primeGene g)) =
-      (X g : ℚ) • (Chromosome.prime (primeGene g)).signature := by
-    intro g
-    rw [map_nsmul]
-    exact (Nat.cast_smul_eq_nsmul (R := ℚ) (X g) _).symm
-  -- Rewrite inner prime only, then push outer prime and signature through the sum
-  conv_lhs => rw [h1]
-  simp only [Finsupp.sum]
-  rw [map_sum Chromosome.prime, map_sum signature]
-  simp_rw [map_nsmul Chromosome.prime, hg]
-  exact map_sum (AddMonoidHom.snd ℚ ℚ) _ _
-
-lemma signature_prime_prime_fst (X : Chromosome) :
-    (signature (prime (prime X))).1 =
-    X.sum (fun g m ↦ (m : ℚ) • (prime (primeGene g)).signature.1) := by
-  have h1 : prime X = X.sum (fun g m => m • primeGene g) := by
-    simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
-  have hg : ∀ g : Gene, signature (X g • Chromosome.prime (primeGene g)) =
-      (X g : ℚ) • (Chromosome.prime (primeGene g)).signature := by
-    intro g
-    rw [map_nsmul]
-    exact (Nat.cast_smul_eq_nsmul (R := ℚ) (X g) _).symm
-  conv_lhs => rw [h1]
-  simp only [Finsupp.sum]
-  rw [map_sum Chromosome.prime, map_sum signature]
-  simp_rw [map_nsmul Chromosome.prime, hg]
-  exact map_sum (AddMonoidHom.fst ℚ ℚ) _ _
-
 -- Lift of cond_15_6_single_gene to an arbitrary chromosome Y in Pi.
 lemma cond_15_6_Pi (Y : Pi) (k : ℕ) :
     if Even k then
@@ -252,7 +217,7 @@ lemma cond_15_6_Pi (Y : Pi) (k : ℕ) :
                  (signature Y).1 + (signature (prime (prime Y))).2 by linarith
     -- Expand double-prime term first (before signature_prime_snd can match it),
     -- then expand remaining terms, then unfold Finsupp.sum to Finset.sum
-    rw [signature_prime_prime_snd (↑Y), signature_prime_snd,
+    rw [signature_prime_snd₂, signature_prime_snd,
         signature_prime_fst, signature_fst]
     simp only [Finsupp.sum]
     -- Group: sum f + sum g = sum (f + g)
@@ -269,7 +234,7 @@ lemma cond_15_6_Pi (Y : Pi) (k : ℕ) :
     suffices h : (signature (prime Y)).1 + (signature (prime Y)).2 ≤
                  (signature Y).2 + (signature (prime (prime Y))).1 by linarith
     -- Expand double-prime term first, then remaining terms, then unfold to Finset.sum
-    rw [signature_prime_prime_fst (↑Y), signature_prime_fst,
+    rw [signature_prime_fst₂, signature_prime_fst,
         signature_prime_snd, signature_snd]
     simp only [Finsupp.sum]
     -- Group: sum f + sum g = sum (f + g)
@@ -297,7 +262,7 @@ lemma cond_15_7_Pi (Y : Pi) (k : ℕ) :
   · simp only [if_pos heven]
     suffices h : (signature (prime Y)).1 + (signature (prime Y)).2 ≤
                  (signature Y).2 + (signature (prime (prime Y))).1 by linarith
-    rw [signature_prime_prime_fst (↑Y), signature_prime_fst,
+    rw [signature_prime_fst₂, signature_prime_fst,
         signature_prime_snd, signature_snd]
     simp only [Finsupp.sum]
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
@@ -311,7 +276,7 @@ lemma cond_15_7_Pi (Y : Pi) (k : ℕ) :
   · simp only [if_neg heven]
     suffices h : (signature (prime Y)).2 + (signature (prime Y)).1 ≤
                  (signature Y).1 + (signature (prime (prime Y))).2 by linarith
-    rw [signature_prime_prime_snd (↑Y), signature_prime_snd,
+    rw [signature_prime_snd₂, signature_prime_snd,
         signature_prime_fst, signature_fst]
     simp only [Finsupp.sum]
     rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
