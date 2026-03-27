@@ -124,7 +124,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
             (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hgX))
         -- Finsupp.single g 1 ∈ Π
         have hg1_Pi : Finsupp.single g 1 ∈ Variety.Pi :=
-          mem_Pi_iff.mpr (IsPolarized_single.mpr hg_pol)
+          mem_Pi_iff.mpr <| (IsPolarized_single Nat.one_ne_zero).2 hg_pol
         -- Define X' = X.val − single g 1 and Y' = Y.val − single g 1
         set X'v : Chromosome := X.val - Finsupp.single g 1
         set Y'v : Chromosome := Y.val - Finsupp.single g 1

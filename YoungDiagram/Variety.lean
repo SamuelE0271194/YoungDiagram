@@ -169,8 +169,9 @@ lemma IsFiltered_def' : X.IsFiltered p ↔ ∀ g ∈ X.support, p g := by
 lemma IsFiltered_zero : IsFiltered p 0 := by
   simp only [IsFiltered, filter_zero]
 
-lemma IsFiltered_single {g : Gene} : IsFiltered p (single g 1) ↔ p g := by
-  rw [IsFiltered_def', support_single_ne_zero _ Nat.one_ne_zero]
+lemma IsFiltered_single {g : Gene} {n : ℕ} (hn : n ≠ 0) :
+    IsFiltered p (single g n) ↔ p g := by
+  rw [IsFiltered_def', support_single_ne_zero _ hn]
   exact List.forall_mem_singleton
 
 lemma IsFiltered_filter {q : Gene → Prop} [DecidablePred q]
@@ -236,7 +237,7 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
         ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
         single_zero, sum_single_index] at h
-      rw [← smul_single_one, IsFiltered_iff_nsmul h_2, IsFiltered_single] at h ⊢
+      rw [IsFiltered_single h_2] at h ⊢
       exact (hp _).2 h
   · induction X using Finsupp.induction
     · exact IsFiltered_zero
@@ -248,7 +249,7 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
         ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
         single_zero, sum_single_index]
-      rw [← smul_single_one, IsFiltered_iff_nsmul h_2, IsFiltered_single] at h ⊢
+      rw [IsFiltered_single h_2] at h ⊢
       exact (hp _).1 h
 
 lemma IsFiltered_iff_iterate_lift {k : ℕ} (hp : LiftStable p) :
@@ -282,7 +283,7 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
         AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index]
       split_ifs with h
       · exact IsFiltered_zero
-      · rw [← smul_single_one, IsFiltered_iff_nsmul h_1, IsFiltered_single] at h1 ⊢
+      · rw [IsFiltered_single h_1] at h1 ⊢
         rw [hp]
         convert h1.1
         refine Nat.sub_add_cancel a.rank_pos
@@ -419,18 +420,16 @@ lemma IsPolarized_def' {X : Chromosome} :
 
 lemma IsPolarized_zero : IsPolarized 0 := IsFiltered_zero
 
-lemma IsPolarized_single {g : Gene} :
-  IsPolarized (single g 1) ↔ g.type ≠ .NonPolarized := IsFiltered_single
+lemma IsPolarized_single {g : Gene} {n : ℕ} (hn : n ≠ 0) :
+  IsPolarized (single g n) ↔ g.type ≠ .NonPolarized := IsFiltered_single hn
 
 lemma IsPolarized_filter {X : Chromosome} {q : Gene → Prop} [DecidablePred q]
   (h : X.IsPolarized) : IsPolarized (X.filter q) := IsFiltered_filter h
 
 lemma IsPolarized_ofRank {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) :
     (Gene.ofRank k ε).IsPolarized ↔ ε ≠ .NonPolarized := by
-  rw [Gene.ofRank_def]
-  split_ifs
-  · omega
-  · exact IsPolarized_single
+  rw [Gene.ofRank_def, dif_neg (by omega)]
+  exact IsPolarized_single Nat.one_ne_zero
 
 lemma IsPolarized_ofRank' {k : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).IsPolarized :=
@@ -479,18 +478,16 @@ lemma IsNonPolarized_def' {X : Chromosome} :
 
 lemma IsNonPolarized_zero : IsNonPolarized 0 := IsFiltered_zero
 
-lemma IsNonPolarized_single {g : Gene} :
-  IsNonPolarized (single g 1) ↔ g.type = .NonPolarized := IsFiltered_single
+lemma IsNonPolarized_single {g : Gene} {n : ℕ} (hn : n ≠ 0) :
+  IsNonPolarized (single g n) ↔ g.type = .NonPolarized := IsFiltered_single hn
 
 lemma IsNonPolarized_filter {X : Chromosome} {q : Gene → Prop} [DecidablePred q]
   (h : X.IsNonPolarized) : IsNonPolarized (X.filter q) := IsFiltered_filter h
 
 lemma IsNonPolarized_ofRank {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) :
     (Gene.ofRank k ε).IsNonPolarized ↔ ε = .NonPolarized := by
-  rw [Gene.ofRank_def]
-  split_ifs
-  · omega
-  · exact IsNonPolarized_single
+  rw [Gene.ofRank_def, dif_neg (by omega)]
+  exact IsNonPolarized_single Nat.one_ne_zero
 
 lemma IsNonPolarized_iff_add {X Y : Chromosome} :
   (X + Y).IsNonPolarized ↔ X.IsNonPolarized ∧ Y.IsNonPolarized := IsFiltered_iff_add
@@ -519,6 +516,9 @@ def Pi : Variety := varietyOfFilter (·.type ≠ .NonPolarized)
 
 lemma mem_Pi_iff {X : Chromosome} :
   X ∈ Pi ↔ IsPolarized X := mem_varietyOfFilter_iff
+
+lemma mem_Pi_iff_add {X Y : Chromosome} :
+  (X + Y) ∈ Pi ↔ X ∈ Pi ∧ Y ∈ Pi := IsPolarized_iff_add
 
 lemma prime_Pi : Pi.prime = Pi := prime_varietyOfFilter (fun _ ↦ .rfl)
 
@@ -552,6 +552,9 @@ def Lambda : Variety := varietyOfFilter (·.type = .NonPolarized)
 
 lemma mem_Lambda_iff {X : Chromosome} :
   X ∈ Lambda ↔ IsNonPolarized X := mem_varietyOfFilter_iff
+
+lemma mem_Lambda_iff_add {X Y : Chromosome} :
+  (X + Y) ∈ Lambda ↔ X ∈ Lambda ∧ Y ∈ Lambda := IsNonPolarized_iff_add
 
 lemma prime_Lambda : Lambda.prime = Lambda := prime_varietyOfFilter (fun _ ↦ .rfl)
 

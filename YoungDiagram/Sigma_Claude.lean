@@ -60,21 +60,19 @@ lemma cond_15_5 : if Even k then a X (k + 1) ≤ b X k
 lemma cond_15_6 (hX : X ∈ Variety.Pi) :
     if Even k then b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1)
               else a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1) := by
+  have h := cond_15_6_Pi (Variety.prime_mem_Pi_iterate hX (k := k))
   split_ifs with heven <;> simp only [sigma, Function.iterate_succ_apply']
-  all_goals
-  · have h := cond_15_6_Pi ⟨Chromosome.prime^[k] X, Variety.prime_mem_Pi_iterate hX⟩ k
-    simp only [heven] at h
-    exact h
+  · exact (Prod.mk_le_swap.1 h).1
+  · exact (Prod.mk_le_swap.1 h).2
 
 /-- (15.7) b₀ − b₁ ≥ a₁ − a₂ ≥ b₂ − b₃ ≥ a₃ − a₄ ≥ … -/
 lemma cond_15_7 (hX : X ∈ Variety.Pi) :
     if Even k then a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1)
               else b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1) := by
+  have h := cond_15_6_Pi (Variety.prime_mem_Pi_iterate hX (k := k))
   split_ifs with heven <;> simp only [sigma, Function.iterate_succ_apply']
-  all_goals
-  · have h := cond_15_7_Pi ⟨Chromosome.prime^[k] X, Variety.prime_mem_Pi_iterate hX⟩ k
-    simp only [heven] at h
-    exact h
+  · exact (Prod.mk_le_swap.1 h).2
+  · exact (Prod.mk_le_swap.1 h).1
 
 /-- (15.8) If `X < Y` in `Π` then `aₖ ≤ cₖ` and `bₖ ≤ dₖ` for all `k`,
 where `(aₖ, bₖ) = σ(X)ₖ` and `(cₖ, dₖ) = σ(Y)ₖ`. -/

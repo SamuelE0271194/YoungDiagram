@@ -31,6 +31,8 @@ instance : MulAction ℤˣ GeneType where
 
 @[simp] lemma GeneType.neg_negative : - GeneType.Negative = .Positive := rfl
 
+@[simp] lemma GeneType.neg_nonPolarized : - GeneType.NonPolarized = .NonPolarized := rfl
+
 @[simp] lemma GeneType.neg_one_smul {ε : GeneType} : (- 1 : ℤˣ) • ε = - ε := rfl
 
 lemma GeneType.negOnePow_smul {n : ℤ} {ε : GeneType} :
@@ -151,3 +153,19 @@ lemma Gene.signature_pos (g : Gene) : 0 < g.signature := by
     · refine Prod.lt_of_le_of_lt ?_ (by positivity [g.rank_pos])
       exact Rat.div_nonneg ((Rat.le_iff_sub_nonneg 1 _).1 <|
           Nat.one_le_cast.2 g.rank_pos) rfl
+
+lemma Gene.signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
+    (⟨n, ε, hn⟩ : Gene).signature + (⟨n, - ε, hn⟩ : Gene).signature = n := by
+  cases ε
+  · rw [GeneType.neg_nonPolarized, signature_of_nonPolarized rfl,
+      Prod.mk_add_mk, add_halves]; rfl
+  · rw [GeneType.neg_positive, signature_of_positive rfl, signature_of_negative rfl]
+    split_ifs <;> simp only [Prod.mk_add_mk, add_halves]
+    · rfl
+    · rw [← add_div, ← add_div, add_add_sub_cancel, sub_add_add_cancel,
+        add_self_div_two]; rfl
+  · rw [GeneType.neg_negative, signature_of_negative rfl, signature_of_positive rfl]
+    split_ifs <;> simp only [Prod.mk_add_mk, add_halves]
+    · rfl
+    · rw [← add_div, ← add_div, add_add_sub_cancel, sub_add_add_cancel,
+        add_self_div_two]; rfl
