@@ -26,7 +26,7 @@ lemma cond_15_2_antitone (X : Variety.Pi) : ∀ k, a X (k + 1) ≤ a X k := fun 
   simp only [a]
   simp only [sigma]
   rw [Function.iterate_succ_apply']
-  exact sig_prime_le_fst ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
+  exact (Prod.le_def.1 (signature_prime_le _)).1
 
 -- (15.2) aₖ = 0 for large k.
 lemma cond_15_2_eventually_zero (X : Variety.Pi) : ∃ K, ∀ k ≥ K, a X k = 0 := by
@@ -62,7 +62,7 @@ lemma cond_15_3_antitone (X : Variety.Pi) : ∀ k, b X (k + 1) ≤ b X k := fun 
   simp only [b]
   simp only [sigma]
   rw [Function.iterate_succ_apply']
-  exact sig_prime_le_snd ⟨prime^[k] X, Variety.prime_mem_Pi_iterate X.property⟩
+  exact (Prod.le_def.1 (signature_prime_le _)).2
 
 -- (15.3) bₖ = 0 for large k.
 lemma cond_15_3_eventually_zero (X : Variety.Pi) : ∃ K, ∀ k ≥ K, b X k = 0 := by

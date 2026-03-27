@@ -279,6 +279,28 @@ lemma signature_prime_snd {X : Chromosome} :
     (signature X.prime).2 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.2) :=
   signature_prime ▸ map_finsuppSum (AddMonoidHom.snd ..) X _
 
+lemma signature_prime_le (X : Chromosome) :
+    (signature X.prime) ≤ signature X := by
+  induction X using Finsupp.induction with
+  | zero => rfl
+  | single_add a _ _ _ _ hle =>
+    rw [map_add, map_add, map_add, ← Gene.ofRank_eq_gene_smul, map_nsmul,
+      map_nsmul, map_nsmul, prime_ofRank]
+    refine add_le_add (nsmul_le_nsmul ?_ (signature_nonneg _) .refl) hle
+    rw [signature_ofRank, signature_ofRank, dif_neg (Nat.ne_zero_of_lt a.rank_pos)]
+    split_ifs
+    · exact (Gene.signature_pos _).le
+    · cases a.type
+      · simp_rw [Gene.signature_of_nonPolarized, Prod.mk_le_mk, and_self,
+          Nat.cast_sub a.rank_pos, Nat.cast_one]
+        linarith
+      · simp_rw [Gene.signature_of_positive, Nat.cast_sub a.rank_pos, Nat.cast_one,
+          sub_add_cancel, Nat.even_sub_one a.rank_pos]
+        split_ifs <;> (simp; linarith)
+      · simp_rw [Gene.signature_of_negative, Nat.cast_sub a.rank_pos, Nat.cast_one,
+          sub_add_cancel, Nat.even_sub_one a.rank_pos]
+        split_ifs <;> (simp; linarith)
+
 end prime
 
 section order
