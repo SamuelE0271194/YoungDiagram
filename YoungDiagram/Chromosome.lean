@@ -266,6 +266,19 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
     rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h, prime_ofRank]
     ac_rfl
 
+lemma signature_prime {X : Chromosome} :
+    (signature X.prime) = X.sum (fun g m ↦ m • (primeGene g).signature) := by
+  simp_rw [← map_nsmul]
+  exact map_finsuppSum signature X _
+
+lemma signature_prime_fst {X : Chromosome} :
+    (signature X.prime).1 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.1) :=
+  signature_prime ▸ map_finsuppSum (AddMonoidHom.fst ..) X _
+
+lemma signature_prime_snd {X : Chromosome} :
+    (signature X.prime).2 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.2) :=
+  signature_prime ▸ map_finsuppSum (AddMonoidHom.snd ..) X _
+
 end prime
 
 section order
