@@ -1,9 +1,6 @@
 import YoungDiagram.Mutations
 
-open Chromosome
-open Variety
-
-open Finsupp Pointwise
+open Chromosome Variety Finsupp
 
 -- Sub-lemma for (15.6) when X is a single polarized gene.
 -- Even case: drop in .2 from primeGene g to prime(primeGene g) ≤ drop in .1 from g to primeGene g.
@@ -271,7 +268,7 @@ lemma cond_15_7_Pi (Y : Pi) (k : ℕ) :
     rw [← smul_add, ← smul_add]
     apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
     have hineq := cond_15_6_single_gene g (hpol g hg) 1
-    simp only [show ¬ Even 1 from by decide, ↓reduceIte] at hineq
+    simp only [show ¬ Even 1 by decide, ↓reduceIte] at hineq
     linarith
   · simp only [if_neg heven]
     suffices h : (signature (prime Y)).2 + (signature (prime Y)).1 ≤

@@ -62,6 +62,10 @@ def below (k : ℕ) : Chromosome →+ Chromosome where
 lemma below_def {k : ℕ} {X : Chromosome} :
   X.below k = X.filter (·.rank ≤ k) := rfl
 
+lemma below_maxRank {X : Chromosome} : X.below X.maxRank = X := by
+  rw [below_def, filter_eq_self_iff]
+  exact fun _ hg ↦ Finset.le_sup <| mem_support_iff.2 hg
+
 def above (k : ℕ) : Chromosome →+ Chromosome where
   toFun c := c.filter (k < ·.rank)
   map_zero' := filter_zero _
