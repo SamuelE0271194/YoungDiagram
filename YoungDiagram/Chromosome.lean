@@ -279,27 +279,36 @@ lemma signature_prime_snd {X : Chromosome} :
     (signature X.prime).2 = X.sum (fun g m ↦ (m : ℚ) • (primeGene g).signature.2) :=
   signature_prime ▸ map_finsuppSum (AddMonoidHom.snd ..) X _
 
+lemma signature_ofRank_prime_le (g : Gene) :
+    signature (Gene.ofRank g.rank g.type).prime ≤ (signature (Gene.ofRank g.rank g.type)) ⊓
+      (signature (Gene.ofRank g.rank g.type)).swap := by
+  rw [signature_ofRank, prime_ofRank, signature_ofRank, dif_neg (Nat.ne_zero_of_lt g.rank_pos)]
+  split_ifs
+  · refine le_inf ?_ (Prod.mk_le_swap.2 ?_) <;> exact (Gene.signature_pos _).le
+  · cases g.type
+    · simp [Gene.signature_of_nonPolarized, Nat.cast_sub g.rank_pos, Nat.cast_one]
+      linarith
+    · simp_rw [Gene.signature_of_positive, Nat.cast_sub g.rank_pos, Nat.cast_one,
+        Nat.even_sub_one g.rank_pos]
+      split_ifs <;> (simp; linarith)
+    · simp_rw [Gene.signature_of_negative, Nat.cast_sub g.rank_pos, Nat.cast_one,
+        sub_add_cancel, Nat.even_sub_one g.rank_pos]
+      split_ifs <;> (simp; linarith)
+
 lemma signature_prime_le (X : Chromosome) :
-    (signature X.prime) ≤ signature X := by
+    (signature X.prime) ≤ (signature X) ⊓ (signature X).swap := by
   induction X using Finsupp.induction with
   | zero => rfl
   | single_add a _ _ _ _ hle =>
     rw [map_add, map_add, map_add, ← Gene.ofRank_eq_gene_smul, map_nsmul,
-      map_nsmul, map_nsmul, prime_ofRank]
-    refine add_le_add (nsmul_le_nsmul ?_ (signature_nonneg _) .refl) hle
-    rw [signature_ofRank, signature_ofRank, dif_neg (Nat.ne_zero_of_lt a.rank_pos)]
-    split_ifs
-    · exact (Gene.signature_pos _).le
-    · cases a.type
-      · simp_rw [Gene.signature_of_nonPolarized, Prod.mk_le_mk, and_self,
-          Nat.cast_sub a.rank_pos, Nat.cast_one]
-        linarith
-      · simp_rw [Gene.signature_of_positive, Nat.cast_sub a.rank_pos, Nat.cast_one,
-          sub_add_cancel, Nat.even_sub_one a.rank_pos]
-        split_ifs <;> (simp; linarith)
-      · simp_rw [Gene.signature_of_negative, Nat.cast_sub a.rank_pos, Nat.cast_one,
-          sub_add_cancel, Nat.even_sub_one a.rank_pos]
-        split_ifs <;> (simp; linarith)
+      map_nsmul, map_nsmul]
+    refine le_inf ?_ ?_
+    · refine add_le_add (nsmul_le_nsmul ?_ (signature_nonneg _) .refl) (hle.trans inf_le_left)
+      exact (signature_ofRank_prime_le a).trans inf_le_left
+    · rw [Prod.swap_add, Prod.smul_swap]
+      refine add_le_add (nsmul_le_nsmul ?_ ?_ .refl) (hle.trans inf_le_right)
+      · exact (signature_ofRank_prime_le a).trans inf_le_right
+      · exact (Prod.mk_le_swap.2 (signature_nonneg _))
 
 end prime
 
