@@ -1,6 +1,6 @@
 import YoungDiagram.Sigma
 import YoungDiagram.Lifting
-import YoungDiagram.Theorem_6_Aux_Claude
+import YoungDiagram.Antisymm
 
 open Chromosome Variety
 
@@ -730,13 +730,13 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                   rw [hdecomp, hX1r, zero_add]
                 rw [hY1r, hrest_eq]
                 simp only [Sigma.sigma] at h_pos hle_r
-                obtain ⟨nX, hnX⟩ := signature_pi_fst_isNat (prime_mem_Pi_iterate X.2 (k := r))
-                obtain ⟨nY, hnY⟩ := signature_pi_fst_isNat (prime_mem_Pi_iterate Y.2 (k := r))
+                obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.2 (k := r))
+                obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.2 (k := r))
                 constructor
                 · simp only [Prod.fst_add]
                   rw [hnX, hnY] at h_pos ⊢
-                  have hnXY : nX < nY := Nat.cast_lt.mp h_pos
-                  have hfst : (nX : ℚ) + 1 ≤ nY := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+                  have hnXY : nX.1 < nY.1 := Nat.cast_lt.mp h_pos
+                  have hfst : (nX.1 : ℚ) + 1 ≤ nY.1 := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
                   linarith
                 · simp only [Prod.snd_add, zero_add]; exact hle_r.2
               · -- Subcase j > r: both X1 and Y1 vanish under prime^[j]
@@ -818,14 +818,14 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                   rw [hdecomp, hX1r, zero_add]
                 rw [hY1r, hrest_eq]
                 simp only [Sigma.sigma] at h_neg hle_r
-                obtain ⟨nX, hnX⟩ := signature_pi_snd_isNat (prime_mem_Pi_iterate X.2 (k := r))
-                obtain ⟨nY, hnY⟩ := signature_pi_snd_isNat (prime_mem_Pi_iterate Y.2 (k := r))
+                obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.2 (k := r))
+                obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.2 (k := r))
                 constructor
                 · simp only [Prod.fst_add, zero_add]; exact hle_r.1
                 · simp only [Prod.snd_add]
                   rw [hnX, hnY] at h_neg ⊢
-                  have hnXY : nX < nY := Nat.cast_lt.mp h_neg
-                  have hsnd : (nX : ℚ) + 1 ≤ nY := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+                  have hnXY : nX.2 < nY.2 := Nat.cast_lt.mp h_neg
+                  have hsnd : (nX.2 : ℚ) + 1 ≤ nY.2 := by exact_mod_cast Nat.add_one_le_iff.mpr hnXY
                   linarith
               · -- Subcase j > r: both X1 and Y1 vanish under prime^[j]
                 have hX1j : signature (Chromosome.prime^[j] X1.val) = 0 := by

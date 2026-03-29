@@ -256,6 +256,16 @@ lemma IsPolarized_support_of_below_one {X : Chromosome} (hX : X.IsPolarized) :
   · refine Or.inl ?_; simp_rw [← htype, ← support_of_below_one hg]
   · refine Or.inr ?_; simp_rw [← htype, ← support_of_below_one hg]
 
+lemma IsPolarized_signature {X : Chromosome} (hX : X.IsPolarized) :
+    (X.below 1).signature =
+    ((X ⟨1, .Positive, le_rfl⟩, X ⟨1, .Negative, le_rfl⟩) : ℚ × ℚ) := by
+  simp only [signature, sum, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+  rw [Finset.sum_subset (IsPolarized_support_of_below_one hX), Finset.sum_pair (by decide),
+    below_def, filter_apply_pos _ X NeZero.one_le, filter_apply_pos _ X NeZero.one_le,
+    Gene.signature_of_positive rfl, Gene.signature_of_negative rfl]
+  · simp
+  · rintro x (h1 | h1) h2 <;> rw [Finsupp.notMem_support_iff.1 h2, Nat.cast_zero, zero_smul]
+
 end polarized
 
 section nonpolarized
