@@ -59,24 +59,6 @@ lemma Gene.ofRankAlt_shift_negOnePow_smul {n k : ℕ} {ε : GeneType} :
 
 namespace Chromosome
 
-def maxRank (c : Chromosome) : ℕ :=
-  c.support.sup (fun g ↦ g.rank)
-
-def rank : Chromosome →+ ℕ where
-  toFun c := c.sum (fun g count ↦ count • g.rank)
-  map_zero' := sum_zero_index
-  map_add' _ _ := sum_add_index' (fun _ ↦ zero_smul ..) (fun _ _ _ ↦ add_smul ..)
-
-lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 := by
-  simp only [rank, sum, smul_eq_mul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-    Finset.sum_eq_zero_iff, mem_support_iff, ne_eq, mul_eq_zero] at h
-  rw [← Finsupp.support_eq_empty]
-  by_contra!
-  obtain ⟨a, ha⟩ := this
-  absurd ((h a (mem_support_iff.1 ha)).resolve_left
-    (mem_support_iff.1 ha)) ▸ a.rank_pos
-  omega
-
 section signature
 
 /--
@@ -215,13 +197,6 @@ lemma signature_snd {X : Chromosome} :
     (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
   map_sum (AddMonoidHom.snd ..) ..
 
-lemma signature_sum_eq_rank {X : Chromosome} :
-    X.signature.1 + X.signature.2 = X.rank := by
-  simp_rw [signature_fst, signature_snd, Finsupp.sum,
-    ← Finset.sum_add_distrib, ← smul_add, Gene.signature_sum_eq_rank]
-  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
-    Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
-
 end signature
 
 section prime
@@ -244,7 +219,7 @@ noncomputable def prime : Chromosome →+ Chromosome where
   map_add' _ _ := sum_add_index' (fun _ ↦ zero_nsmul _)
     fun _ _ _ ↦ add_nsmul ..
 
-lemma prime_def (X : Chromosome) : X.prime = X.sum (fun g m ↦ m • primeGene g) := rfl
+lemma prime_def {X : Chromosome} : X.prime = X.sum (fun g m ↦ m • primeGene g) := rfl
 
 lemma prime_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
@@ -336,6 +311,49 @@ lemma signature_prime_le (X : Chromosome) :
       · exact (Prod.mk_le_swap.2 (signature_nonneg _))
 
 end prime
+
+section rank
+
+def maxRank (c : Chromosome) : ℕ :=
+  c.support.sup (fun g ↦ g.rank)
+
+def rank : Chromosome →+ ℕ where
+  toFun c := c.sum (fun g count ↦ count • g.rank)
+  map_zero' := sum_zero_index
+  map_add' _ _ := sum_add_index' (fun _ ↦ zero_smul ..) (fun _ _ _ ↦ add_smul ..)
+
+lemma rank_def {X : Chromosome} : X.rank = X.sum (fun g count ↦ count • g.rank) := rfl
+
+lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 := by
+  simp only [rank_def, sum, smul_eq_mul, Finset.sum_eq_zero_iff,
+    mem_support_iff, ne_eq, mul_eq_zero] at h
+  rw [← Finsupp.support_eq_empty]
+  by_contra!
+  obtain ⟨a, ha⟩ := this
+  absurd ((h a (mem_support_iff.1 ha)).resolve_left
+    (mem_support_iff.1 ha)) ▸ a.rank_pos
+  omega
+
+lemma rank_ofRank {n : ℕ} {ε : GeneType} :
+    (Gene.ofRank n ε).rank = n := by
+  simp only [Gene.ofRank_def, rank_def, smul_eq_mul]
+  split_ifs with hn
+  · rw [hn, sum_zero_index]
+  · rw [sum_single_index (by exact Nat.zero_mul _), one_mul]
+
+lemma rank_of_prime {X : Chromosome} :
+    X.prime.rank = X.sum (fun g m ↦ m * (g.rank - 1)) := by
+  simp_rw [prime_def, map_finsuppSum, map_nsmul, nsmul_eq_mul, primeGene, rank_ofRank]
+  rfl
+
+lemma signature_sum_eq_rank {X : Chromosome} :
+    X.signature.1 + X.signature.2 = X.rank := by
+  simp_rw [signature_fst, signature_snd, Finsupp.sum,
+    ← Finset.sum_add_distrib, ← smul_add, Gene.signature_sum_eq_rank]
+  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
+    Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
+
+end rank
 
 section order
 

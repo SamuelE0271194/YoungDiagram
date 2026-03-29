@@ -1,4 +1,4 @@
-import YoungDiagram.Sigma_Claude
+import YoungDiagram.Sigma
 
 open Chromosome Variety
 

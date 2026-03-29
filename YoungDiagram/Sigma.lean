@@ -1,261 +1,131 @@
-import YoungDiagram.Chromosome
-import YoungDiagram.Variety
 import YoungDiagram.Mutations
-import YoungDiagram.SigmaAux
-import Mathlib.Tactic
+
+open Chromosome Finsupp
+
+lemma cond_15_6_ofRank (k : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRank k ε).prime.signature - (Gene.ofRank k ε).prime.prime.signature ≤
+    ((Gene.ofRank k ε).signature - (Gene.ofRank k ε).prime.signature).swap := by
+  rw [prime_ofRank, prime_ofRank]
+  by_cases hk : 1 ≤ k - 1
+  · rw [signature_ofRank_eq' hk hε, add_sub_cancel_left]
+    replace hk : 2 ≤ k := by omega
+    rw [signature_ofRank_eq₂ hk hε, show k - 1 - 1 = k - 2 by rfl, add_comm,
+      add_sub_assoc, sub_add_cancel_left, Prod.swap_add, Prod.swap_prod_mk,
+      Prod.swap_neg, le_add_neg_iff_add_le]
+    split_ifs
+    · rw [← signature_ofRank_swap, neg_neg, signature_ofRank, signature_ofRank,
+        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, add_comm, Gene.signature_sum_le_rank]
+      rfl
+    · rw [← signature_ofRank_swap, signature_ofRank, signature_ofRank,
+        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, Gene.signature_sum_le_rank]
+      rfl
+  · obtain (hk | hk) : k = 1 ∨ k = 0 := by omega
+    all_goals subst hk
+    · simp only [tsub_self, Gene.ofRank_zero, map_zero, zero_tsub, sub_self, sub_zero]
+      exact Prod.mk_le_swap.2 (signature_nonneg _)
+    · simp only [zero_le, Nat.sub_eq_zero_of_le, Gene.ofRank_zero, map_zero, sub_self,
+        Prod.swap_zero, Std.le_refl]
+
+open Variety in
+lemma cond_15_6_Pi {Y : Chromosome} (hY : Y ∈ Pi) :
+    Y.prime.signature - Y.prime.prime.signature ≤
+    (Y.signature - Y.prime.signature).swap := by
+  induction Y using Finsupp.induction with
+  | zero => simp only [map_zero, sub_self, Prod.swap_zero, Std.le_refl]
+  | single_add a b f ha hb hf => calc
+    _ = (prime f).signature - (prime f).prime.signature +
+        ((prime (single a b)).signature - (prime (single a b)).prime.signature) := by
+      simp_rw [map_add, sub_add_eq_sub_sub]; ring
+    _ ≤ (signature f - signature (prime f)).swap +
+        ((prime (single a b)).signature - (prime (single a b)).prime.signature) :=
+      add_le_add_left (hf (mem_Pi_iff_add.1 hY).2) _
+    _ ≤ _ := by
+      simp_rw [Prod.swap_sub, map_add, Prod.swap_add]
+      rw [sub_eq_add_neg, add_comm (signature (single a b)).swap, add_sub_assoc, add_assoc]
+      refine add_le_add_right ?_ (signature f).swap
+      rw [sub_add_eq_sub_sub, sub_eq_add_neg _ (signature (prime f)).swap,
+        add_comm]
+      refine add_le_add_left ?_ (-(signature (prime f)).swap)
+      simp_rw [← Gene.ofRank_eq_gene_smul, map_nsmul, Prod.smul_swap, ← smul_sub]
+      have := (IsFiltered_single hb).1 <| mem_Pi_iff.1 (mem_Pi_iff_add.1 hY).1
+      refine nsmul_le_nsmul_right ((cond_15_6_ofRank a.rank this).trans ?_) b
+      rw [Prod.swap_sub]
 
 namespace Sigma
-open Chromosome
 
-noncomputable def sigma_k (c : Chromosome) (k : ℕ) : ℚ × ℚ :=
-  signature (prime^[k] c)
+variable (X : Chromosome) (k : ℕ)
 
-lemma sigma_nonneg_1 : (X : Chromosome) → (k : ℕ) → (sigma_k X k).1 ≥ 0 := by
-  intro X k
-  rw [sigma_k]
-  have h : (signature (prime^[k] X)) ≥ 0 :=
-    signature_nonneg (prime^[k] X)
-  exact h.left
+/--
+For `X ∈ Π`, `σ(X)` is the 2×∞ nonneg integral matrix whose k-th column is
+`(aₖ, bₖ) = sig X^(k)`, as defined in [Djoković 1982, (15.1)].
 
-lemma sigma_nonneg_2 : (X : Chromosome) → (k : ℕ) → (sigma_k X k).2 ≥ 0 := by
-  intro X k
-  rw [sigma_k]
-  have h : (signature (prime^[k] X)) ≥ 0 :=
-    signature_nonneg (prime^[k] X)
-  exact h.right
+Represented as a function `ℕ → ℚ × ℚ`, where the first component is `aₖ`
+and the second is `bₖ`.
+-/
+noncomputable def sigma : ℕ → ℚ × ℚ :=
+  fun k ↦ signature (prime^[k] X)
 
--- If a_k of a chromosome X is 0, then a_k+1 is also 0
-lemma if_0_then_next_is_zero_1 : (X : Chromosome) → (k : ℕ) → (sigma_k X k).1 = 0 →
-  (sigma_k X (k+1)).1 = 0 := by
-    intro X k h
-    rw [sigma_k] at h
-    rw [sigma_k]
-    have hle : (signature (prime^[k] (prime X))).1 ≤ (signature (prime^[k] X)).1 := by
-      rw [← prime_prime X k]
-      rw [prime_prime_other k X]
-      apply sig_prime_le_sig_1 (prime^[k] X)
-    have hle1 : (signature (prime^[k] (prime X))).1 ≤ 0 := by
-      simpa [h] using hle
-    have hle2 : (signature (prime^[k] (prime X))).1 ≥ 0 :=
-      sigma_nonneg_1 X (k + 1)
-    exact le_antisymm hle1 hle2
+local notation "a" X:max k:max => Prod.fst (sigma X k)
 
--- If b_k of a chromosome X is 0, then b_k+1 is also 0
-lemma if_0_then_next_is_zero_2 : (X : Chromosome) → (k : ℕ) → (sigma_k X k).2 = 0 →
-  (sigma_k X (k+1)).2 = 0 := by
-    intro X k h
-    rw [sigma_k] at h
-    rw [sigma_k]
-    have hle : (signature (prime^[k] (prime X))).2 ≤ (signature (prime^[k] X)).2 := by
-      rw [← prime_prime X k]
-      rw [prime_prime_other k X]
-      apply sig_prime_le_sig_2 (prime^[k] X)
-    have hle1 : (signature (prime^[k] (prime X))).2 ≤ 0 := by
-      simpa [h] using hle
-    have hle2 : (signature (prime^[k] (prime X))).2 ≥ 0 :=
-      sigma_nonneg_2 X (k + 1)
-    exact le_antisymm hle1 hle2
+local notation "b" X:max k:max => Prod.snd (sigma X k)
 
--- Eventaully a_k, b_k becomes 0
-lemma cond15_2_0case : (X : Chromosome) →
-  ∃ k : ℕ, (sigma_k X k) = 0 := by
-  intro X
-  let k := maxRank X
-  have h : k = maxRank X := by rfl
-  have h' : signature (prime^[k] X) = (0, 0) := by
-    apply sig_prime_rank_eq_0
-    exact h
-  refine ⟨ k, ?_ ⟩
-  rw [sigma_k]
-  exact h'
+lemma antitone : Antitone (sigma X) := by
+  refine antitone_nat_of_succ_le (fun _ ↦ ?_)
+  simp only [sigma, Function.iterate_succ_apply']
+  exact (signature_prime_le _).trans inf_le_left
 
-lemma cond15_2_and_3 : ∀ k : ℕ, ∀ X : Chromosome, (sigma_k X k) ≥ (sigma_k X (k + 1)) := by
-  intro k
-  induction k with
-  | zero =>
-    intro X
-    rw [sigma_k]
-    rw [sigma_k]
-    simp only [Function.iterate_zero, id_eq, zero_add, Function.iterate_one, ge_iff_le]
-    apply sig_prime_le_sig X
-  | succ n ih =>
-    intro X
-    rw [sigma_k]
-    rw [sigma_k]
-    simp only [Function.iterate_succ, Function.comp_apply, ge_iff_le]
-    apply ih
+lemma eventually_zero : ∃ K, ∀ k ≥ K, sigma X k = 0 := by
+  refine ⟨X.maxRank, fun k hk ↦ ?_⟩
+  simp only [sigma]
+  have hprime_zero : prime^[X.maxRank] X = 0 := by
+    have h : prime^[X.maxRank] (X.below X.maxRank) = 0 := prime_below le_rfl
+    rwa [below_maxRank] at h
+  rw [← Nat.sub_add_cancel hk, Function.iterate_add_apply,
+    hprime_zero, iterate_map_zero, map_zero]
 
--- 1 is a_i > b_{i+1}
-lemma cond15_4_and_5_1 : ∀ k : ℕ, ∀ X : Chromosome,
-  (sigma_k X k).1 ≥ (sigma_k X (k + 1)).2 := by
-  intro k
-  induction k with
-  | zero =>
-    intro X
-    rw [sigma_k]
-    rw [sigma_k]
-    rw [prime]
-    simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, Function.iterate_zero, id_eq, zero_add,
-      Function.iterate_one, ge_iff_le]
-    rw [signature]
-    simp [primeGene, Gene.signature]
-    sorry
-  | succ n ih => sorry
+lemma cond_15_2 : (∀ k, a X (k + 1) ≤ a X k) ∧ (∃ K, ∀ k ≥ K, a X k = 0) :=
+  ⟨fun k ↦ (Prod.le_def.1 (antitone X (Nat.le_add_right k 1))).1,
+    (eventually_zero X).imp fun _ h1 k h2 ↦ congr_arg Prod.fst (h1 k h2)⟩
 
--- 2 is b_{i} > a_{i+1}
-lemma cond15_4_and_5_2 : (X : Chromosome) →
-  ∀ k : ℕ, (sigma_k X k).2 ≥ (sigma_k X (k + 1)).1 := by sorry
+lemma cond_15_3 : (∀ k, b X (k + 1) ≤ b X k) ∧ (∃ K, ∀ k ≥ K, b X k = 0) :=
+  ⟨fun k ↦ (antitone X (Nat.le_add_right k 1)).2,
+    (eventually_zero X).imp fun _ h1 k h2 ↦ congr_arg Prod.snd (h1 k h2)⟩
 
-lemma cond15_6_and_7_1 : ∀ k : ℕ, ∀ X : Chromosome,
-  (sigma_k X k).1 - (sigma_k X (k+1)).1 ≥ (sigma_k X (k+1)).2 - (sigma_k X (k+2)).2 := by
-  intro k
-  induction k with
-  | zero =>
-    intro X
-    sorry
+/-- (15.4) a₀ ≥ b₁ ≥ a₂ ≥ b₃ ≥ … -/
+lemma cond_15_4 : if Even k then b X (k + 1) ≤ a X k
+    else a X (k + 1) ≤ b X k := by
+  split_ifs <;> simp only [sigma, Function.iterate_succ_apply']
+  · exact ((signature_prime_le _).trans inf_le_right).2
+  · exact ((signature_prime_le _).trans inf_le_right).1
 
-  | succ n ih => sorry
+/-- (15.5) b₀ ≥ a₁ ≥ b₂ ≥ a₃ ≥ … -/
+lemma cond_15_5 : if Even k then a X (k + 1) ≤ b X k
+    else b X (k + 1) ≤ a X k := by
+  split_ifs <;> simp only [sigma, Function.iterate_succ_apply']
+  · exact ((signature_prime_le _).trans inf_le_right).1
+  · exact ((signature_prime_le _).trans inf_le_right).2
 
+/-- (15.6) a₀ − a₁ ≥ b₁ − b₂ ≥ a₂ − a₃ ≥ b₃ − b₄ ≥ … -/
+lemma cond_15_6 (hX : X ∈ Variety.Pi) :
+    if Even k then b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1)
+              else a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1) := by
+  have h := cond_15_6_Pi (Variety.prime_mem_Pi_iterate hX (k := k))
+  split_ifs with heven <;> simp only [sigma, Function.iterate_succ_apply']
+  · exact (Prod.mk_le_swap.1 h).1
+  · exact (Prod.mk_le_swap.1 h).2
 
-lemma cond15_6_and_7_2 : (X : Chromosome) →
-  ∀ k : ℕ, (sigma_k X k).2 - (sigma_k X (k+1)).2 ≥ (sigma_k X (k+1)).1 - (sigma_k X (k+2)).1 :=
-  by sorry
+/-- (15.7) b₀ − b₁ ≥ a₁ − a₂ ≥ b₂ − b₃ ≥ a₃ − a₄ ≥ … -/
+lemma cond_15_7 (hX : X ∈ Variety.Pi) :
+    if Even k then a X (k + 1) - a X (k + 2) ≤ b X k - b X (k + 1)
+              else b X (k + 1) - b X (k + 2) ≤ a X k - a X (k + 1) := by
+  have h := cond_15_6_Pi (Variety.prime_mem_Pi_iterate hX (k := k))
+  split_ifs with heven <;> simp only [sigma, Function.iterate_succ_apply']
+  · exact (Prod.mk_le_swap.1 h).2
+  · exact (Prod.mk_le_swap.1 h).1
 
-open Variety Mutation
-
--- Im actually not sure how to prove this case,
--- if n = 1, we don't have any mutations?
-lemma t6_rank_1 : (X Y : Pi) → (hX : rank X = 1) → (hY : rank Y = 1) →
-  (h : X < Y) → (IsMutation X Y) ∧ (Y ≤ Y) := by
-  intro X Y hX hY hlt
-  constructor
-  · sorry
-  · rfl
-
-lemma theorem_6 : (n : ℕ) → (X Y : Pi) → (hX : rank X = n) → (hY : rank Y = n) →
-  (h : X < Y) → ∃ Z ∈ Pi, (IsMutation X Z) ∧ (Z ≤ Y) := by
-  intro n
-  refine Nat.strong_induction_on n ?_
-  intro k ih
-  cases k with
-  | zero =>
-    intro X Y hX hY hlt
-    have x_0 := rank_0 X hX
-    have x0 : X = 0 := by simpa using x_0
-    have y_0 := rank_0 Y hY
-    have y0 : Y = 0 := by simpa using y_0
-    rw [x0, y0] at hlt
-    exact False.elim <| (Std.not_gt_of_lt hlt) hlt
-  | succ k =>
-    cases k with
-    | zero => --n = 1
-      intro X Y hX hY hlt
-      use Y
-      constructor
-      · exact Y.property
-      · exact t6_rank_1 X Y hX hY hlt
-    | succ k => sorry
-
-lemma step15_8 : (X Y : Pi) → (h : X < Y) →
-  ∀ k : ℕ, sigma_k X k ≤ sigma_k Y k := by
-  intro X Y h k
-  have h' : X ≤ Y := by exact le_of_lt h
-  simp only [sigma_k, ge_iff_le]
-  exact le_iff_dominates.mp h' k
-
-lemma sig_sum_eq_rank : (n : ℕ) → (X : Pi) → (hX : rank X = n) →
-  (signature X).1 + (signature X).2 = n := by
-  intro n
-  induction n with
-  | zero => sorry
-  | succ k ih => sorry
-
-lemma sigma_0_sum_eq_rank : (n : ℕ) → (X : Pi) → (hX : rank X = n) →
-  (sigma_k X 0).1 + (sigma_k X 0).2 = n := by
-  intro n X hX
-  simp [sigma_k, sig_sum_eq_rank]
-  simp_all
-
-lemma step15_8_ext : (n : ℕ) → (X Y : Pi) → (hX : rank X = n) → (hY : rank Y = n) → (h : X < Y) →
-  (sigma_k X 0) = (sigma_k Y 0) := by
-  intro n X Y hX hY hlt
-  have h15_8 := step15_8 X Y hlt 0
-  have sig_sum_X := sigma_0_sum_eq_rank n X hX
-  simp [sigma_k] at sig_sum_X
-  have sig_sum_Y := sigma_0_sum_eq_rank n Y hY
-  simp [sigma_k] at sig_sum_Y
-  have sig_sum_X_eq_Y : (signature X).1 + (signature X).2 = (signature Y).1 + (signature Y).2 := by
-    simp_all
-  have sig_1 : (signature X).1 ≤ (signature Y).1 := by exact h15_8.1
-  have sig_2 : (signature X).2 ≤ (signature Y).2 := by exact h15_8.2
-  have eq_1 : (signature X).1 = (signature Y).1 := by linarith
-  have eq_2 : (signature X).2 = (signature Y).2 := by linarith
-  ext
-  · exact eq_1
-  · exact eq_2
-
---this is to prove for the case where X and Y are not disjoint in the case of theorem 6
-lemma step15_8_cont : (n : ℕ) → (X Y X₁ Y₁ : Pi) → (hX : rank X = n) → (hY : rank Y = n) → (X < Y) →
-  (g : Gene) → (X₁.val + (Finsupp.single g 1) = X.val) ∧
-  (Y₁.val + (Finsupp.single g 1) = Y.val) → X₁ < Y₁ := by
-  intro n X Y X₁ Y₁ hX hY hlt g rel
-  have r1 := rel.left
-  have r2 := rel.right
-  have hlt' : X₁.val + (Finsupp.single g 1) < Y₁.val + (Finsupp.single g 1) := by
-    simp [r1, r2, hlt]
-  --have almost : (X₁ : Chromosome) < (Y₁ : Chromosome) := by
-    --exact (add_lt_add_iff_right (Finsupp.single g 1)).1 hlt'
-  --I don't know why this is complaining
-  sorry
-
---Now when X Y are disjoint, no common gene between the two
-lemma disjoint_1 : (k : ℕ) → (X Y : Pi) → (X < Y) →
-  Chromosome.prime^[k] X ≤ Chromosome.prime^[k] Y := by
-  intro k X Y hlt
-  simp only [le_iff_dominates]
-  simp only [LT.lt] at hlt
-  simp only [Dominates] at hlt
-  simp only [prime_a_b]
-  intro k'
-  exact hlt.1 (k' + k)
-
---X and Y disjoint -> X' Y' disjoint
-lemma disjoint_2_1 : (X Y : Pi) → (X < Y) → (∀ g ∈ X.val.support, g ∉ Y.val.support) →
-  ∀ g ∈ (prime X).support, g ∉ (prime Y).support := by
-  intro X Y hlt h
-  simp_all
-  sorry
-
--- Not really needed, just want to show disjoint is symmetric
-lemma disjoint_2_2 : (X Y : Pi) → (X < Y) → (∀ g ∈ Y.val.support, g ∉ X.val.support) →
-  ∀ g ∈ X.val.support, g ∉ Y.val.support := by
-  intro X Y hlt h
-  by_contra
-  simp_all only [Finsupp.mem_support_iff, ne_eq, Decidable.not_not, not_forall]
-  rcases this with ⟨x, hxX, hxY⟩
-  have hX0 : X.val x = 0 := h x hxY
-  exact hxX hX0
-
-lemma disjoint_2_3 : (k : ℕ) → (X Y : Pi) → (X < Y) → (∀ g ∈ X.val.support, g ∉ Y.val.support) →
-  ∀ g ∈ (Chromosome.prime^[k] X).support, g ∉ (Chromosome.prime^[k] Y).support := by
-  intro k X Y hlt hdis
-  induction k with
-  | zero => exact hdis
-  | succ i ih =>
-    rw [prime_prime_other i X]
-    rw [prime_prime_other i Y]
-    sorry
-    --exact disjoint_2_1 n (Chromosome.prime^[i] X) (Chromosome.prime^[i] Y) + induction hypothesis
-    -- prime (Pi) doesn't play well
-
-lemma step15_9 : (n : ℕ) → (X Y : Pi) → (hX : rank X = n) → (hY : rank Y = n) → (hlt : X < Y) →
-  (∀ g ∈ X.val.support, g ∉ Y.val.support) → (k : ℕ) → (k ≥ 1) → (h : sigma_k X k = sigma_k Y k) →
-  (h' : sigma_k X k ≠ (0, 0)) →
-  (∃ U ∈ Pi, (IsMutation (Chromosome.prime^[k] X) U) ∧ (U ≤ Chromosome.prime^[k] Y)) →
-  ∃ Z ∈ Pi, (IsMutation X Z) ∧ (Chromosome.prime^[k] Z = U) ∧ (Z ≤ Y) := by
-  intro n X Y hX hY hlt hdis k k_1 sig_k_eq sig_k_not_0 ih
-  --apply lifting lemma on ih.
-  sorry
---with this we can assume sigma_k X k < sigma_k Y k (element-wise)
+/-- (15.8) If `X < Y` in `Π` then `aₖ ≤ cₖ` and `bₖ ≤ dₖ` for all `k`,
+where `(aₖ, bₖ) = σ(X)ₖ` and `(cₖ, dₖ) = σ(Y)ₖ`. -/
+lemma cond_15_8 {X Y : Variety.Pi} (h : X < Y) (k : ℕ) :
+    a X k ≤ a Y k ∧ b X k ≤ b Y k := le_iff_dominates.1 h.le k
 
 end Sigma

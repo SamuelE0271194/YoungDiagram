@@ -1,4 +1,4 @@
-import YoungDiagram.Sigma_Claude
+import YoungDiagram.Sigma
 import YoungDiagram.Lifting
 import YoungDiagram.Theorem_6_Aux_Claude
 
