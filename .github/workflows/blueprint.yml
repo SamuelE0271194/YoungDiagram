@@ -23,6 +23,8 @@ jobs:
   build_project:
     runs-on: ubuntu-latest
     name: Build project
+    environment:
+      name: github-pages
     steps:
       - name: Cleanup to free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.0
@@ -52,13 +54,3 @@ jobs:
         with:
           blueprint: true
           homepage: home_page
-
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy to GitHub Pages
-    needs: build_project
-    environment:
-      name: github-pages
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
