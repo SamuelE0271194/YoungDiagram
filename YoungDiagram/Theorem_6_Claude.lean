@@ -155,7 +155,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           simp only [iterate_map_add, map_add, add_le_add_iff_right]
           exact h
       · -- Case 2: disjoint supports.
-        push_neg at hcommon
+        push Not at hcommon
         -- Sub-case split: does there exist k with Y^(k) ≠ 0 and sigma X k = sigma Y k?
         by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.val ≠ 0 ∧
            Sigma.sigma X k = Sigma.sigma Y k
@@ -268,7 +268,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                          Chromosome.primeGene, rank_ofRank]
             -- rank C = C.sum (fun g m => m * g.rank)  [unfolding the AddMonoidHom].
             have hrank_C : C.rank = C.sum (fun g m => m * g.rank) := by
-              simp only [Chromosome.rank_def, AddMonoidHom.coe_mk, ZeroHom.coe_mk, smul_eq_mul]
+              simp only [Chromosome.rank_def, smul_eq_mul]
             -- Therefore rank C = rank(prime C) + C.sum (fun _ m => m):
             -- each gene g contributes m*g.rank on the left and m*(g.rank-1)+m on the right,
             -- which are equal since g.rank - 1 + 1 = g.rank (g.rank ≥ 1).
@@ -364,7 +364,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           · -- j > k: prime^[j] Z = prime^[j-k] (prime^[k] Z) = prime^[j-k] U.val,
             --        then U ≤ Yk gives sig(prime^[j-k] U.val) ≤ sig(prime^[j-k] Yk.val),
             --        and Yk.val = prime^[k] Y.val so sig(prime^[j-k] Yk.val) = sig(prime^j Y.val).
-            push_neg at hjk
+            push Not at hjk
             have hjk' : k ≤ j := hjk.le
             calc signature (Chromosome.prime^[j] Z)
                 = signature (Chromosome.prime^[j - k] U.val) := by
@@ -378,7 +378,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                     rw [← Function.iterate_add_apply, Nat.sub_add_cancel hjk']
         · -- Sub-case 2b: all sigma columns differ (hsigeq :
             --∀ k > 0, Y^(k) ≠ 0 → sigma X k ≠ sigma Y k).
-          push_neg at hsigeq
+          push Not at hsigeq
           -- Now assume X ⊇ g⁺(k) + g⁻(k) for some k (paper: line after 15.9).
           -- If true, we construct a mutation g⁺(k) + g⁻(k) → g⁺(k+1) + g⁻(k-1).
           -- If false (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1, handled separately.
@@ -557,7 +557,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               intro h hmem
               rw [Finsupp.mem_support_iff] at hmem
               by_contra hlt
-              push_neg at hlt
+              push Not at hlt
               have hh1 : h.rank = 1 := le_antisymm (by omega) h.rank_pos
               exact hmem (hkey (r - 1) (le_refl _) h (by omega))
             -- Step 2: Strict sigma inequality at level r.
@@ -790,7 +790,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                   rw [hdecomp, hX1j, zero_add]
                 rw [hY1j, zero_add, hrestj]; exact hXYj
           · -- (15.10): X ⊉ g⁺(k) + g⁻(k) for all k ≥ 1.
-            push_neg at hXpn
+            push Not at hXpn
             -- From hsigeq: for k ≥ 1 with Y^(k) ≠ 0, sigma X k ≠ sigma Y k.
             -- Combined with X < Y: (a_k, b_k) ≤ (c_k, d_k), so a_k < c_k or b_k < d_k.
             -- Split: either some k has a_k < c_k, or for all such k a_k = c_k (so b_k < d_k).
@@ -800,5 +800,5 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               obtain ⟨k, hkpos, hYkne, hak⟩ := ha
               sorry
             · -- For all k ≥ 1 with Y^(k) ≠ 0: a_k = c_k, so b_k < d_k (from hsigeq).
-              push_neg at ha
+              push Not at ha
               sorry
