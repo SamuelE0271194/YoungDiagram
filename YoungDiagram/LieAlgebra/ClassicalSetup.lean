@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Lie.SkewAdjoint
 import Mathlib.Data.Complex.Basic
-import YoungDiagram.NilpotentOrbit
+import YoungDiagram.LieAlgebra.NilpotentOrbit
 
 /-!
 # Classical Lie Algebras for Each Series

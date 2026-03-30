@@ -1,6 +1,5 @@
 import YoungDiagram.Sigma
 import YoungDiagram.Lifting
-import YoungDiagram.Antisymm
 
 open Chromosome Variety
 
