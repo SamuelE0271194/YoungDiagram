@@ -192,7 +192,7 @@
   of a filtered variety is itself: $V_p' = V_p$.
 \end{lemma}
 
-\section{The polarized variety $\Pi$}
+\section{The polarized variety Pi}
 
 \begin{definition}[Polarized chromosome]
   \label{def:IsPolarized}
@@ -203,20 +203,20 @@
   $\ne \mathtt{NonPolarized}$.
 \end{definition}
 
-\begin{definition}[Variety $\Pi$]
+\begin{definition}[Variety Pi]
   \label{def:Variety.Pi}
   \lean{Variety.Pi}
   \leanok
   \uses{def:varietyOfFilter, def:IsPolarized}
-  The variety $\Pi$ is the filtered variety of all polarized chromosomes.
+  The variety $\mathrm{Pi}$ is the filtered variety of all polarized chromosomes.
 \end{definition}
 
-\begin{lemma}[$\Pi$ is prime-stable]
+\begin{lemma}[Pi is prime-stable]
   \label{lem:prime_Pi}
   \lean{Variety.prime_Pi}
   \leanok
   \uses{def:Variety.Pi}
-  $\Pi' = \Pi$.
+  $\mathrm{Pi}' = \mathrm{Pi}$.
 \end{lemma}
 
 \begin{lemma}[Polarized signature is natural]
@@ -224,28 +224,28 @@
   \lean{Chromosome.signature_pi_isNat}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.signature}
-  If $X \in \Pi$, the signature components of $X$ are natural numbers.
+  If $X \in \mathrm{Pi}$, the signature components of $X$ are natural numbers.
 \end{lemma}
 
-\begin{lemma}[Sigma sequence determines element of $\Pi$]
+\begin{lemma}[Sigma sequence determines element of Pi]
   \label{lem:eq_of_sigma_eq}
   \lean{Chromosome.eq_of_sigma_eq}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.signature, def:Chromosome.prime}
-  If $X, Y \in \Pi$ satisfy $\mathrm{sig}(X^{(k)}) = \mathrm{sig}(Y^{(k)})$ for all $k \ge 0$,
+  If $X, Y \in \mathrm{Pi}$ satisfy $\mathrm{sig}(X^{(k)}) = \mathrm{sig}(Y^{(k)})$ for all $k \ge 0$,
   then $X = Y$.
 \end{lemma}
 
-\begin{lemma}[Antisymmetry of dominance on $\Pi$]
+\begin{lemma}[Antisymmetry of dominance on Pi]
   \label{lem:pi_chromosome_antisymm}
   \lean{Chromosome.pi_chromosome_antisymm}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.Dominates}
-  For $X, Y \in \Pi$, if $X \le Y$ and $Y \le X$, then $X = Y$.
-  Hence $\Pi$ carries a partial order.
+  For $X, Y \in \mathrm{Pi}$, if $X \le Y$ and $Y \le X$, then $X = Y$.
+  Hence $\mathrm{Pi}$ carries a partial order.
 \end{lemma}
 
-\section{The non-polarized variety $\Lambda$}
+\section{The non-polarized variety Lambda}
 
 \begin{definition}[Non-polarized chromosome]
   \label{def:IsNonPolarized}
@@ -256,20 +256,20 @@
   $\mathtt{NonPolarized}$.
 \end{definition}
 
-\begin{definition}[Variety $\Lambda$]
+\begin{definition}[Variety Lambda]
   \label{def:Variety.Lambda}
   \lean{Variety.Lambda}
   \leanok
   \uses{def:varietyOfFilter, def:IsNonPolarized}
-  The variety $\Lambda$ is the filtered variety of all non-polarized chromosomes.
+  The variety $\mathrm{Lambda}$ is the filtered variety of all non-polarized chromosomes.
 \end{definition}
 
-\begin{lemma}[$\Lambda$ is prime-stable]
+\begin{lemma}[Lambda is prime-stable]
   \label{lem:prime_Lambda}
   \lean{Variety.prime_Lambda}
   \leanok
   \uses{def:Variety.Lambda}
-  $\Lambda' = \Lambda$.
+  $\mathrm{Lambda}' = \mathrm{Lambda}$.
 \end{lemma}
 
 \section{Mixed varieties and labels}
@@ -290,11 +290,11 @@
   \uses{def:Variety.Pi, def:Variety.Lambda, def:Variety.Mix}
   The five labeled varieties $V_0, \ldots, V_4$ indexed by $\mathrm{Fin}\,5$ are:
   \begin{itemize}
-    \item $V_0 = \Pi$
-    \item $V_1 = \mathrm{Mix}(\Pi, \Lambda)$
-    \item $V_2 = \Lambda$
-    \item $V_3 = \mathrm{Mix}(\Lambda, \Pi)$
-    \item $V_4 = \mathrm{Mix}(\Lambda, \Lambda)$
+    \item $V_0 = \mathrm{Pi}$
+    \item $V_1 = \mathrm{Mix}(\mathrm{Pi}, \mathrm{Lambda})$
+    \item $V_2 = \mathrm{Lambda}$
+    \item $V_3 = \mathrm{Mix}(\mathrm{Lambda}, \mathrm{Pi})$
+    \item $V_4 = \mathrm{Mix}(\mathrm{Lambda}, \mathrm{Lambda})$
   \end{itemize}
 \end{definition}
 
@@ -346,12 +346,12 @@
   If $k$ is odd, the inequalities are reversed.
 \end{lemma}
 
-\begin{lemma}[Difference conditions for $\Pi$]
+\begin{lemma}[Difference conditions for Pi]
   \label{lem:Sigma.cond_15_6}
   \lean{Sigma.cond_15_6}
   \leanok
   \uses{def:Sigma.sigma, def:Variety.Pi}
-  If $X \in \Pi$, then $a_X(k) - b_X(k+1) \le 1$ and $b_X(k) - a_X(k+1) \le 1$.
+  If $X \in \mathrm{Pi}$, then $a_X(k) - b_X(k+1) \le 1$ and $b_X(k) - a_X(k+1) \le 1$.
 \end{lemma}
 
 \begin{lemma}[Dominance implies componentwise inequality]
@@ -359,7 +359,7 @@
   \lean{Sigma.cond_15_8}
   \leanok
   \uses{def:Sigma.sigma, lem:pi_chromosome_antisymm}
-  If $X < Y$ in $\Pi$, then $\sigma_X(k) \le \sigma_Y(k)$ componentwise for all $k$
+  If $X < Y$ in $\mathrm{Pi}$, then $\sigma_X(k) \le \sigma_Y(k)$ componentwise for all $k$
   with strict inequality for some $k$.
 \end{lemma}
 
@@ -382,7 +382,7 @@
   \end{enumerate}
 \end{definition}
 
-\section{Primitive mutations on $\Pi$}
+\section{Primitive mutations on Pi}
 
 \begin{definition}[Primitive mutations of type 1]
   \label{def:Pi.X1Y1}
@@ -416,7 +416,7 @@
   \lean{Variety.Pi.Primitive}
   \leanok
   \uses{def:Pi.X1Y1, def:Pi.X2Y2, def:Pi.X3Y3}
-  A \emph{primitive mutation} on $\Pi$ is one of the three types above (up to adding a common chromosome $Z$).
+  A \emph{primitive mutation} on $\mathrm{Pi}$ is one of the three types above (up to adding a common chromosome $Z$).
 \end{definition}
 
 \begin{definition}[Step relation]
@@ -424,11 +424,11 @@
   \lean{Variety.Pi.Step}
   \leanok
   \uses{def:Pi.Primitive}
-  A \emph{step} on $\Pi$ is a primitive mutation plus an arbitrary summand:
+  A \emph{step} on $\mathrm{Pi}$ is a primitive mutation plus an arbitrary summand:
   $\mathrm{Step}(X+Z, Y+Z)$ whenever $\mathrm{Primitive}(X, Y)$.
 \end{definition}
 
-\section{Properties of mutations on $\Pi$}
+\section{Properties of mutations on Pi}
 
 \begin{lemma}[Primitive mutations are mutations]
   \label{lem:Pi.Primitive.isMutation}
@@ -494,9 +494,9 @@
   \lean{exists_mutation_le}
   \leanok
   \uses{def:Variety.Pi, def:Pi.Step, def:Chromosome.Dominates, lem:eq_of_sigma_eq, lem:pi_chromosome_antisymm}
-  For any $X, Y \in \Pi$ with $\mathrm{rank}(X) = \mathrm{rank}(Y) = n$ and $Y \le X$,
+  For any $X, Y \in \mathrm{Pi}$ with $\mathrm{rank}(X) = \mathrm{rank}(Y) = n$ and $Y \le X$,
   either $X = Y$ or there exists a step mutation from $X$ towards $Y$:
-  there exist $X' \in \Pi$ with $\mathrm{Step}(X, X')$ and $Y \le X' < X$.
+  there exist $X' \in \mathrm{Pi}$ with $\mathrm{Step}(X, X')$ and $Y \le X' < X$.
 \end{theorem}
 
 % ================================================================
