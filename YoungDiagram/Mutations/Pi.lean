@@ -1,5 +1,4 @@
 import YoungDiagram.Chromosome
-import Mathlib.Tactic
 
 open Chromosome
 
