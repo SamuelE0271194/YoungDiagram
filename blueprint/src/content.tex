@@ -221,7 +221,7 @@
 
 \begin{lemma}[Polarized signature is natural]
   \label{lem:signature_pi_isNat}
-  \lean{Chromosome.signature_pi_isNat}
+  \lean{signature_pi_isNat}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.signature}
   If $X \in \mathrm{Pi}$, the signature components of $X$ are natural numbers.
@@ -229,7 +229,7 @@
 
 \begin{lemma}[Sigma sequence determines element of Pi]
   \label{lem:eq_of_sigma_eq}
-  \lean{Chromosome.eq_of_sigma_eq}
+  \lean{eq_of_sigma_eq}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.signature, def:Chromosome.prime}
   If $X, Y \in \mathrm{Pi}$ satisfy $\mathrm{sig}(X^{(k)}) = \mathrm{sig}(Y^{(k)})$ for all $k \ge 0$,
@@ -238,7 +238,7 @@
 
 \begin{lemma}[Antisymmetry of dominance on Pi]
   \label{lem:pi_chromosome_antisymm}
-  \lean{Chromosome.pi_chromosome_antisymm}
+  \lean{pi_chromosome_antisymm}
   \leanok
   \uses{def:Variety.Pi, def:Chromosome.Dominates}
   For $X, Y \in \mathrm{Pi}$, if $X \le Y$ and $Y \le X$, then $X = Y$.
@@ -432,7 +432,7 @@
 
 \begin{lemma}[Primitive mutations are mutations]
   \label{lem:Pi.Primitive.isMutation}
-  \lean{Variety.Pi.Primitive.isMutation}
+  \lean{Pi.Primitive.isMutation}
   \leanok
   \uses{def:Pi.Primitive, def:IsMutation}
   Every primitive mutation satisfies the mutation conditions.
@@ -440,7 +440,7 @@
 
 \begin{lemma}[Type 1 signature preservation]
   \label{lem:mutation_type1_signature_eq}
-  \lean{Chromosome.mutation_type1_signature_eq}
+  \lean{mutation_type1_signature_eq}
   \leanok
   \uses{def:Pi.X1Y1, def:Chromosome.signature}
   Type 1 mutations preserve the signature at all levels:
@@ -449,7 +449,7 @@
 
 \begin{lemma}[Type 1 dominance]
   \label{lem:mutation_type1_le}
-  \lean{Chromosome.mutation_type1_le}
+  \lean{mutation_type1_le}
   \leanok
   \uses{def:Pi.X1Y1, def:Chromosome.Dominates}
   Type 1 mutations satisfy $Y_1 \le X_1$.
@@ -457,7 +457,7 @@
 
 \begin{lemma}[Type 2 signature preservation]
   \label{lem:mutation_type2_signature_eq}
-  \lean{Chromosome.mutation_type2_signature_eq}
+  \lean{mutation_type2_signature_eq}
   \leanok
   \uses{def:Pi.X2Y2, def:Chromosome.signature}
   Type 2 mutations preserve the signature at all levels.
@@ -465,7 +465,7 @@
 
 \begin{lemma}[Type 2 dominance]
   \label{lem:mutation_type2_le}
-  \lean{Chromosome.mutation_type2_le}
+  \lean{mutation_type2_le}
   \leanok
   \uses{def:Pi.X2Y2, def:Chromosome.Dominates}
   Type 2 mutations satisfy $Y_2 \le X_2$.
@@ -473,7 +473,7 @@
 
 \begin{lemma}[Type 3 signature preservation]
   \label{lem:mutation_type3_signature_eq}
-  \lean{Chromosome.mutation_type3_signature_eq}
+  \lean{mutation_type3_signature_eq}
   \leanok
   \uses{def:Pi.X3Y3, def:Chromosome.signature}
   Type 3 mutations preserve the signature at all levels.
@@ -481,7 +481,7 @@
 
 \begin{lemma}[Type 3 dominance]
   \label{lem:mutation_type3_le}
-  \lean{Chromosome.mutation_type3_le}
+  \lean{mutation_type3_le}
   \leanok
   \uses{def:Pi.X3Y3, def:Chromosome.Dominates}
   Type 3 mutations satisfy $Y_3 \le X_3$.
@@ -505,7 +505,7 @@
 
 \begin{lemma}[Mutation lifting]
   \label{lem:mutation_lifting}
-  \lean{Variety.mutation_lifting}
+  \lean{mutation_lifting}
   \uses{def:IsMutation, def:Variety.Label, def:Chromosome.lift}
   Given a mutation $(X, Y)$ in variety $V_i$ with $X' = Y'$,
   there exists $Z \in V_{\pi(i)}$ such that $(Z, Y)$ is a mutation in $V_{\pi(i)}$
@@ -514,92 +514,92 @@
 
 % ================================================================
 
-\chapter{Lie Algebra Connection}
+% \chapter{Lie Algebra Connection}
 
-\section{Classical Lie groups}
+% \section{Classical Lie groups}
 
-\begin{definition}[Series index]
-  \label{def:SeriesIndex}
-  \lean{SeriesIndex}
-  \leanok
-  The five classical series of real Lie groups are indexed as:
-  $\mathrm{U}$ (unitary), $\mathrm{O}$ (orthogonal), $\mathrm{O}^*$ (split orthogonal),
-  $\mathrm{Sp}_{\mathbb{R}}$ (real symplectic), $\mathrm{Sp}_{\mathbb{H}}$ (quaternionic symplectic).
-\end{definition}
+% \begin{definition}[Series index]
+%   \label{def:SeriesIndex}
+%   \lean{SeriesIndex}
+%   \leanok
+%   The five classical series of real Lie groups are indexed as:
+%   $\mathrm{U}$ (unitary), $\mathrm{O}$ (orthogonal), $\mathrm{O}^*$ (split orthogonal),
+%   $\mathrm{Sp}_{\mathbb{R}}$ (real symplectic), $\mathrm{Sp}_{\mathbb{H}}$ (quaternionic symplectic).
+% \end{definition}
 
-\begin{definition}[Associated variety]
-  \label{def:SeriesIndex.variety}
-  \lean{SeriesIndex.variety}
-  \leanok
-  \uses{def:SeriesIndex, def:Variety.Label}
-  Each series index $j$ is associated with one of the five labeled varieties $V_i$.
-\end{definition}
+% \begin{definition}[Associated variety]
+%   \label{def:SeriesIndex.variety}
+%   \lean{SeriesIndex.variety}
+%   \leanok
+%   \uses{def:SeriesIndex, def:Variety.Label}
+%   Each series index $j$ is associated with one of the five labeled varieties $V_i$.
+% \end{definition}
 
-\section{Nilpotent orbits}
+% \section{Nilpotent orbits}
 
-\begin{definition}[Nilpotent block]
-  \label{def:NilpotentBlock}
-  \lean{NilpotentBlock}
-  \leanok
-  \uses{def:SeriesIndex}
-  A \emph{nilpotent block} for series $j$ consists of a size $m$ and a polarization type,
-  subject to validity constraints depending on $j$.
-\end{definition}
+% \begin{definition}[Nilpotent block]
+%   \label{def:NilpotentBlock}
+%   \lean{NilpotentBlock}
+%   \leanok
+%   \uses{def:SeriesIndex}
+%   A \emph{nilpotent block} for series $j$ consists of a size $m$ and a polarization type,
+%   subject to validity constraints depending on $j$.
+% \end{definition}
 
-\begin{definition}[Nilpotent type]
-  \label{def:NilpotentType}
-  \lean{NilpotentType}
-  \leanok
-  \uses{def:NilpotentBlock}
-  A \emph{nilpotent type} for series $j$ is a finitely supported function
-  $\Delta \colon \mathtt{NilpotentBlock}\, j \to \mathbb{N}$, i.e.\ a formal sum of nilpotent blocks.
-\end{definition}
+% \begin{definition}[Nilpotent type]
+%   \label{def:NilpotentType}
+%   \lean{NilpotentType}
+%   \leanok
+%   \uses{def:NilpotentBlock}
+%   A \emph{nilpotent type} for series $j$ is a finitely supported function
+%   $\Delta \colon \mathtt{NilpotentBlock}\, j \to \mathbb{N}$, i.e.\ a formal sum of nilpotent blocks.
+% \end{definition}
 
-\begin{definition}[Block to chromosome]
-  \label{def:NilpotentBlock.toChromosome}
-  \lean{NilpotentBlock.toChromosome}
-  \leanok
-  \uses{def:NilpotentBlock, def:Chromosome}
-  Each nilpotent block maps to a chromosome via iterated lifting.
-\end{definition}
+% \begin{definition}[Block to chromosome]
+%   \label{def:NilpotentBlock.toChromosome}
+%   \lean{NilpotentBlock.toChromosome}
+%   \leanok
+%   \uses{def:NilpotentBlock, def:Chromosome}
+%   Each nilpotent block maps to a chromosome via iterated lifting.
+% \end{definition}
 
-\begin{definition}[Type to chromosome]
-  \label{def:NilpotentType.toChromosome}
-  \lean{NilpotentType.toChromosome}
-  \leanok
-  \uses{def:NilpotentType, def:NilpotentBlock.toChromosome}
-  The chromosome of a nilpotent type is the additive extension of the block-to-chromosome map.
-\end{definition}
+% \begin{definition}[Type to chromosome]
+%   \label{def:NilpotentType.toChromosome}
+%   \lean{NilpotentType.toChromosome}
+%   \leanok
+%   \uses{def:NilpotentType, def:NilpotentBlock.toChromosome}
+%   The chromosome of a nilpotent type is the additive extension of the block-to-chromosome map.
+% \end{definition}
 
-\begin{theorem}[Valid blocks land in the correct variety]
-  \label{thm:toChromosome_mem_variety}
-  \lean{NilpotentBlock.toChromosome_mem_variety}
-  \uses{def:NilpotentBlock.toChromosome, def:SeriesIndex.variety}
-  For a valid nilpotent block $b$ of series $j$, we have $\mathrm{toChromosome}(b) \in V_j$.
-\end{theorem}
+% \begin{theorem}[Valid blocks land in the correct variety]
+%   \label{thm:toChromosome_mem_variety}
+%   \lean{NilpotentBlock.toChromosome_mem_variety}
+%   \uses{def:NilpotentBlock.toChromosome, def:SeriesIndex.variety}
+%   For a valid nilpotent block $b$ of series $j$, we have $\mathrm{toChromosome}(b) \in V_j$.
+% \end{theorem}
 
-\begin{theorem}[Valid types land in the correct variety]
-  \label{thm:NilpotentType.toChromosome_mem_variety}
-  \lean{NilpotentType.toChromosome_mem_variety}
-  \uses{def:NilpotentType.toChromosome, def:SeriesIndex.variety, thm:toChromosome_mem_variety}
-  For a valid nilpotent type $\Delta$ of series $j$,
-  $\mathrm{toChromosome}(\Delta) \in V_j$.
-\end{theorem}
+% \begin{theorem}[Valid types land in the correct variety]
+%   \label{thm:NilpotentType.toChromosome_mem_variety}
+%   \lean{NilpotentType.toChromosome_mem_variety}
+%   \uses{def:NilpotentType.toChromosome, def:SeriesIndex.variety, thm:toChromosome_mem_variety}
+%   For a valid nilpotent type $\Delta$ of series $j$,
+%   $\mathrm{toChromosome}(\Delta) \in V_j$.
+% \end{theorem}
 
-\section{Orbit closure}
+% \section{Orbit closure}
 
-\begin{definition}[Classical setup]
-  \label{def:ClassicalSetup}
-  \lean{ClassicalSetup}
-  \uses{def:SeriesIndex}
-  A \emph{classical setup} for series $j$ bundles together the base field, vector space,
-  bilinear/sesquilinear form, and the associated Lie algebra and group.
-\end{definition}
+% \begin{definition}[Classical setup]
+%   \label{def:ClassicalSetup}
+%   \lean{ClassicalSetup}
+%   \uses{def:SeriesIndex}
+%   A \emph{classical setup} for series $j$ bundles together the base field, vector space,
+%   bilinear/sesquilinear form, and the associated Lie algebra and group.
+% \end{definition}
 
-\begin{theorem}[Orbit closure iff dominance]
-  \label{thm:orbit_closure_iff_dominance}
-  \lean{orbit_closure_iff_dominance}
-  \uses{def:ClassicalSetup, def:NilpotentType.toChromosome, def:Chromosome.Dominates, thm:exists_mutation_le}
-  The closure of a nilpotent orbit contains another orbit if and only if the
-  corresponding chromosomes satisfy the dominance relation.
-\end{theorem}
+% \begin{theorem}[Orbit closure iff dominance]
+%   \label{thm:orbit_closure_iff_dominance}
+%   \lean{orbit_closure_iff_dominance}
+%   \uses{def:ClassicalSetup, def:NilpotentType.toChromosome, def:Chromosome.Dominates, thm:exists_mutation_le}
+%   The closure of a nilpotent orbit contains another orbit if and only if the
+%   corresponding chromosomes satisfy the dominance relation.
+% \end{theorem}
