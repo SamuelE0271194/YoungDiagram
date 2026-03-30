@@ -221,10 +221,9 @@ lemma pi_chromosome_antisymm
     (hAB : A ≤ B) (hBA : B ≤ A) : A = B :=
   eq_of_sigma_eq hA hB fun k ↦ le_antisymm (hAB k) (hBA k)
 
-instance : PartialOrder Variety.Pi :=
-  { inferInstanceAs (Preorder Variety.Pi) with
-    le_antisymm := fun A B hAB hBA ↦
-      Subtype.val_injective (pi_chromosome_antisymm A.2 B.2 hAB hBA) }
+instance : PartialOrder Variety.Pi where
+  le_antisymm A B hAB hBA := Subtype.val_injective
+    (pi_chromosome_antisymm A.2 B.2 hAB hBA)
 
 end order
 

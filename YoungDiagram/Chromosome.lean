@@ -225,7 +225,8 @@ lemma prime_ofRank {n : ℕ} {ε : GeneType} :
   by_cases hn : n = 0
   · simp only [hn, Gene.ofRank_zero, map_zero, zero_le, Nat.sub_eq_zero_of_le]
   rw [prime, Gene.ofRank_def]
-  simp [hn, one_nsmul]
+  simp only [hn, ↓reduceDIte, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+    zero_nsmul, sum_single_index, one_smul]
   rfl
 
 lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
@@ -448,7 +449,8 @@ noncomputable def lift : Chromosome →+ Chromosome where
 lemma lift_ofRank {n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     (Gene.ofRank n ε).lift = Gene.ofRank (n + 1) ε := by
   rw [lift, Gene.ofRank_def]
-  simp [hn, one_nsmul]; rfl
+  simp only [hn, ↓reduceDIte, AddMonoidHom.coe_mk, ZeroHom.coe_mk, zero_nsmul,
+    sum_single_index, one_smul]; rfl
 
 lemma lift_iterate_ofRank {k n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     lift^[k] (Gene.ofRank n ε) = Gene.ofRank (n + k) ε := by

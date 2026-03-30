@@ -55,7 +55,7 @@ lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
   · have le1 : 1 ≤ m - k := by omega
     have le2 : 1 ≤ n + 1 - k := by omega
     rw [signature_ofRank_eq le1 hε, signature_ofRank_eq le2 hε,
-      Nat.succ_sub_sub_succ, Nat.sub_zero, Nat.sub_right_comm, Nat.sub_zero (n - k)]
+      Nat.succ_sub_sub_succ, Nat.sub_zero, Nat.sub_right_comm]
     exact le_of_eq <| by ac_rfl
 
 end type1_isMutation
@@ -134,7 +134,7 @@ lemma mutation_type3_ne {ε : GeneType}
     simp [Finsupp.single_apply, Nat.le_antisymm (Nat.le_of_sub_eq_zero h_2) hm, h_1] at this
   · intro h
     have := congr_arg Finsupp.toMultiset h
-    simp [Multiset.cons_eq_cons, one_nsmul] at this
+    simp [Multiset.cons_eq_cons] at this
     omega
 
 lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
