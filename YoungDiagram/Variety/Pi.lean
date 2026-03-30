@@ -227,3 +227,28 @@ instance : PartialOrder Variety.Pi :=
       Subtype.val_injective (pi_chromosome_antisymm A.2 B.2 hAB hBA) }
 
 end order
+
+section rank_one
+
+lemma rank_eq_one_pi_single {X : Chromosome} (hX : X ∈ Variety.Pi) (hr : X.rank = 1) :
+    ∃ ε : GeneType, ε ≠ .NonPolarized ∧ X = Gene.ofRank 1 ε := by
+  obtain ⟨ε, hε⟩ := rank_one hr
+  exact ⟨ε, (IsPolarized_ofRank le_rfl).1 (hε ▸ Variety.mem_Pi_iff.1 hX), hε⟩
+
+lemma rank_one_pi_sig {X : Chromosome} (hX : X ∈ Variety.Pi) (hr : X.rank = 1) :
+    X.signature = (1, 0) ∨ X.signature = (0, 1) := by
+  obtain ⟨ε, ⟨h1, h2⟩⟩ := rank_eq_one_pi_single hX hr
+  match ε, h1 with
+  | .Positive, _ => exact h2 ▸ Or.inl signature_ofRank_one_positive
+  | .Negative, _ => exact h2 ▸ Or.inr signature_ofRank_one_negative
+
+lemma Pi_rank_one_eq_of_sig_eq {X Y : Chromosome}
+    (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi)
+    (hrX : X.rank = 1) (hrY : Y.rank = 1)
+    (hsig : X.signature = Y.signature) : X = Y := by
+  obtain ⟨εX, hεX, hXε⟩ := rank_eq_one_pi_single hX hrX
+  obtain ⟨εY, hεY, hYε⟩ := rank_eq_one_pi_single hY hrY
+  refine eq_of_prime_eq_sig_eq hX hY ?_ hsig
+  simp only [hXε, hYε, prime_ofRank, tsub_self, Gene.ofRank_zero]
+
+end rank_one

@@ -9,59 +9,6 @@ This corresponds to `Π(n)` in the paper.
 -/
 def Pi_n (n : ℕ) : Set Variety.Pi := { X | X.val.rank = n }
 
-/-- A rank-1 polarized chromosome is `Gene.ofRank 1 ε` for some polarized type ε. -/
-lemma rank_eq_one_pi_single (C : Chromosome) (hC : C ∈ Variety.Pi) (hr : C.rank = 1) :
-    ∃ ε : GeneType, ε ≠ .NonPolarized ∧ C = Gene.ofRank 1 ε := by
-  induction C using Finsupp.induction with
-  | zero => simp [Chromosome.rank] at hr
-  | single_add g n f hg hn ih =>
-    -- C = single g n + f; rank C = n * g.rank + rank f
-    have hr' : rank f + n * g.rank = 1 := by
-      have h2 : rank (Finsupp.single g n) = n * g.rank := by
-        have eq1 : rank (Finsupp.single g n) =
-            (Finsupp.single g n).sum (fun g' count => count • g'.rank) := rfl
-        rw [eq1, Finsupp.sum_single_index (show (0 : ℕ) • g.rank = 0 from by simp),
-            nsmul_eq_mul]
-        norm_cast
-      linarith [map_add Chromosome.rank (Finsupp.single g n) f]
-    have hng : 1 ≤ n * g.rank :=
-      Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero hn (Nat.one_le_iff_ne_zero.mp g.rank_pos))
-    have hf0 : rank f = 0 := by omega
-    have hmul : n * g.rank = 1 := by omega
-    have hn1 : n = 1 := Nat.dvd_one.mp ⟨g.rank, hmul.symm⟩
-    have hgr1 : g.rank = 1 := by rw [hn1, one_mul] at hmul; exact hmul
-    have hfeq : f = 0 := rank_zero hf0
-    have hmem : g ∈ (Finsupp.single g n + f).support := by
-      apply Finsupp.mem_support_iff.mpr
-      simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_eq_same]
-      have hfg : f g = 0 := by
-        by_contra h; exact hg (Finsupp.mem_support_iff.mpr h)
-      omega
-    have hgtype : g.type ≠ .NonPolarized :=
-      IsPolarized_def'.mp (mem_Pi_iff.mp hC) g hmem
-    exact ⟨g.type, hgtype, by rw [hfeq, add_zero, hn1, ← Gene.ofRank_eq_gene, hgr1]⟩
-
-/-- A rank-1 polarized chromosome has signature (1, 0) or (0, 1). -/
-lemma rank_one_pi_sig (C : Chromosome) (hC : C ∈ Variety.Pi) (hr : C.rank = 1) :
-    C.signature = (1, 0) ∨ C.signature = (0, 1) := by
-  obtain ⟨ε, hε, hCε⟩ := rank_eq_one_pi_single C hC hr
-  rw [hCε]
-  rcases ε with _ | _ | _
-  · exact absurd rfl hε
-  · left; exact signature_ofRank_one_positive
-  · right; exact signature_ofRank_one_negative
-
-/-- Two rank-1 polarized chromosomes with equal signatures are equal. -/
-lemma Pi_rank_one_eq_of_sig_eq (C D : Chromosome)
-    (hC : C ∈ Variety.Pi) (hD : D ∈ Variety.Pi)
-    (hrC : C.rank = 1) (hrD : D.rank = 1)
-    (hsig : C.signature = D.signature) : C = D := by
-  obtain ⟨εC, hεC, hCε⟩ := rank_eq_one_pi_single C hC hrC
-  obtain ⟨εD, hεD, hDε⟩ := rank_eq_one_pi_single D hD hrD
-  rw [hCε, hDε] at hsig ⊢
-  rcases εC <;> rcases εD <;>
-    simp_all [signature_ofRank_one_positive, signature_ofRank_one_negative]
-
 /-- `Pi.Step` is compatible with adding a Pi element on the right. -/
 private lemma Pi.Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
     (h : Pi.Step A B) : Pi.Step (A + W) (B + W) := by
@@ -103,14 +50,14 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
       have hsig_le : signature X.val ≤ signature Y.val :=
         (le_iff_dominates.mp hXY.le) 0
       have hXsum : (signature X.val).1 + (signature X.val).2 = 1 := by
-        rcases rank_one_pi_sig X.val X.2 hX with h | h <;> simp [h]
+        rcases rank_one_pi_sig X.2 hX with h | h <;> simp [h]
       have hYsum : (signature Y.val).1 + (signature Y.val).2 = 1 := by
-        rcases rank_one_pi_sig Y.val Y.2 hY with h | h <;> simp [h]
+        rcases rank_one_pi_sig Y.2 hY with h | h <;> simp [h]
       have hsig_eq : signature X.val = signature Y.val := by
         obtain ⟨h1_le, h2_le⟩ := Prod.le_def.mp hsig_le
         exact Prod.ext (le_antisymm h1_le (by linarith [h2_le]))
                        (le_antisymm h2_le (by linarith [h1_le]))
-      exact absurd (Subtype.ext (Pi_rank_one_eq_of_sig_eq X.val Y.val X.2 Y.2 hX hY hsig_eq))
+      exact absurd (Subtype.ext (Pi_rank_one_eq_of_sig_eq X.2 Y.2 hX hY hsig_eq))
                    (ne_of_lt hXY)
     | succ m =>
       -- X, Y ∈ Π(m+2). Decide whether X and Y share a gene.
@@ -157,7 +104,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           simp only [Y'v, Finsupp.tsub_apply, Finsupp.single_apply, hYh]; omega
         -- rank (single g 1) = g.rank
         have hrank_g : Chromosome.rank (Finsupp.single g 1) = g.rank := by
-          simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+          simp only [Chromosome.rank_def]
           rw [Finsupp.sum_single_index (by simp : (0 : ℕ) • g.rank = 0)]
           simp
         -- X'v.rank = m + 2 − g.rank
@@ -313,7 +260,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               simp only [Gene.ofRank_def]
               split_ifs with h
               · simp [h]
-              · simp [Chromosome.rank, Finsupp.sum_single_index]
+              · simp [Chromosome.rank_def, Finsupp.sum_single_index]
             have hrank_prime :
                 (Chromosome.prime C).rank = C.sum (fun g m => m * (g.rank - 1)) := by
               simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
@@ -321,7 +268,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                          Chromosome.primeGene, rank_ofRank]
             -- rank C = C.sum (fun g m => m * g.rank)  [unfolding the AddMonoidHom].
             have hrank_C : C.rank = C.sum (fun g m => m * g.rank) := by
-              simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, smul_eq_mul]
+              simp only [Chromosome.rank_def, AddMonoidHom.coe_mk, ZeroHom.coe_mk, smul_eq_mul]
             -- Therefore rank C = rank(prime C) + C.sum (fun _ m => m):
             -- each gene g contributes m*g.rank on the left and m*(g.rank-1)+m on the right,
             -- which are equal since g.rank - 1 + 1 = g.rank (g.rank ≥ 1).

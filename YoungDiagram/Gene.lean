@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Ring.NegOnePow
 import Mathlib.Analysis.Normed.Field.Lemmas
+import Mathlib.Data.Finsupp.Weight
 
 inductive GeneType
   | NonPolarized
@@ -92,6 +93,9 @@ structure Gene where
   /-- The rank of a gene is strictly positive. -/
   rank_pos : 1 ≤ rank := by decide
 deriving DecidableEq, Repr
+
+instance : Finsupp.NonTorsionWeight ℕ Gene.rank :=
+  Finsupp.nonTorsionWeight_of ℕ Gene.rank fun i ↦ Nat.ne_zero_of_lt i.rank_pos
 
 def Gene.signature (g : Gene) : ℚ × ℚ :=
   match g.type with

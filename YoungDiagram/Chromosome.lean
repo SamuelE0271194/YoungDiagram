@@ -1,5 +1,4 @@
 import Mathlib.Algebra.Order.Monoid.Prod
-import Mathlib.Data.Finsupp.Order
 import YoungDiagram.Gene
 
 open Finsupp
@@ -356,22 +355,12 @@ lemma maxRank_prime_lt {X : Chromosome} (hX : X ≠ 0) :
       · rw [add_maxRank]
         specialize h hzero; omega
 
-def rank : Chromosome →+ ℕ where
-  toFun c := c.sum (fun g count ↦ count • g.rank)
-  map_zero' := sum_zero_index
-  map_add' _ _ := sum_add_index' (fun _ ↦ zero_smul ..) (fun _ _ _ ↦ add_smul ..)
+noncomputable def rank : Chromosome →+ ℕ := weight Gene.rank
 
 lemma rank_def {X : Chromosome} : X.rank = X.sum (fun g count ↦ count • g.rank) := rfl
 
-lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 := by
-  simp only [rank_def, sum, smul_eq_mul, Finset.sum_eq_zero_iff,
-    mem_support_iff, ne_eq, mul_eq_zero] at h
-  rw [← Finsupp.support_eq_empty]
-  by_contra!
-  obtain ⟨a, ha⟩ := this
-  absurd ((h a (mem_support_iff.1 ha)).resolve_left
-    (mem_support_iff.1 ha)) ▸ a.rank_pos
-  omega
+lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 :=
+  (weight_eq_zero_iff_eq_zero _).1 h
 
 lemma rank_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).rank = n := by
@@ -379,6 +368,19 @@ lemma rank_ofRank {n : ℕ} {ε : GeneType} :
   split_ifs with hn
   · rw [hn, sum_zero_index]
   · rw [sum_single_index (by exact Nat.zero_mul _), one_mul]
+
+lemma rank_one {X : Chromosome} (hrank : X.rank = 1) :
+    ∃ ε : GeneType, X = Gene.ofRank 1 ε := by
+  have hzero : X ≠ 0 := fun h ↦ by simp [h] at hrank
+  obtain ⟨a, (ha : X a ≠ 0)⟩ := ne_iff.1 hzero
+  refine ⟨a.type, ?_⟩
+  rw [rank, ← weight_sub_single_add ha, Nat.add_eq_one_iff,
+    weight_eq_zero_iff_eq_zero] at hrank
+  simp only [Nat.ne_zero_of_lt a.rank_pos, and_false, or_false] at hrank
+  rw [← hrank.2, Gene.ofRank_eq_gene]
+  apply le_antisymm
+  · exact fun g ↦ Nat.le_of_sub_eq_zero <| Finsupp.ext_iff.1 hrank.1 g
+  · rw [Finsupp.single_le_iff]; omega
 
 lemma rank_of_prime {X : Chromosome} :
     X.prime.rank = X.sum (fun g m ↦ m * (g.rank - 1)) := by
@@ -389,8 +391,7 @@ lemma signature_sum_eq_rank {X : Chromosome} :
     X.signature.1 + X.signature.2 = X.rank := by
   simp_rw [signature_fst, signature_snd, Finsupp.sum,
     ← Finset.sum_add_distrib, ← smul_add, Gene.signature_sum_eq_rank]
-  simp only [Chromosome.rank, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Finsupp.sum,
-    Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
+  simp only [rank_def, sum, Nat.cast_sum, Nat.cast_mul, smul_eq_mul]
 
 lemma signature_eq_zero {X : Chromosome}
     (h : X.signature = 0) : X = 0 := by
