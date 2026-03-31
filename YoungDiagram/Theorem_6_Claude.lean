@@ -798,7 +798,32 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                 (Sigma.sigma X k).1 < (Sigma.sigma Y k).1
             · -- a_k < c_k for some k ≥ 1 with Y^(k) ≠ 0 (paper: "assume a₁ < c₁", Cases 1–4).
               obtain ⟨k, hkpos, hYkne, hak⟩ := ha
-              sorry
+              -- Cases 1–4: split on what gene pair X contains (Djoković §15).
+              by_cases hcase1 : ∃ gpos gneg : Gene, gpos.type = .Positive ∧
+                  gneg.type = .Negative ∧ gpos.rank < gneg.rank ∧ gpos.rank ≤ k ∧
+                  0 < X.val gpos ∧ 0 < X.val gneg
+              · -- Case 1: X has g⁺(r) with r ≤ k and g⁻(s) with r < s.
+                --   Type 1 mutation (ε = .Positive): g⁺(r) + g⁻(s) → g⁻(r−1) + g⁺(s+1).
+                obtain ⟨gpos, gneg, hgpos, hgneg, hrlt, hrlek, hXgpos, hXgneg⟩ := hcase1
+                sorry
+              · by_cases hcase2 : ∃ gneg gpos : Gene, gneg.type = .Negative ∧
+                    gpos.type = .Positive ∧ gneg.rank < gpos.rank ∧ gneg.rank ≤ k ∧
+                    0 < X.val gneg ∧ 0 < X.val gpos
+                · -- Case 2: X has g⁻(r) with r ≤ k and g⁺(s) with r < s.
+                  --   Type 1 mutation (ε = .Negative): g⁻(r) + g⁺(s) → g⁺(r−1) + g⁻(s+1).
+                  obtain ⟨gneg, gpos, hgneg, hgpos, hrlt, hrlek, hXgneg, hXgpos⟩ := hcase2
+                  sorry
+                · by_cases hcase3 : ∃ g1 g2 : Gene, g1.type = .Positive ∧
+                      g2.type = .Positive ∧ g1.rank ≤ g2.rank ∧ 1 < g1.rank ∧
+                      0 < X.val g1 ∧ 0 < X.val g2
+                  · -- Case 3: X has two positive genes with smallest rank ≥ 2.
+                    --   Type 2 mutation (ε = .Positive): g⁺(r₁) + g⁺(r₂) → g⁺(r₁−2) + g⁺(r₂+2).
+                    obtain ⟨g1, g2, hg1pos, hg2pos, hg1le, hg1m, hXg1, hXg2⟩ := hcase3
+                    sorry
+                  · -- Case 4: X has two negative genes with smallest rank ≥ 2
+                    --   (exhaustive given Cases 1–3 fail).
+                    --   Type 2 mutation (ε = .Negative): g⁻(r₁) + g⁻(r₂) → g⁻(r₁−2) + g⁻(r₂+2).
+                    sorry
             · -- For all k ≥ 1 with Y^(k) ≠ 0: a_k = c_k, so b_k < d_k (from hsigeq).
               push Not at ha
               sorry
