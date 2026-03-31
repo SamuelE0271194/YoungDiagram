@@ -1,9 +1,9 @@
 # YoungDiagram
 
 > [!TIP]
-> Documentation: https://samuele0271194.github.io/YoungDiagram/docs/
+> Documentation: https://samuele0271194.github.io/YoungDiagram/
 
-[![Build project and documentation](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/lean_action_ci.yml)
+[![Compile blueprint](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/blueprint.yml/badge.svg)](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/blueprint.yml)
 
 This Lean 4 project aims to formalize parts of Dragomir Djokovic's paper *Closures of Conjugacy Classes in Classical Real Linear Lie Groups. II* (1982).
 
@@ -14,15 +14,8 @@ This Lean 4 project aims to formalize parts of Dragomir Djokovic's paper *Closur
 - `YoungDiagram/Gene.lean` defines genes and their signatures.
 - `YoungDiagram/Chromosome.lean` defines chromosomes, rank, signature, and the prime operation.
 - `YoungDiagram/Variety.lean` develops varieties and lift/filter constructions.
-- `YoungDiagram/Mutations*.lean` formalizes several primitive mutation patterns.
-- `YoungDiagram/Sigma*.lean` contains work toward the sigma conditions and orbit-order arguments.
-
-### Nilpotent orbit bridge (statements + sorry'd proofs)
-
-- `YoungDiagram/NilpotentOrbit.lean` defines `SeriesIndex` ($j$), `NilpotentBlock`, `NilpotentType`, and the block-to-chromosome map `toChromosome` following Table IV (§5). States Lemma 4 (chromosome bijection, §7) as `toChromosome_injective` / `toChromosome_surjective`.
-- `YoungDiagram/LieAlgebra/ClassicalSetup.lean` bundles the Lie algebra data (`ClassicalSetup`): base field $F$, vector space $V$, Lie subalgebra $L \subset \text{End}_F(V)$, and form signature $\text{sig}(f)$. Connects $j = 6, 9$ to mathlib's `skewAdjointLieSubalgebra`; $j = 4$ (hermitian) and $j = 7, 10$ (quaternionic) are deferred.
-- `YoungDiagram/LieAlgebra/JordanBlock.lean` declares `jordanPartition` and `extractNilpotentType` (§5): given a nilpotent $x \in L$, extract its combinatorial type $\Delta(x)$. Sorry'd pending mathlib Jordan normal form theory.
-- `YoungDiagram/LieAlgebra/OrbitClosure.lean` states Theorem 5 (§7): orbit closure $\leftrightarrow$ chromosome dominance (`orbit_closure_iff_dominance`). Defines the adjoint action, nilpotent orbits, and orbit closure relation.
+- `YoungDiagram/Mutations.lean` formalizes several primitive mutation patterns.
+- `YoungDiagram/Sigma.lean` contains work toward the sigma conditions.
 
 ## Building
 
