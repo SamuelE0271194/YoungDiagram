@@ -386,7 +386,7 @@
 
 \begin{definition}[Primitive mutations of type 1]
   \label{def:Pi.X1Y1}
-  \lean{Variety.Pi.X1, Variety.Pi.Y1}
+  \lean{Pi.X1, Pi.Y1}
   \leanok
   \uses{def:Variety.Pi}
   Given $\varepsilon$, $k \le m$: $X_1 = (m, \varepsilon) + (k, -\varepsilon)$ and
@@ -395,7 +395,7 @@
 
 \begin{definition}[Primitive mutations of type 2]
   \label{def:Pi.X2Y2}
-  \lean{Variety.Pi.X2, Variety.Pi.Y2}
+  \lean{Pi.X2, Pi.Y2}
   \leanok
   \uses{def:Variety.Pi}
   Given $\varepsilon$, $k \le m$: $X_2 = (m, \varepsilon) + (k, \varepsilon)$ and
@@ -404,7 +404,7 @@
 
 \begin{definition}[Primitive mutations of type 3]
   \label{def:Pi.X3Y3}
-  \lean{Variety.Pi.X3, Variety.Pi.Y3}
+  \lean{Pi.X3, Pi.Y3}
   \leanok
   \uses{def:Variety.Pi}
   Given $\varepsilon$, $k \le m$: $X_3 = (m, \varepsilon) + (k, -\varepsilon)$ and
@@ -413,7 +413,7 @@
 
 \begin{definition}[Primitive mutation relation]
   \label{def:Pi.Primitive}
-  \lean{Variety.Pi.Primitive}
+  \lean{Pi.Primitive}
   \leanok
   \uses{def:Pi.X1Y1, def:Pi.X2Y2, def:Pi.X3Y3}
   A \emph{primitive mutation} on $\mathrm{Pi}$ is one of the three types above (up to adding a common chromosome $Z$).
@@ -421,7 +421,7 @@
 
 \begin{definition}[Step relation]
   \label{def:Pi.Step}
-  \lean{Variety.Pi.Step}
+  \lean{Pi.Step}
   \leanok
   \uses{def:Pi.Primitive}
   A \emph{step} on $\mathrm{Pi}$ is a primitive mutation plus an arbitrary summand:
@@ -505,7 +505,7 @@
 
 \begin{lemma}[Mutation lifting]
   \label{lem:mutation_lifting}
-  \lean{mutation_lifting}
+  \lean{Pi.mutation_lifting}
   \uses{def:IsMutation, def:Variety.Label, def:Chromosome.lift}
   Given a mutation $(X, Y)$ in variety $V_i$ with $X' = Y'$,
   there exists $Z \in V_{\pi(i)}$ such that $(Z, Y)$ is a mutation in $V_{\pi(i)}$
