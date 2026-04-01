@@ -73,5 +73,4 @@ noncomputable def Label.of_mem_prime_iterate {i : Fin 5} {k : ℕ} {X : Chromoso
 lemma Label.prime_iterate_zero {k : ℕ} : Label.prime^[k] 0 = 0 :=
   Function.iterate_fixed rfl k
 
-
 end Variety

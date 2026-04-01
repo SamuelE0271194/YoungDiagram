@@ -1,4 +1,4 @@
-import YoungDiagram.Mutations
+import YoungDiagram.Mutations.Pi
 
 open Chromosome Finsupp
 

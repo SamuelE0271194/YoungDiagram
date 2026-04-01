@@ -108,10 +108,10 @@ lemma parityDecomp_mem_Pi {X : Chromosome} (h : X ∈ Pi) :
 lemma prime_mem_Pi {X : Chromosome} (hX : X ∈ Pi) : X.prime ∈ Pi :=
   prime_mem_varietyOfFilter (fun _ ↦ .rfl) hX
 
-noncomputable def prime_on_Pi (X : Pi) : Pi := ⟨X.1.prime, prime_mem_Pi X.2⟩
+noncomputable def primePi (X : Pi) : Pi := ⟨X.1.prime, prime_mem_Pi X.2⟩
 
-lemma prime_on_Pi_iterate (X : Pi) (k : ℕ) :
-    (prime_on_Pi^[k] X).1 = Chromosome.prime^[k] X :=
+lemma primePi_iterate (X : Pi) (k : ℕ) :
+    (primePi^[k] X).1 = Chromosome.prime^[k] X :=
   prime_on_varietyOfFilter_iterate (fun _ ↦ .rfl) X k
 
 lemma prime_mem_Pi_iterate {X : Chromosome} (hX : X ∈ Pi) {k : ℕ} :

@@ -1,5 +1,5 @@
 import YoungDiagram.Sigma
-import YoungDiagram.Lifting
+import YoungDiagram.Lifting.Pi
 
 open Chromosome Variety
 
@@ -8,14 +8,6 @@ open Chromosome Variety
 This corresponds to `Π(n)` in the paper.
 -/
 def Pi_n (n : ℕ) : Set Variety.Pi := { X | X.val.rank = n }
-
-/-- `Pi.Step` is compatible with adding a Pi element on the right. -/
-private lemma Pi.Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
-    (h : Pi.Step A B) : Pi.Step (A + W) (B + W) := by
-  cases h with
-  | mk X Y Z hPrim =>
-    rw [add_assoc, add_assoc]
-    exact Pi.Step.mk X Y (Z + W) hPrim
 
 /--
 Proposition after (15.7) [Djoković 1982, p. 29]:
@@ -338,16 +330,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           -- The Step coercion: bridging Pi.Step Xk U to
           -- Mutation.Step (Label.prime^[k] 0) ... requires mutation_lifting_Pi to be public.
           obtain ⟨Z, hZ, hZ_step, hZ_prime, hZ_sig⟩ :=
-            mutation_lifting (0 : Fin 5) k X.2
-              ((congrArg (U.val ∈ ·) (congrArg Label (@Label.prime_iterate_zero k))).mpr U.2)
-              (by
-                have hU_step' : Mutation.Step (0 : Fin 5) Xk U := hU_step
-                have h0 : Label (Label.prime^[k] (0 : Fin 5)) = Label 0 :=
-                  congrArg Label Label.prime_iterate_zero
-                convert hU_step'
-                · exact Label.prime_iterate_zero
-                · exact (Subtype.heq_iff_coe_eq (fun x => Iff.of_eq (congrArg (x ∈ ·) h0))).mpr rfl
-                · exact (Subtype.heq_iff_coe_eq (fun x => Iff.of_eq (congrArg (x ∈ ·) h0))).mpr rfl)
+            Pi.mutation_lifting X.2 U.2 hU_step
           -- Step 6: Construct the witness ⟨Z, hZ⟩ and prove it ≤ Y.
           have hZ_pi : Pi.Step X ⟨Z, hZ⟩ := hZ_step
           refine ⟨⟨Z, hZ⟩, hZ_pi, ?_⟩
