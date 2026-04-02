@@ -170,23 +170,6 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
             -- using Finsupp.sum_eq_single to isolate the unique gene that contributes.
             -- Key formula: (prime^[k'] D) h = D ⟨h.rank + k', h.type, _⟩
             -- Universally quantified over h so the induction step can shift the gene.
-            have prime_iterate_coeff : ∀ (k' : ℕ) (D : Chromosome) (h : Gene),
-                (Chromosome.prime^[k'] D) h =
-                  D ⟨h.rank + k', h.type, by linarith [h.rank_pos]⟩ := by
-              intro k'
-              induction k' with
-              | zero =>
-                intro D h
-                simp only [Function.iterate_zero, id, Nat.add_zero]
-              | succ k' ih =>
-                intro D h
-                rw [Function.iterate_succ_apply']
-                -- Apply IH at shifted gene ⟨h.rank + 1, ...⟩
-                have ih_shifted := ih D ⟨h.rank + 1, h.type, by linarith [h.rank_pos]⟩
-                rw [prime_coeff, ih_shifted]
-                congr 1
-                simp only [Gene.mk.injEq]
-                exact ⟨by omega, trivial⟩
             -- Use the formula: (prime^[k] X) g' > 0 means X at ⟨g'.rank+k, ...⟩ > 0,
             -- and hcommon gives Y at that same gene ≤ 0, so (prime^[k] Y) g' = 0.
             rw [prime_iterate_coeff k X.val g'] at hg'
@@ -207,47 +190,6 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           -- Proof sketch: rank(prime C) = C.sum (fun g m => m*(g.rank-1)) and
           -- rank C = C.sum (fun g m => m*g.rank), so their difference is
           -- C.sum (fun _ m => m) ≥ 1 when C ≠ 0.
-          have prime_rank_lt : ∀ (C : Chromosome), C ≠ 0 →
-              (Chromosome.prime C).rank < C.rank := by
-            intro C hCne
-            -- (prime C).rank = C.sum (fun g m => m * (g.rank - 1)):
-            -- rank is an AddMonoidHom, prime C = C.sum (fun g m => m • primeGene g),
-            -- so rank(prime C) = C.sum (fun g m => m * rank(primeGene g))
-            --                  = C.sum (fun g m => m * (g.rank - 1))  [by rank_of_geneOfRank].
-            -- Local helper: rank of a single-gene chromosome Gene.ofRank n ε equals n.
-            have rank_ofRank : ∀ (n : ℕ) (typ : GeneType),
-                Chromosome.rank (Gene.ofRank n typ) = n := by
-              intro n typ
-              simp only [Gene.ofRank_def]
-              split_ifs with h
-              · simp [h]
-              · simp [Chromosome.rank_def, Finsupp.sum_single_index]
-            have hrank_prime :
-                (Chromosome.prime C).rank = C.sum (fun g m => m * (g.rank - 1)) := by
-              simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-                         Finsupp.sum, map_sum Chromosome.rank, map_nsmul, smul_eq_mul,
-                         Chromosome.primeGene, rank_ofRank]
-            -- rank C = C.sum (fun g m => m * g.rank)  [unfolding the AddMonoidHom].
-            have hrank_C : C.rank = C.sum (fun g m => m * g.rank) := by
-              simp only [Chromosome.rank_def, smul_eq_mul]
-            -- Therefore rank C = rank(prime C) + C.sum (fun _ m => m):
-            -- each gene g contributes m*g.rank on the left and m*(g.rank-1)+m on the right,
-            -- which are equal since g.rank - 1 + 1 = g.rank (g.rank ≥ 1).
-            have hdecomp : C.rank = (Chromosome.prime C).rank + C.sum (fun _ m => m) := by
-              rw [hrank_C, hrank_prime]
-              simp only [Finsupp.sum, ← Finset.sum_add_distrib]
-              apply Finset.sum_congr rfl
-              intro g _
-              have hg : g.rank - 1 + 1 = g.rank := Nat.succ_pred_eq_of_pos g.rank_pos
-              calc C g * g.rank
-                  = C g * (g.rank - 1 + 1) := by rw [hg]
-                _ = C g * (g.rank - 1) + C g := by ring
-            -- C.sum (fun _ m => m) ≥ 1 since C has a nonempty support.
-            have htotal : 1 ≤ C.sum (fun _ m => m) := by
-              obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.mpr hCne
-              exact le_trans (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg))
-                (Finset.single_le_sum (fun _ _ => Nat.zero_le _) hg)
-            omega
           have hXk_rank_lt : Xk.val.rank < m + 2 := by
             rw [hXk_Yk_rank, show m + 2 = Y.val.rank from hY.symm]
             -- All prime^[j] Y.val for j ≤ k are nonzero:
@@ -267,7 +209,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               | zero => simp
               | succ j' ih =>
                 rw [Function.iterate_succ_apply']
-                have hlt := prime_rank_lt _ (hiter_ne j' (Nat.le_of_succ_le hj))
+                have hlt := prime_rank_lt (hiter_ne j' (Nat.le_of_succ_le hj))
                 linarith [ih (Nat.le_of_succ_le hj)]
             linarith [rank_iterate_le k le_rfl]
           -- Step 3: Xk < Yk.

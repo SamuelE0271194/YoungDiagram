@@ -419,6 +419,16 @@ lemma rank_of_prime {X : Chromosome} :
   simp_rw [prime_def, map_finsuppSum, map_nsmul, nsmul_eq_mul, primeGene, rank_ofRank]
   rfl
 
+lemma prime_rank_lt {X : Chromosome} (hX : X ≠ 0) :
+    X.prime.rank < X.rank := by
+  rw [rank_of_prime, rank_def, Finsupp.sum, Finsupp.sum]
+  refine Finset.sum_lt_sum_of_nonempty ?_ ?_
+  · exact support_nonempty_iff.mpr hX
+  · intro i hi
+    rw [smul_eq_mul, Nat.mul_lt_mul_left]
+    · grind only [i.rank_pos]
+    · exact Nat.pos_of_ne_zero <| mem_support_iff.1 hi
+
 lemma signature_sum_eq_rank {X : Chromosome} :
     X.signature.1 + X.signature.2 = X.rank := by
   simp_rw [signature_fst, signature_snd, Finsupp.sum,
