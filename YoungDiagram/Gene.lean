@@ -85,7 +85,7 @@ lemma Nat.even_sub_one {n : ℕ} (hn : 1 ≤ n) :
 /--
 A gene is an isomorphism class of strings, defined by its rank (size) and type.
 -/
-structure Gene where
+@[ext] structure Gene where
   /-- The number of vertices in the string representation of the gene. -/
   rank : ℕ
   /-- The polarity of the gene. -/
@@ -173,3 +173,7 @@ lemma Gene.signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
     · rfl
     · rw [← add_div, ← add_div, add_add_sub_cancel, sub_add_add_cancel,
         add_self_div_two]; rfl
+
+lemma Gene.neq_iff {g₁ g₂ : Gene} :
+    g₁ ≠ g₂ ↔ g₁.rank ≠ g₂.rank ∨ g₁.type ≠ g₂.type := by
+  grind only [@Gene.ext_iff g₁ g₂]

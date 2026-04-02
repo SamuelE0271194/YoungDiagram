@@ -181,40 +181,9 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               | succ k' ih =>
                 intro D h
                 rw [Function.iterate_succ_apply']
-                -- One application of prime: prime D' h = D' ⟨h.rank + 1, h.type, _⟩
-                have hstep : Chromosome.prime (Chromosome.prime^[k'] D) h =
-                    (Chromosome.prime^[k'] D)
-                      ⟨h.rank + 1, h.type, by linarith [h.rank_pos]⟩ := by
-                  simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-                             Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul,
-                             Chromosome.primeGene]
-                  rw [Finsupp.sum_eq_single (⟨h.rank + 1, h.type,
-                        by linarith [h.rank_pos]⟩ : Gene)]
-                  · -- The unique contributing gene is ⟨h.rank + 1, ...⟩
-                    have hrank_sub : (⟨h.rank + 1, h.type,
-                          by linarith [h.rank_pos]⟩ : Gene).rank - 1 = h.rank := by
-                      simp only;
-                      omega
-                    simp [hrank_sub, Gene.ofRank_eq_gene, Finsupp.single_eq_same]
-                  · -- All other genes contribute 0
-                    intro g _ hne
-                    simp only [Gene.ofRank_def]
-                    split_ifs with hZ
-                    · simp [Finsupp.zero_apply]
-                    · rw [Finsupp.single_apply]
-                      split_ifs with heq
-                      · exfalso; apply hne
-                        have hr := congr_arg Gene.rank heq
-                        have ht := congr_arg Gene.type heq
-                        obtain ⟨rg, tg, hrg⟩ := g
-                        simp only at *
-                        simp only [Gene.mk.injEq]
-                        exact ⟨by omega, ht⟩
-                      · simp
-                  · intro _; simp
                 -- Apply IH at shifted gene ⟨h.rank + 1, ...⟩
                 have ih_shifted := ih D ⟨h.rank + 1, h.type, by linarith [h.rank_pos]⟩
-                rw [hstep, ih_shifted]
+                rw [prime_coeff, ih_shifted]
                 congr 1
                 simp only [Gene.mk.injEq]
                 exact ⟨by omega, trivial⟩

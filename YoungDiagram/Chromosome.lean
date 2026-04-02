@@ -208,6 +208,9 @@ The "prime" operation on a single gene $g$, denoted $g'$ in [Djoković 1980, (8.
 noncomputable def primeGene (g : Gene) : Chromosome :=
   Gene.ofRank (g.rank - 1) g.type
 
+lemma primeGene_def {g : Gene} :
+  primeGene g = Gene.ofRank (g.rank - 1) g.type := rfl
+
 /--
 The "prime" operation extended linearly to all chromosomes: $X' = \sum m_i g_i'$.
 This operation corresponds to taking the derivative of the chromosome.
@@ -228,6 +231,10 @@ lemma prime_ofRank {n : ℕ} {ε : GeneType} :
   simp only [hn, ↓reduceDIte, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
     zero_nsmul, sum_single_index, one_smul]
   rfl
+
+lemma prime_single {n : ℕ} {g : Gene} :
+    prime (single g n) = n • Gene.ofRank (g.rank - 1) g.type := by
+  rw [← Gene.ofRank_eq_gene_smul, map_nsmul, prime_ofRank]
 
 lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
     prime^[k] (Gene.ofRank n ε) = Gene.ofRank (n - k) ε := by
@@ -309,6 +316,30 @@ lemma signature_prime_le (X : Chromosome) :
       refine add_le_add (nsmul_le_nsmul ?_ ?_ .refl) (hle.trans inf_le_right)
       · exact (signature_ofRank_prime_le a).trans inf_le_right
       · exact (Prod.mk_le_swap.2 (signature_nonneg _))
+
+lemma prime_coeff {X : Chromosome} {g : Gene} :
+    X.prime g = X ⟨g.rank + 1, g.type, Nat.le_add_right_of_le g.rank_pos⟩ := by
+  induction X using Finsupp.induction with
+  | zero => rw [map_zero, zero_apply, zero_apply]
+  | single_add b n X hb hn hX =>
+    simp only [map_add, prime_single, smul_dite, nsmul_zero, smul_single,
+      smul_eq_mul, mul_one, coe_add, Pi.add_apply, single_apply, ← hX,
+      Nat.add_right_cancel_iff]
+    split_ifs with h1 h2 h3
+    · rw [congrArg Gene.rank h2, Nat.add_sub_cancel] at h1
+      grind only [g.rank_pos]
+    · rfl
+    · rw [single_apply, if_pos]
+      ext <;> grind only
+    · rw [single_apply_eq_zero]
+      intro h; grind only [Gene.neq_iff.1 h3]
+
+lemma prime_iterate_coeff (k : ℕ) (X : Chromosome) (g : Gene) :
+  (prime^[k] X) g = X ⟨g.rank + k, g.type,
+    Nat.le_add_right_of_le g.rank_pos⟩ := by
+  induction k generalizing X with
+  | zero => rfl
+  | succ n hn => rw [Function.iterate_succ_apply, hn X.prime, prime_coeff]; rfl
 
 end prime
 
