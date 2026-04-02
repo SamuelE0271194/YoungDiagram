@@ -94,22 +94,17 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
           rw [Finsupp.mem_support_iff] at hh ⊢
           intro hYh; apply hh
           simp only [Y'v, Finsupp.tsub_apply, Finsupp.single_apply, hYh]; omega
-        -- rank (single g 1) = g.rank
-        have hrank_g : Chromosome.rank (Finsupp.single g 1) = g.rank := by
-          simp only [Chromosome.rank_def]
-          rw [Finsupp.sum_single_index (by simp : (0 : ℕ) • g.rank = 0)]
-          simp
         -- X'v.rank = m + 2 − g.rank
         have hX'rank : X'v.rank = m + 2 - g.rank := by
           have h1 : X'v.rank + g.rank = m + 2 := by
             have heq := congr_arg Chromosome.rank hX_eq
-            rw [map_add, hrank_g] at heq
+            rw [map_add, rank_single, one_nsmul] at heq
             linarith [show X.val.rank = m + 2 from hX]
           omega
         have hY'rank : Y'v.rank = m + 2 - g.rank := by
           have h1 : Y'v.rank + g.rank = m + 2 := by
             have heq := congr_arg Chromosome.rank hY_eq
-            rw [map_add, hrank_g] at heq
+            rw [map_add, rank_single, one_nsmul] at heq
             linarith [show Y.val.rank = m + 2 from hY]
           omega
         -- ⟨X'v, _⟩ < ⟨Y'v, _⟩ in Variety.Pi (cancel single g 1 from X < Y)

@@ -394,12 +394,15 @@ lemma rank_def {X : Chromosome} : X.rank = X.sum (fun g count ↦ count • g.ra
 lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 :=
   (weight_eq_zero_iff_eq_zero _).1 h
 
+lemma rank_single {n : ℕ} {g : Gene} :
+  rank (single g n) = n • g.rank := weight_single ..
+
 lemma rank_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).rank = n := by
-  simp only [Gene.ofRank_def, rank_def, smul_eq_mul]
+  rw [Gene.ofRank_def]
   split_ifs with hn
-  · rw [hn, sum_zero_index]
-  · rw [sum_single_index (by exact Nat.zero_mul _), one_mul]
+  · rw [hn, map_zero]
+  · rw [rank_single, one_smul]
 
 lemma rank_one {X : Chromosome} (hrank : X.rank = 1) :
     ∃ ε : GeneType, X = Gene.ofRank 1 ε := by
