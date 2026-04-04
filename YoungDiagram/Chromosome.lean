@@ -341,6 +341,21 @@ lemma prime_iterate_coeff (k : ℕ) (X : Chromosome) (g : Gene) :
   | zero => rfl
   | succ n hn => rw [Function.iterate_succ_apply, hn X.prime, prime_coeff]; rfl
 
+lemma rank_one_of_prime_eq_zero {X : Chromosome} (hprime : X.prime = 0) :
+    ∀ g ∈ X.support, g.rank = 1 := by
+  by_contra!
+  rcases this with ⟨g, ⟨h1, h2⟩⟩
+  have hpos : 1 ≤ g.rank - 1 := by grind only [g.rank_pos]
+  refine (Finsupp.mem_support_iff.1 h1) ?_
+  convert (hprime ▸ @prime_coeff X ⟨g.rank - 1, g.type, hpos⟩).symm
+  simp only; omega
+
+lemma prime_ne_zero_of_rank_ge_two {X : Chromosome} (hne : X ≠ 0)
+    (hrank : ∀ g ∈ X.support, 2 ≤ g.rank) : X.prime ≠ 0 := by
+  by_contra!
+  obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.2 hne
+  grind only [hrank g hg, rank_one_of_prime_eq_zero this g hg]
+
 end prime
 
 section rank
