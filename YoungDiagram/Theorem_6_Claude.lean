@@ -1,7 +1,8 @@
 import YoungDiagram.Sigma
 import YoungDiagram.Lifting.Pi
 
-open Chromosome Variety
+open Variety hiding prime prime_def
+open Chromosome
 
 /--
 `Pi_n n` is the set of elements of `Π` (the polarized variety) with rank equal to `n`.
@@ -386,8 +387,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
               -- Expand (prime C) h₁ to C.sum form (keep as Finsupp.sum, not Finset.sum)
               have hexpand : (Chromosome.prime C) h₁ =
                   C.sum (fun g m => m * (Chromosome.primeGene g) h₁) := by
-                simp only [Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-                           Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
+                simp only [prime_def, Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
               -- C g₀ * 1 ≤ C.sum (...) and C g₀ > 0, so (prime C) h₁ > 0
               have hlt : 0 < (Chromosome.prime C) h₁ := by
                 rw [hexpand]
@@ -424,8 +424,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : Variety.Pi)
                 | succ j ihj =>
                   intro hjsucc h' hh'
                   simp only [Function.iterate_succ', Function.comp,
-                             Chromosome.prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-                             Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
+                    prime_def, Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
                   simp only [Finsupp.sum]
                   apply Finset.sum_eq_zero
                   intro g hg
