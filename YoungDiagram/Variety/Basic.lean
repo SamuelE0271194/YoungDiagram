@@ -92,6 +92,14 @@ lemma IsFiltered_iff_nsmul {n : ℕ} (hn : n ≠ 0) :
     rw [add_nsmul, one_nsmul, IsFiltered_iff_add, hm]
     tauto
 
+lemma IsFiltered_sub (Y : Chromosome) (hX : X.IsFiltered p) :
+    (X - Y).IsFiltered p := by
+  rw [IsFiltered_def'] at hX ⊢
+  refine fun h hh ↦ hX h ?_
+  rw [Finsupp.mem_support_iff] at hh ⊢
+  refine fun hXh ↦ hh ?_
+  simp only [Finsupp.tsub_apply, hXh]; omega
+
 variable (p) in
 def LiftStable : Prop :=
   ∀ g : Gene, p g ↔ p ⟨g.rank + 1, g.type, Nat.le_add_left 1 g.rank⟩
@@ -106,9 +114,8 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       specialize h_3 h.2
       refine IsFiltered_iff_add.2 ⟨?_, h_3⟩
       replace h := h.1
-      simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
-        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-        single_zero, sum_single_index] at h
+      simp only [lift_def, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
+        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, single_zero, sum_single_index] at h
       rw [IsFiltered_single h_2] at h ⊢
       exact (hp _).2 h
   · induction X using Finsupp.induction
@@ -118,9 +125,8 @@ lemma IsFiltered_iff_lift (hp : LiftStable p) :
       rw [IsFiltered_iff_add] at h
       refine ⟨?_, h_3 h.2⟩
       replace h := h.1
-      simp only [lift, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
-        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-        single_zero, sum_single_index]
+      simp only [lift_def, liftGene, smul_dite, Nat.add_eq_zero_iff, one_ne_zero, and_false,
+        ↓reduceDIte, smul_single, smul_eq_mul, mul_one, single_zero, sum_single_index]
       rw [IsFiltered_single h_2] at h ⊢
       exact (hp _).1 h
 
@@ -151,8 +157,8 @@ lemma prime_varietyOfFilter (hp : LiftStable p) :
       rw [mem_varietyOfFilter_iff, IsFiltered_iff_add] at h1
       rw [map_add, IsFiltered_iff_add]
       refine ⟨?_, h_2 h1.2 rfl⟩
-      simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
-        AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index]
+      simp only [prime_def, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+        single_zero, dite_eq_ite, ite_self, sum_single_index]
       split_ifs with h
       · exact IsFiltered_zero
       · rw [IsFiltered_single h_1] at h1 ⊢

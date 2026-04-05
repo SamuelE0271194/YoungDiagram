@@ -1,51 +1,12 @@
 import YoungDiagram.Sigma
 import YoungDiagram.Lifting.Pi
 
-open Variety hiding prime
+open Variety hiding prime prime_def
 open Chromosome
 
 abbrev nPi (n : ℕ) := {X : Pi // X.1.rank = n}
 
 /-! ## Case 1: X and Y share a gene -/
-
-lemma sub_single_add_single_eq {X : Chromosome} {g : Gene} (hg : 0 < X g) :
-    X - Finsupp.single g 1 + Finsupp.single g 1 = X :=
-  Finsupp.sub_add_single_one_cancel (Nat.ne_zero_of_lt hg)
-
-lemma sub_mem_Pi {X Y : Chromosome} (hXPi : X ∈ Pi) : X - Y ∈ Pi := by
-  rw [mem_Pi_iff, IsPolarized_def'] at hXPi ⊢
-  intro h hh
-  apply hXPi h
-  rw [Finsupp.mem_support_iff] at hh ⊢
-  intro hXh; apply hh
-  simp only [Finsupp.tsub_apply, hXh]; omega
-
-lemma rank_sub_single {X : Chromosome} {g : Gene} (hg : 0 < X g) :
-    (X - Finsupp.single g 1).rank = X.rank - g.rank := by
-  have h := congr_arg rank (sub_single_add_single_eq hg)
-  rw [map_add, rank_single, one_nsmul] at h
-  omega
-
-lemma sub_single_lt_sub_single {X Y : Pi} {g : Gene} (hgX : 0 < X.val g) (hgY : 0 < Y.val g)
-    (hXY : X < Y) (hXPi : X.val - Finsupp.single g 1 ∈ Pi)
-    (hYPi : Y.val - Finsupp.single g 1 ∈ Pi) :
-    (⟨X.val - Finsupp.single g 1, hXPi⟩ : Pi) < ⟨Y.val - Finsupp.single g 1, hYPi⟩ := by
-  have hX_eq := sub_single_add_single_eq hgX
-  have hY_eq := sub_single_add_single_eq hgY
-  change _ ∧ _
-  refine ⟨fun k => ?_, fun hge => lt_irrefl X (lt_of_lt_of_le hXY (fun k => ?_))⟩
-  · have h : signature (prime^[k] X.val) ≤ signature (prime^[k] Y.val) :=
-      (le_iff_dominates.mp hXY.le) k
-    nth_rw 1 [← hX_eq, ← hY_eq] at h
-    simp only [iterate_map_add, map_add, add_le_add_iff_right] at h
-    exact h
-  · have h : signature (prime^[k] (Y.val - Finsupp.single g 1)) ≤
-             signature (prime^[k] (X.val - Finsupp.single g 1)) := hge k
-    have h2 : signature (prime^[k] Y.val) ≤ signature (prime^[k] X.val) := by
-      nth_rw 1 [← hY_eq, ← hX_eq]
-      simp only [iterate_map_add, map_add, add_le_add_iff_right]
-      exact h
-    exact h2
 
 /-- Remove a shared gene from both X and Y, apply IH, then reattach. -/
 private lemma exists_mutation_le_shared_gene (m : ℕ)
@@ -63,10 +24,10 @@ private lemma exists_mutation_le_shared_gene (m : ℕ)
     mem_Pi_iff.mpr <| (IsPolarized_single Nat.one_ne_zero).2 hg_pol
   let X'v : Chromosome := X.1.val - Finsupp.single g 1
   let Y'v : Chromosome := Y.1.val - Finsupp.single g 1
-  have hX'Pi : X'v ∈ Pi := sub_mem_Pi X.1.2
-  have hY'Pi : Y'v ∈ Pi := sub_mem_Pi Y.1.2
+  have hX'Pi : X'v ∈ Pi := sub_mem_Pi _ X.1.2
+  have hY'Pi : Y'v ∈ Pi := sub_mem_Pi _ Y.1.2
   have hlt' : (⟨X'v, hX'Pi⟩ : Pi) < ⟨Y'v, hY'Pi⟩ :=
-    sub_single_lt_sub_single hgX hgY hXY hX'Pi hY'Pi
+    sub_single_lt_sub_single hgX hgY hXY
   have hX'rank : X'v.rank = m + 2 - g.rank := by
     rw [rank_sub_single hgX, X.2]
   have hY'rank : Y'v.rank = m + 2 - g.rank := by
@@ -85,20 +46,6 @@ private lemma exists_mutation_le_shared_gene (m : ℕ)
     have h := (le_iff_dominates.mp hle') k
     simp only [iterate_map_add, map_add, add_le_add_iff_right]
     exact h
-
-private lemma prime_iterate_rank_lt_of_ne_zero {X : Chromosome} {k : ℕ} (hk : 0 < k)
-    (hne : prime^[k] X ≠ 0) : (prime^[k] X).rank < X.rank := by
-  have hiter_ne : ∀ j ≤ k, prime^[j] X ≠ 0 := by
-    intro j hj hc; apply hne
-    rw [show k = (k - j) + j from (Nat.sub_add_cancel hj).symm,
-        Function.iterate_add_apply, hc]
-    exact Function.iterate_fixed (map_zero prime) _
-  suffices h : ∀ j, j ≤ k → (prime^[j] X).rank + j ≤ X.rank by linarith [h k le_rfl]
-  intro j hj; induction j with
-  | zero => simp
-  | succ j' ih =>
-    rw [Function.iterate_succ_apply']
-    linarith [prime_rank_lt (hiter_ne j' (Nat.le_of_succ_le hj)), ih (Nat.le_of_succ_le hj)]
 
 /-! ## Sub-case 2a: disjoint supports, some sigma column agrees -/
 
@@ -168,8 +115,7 @@ lemma prime_iterate_no_gene_of_rank {Y : Chromosome} {r : ℕ}
   | zero => exact hY_no_gene h (by omega)
   | succ j ihj =>
     simp only [Function.iterate_succ', Function.comp,
-               prime, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-               Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
+      prime_def, Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul]
     simp only [Finsupp.sum]
     apply Finset.sum_eq_zero
     intro g hg
@@ -457,11 +403,112 @@ private lemma exists_mutation_le_fifteen_ten_case1 (m : ℕ)
     (k : ℕ) (hkpos : 0 < k) (hYkne : prime^[k] Y.1.val ≠ 0)
     (hak : (Sigma.sigma X.1 k).1 < (Sigma.sigma Y.1 k).1)
     (gpos gneg : Gene) (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
-    (hrlt : gpos.rank < gneg.rank) (hrlek : gpos.rank ≤ k)
+    (hrlt : gpos.rank < gneg.rank) (hrlek : gneg.rank ≤ k)
     (hXgpos : 0 < X.1.val gpos) (hXgneg : 0 < X.1.val gneg) :
     ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1 := by
   push Not at hcommon hsigeq hXpn
-  sorry
+  -- Gene properties
+  have hne : gpos ≠ gneg := fun h =>
+    absurd (congrArg Gene.type h) (by rw [hgpos, hgneg]; decide)
+  have hr : 1 ≤ gpos.rank := gpos.rank_pos
+  have hgpos_eq : Gene.ofRank gpos.rank .Positive = (Finsupp.single gpos 1 : Chromosome) := by
+    rw [← hgpos]; exact Gene.ofRank_eq_gene
+  have hgneg_eq : Gene.ofRank gneg.rank .Negative = (Finsupp.single gneg 1 : Chromosome) := by
+    rw [← hgneg]; exact Gene.ofRank_eq_gene
+  -- Rest chromosome
+  let restval := X.1.val - Finsupp.single gpos 1 - Finsupp.single gneg 1
+  have rest_mem : restval ∈ Pi := by
+    rw [mem_Pi_iff, IsPolarized_def']
+    intro g hg
+    apply IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g
+    rw [Finsupp.mem_support_iff] at hg ⊢
+    intro hX0; apply hg
+    simp only [restval, Finsupp.tsub_apply, Finsupp.single_apply, hX0]; omega
+  -- Mutation construction: g⁺(r) + g⁻(s) → g⁻(r−1) + g⁺(s+1)
+  let ε : GeneType := .Positive
+  have hε : ε ≠ .NonPolarized := by decide
+  let X1 : Pi := Pi.X1 hε hrlt.le hr
+  let Y1 : Pi := Pi.Y1 hε hrlt.le hr
+  let rest_pi : Pi := ⟨restval, rest_mem⟩
+  have hX1_val : X1.val = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
+    rw [Pi.X1_eq, GeneType.neg_positive, hgpos_eq, hgneg_eq]
+  have hX_eq : X1.val + restval = X.1.val := by
+    rw [hX1_val]; exact X_eq_X1_add_rest hXgpos hXgneg hne
+  let Z : Pi := ⟨Y1.val + restval, add_mem Y1.2 rest_mem⟩
+  have hprim : Pi.Primitive X1 Y1 := Pi.Primitive.type1 ε hε hrlt.le hr
+  have hstep_raw : Pi.Step (X1 + rest_pi) (Y1 + rest_pi) := Pi.Step.mk X1 Y1 rest_pi hprim
+  have hX_sub : X1 + rest_pi = X.1 := Subtype.ext hX_eq
+  refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
+  -- Prove Z ≤ Y
+  change Y1.val + restval ≤ Y.1.val
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp : signature (prime^[j] X.1.val) =
+      signature (prime^[j] X1.val) + signature (prime^[j] restval) := by
+    rw [← hX_eq, iterate_map_add, map_add]
+  have hXYj : signature (prime^[j] X.1.val) ≤ signature (prime^[j] Y.1.val) :=
+    le_iff_dominates.mp hXY.le j
+  -- Key chain: a_j < c_j for all j in [r, s]
+  have ha_chain : ∀ i, gpos.rank ≤ i → i ≤ gneg.rank →
+      (Sigma.sigma X.1 i).1 < (Sigma.sigma Y.1 i).1 := by
+    sorry
+  -- Three cases: j < r, r ≤ j ≤ s, j > s
+  rcases Nat.lt_or_ge j gpos.rank with hjr | hjr
+  · -- Subcase j < r: sig(Y1^j) = sig(X1^j), so use X ≤ Y
+    have hY1X1 : signature (prime^[j] Y1.val) = signature (prime^[j] X1.val) := by
+      rw [Pi.Y1_eq, Pi.X1_eq]
+      have key := mutation_type1_iterate_signature_eq hε
+        (show 1 ≤ gneg.rank - gpos.rank + 1 from by omega) le_rfl j (gpos.rank - 1) (by omega)
+      simp only [show 1 + (gpos.rank - 1) = gpos.rank from by omega,
+                 show (gneg.rank - gpos.rank + 1) + (gpos.rank - 1) = gneg.rank from by omega]
+        at key
+      exact key.symm
+    rw [hY1X1, ← hdecomp]; exact hXYj
+  · by_cases hjs : j ≤ gneg.rank
+    · -- Subcase r ≤ j ≤ s: sig(Y1^j) = sig(X1^j) + (1, 0)
+      have hY1_eq_X1_plus : signature (prime^[j] Y1.val) =
+          signature (prime^[j] X1.val) + (1, 0) := by
+        rw [Pi.Y1_eq, Pi.X1_eq]
+        simp only [iterate_map_add, prime_iterate_ofRank,
+                   show gpos.rank - j = 0 from by omega,
+                   show gpos.rank - 1 - j = 0 from by omega,
+                   Gene.ofRank_zero, zero_add]
+        have h := signature_ofRank_eq (show 1 ≤ gneg.rank + 1 - j from by omega) hε
+        rw [show gneg.rank + 1 - j - 1 = gneg.rank - j from by omega] at h
+        rw [h, signature_ofRank_one_positive]
+      rw [hY1_eq_X1_plus, add_right_comm, ← hdecomp]
+      -- Goal: sig(X^j) + (1, 0) ≤ sig(Y^j)
+      have haj := ha_chain j hjr hjs
+      simp only [Sigma.sigma] at haj
+      obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.1.2 (k := j))
+      obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.1.2 (k := j))
+      rw [hnX, hnY] at haj ⊢
+      constructor
+      · simp only [Prod.fst_add]
+        have hnXY : nX.1 < nY.1 := Nat.cast_lt.mp haj
+        exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+      · simp only [Prod.snd_add]
+        have := hXYj.2
+        rw [hnX, hnY] at this
+        linarith
+    · -- Subcase j > s: both X1 and Y1 vanish
+      have hX1j : signature (prime^[j] X1.val) = 0 := by
+        rw [Pi.X1_eq]
+        simp only [iterate_map_add, prime_iterate_ofRank,
+                   show gpos.rank - j = 0 from by omega,
+                   show gneg.rank - j = 0 from by omega,
+                   Gene.ofRank_zero, map_zero, add_zero]
+      have hY1j : signature (prime^[j] Y1.val) = 0 := by
+        rw [Pi.Y1_eq]
+        simp only [iterate_map_add, prime_iterate_ofRank,
+                   show gpos.rank - 1 - j = 0 from by omega,
+                   show gneg.rank + 1 - j = 0 from by omega,
+                   Gene.ofRank_zero, map_zero, add_zero]
+      have hrestj : signature (prime^[j] restval) =
+          signature (prime^[j] X.1.val) := by
+        rw [hdecomp, hX1j, zero_add]
+      rw [hY1j, zero_add, hrestj]; exact hXYj
 
 /-- Case 2 of §15.10. -/
 private lemma exists_mutation_le_fifteen_ten_case2 (m : ℕ)
@@ -477,7 +524,7 @@ private lemma exists_mutation_le_fifteen_ten_case2 (m : ℕ)
     (k : ℕ) (hkpos : 0 < k) (hYkne : prime^[k] Y.1.val ≠ 0)
     (hak : (Sigma.sigma X.1 k).1 < (Sigma.sigma Y.1 k).1)
     (gneg gpos : Gene) (hgneg : gneg.type = .Negative) (hgpos : gpos.type = .Positive)
-    (hrlt : gneg.rank < gpos.rank) (hrlek : gneg.rank ≤ k)
+    (hrlt : gneg.rank < gpos.rank) (hrlek : gpos.rank ≤ k)
     (hXgneg : 0 < X.1.val gneg) (hXgpos : 0 < X.1.val gpos) :
     ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1 := by
   push Not at hcommon hsigeq hXpn
@@ -516,10 +563,14 @@ private lemma exists_mutation_le_fifteen_ten_case4 (m : ℕ)
       0 < X.1.val g ∧ 0 < X.1.val h)
     (k : ℕ) (hkpos : 0 < k) (hYkne : prime^[k] Y.1.val ≠ 0)
     (hak : (Sigma.sigma X.1 k).1 < (Sigma.sigma Y.1 k).1)
-    (hcase1 : ¬∃ gpos gneg : Gene, gpos.type = .Positive ∧ gneg.type = .Negative
-      ∧ gpos.rank < gneg.rank ∧ gpos.rank ≤ k ∧ 0 < X.1.val gpos ∧ 0 < X.1.val gneg)
-    (hcase2 : ¬∃ gneg gpos : Gene, gneg.type = .Negative ∧ gpos.type = .Positive
-      ∧ gneg.rank < gpos.rank ∧ gneg.rank ≤ k ∧ 0 < X.1.val gneg ∧ 0 < X.1.val gpos)
+    (hcase1 : ¬∃ (k' : ℕ) (_ : 0 < k') (_ : prime^[k'] Y.1.val ≠ 0)
+      (_ : (Sigma.sigma X.1 k').1 < (Sigma.sigma Y.1 k').1)
+      (gpos gneg : Gene), gpos.type = .Positive ∧ gneg.type = .Negative
+      ∧ gpos.rank < gneg.rank ∧ gneg.rank ≤ k' ∧ 0 < X.1.val gpos ∧ 0 < X.1.val gneg)
+    (hcase2 : ¬∃ (k' : ℕ) (_ : 0 < k') (_ : prime^[k'] Y.1.val ≠ 0)
+      (_ : (Sigma.sigma X.1 k').1 < (Sigma.sigma Y.1 k').1)
+      (gneg gpos : Gene), gneg.type = .Negative ∧ gpos.type = .Positive
+      ∧ gneg.rank < gpos.rank ∧ gpos.rank ≤ k' ∧ 0 < X.1.val gneg ∧ 0 < X.1.val gpos)
     (hcase3 : ¬∃ g1 g2 : Gene, g1.type = .Positive ∧ g2.type = .Positive
       ∧ g1.rank ≤ g2.rank ∧ 1 < g1.rank ∧ 0 < X.1.val g1 ∧ 0 < X.1.val g2) :
     ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1 := by
@@ -565,22 +616,28 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
   · -- a_k < c_k for some k ≥ 1 with Y^(k) ≠ 0 (paper: "assume a₁ < c₁", Cases 1–4).
     obtain ⟨k, hkpos, hYkne, hak⟩ := ha
     -- Cases 1–4: split on what gene pair X contains (Djoković §15).
-    by_cases hcase1 : ∃ gpos gneg : Gene, gpos.type = .Positive ∧
-        gneg.type = .Negative ∧ gpos.rank < gneg.rank ∧ gpos.rank ≤ k ∧
+    by_cases hcase1 : ∃ (k' : ℕ) (_ : 0 < k') (_ : prime^[k'] Y.1.val ≠ 0)
+        (_ : (Sigma.sigma X.1 k').1 < (Sigma.sigma Y.1 k').1)
+        (gpos gneg : Gene), gpos.type = .Positive ∧
+        gneg.type = .Negative ∧ gpos.rank < gneg.rank ∧ gneg.rank ≤ k' ∧
         0 < X.1.val gpos ∧ 0 < X.1.val gneg
-    · -- Case 1: X has g⁺(r) with r ≤ k and g⁻(s) with r < s.
+    · -- Case 1: X has g⁺(r) with r < s and g⁻(s) with s ≤ k'.
       --   Type 1 mutation (ε = .Positive): g⁺(r) + g⁻(s) → g⁻(r−1) + g⁺(s+1).
-      obtain ⟨gpos, gneg, hgpos, hgneg, hrlt, hrlek, hXgpos, hXgneg⟩ := hcase1
-      exact exists_mutation_le_fifteen_ten_case1 m ih X Y hXY hcommon hsigeq hXpn k hkpos hYkne hak
-        gpos gneg hgpos hgneg hrlt hrlek hXgpos hXgneg
-    · by_cases hcase2 : ∃ gneg gpos : Gene, gneg.type = .Negative ∧
-          gpos.type = .Positive ∧ gneg.rank < gpos.rank ∧ gneg.rank ≤ k ∧
+      obtain ⟨k', hk'pos, hYk'ne, hak', gpos, gneg, hgpos, hgneg, hrlt, hrlek, hXgpos, hXgneg⟩ :=
+        hcase1
+      exact exists_mutation_le_fifteen_ten_case1 m ih X Y hXY hcommon hsigeq hXpn k' hk'pos hYk'ne
+        hak' gpos gneg hgpos hgneg hrlt hrlek hXgpos hXgneg
+    · by_cases hcase2 : ∃ (k' : ℕ) (_ : 0 < k') (_ : prime^[k'] Y.1.val ≠ 0)
+          (_ : (Sigma.sigma X.1 k').1 < (Sigma.sigma Y.1 k').1)
+          (gneg gpos : Gene), gneg.type = .Negative ∧
+          gpos.type = .Positive ∧ gneg.rank < gpos.rank ∧ gpos.rank ≤ k' ∧
           0 < X.1.val gneg ∧ 0 < X.1.val gpos
-      · -- Case 2: X has g⁻(r) with r ≤ k and g⁺(s) with r < s.
+      · -- Case 2: X has g⁻(r) with r < s and g⁺(s) with s ≤ k'.
         --   Type 1 mutation (ε = .Negative): g⁻(r) + g⁺(s) → g⁺(r−1) + g⁻(s+1).
-        obtain ⟨gneg, gpos, hgneg, hgpos, hrlt, hrlek, hXgneg, hXgpos⟩ := hcase2
+        obtain ⟨k', hk'pos, hYk'ne, hak', gneg, gpos, hgneg, hgpos, hrlt, hrlek, hXgneg, hXgpos⟩ :=
+          hcase2
         exact exists_mutation_le_fifteen_ten_case2 m ih X Y hXY hcommon
-          hsigeq hXpn k hkpos hYkne hak
+          hsigeq hXpn k' hk'pos hYk'ne hak'
           gneg gpos hgneg hgpos hrlt hrlek hXgneg hXgpos
       · by_cases hcase3 : ∃ g1 g2 : Gene, g1.type = .Positive ∧
             g2.type = .Positive ∧ g1.rank ≤ g2.rank ∧ 1 < g1.rank ∧

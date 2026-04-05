@@ -58,20 +58,22 @@ lemma Gene.ofRankAlt_shift_negOnePow_smul {n k : ℕ} {ε : GeneType} :
 
 namespace Chromosome
 
+lemma sub_single_add_single_eq {X : Chromosome} {g : Gene} (hg : 0 < X g) :
+    X - Finsupp.single g 1 + Finsupp.single g 1 = X :=
+  Finsupp.sub_add_single_one_cancel (Nat.ne_zero_of_lt hg)
+
 section signature
 
 /--
 The signature of a chromosome is the weighted sum of the signatures of its constituent genes.
 -/
-def signature : Chromosome →+ ℚ × ℚ where
-  toFun c := c.sum (fun g count ↦ (count : ℚ) • g.signature)
-  map_zero' := sum_zero_index
-  map_add' _ _ := by
-    refine sum_add_index' (fun _ ↦ smul_eq_zero_of_left rfl _) (fun _ _ _ ↦ ?_)
-    rw [Nat.cast_add, Module.add_smul]
+noncomputable def signature : Chromosome →+ ℚ × ℚ := weight Gene.signature
+
+lemma signature_def {X : Chromosome} : X.signature =
+  X.sum (fun g count ↦ (count : ℚ) • g.signature) := rfl
 
 lemma signature_nonneg (X : Chromosome) : 0 ≤ X.signature := by
-  dsimp [signature]
+  dsimp [signature_def]
   exact sum_nonneg' fun g ↦
     smul_nonneg Rat.natCast_nonneg g.signature_pos.le
 
@@ -82,7 +84,7 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
   (Gene.ofRank n ε).signature =
     if h : n = 0 then 0
     else (⟨n, ε, Nat.pos_of_ne_zero h⟩ : Gene).signature := by
-  dsimp [signature]
+  dsimp [signature_def]
   split_ifs
   · rfl
   · rw [sum_single_index, Nat.cast_one, one_smul]
@@ -215,11 +217,7 @@ lemma primeGene_def {g : Gene} :
 The "prime" operation extended linearly to all chromosomes: $X' = \sum m_i g_i'$.
 This operation corresponds to taking the derivative of the chromosome.
 -/
-noncomputable def prime : Chromosome →+ Chromosome where
-  toFun c := c.sum (fun g m ↦ m • primeGene g)
-  map_zero' := sum_zero_index
-  map_add' _ _ := sum_add_index' (fun _ ↦ zero_nsmul _)
-    fun _ _ _ ↦ add_nsmul ..
+noncomputable def prime : Chromosome →+ Chromosome := weight primeGene
 
 lemma prime_def {X : Chromosome} : X.prime = X.sum (fun g m ↦ m • primeGene g) := rfl
 
@@ -227,9 +225,8 @@ lemma prime_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).prime = Gene.ofRank (n - 1) ε := by
   by_cases hn : n = 0
   · simp only [hn, Gene.ofRank_zero, map_zero, zero_le, Nat.sub_eq_zero_of_le]
-  rw [prime, Gene.ofRank_def]
-  simp only [hn, ↓reduceDIte, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-    zero_nsmul, sum_single_index, one_smul]
+  rw [prime_def, Gene.ofRank_def]
+  simp only [hn, ↓reduceDIte, zero_nsmul, sum_single_index, one_smul]
   rfl
 
 lemma prime_single {n : ℕ} {g : Gene} :
@@ -356,6 +353,12 @@ lemma prime_ne_zero_of_rank_ge_two {X : Chromosome} (hne : X ≠ 0)
   obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.2 hne
   grind only [hrank g hg, rank_one_of_prime_eq_zero this g hg]
 
+lemma prime_iterate_ne_zero_if_prime_ne {X : Chromosome} {j k : ℕ} (hle : j ≤ k)
+    (hne : prime^[k] X ≠ 0) : prime^[j] X ≠ 0 := by
+  intro h
+  rw [(Nat.sub_add_cancel hle).symm, Function.iterate_add_apply, h] at hne
+  exact hne <| Function.iterate_fixed (map_zero prime) _
+
 end prime
 
 section rank
@@ -370,7 +373,7 @@ lemma add_maxRank {X Y : Chromosome} :
 
 lemma smul_maxRank {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
     (n • X).maxRank = X.maxRank := by
-  rw [maxRank_def, Finsupp.support_smul_eq hn, maxRank_def]
+  rw [maxRank_def, support_smul_eq hn, maxRank_def]
 
 lemma maxRank_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).maxRank = n := by
@@ -412,6 +415,12 @@ lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 :=
 lemma rank_single {n : ℕ} {g : Gene} :
   rank (single g n) = n • g.rank := weight_single ..
 
+lemma rank_sub_single {X : Chromosome} {g : Gene} (hg : 0 < X g) :
+    (X - Finsupp.single g 1).rank = X.rank - g.rank := by
+  have h := congr_arg rank (sub_single_add_single_eq hg)
+  rw [map_add, rank_single, one_nsmul] at h
+  omega
+
 lemma rank_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).rank = n := by
   rw [Gene.ofRank_def]
@@ -437,15 +446,25 @@ lemma rank_of_prime {X : Chromosome} :
   simp_rw [prime_def, map_finsuppSum, map_nsmul, nsmul_eq_mul, primeGene, rank_ofRank]
   rfl
 
-lemma prime_rank_lt {X : Chromosome} (hX : X ≠ 0) :
+lemma prime_rank_lt {X : Chromosome} (hne : X ≠ 0) :
     X.prime.rank < X.rank := by
   rw [rank_of_prime, rank_def, Finsupp.sum, Finsupp.sum]
   refine Finset.sum_lt_sum_of_nonempty ?_ ?_
-  · exact support_nonempty_iff.mpr hX
+  · exact support_nonempty_iff.mpr hne
   · intro i hi
     rw [smul_eq_mul, Nat.mul_lt_mul_left]
     · grind only [i.rank_pos]
     · exact Nat.pos_of_ne_zero <| mem_support_iff.1 hi
+
+lemma prime_iterate_rank_lt_of_ne_zero {X : Chromosome} {k : ℕ} (hk : 0 < k)
+    (hne : prime^[k] X ≠ 0) : (prime^[k] X).rank < X.rank := by
+  induction k using Nat.twoStepInduction with
+  | zero => omega
+  | one => exact prime_rank_lt <| prime_iterate_ne_zero_if_prime_ne (Nat.zero_le 1) hne
+  | more n h1 h2 =>
+    have := (prime_iterate_ne_zero_if_prime_ne (Nat.le_succ _) hne)
+    rw [Function.iterate_succ_apply']
+    exact (prime_rank_lt this).trans (h2 (Nat.zero_lt_succ n) this)
 
 lemma signature_sum_eq_rank {X : Chromosome} :
     X.signature.1 + X.signature.2 = X.rank := by
@@ -492,6 +511,19 @@ instance : IsOrderedCancelAddMonoid Chromosome where
   le_of_add_le_add_left _ _ _ h := by
     simpa only [le_iff_dominates, iterate_map_add, map_add, add_le_add_iff_left] using h
 
+lemma sub_single_lt_sub_single {X Y : Chromosome} {g : Gene}
+    (hgX : 0 < X g) (hgY : 0 < Y g) (hXY : X < Y) :
+    (X - Finsupp.single g 1) < Y - Finsupp.single g 1 := by
+  have hX_eq := sub_single_add_single_eq hgX
+  have hY_eq := sub_single_add_single_eq hgY
+  refine ⟨fun k ↦ ?_, fun hge ↦ lt_irrefl X (lt_of_lt_of_le hXY (fun k ↦ ?_))⟩
+  · have h : (prime^[k] X).signature ≤ (prime^[k] Y).signature :=
+      (le_iff_dominates.mp hXY.le) k
+    nth_rw 1 [← hX_eq, ← hY_eq] at h
+    simpa only [iterate_map_add, map_add, add_le_add_iff_right] using h
+  · nth_rw 1 [← hY_eq, ← hX_eq]
+    simpa only [iterate_map_add, map_add, add_le_add_iff_right] using hge k
+
 end order
 
 section lift
@@ -499,17 +531,14 @@ section lift
 noncomputable def liftGene (g : Gene) : Chromosome :=
   Gene.ofRank (g.rank + 1) g.type
 
-noncomputable def lift : Chromosome →+ Chromosome where
-  toFun c := c.sum (fun g count ↦ count • liftGene g)
-  map_zero' := sum_zero_index
-  map_add' _ _ := sum_add_index' (fun _ ↦ zero_nsmul _)
-    fun _ _ _ ↦ add_nsmul ..
+noncomputable def lift : Chromosome →+ Chromosome := weight liftGene
+
+lemma lift_def {X : Chromosome} : X.lift = X.sum (fun g count ↦ count • liftGene g) := rfl
 
 lemma lift_ofRank {n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     (Gene.ofRank n ε).lift = Gene.ofRank (n + 1) ε := by
-  rw [lift, Gene.ofRank_def]
-  simp only [hn, ↓reduceDIte, AddMonoidHom.coe_mk, ZeroHom.coe_mk, zero_nsmul,
-    sum_single_index, one_smul]; rfl
+  rw [lift_def, Gene.ofRank_def]
+  simp only [hn, ↓reduceDIte, zero_nsmul, sum_single_index, one_smul]; rfl
 
 lemma lift_iterate_ofRank {k n : ℕ} {ε : GeneType} (hn : n ≠ 0) :
     lift^[k] (Gene.ofRank n ε) = Gene.ofRank (n + k) ε := by
@@ -699,14 +728,13 @@ lemma evenPart_prime {X : Chromosome} : X.prime.evenPart = X.oddPart.prime := by
     rw [h_2, add_left_inj, ← smul_single_one, map_nsmul, map_nsmul,
       map_nsmul, map_nsmul, nsmul_right_inj h_1, oddPart_single]
     split_ifs with ha
-    · simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
-      AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index,
-      sum_zero_index]
+    · simp only [prime_def, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+      single_zero, dite_eq_ite, ite_self, sum_single_index, sum_zero_index]
       split_ifs
       · exact map_zero _
       · simp [evenPart_single, Nat.even_add_one.1 ((Nat.sub_add_cancel a.rank_pos) ▸ ha)]
-    · simp only [prime, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
-      AddMonoidHom.coe_mk, ZeroHom.coe_mk, single_zero, dite_eq_ite, ite_self, sum_single_index]
+    · simp only [prime_def, primeGene, smul_dite, nsmul_zero, smul_single, smul_eq_mul, mul_one,
+      single_zero, dite_eq_ite, ite_self, sum_single_index]
       split_ifs
       · exact map_zero _
       · simp [evenPart_single, (Nat.even_sub a.rank_pos).2 <|

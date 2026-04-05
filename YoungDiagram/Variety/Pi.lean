@@ -53,6 +53,9 @@ lemma IsPolarized_iff_add {X Y : Chromosome} :
 lemma IsPolarized_iff_nsmul {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
   (n • X).IsPolarized ↔ X.IsPolarized := IsFiltered_iff_nsmul hn
 
+lemma IsPolarized_sub {X : Chromosome} (Y : Chromosome) (hX : X.IsPolarized) :
+  (X - Y).IsPolarized := IsFiltered_sub Y hX
+
 lemma IsPolarized_iff_lift {X : Chromosome} :
   X.lift.IsPolarized ↔ X.IsPolarized := IsFiltered_iff_lift (fun _ ↦ .rfl)
 
@@ -71,7 +74,7 @@ lemma IsPolarized_support_of_below_one {X : Chromosome} (hX : X.IsPolarized) :
 lemma IsPolarized_signature {X : Chromosome} (hX : X.IsPolarized) :
     (X.below 1).signature =
     ((X ⟨1, .Positive, le_rfl⟩, X ⟨1, .Negative, le_rfl⟩) : ℚ × ℚ) := by
-  simp only [signature, sum, AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+  simp only [signature_def, sum]
   rw [Finset.sum_subset (IsPolarized_support_of_below_one hX), Finset.sum_pair (by decide),
     below_def, filter_apply_pos _ X NeZero.one_le, filter_apply_pos _ X NeZero.one_le,
     Gene.signature_of_positive rfl, Gene.signature_of_negative rfl]
@@ -117,6 +120,9 @@ lemma primePi_iterate (X : Pi) (k : ℕ) :
 lemma prime_mem_Pi_iterate {X : Chromosome} (hX : X ∈ Pi) {k : ℕ} :
     Chromosome.prime^[k] X ∈ Pi :=
   prime_mem_varietyOfFilter_iterate (fun _ ↦ .rfl) hX
+
+lemma sub_mem_Pi {X : Chromosome} (Y : Chromosome) (hX : X ∈ Pi) : X - Y ∈ Pi :=
+  IsPolarized_sub Y hX
 
 end Pi
 
