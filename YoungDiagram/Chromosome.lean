@@ -102,9 +102,8 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
 
 @[simp] lemma signature_single {k : ℕ} {n : ℕ} (hk : 1 ≤ k) {ε : GeneType} :
     signature (single (⟨k, ε, hk⟩ : Gene) n) =
-    n * (⟨k, ε, hk⟩ : Gene).signature := by
-  dsimp [signature]
-  exact sum_single_index <| smul_eq_zero_of_left rfl _
+    n * (⟨k, ε, hk⟩ : Gene).signature :=
+  sum_single_index <| smul_eq_zero_of_left rfl _
 
 lemma signature_ofRank_nonPolarized {n : ℕ} :
     (Gene.ofRank n .NonPolarized).signature =
@@ -235,16 +234,12 @@ lemma prime_single {n : ℕ} {g : Gene} :
 
 lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
     prime^[k] (Gene.ofRank n ε) = Gene.ofRank (n - k) ε := by
-  induction hk : k using Nat.strong_induction_on generalizing k
-  expose_names
-  subst hk
-  match k with
-  | 0 => rw [Function.iterate_zero_apply, Nat.sub_zero]
-  | 1 => simp only [Function.iterate_one, prime_ofRank]
-  | w + 2 =>
-    specialize @h (w + 1) (Nat.lt_add_one _) (w + 1) rfl
+  induction hk : k using Nat.twoStepInduction generalizing k with
+  | zero => rfl
+  | one => simp only [Function.iterate_one, prime_ofRank]
+  | more w h1 h2 =>
     change prime^[w + 1 + 1] (Gene.ofRank n ε) = _
-    rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h, prime_ofRank]
+    rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h2 rfl, prime_ofRank]
     ac_rfl
 
 lemma signature_prime {X : Chromosome} :
@@ -417,9 +412,7 @@ lemma rank_single {n : ℕ} {g : Gene} :
 
 lemma rank_sub_single {X : Chromosome} {g : Gene} (hg : 0 < X g) :
     (X - Finsupp.single g 1).rank = X.rank - g.rank := by
-  have h := congr_arg rank (sub_single_add_single_eq hg)
-  rw [map_add, rank_single, one_nsmul] at h
-  omega
+  rw [rank, ← weight_sub_single_add (Nat.ne_zero_of_lt hg), Nat.add_sub_cancel]
 
 lemma rank_ofRank {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n ε).rank = n := by
