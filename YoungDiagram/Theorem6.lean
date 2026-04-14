@@ -389,6 +389,40 @@ private lemma exists_mutation_le_disjoint_pair
 
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 
+/-- If `X < Y` in `Π`, `k ≥ 1` is the minimal index with `a_k < c_k`, then
+`b_j < d_j` for all `1 ≤ j ≤ k` with `prime^j Y ≠ 0`. -/
+private lemma propagation_lemma_b_lt
+    {X Y : Pi}
+    (hXY : X < Y)
+    (hsigeq : ∀ j : ℕ, 0 < j → prime^[j] Y.val ≠ 0 →
+      Sigma.sigma X.val j ≠ Sigma.sigma Y.val j)
+    {k : ℕ} (hkpos : 0 < k)
+    (hYkne : prime^[k] Y.val ≠ 0)
+    (hak : (Sigma.sigma X.val k).1 < (Sigma.sigma Y.val k).1)
+    (hk_min : ∀ j : ℕ, 0 < j → prime^[j] Y.val ≠ 0 → j < k →
+      (Sigma.sigma X.val j).1 = (Sigma.sigma Y.val j).1)
+    {j : ℕ} (hjpos : 0 < j) (hjk : j ≤ k)
+    (hYjne : prime^[j] Y.val ≠ 0) :
+    (Sigma.sigma X.val j).2 < (Sigma.sigma Y.val j).2 := by
+  rcases lt_or_eq_of_le hjk with hjlt | rfl
+  · -- j < k: minimality gives a_j = c_j; hsigeq gives sigma(X,j) ≠ sigma(Y,j);
+    --         dominance gives (a_j,b_j) ≤ (c_j,d_j); hence b_j < d_j.
+    have ha_eq : (Sigma.sigma X.val j).1 = (Sigma.sigma Y.val j).1 :=
+      hk_min j hjpos hYjne hjlt
+    have hne : Sigma.sigma X.val j ≠ Sigma.sigma Y.val j :=
+      hsigeq j hjpos hYjne
+    have hle : Sigma.sigma X.val j ≤ Sigma.sigma Y.val j :=
+      le_iff_dominates.mp hXY.le j
+    exact lt_of_le_of_ne hle.2 (fun h => hne (Prod.ext ha_eq h))
+  · -- j = k: not provable from these hypotheses alone.
+    --   From (a_k, b_k) ≤ (c_k, d_k) and a_k < c_k we only get b_k ≤ d_k, not b_k < d_k.
+    --   At the call site, this case is handled separately:
+    --     • k odd (Case 1a): mutation adds (1,0) at level k, needs only a_k+1 ≤ c_k
+    --       (from hak + signature_pi_isNat integrality), not b_k < d_k.
+    --     • k even (Case 1b): needs cond_15_7 on Y at index k−2 giving
+    --       c_{k−1} − c_k ≤ d_{k−2} − d_{k−1}, then bootstrap from b_{k−1} < d_{k−1}.
+    sorry
+
 /-- Cases 1–4 of §15.10 (all sorry). -/
 private lemma exists_mutation_le_fifteen_ten (m : ℕ)
     (ih : ∀ k, k < m + 2 → ∀ X Y : nPi k, X.1 < Y.1 →

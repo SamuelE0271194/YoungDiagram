@@ -86,6 +86,27 @@ This follows directly from $\Delta a$ non-increasing and $\Delta a_k \geq 1$.  P
 
 ## Propagation Lemma: $b_j < d_j$ for $j \in [m,k]$ (used in Case 1a)
 
+```lean
+private lemma propagation_lemma_b_lt
+    {X Y : Pi}
+    (hXY : X < Y)
+    (hsigeq : ∀ j : ℕ, 0 < j → prime^[j] Y.val ≠ 0 →
+      Sigma.sigma X.val j ≠ Sigma.sigma Y.val j)
+    {k : ℕ} (hkpos : 0 < k)
+    (hYkne : prime^[k] Y.val ≠ 0)
+    (hak : (Sigma.sigma X.val k).1 < (Sigma.sigma Y.val k).1)
+    (hk_min : ∀ j : ℕ, 0 < j → prime^[j] Y.val ≠ 0 → j < k →
+      (Sigma.sigma X.val j).1 = (Sigma.sigma Y.val j).1)
+    {j : ℕ} (hjpos : 0 < j) (hjk : j ≤ k)
+    (hYjne : prime^[j] Y.val ≠ 0) :
+    (Sigma.sigma X.val j).2 < (Sigma.sigma Y.val j).2 := by
+  sorry
+```
+
+**Proof sketch (see below).**
+
+
+
 Define $\Delta a_j = c_j - a_j \geq 0$ and $\Delta b_j = d_j - b_j \geq 0$.
 
 **Step 1** ($\operatorname{prime}^j(Y) \neq 0$ for $j \leq k$).  Since $X.\mathrm{val}(g_2) > 0$
