@@ -412,14 +412,16 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
   · -- Case A: a₁ < c₁ (paper §15.10, Cases 1–4).
     -- Let k be a witness; in practice take k minimal.
     obtain ⟨k, hkpos, hYkne, hak⟩ := ha
-    -- Split on Case 1 (ε₁ = −, g₁ = g_{-}(m) at minimal rank m) vs Cases 2–4 (ε₁ = +).
+    -- Split on Case 1 (ε₁ = −, g₁ = g_{-}(m) at minimal rank m, g₂ = g_{+}(k) at rank k)
+    -- vs Cases 2–4 (ε₁ = + or no such g₂ at rank k).
     -- g_{-}(m) = g^{(-1)^m}(m): Negative when m odd, Positive when m even.
-    by_cases hcase1 : ∃ g₁ : Gene, 0 < X.1.val g₁ ∧
+    -- g_{+}(k) = g^{(-1)^{k-1}}(k): Positive when k odd, Negative when k even.
+    by_cases hcase1 : ∃ g₁ g₂ : Gene, 0 < X.1.val g₁ ∧ 0 < X.1.val g₂ ∧
         (∀ g : Gene, 0 < X.1.val g → g₁.rank ≤ g.rank) ∧
-        (Odd g₁.rank ↔ g₁.type = .Negative)
-    · -- Case 1: ε₁ = −, g₁ = g_{-}(m) is the gene of minimal rank m in X.
-      --   g₂ = g_{+}(k) = g^{(-1)^{k-1}}(k), whose sign depends on parity of k.
-      obtain ⟨g₁, hXg₁, hg₁min, hg₁type⟩ := hcase1
+        (Odd g₁.rank ↔ g₁.type = .Negative) ∧
+        g₂.rank = k ∧ (Odd k ↔ g₂.type = .Positive)
+    · -- Case 1: g₁ = g_{-}(m) and g₂ = g_{+}(k) both exist in X.
+      obtain ⟨g₁, g₂, hXg₁, hXg₂, hg₁min, hg₁type, hg₂rank, hg₂pol⟩ := hcase1
       -- Split on parity of k: Case 1a (k odd) vs Case 1b (k even).
       by_cases hkodd : Odd k
       · -- Case 1a: k odd, so g₂ = g^+(k) = Positive gene at rank k.
@@ -427,12 +429,8 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         --     Gene.ofRankAlt g₁.rank .Negative + Gene.ofRankAlt k .Positive
         --       → Gene.ofRankAlt (g₁.rank − 1) .Positive + Gene.ofRankAlt (k+1) .Negative
         --
-        -- Step 1: X has a Positive gene g₂ at rank k.
-        -- This comes from σ(X, k).fst < σ(Y, k).fst and the structure of X.
-        have hg₂_exists : ∃ (g₂ : Gene), g₂.rank = k ∧ g₂.type = .Positive ∧
-            0 < X.1.val g₂ := by
-          sorry
-        obtain ⟨g₂, hg₂rank, hg₂type, hXg₂⟩ := hg₂_exists
+        -- Step 1: g₂ is the Positive gene at rank k (from case hypothesis).
+        have hg₂type : g₂.type = .Positive := hg₂pol.mp hkodd
         -- Step 2: g₁.rank ≤ k (minimality of g₁ in X, since g₂ ∈ X has rank k).
         have hm_le_k : g₁.rank ≤ k := hg₂rank ▸ hg₁min g₂ hXg₂
         -- Step 3: g₁ ≠ g₂.
@@ -542,8 +540,6 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
               (show 1 ≤ k - g₁.rank + 1 from by omega) le_rfl j (g₁.rank - 1) (by omega)
             simp only [show 1 + (g₁.rank - 1) = g₁.rank from by omega,
               show k - g₁.rank + 1 + (g₁.rank - 1) = k from by omega,
-              show 1 + (g₁.rank - 1) - 1 = g₁.rank - 1 from by omega,
-              show k - g₁.rank + 1 + (g₁.rank - 1) + 1 = k + 1 from by omega,
               GeneType.smul_neg, htype1, show -GeneType.Negative = .Positive from rfl] at h
             exact h.symm
           rw [hY3X3, ← hdecomp]; exact hXYj
