@@ -392,6 +392,18 @@ lemma prime_iterate_ne_zero_if_prime_ne {X : Chromosome} {j k : ℕ} (hle : j �
   rw [(Nat.sub_add_cancel hle).symm, Function.iterate_add_apply, h] at hne
   exact hne <| Function.iterate_fixed (map_zero prime) _
 
+/-- Priming `g_+(k)` decreases the first signature component by 1. -/
+lemma signature_prime_ofRankAlt_positive {k : ℕ} (hk : 1 ≤ k) :
+    signature (Gene.ofRankAlt k GeneType.Positive) -
+    signature (prime (Gene.ofRankAlt k GeneType.Positive)) = (1, 0) := by
+  sorry
+
+/-- Priming `g_-(k)` decreases the second signature component by 1. -/
+lemma signature_prime_ofRankAlt_negative {k : ℕ} (hk : 1 ≤ k) :
+    signature (Gene.ofRankAlt k GeneType.Negative) -
+    signature (prime (Gene.ofRankAlt k GeneType.Negative)) = (0, 1) := by
+  sorry
+
 end prime
 
 section rank
