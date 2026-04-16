@@ -396,13 +396,35 @@ lemma prime_iterate_ne_zero_if_prime_ne {X : Chromosome} {j k : ℕ} (hle : j �
 lemma signature_prime_ofRankAlt_positive {k : ℕ} (hk : 1 ≤ k) :
     signature (Gene.ofRankAlt k GeneType.Positive) -
     signature (prime (Gene.ofRankAlt k GeneType.Positive)) = (1, 0) := by
-  sorry
+  simp only [Gene.ofRankAlt_positive hk]
+  split_ifs with h
+  · -- k even: gene is Gene.ofRank k .Negative
+    rw [prime_ofRank]
+    have heq := signature_ofRank_eq' hk (show GeneType.Negative ≠ .NonPolarized by decide)
+    simp only [if_pos h, GeneType.neg_negative, signature_ofRank_one_positive] at heq
+    rw [heq]; abel
+  · -- k odd: gene is Gene.ofRank k .Positive
+    rw [prime_ofRank]
+    have heq := signature_ofRank_eq' hk (show GeneType.Positive ≠ .NonPolarized by decide)
+    simp only [if_neg h] at heq
+    rw [heq, signature_ofRank_one_positive]; abel
 
 /-- Priming `g_-(k)` decreases the second signature component by 1. -/
 lemma signature_prime_ofRankAlt_negative {k : ℕ} (hk : 1 ≤ k) :
     signature (Gene.ofRankAlt k GeneType.Negative) -
     signature (prime (Gene.ofRankAlt k GeneType.Negative)) = (0, 1) := by
-  sorry
+  simp only [Gene.ofRankAlt_negative hk]
+  split_ifs with h
+  · -- k even: gene is Gene.ofRank k .Positive
+    rw [prime_ofRank]
+    have heq := signature_ofRank_eq' hk (show GeneType.Positive ≠ .NonPolarized by decide)
+    simp only [if_pos h, GeneType.neg_positive, signature_ofRank_one_negative] at heq
+    rw [heq]; abel
+  · -- k odd: gene is Gene.ofRank k .Negative
+    rw [prime_ofRank]
+    have heq := signature_ofRank_eq' hk (show GeneType.Negative ≠ .NonPolarized by decide)
+    simp only [if_neg h] at heq
+    rw [heq, signature_ofRank_one_negative]; abel
 
 end prime
 
