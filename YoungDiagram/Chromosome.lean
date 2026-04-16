@@ -36,6 +36,44 @@ lemma Gene.ofRankAlt_def {n : ℕ} {ε : GeneType} :
 
 @[simp] lemma Gene.ofRankAlt_zero {ε : GeneType} : Gene.ofRankAlt 0 ε = 0 := rfl
 
+/-- `g_+(k)` equals `Gene.ofRank k .Negative` when `k` is even, and `Gene.ofRank k .Positive`
+when `k` is odd. -/
+lemma Gene.ofRankAlt_positive {k : ℕ} (hk : 1 ≤ k) :
+    Gene.ofRankAlt k GeneType.Positive =
+      if Even k then Gene.ofRank k GeneType.Negative
+                else Gene.ofRank k GeneType.Positive := by
+  have htype : Int.negOnePow ((k : ℤ) - 1) • GeneType.Positive =
+      if Even k then GeneType.Negative else GeneType.Positive := by
+    rw [show (k : ℤ) - 1 = ((k - 1 : ℕ) : ℤ) from by omega, GeneType.negOnePow_smul']
+    simp only [GeneType.neg_positive]
+    split_ifs with h1 h2
+    · exact absurd h1 ((Nat.even_sub_one hk).mp h2)
+    · rfl
+    · rfl
+    · have h2 : ¬Even k := by assumption
+      exact absurd ((Nat.even_sub_one hk).mpr h1) h2
+  simp only [Gene.ofRankAlt_def, htype]
+  split_ifs <;> rfl
+
+/-- `g_-(k)` equals `Gene.ofRank k .Positive` when `k` is even, and `Gene.ofRank k .Negative`
+when `k` is odd. -/
+lemma Gene.ofRankAlt_negative {k : ℕ} (hk : 1 ≤ k) :
+    Gene.ofRankAlt k GeneType.Negative =
+      if Even k then Gene.ofRank k GeneType.Positive
+                else Gene.ofRank k GeneType.Negative := by
+  have htype : Int.negOnePow ((k : ℤ) - 1) • GeneType.Negative =
+      if Even k then GeneType.Positive else GeneType.Negative := by
+    rw [show (k : ℤ) - 1 = ((k - 1 : ℕ) : ℤ) from by omega, GeneType.negOnePow_smul']
+    simp only [GeneType.neg_negative]
+    split_ifs with h1 h2
+    · exact absurd h1 ((Nat.even_sub_one hk).mp h2)
+    · rfl
+    · rfl
+    · have h2 : ¬Even k := by assumption
+      exact absurd ((Nat.even_sub_one hk).mpr h1) h2
+  simp only [Gene.ofRankAlt_def, htype]
+  split_ifs <;> rfl
+
 lemma Gene.ofRank_eq_gene {g : Gene} :
     Gene.ofRank g.rank g.type = single g 1 := by
   rw [Gene.ofRank_def]

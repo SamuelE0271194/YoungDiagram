@@ -419,6 +419,38 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
     have hXg₁pos : 0 < X.1.val g₁ := Nat.pos_of_ne_zero hXg₁
     by_cases hε₁ : g₁.type = .Negative
     · -- Case 1: ε₁ = − (Type 1 mutation, paper §15.10 Cases 1–2).
+      obtain ⟨k, hkpos, hYkne, hak⟩ := ha
+      -- Show X has a rank-k gene with the alternating-sign type g_+(k).
+      -- Proof by contradiction: if not, then prime^[k-1] X has no rank-1 altType gene
+      -- (via prime_iterate_coeff). This means prime maps prime^[k-1] X without touching
+      -- any altType rank-1 gene, so the relevant sigma component is unchanged:
+      --   a_{k-1} = a_k  (k odd)  or  b_{k-1} = b_k  (k even).
+      -- But a_{k-1} ≥ c_{k-1} ≥ c_k > a_k = a_{k-1} (using minimality of k + dominance),
+      -- which is a contradiction. (Requires prime^k X.1.val = 0, i.e., no rank > k genes in X.)
+      have hg₂_exists : ∃ (g₂ : Gene), g₂.rank = k ∧
+          g₂.type = (Int.negOnePow ((k : ℤ) - 1) • GeneType.Positive) ∧
+          0 < X.1.val g₂ := by
+        set altType := Int.negOnePow ((k : ℤ) - 1) • GeneType.Positive
+        set g₂' : Gene := ⟨k, altType, hkpos⟩
+        by_contra h
+        push Not at h
+        -- h : ∀ g₂, g₂.rank = k → g₂.type = altType → X.1.val g₂ ≤ 0
+        have hXg₂' : X.1.val g₂' = 0 :=
+          Nat.le_zero.mp (h g₂' rfl rfl)
+        -- prime_iterate_coeff: the altType rank-1 gene in prime^[k-1] X comes from g₂'.
+        have hprimek1 : (prime^[k - 1] X.1.val) ⟨1, altType, le_refl 1⟩ = 0 := by
+          rw [prime_iterate_coeff]
+          have heq : (⟨1 + (k - 1), altType, Nat.le_add_right_of_le (le_refl 1)⟩ : Gene) =
+              g₂' := by
+            apply Gene.ext
+            · exact Nat.add_sub_cancel' hkpos
+            · rfl
+          rw [heq]; exact hXg₂'
+        -- Since prime^[k-1] X has no altType rank-1 gene, applying prime once more
+        -- does not decrease the relevant sigma component, giving a_{k-1} = a_k (k odd)
+        -- or b_{k-1} = b_k (k even). But a_{k-1} ≥ c_{k-1} ≥ c_k > a_k from minimality.
+        sorry
+      obtain ⟨g₂, hg₂rank, hg₂type, hXg₂⟩ := hg₂_exists
       sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
