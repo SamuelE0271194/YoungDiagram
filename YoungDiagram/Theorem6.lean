@@ -410,163 +410,17 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
   by_cases ha : ∃ k : ℕ, 0 < k ∧ prime^[k] Y.1.val ≠ 0 ∧
       (Sigma.sigma X.1 k).1 < (Sigma.sigma Y.1 k).1
   · -- Case A: a₁ < c₁ (paper §15.10, Cases 1–4).
-    -- Let k be a witness; in practice take k minimal.
-    obtain ⟨k, hkpos, hYkne, hak⟩ := ha
-    -- Split on Case 1 (ε₁ = −, g₁ = g_{-}(m) at minimal rank m, g₂ = g_{+}(k) at rank k)
-    -- vs Cases 2–4 (ε₁ = + or no such g₂ at rank k).
-    -- g_{-}(m) = g^{(-1)^m}(m): Negative when m odd, Positive when m even.
-    -- g_{+}(k) = g^{(-1)^{k-1}}(k): Positive when k odd, Negative when k even.
-    by_cases hcase1 : ∃ g₁ g₂ : Gene, 0 < X.1.val g₁ ∧ 0 < X.1.val g₂ ∧
-        (∀ g : Gene, 0 < X.1.val g → g₁.rank ≤ g.rank) ∧
-        (Odd g₁.rank ↔ g₁.type = .Negative) ∧
-        g₂.rank = k ∧ (Odd k ↔ g₂.type = .Positive)
-    · -- Case 1: g₁ = g_{-}(m) and g₂ = g_{+}(k) both exist in X.
-      obtain ⟨g₁, g₂, hXg₁, hXg₂, hg₁min, hg₁type, hg₂rank, hg₂pol⟩ := hcase1
-      -- Split on parity of k: Case 1a (k odd) vs Case 1b (k even).
-      by_cases hkodd : Odd k
-      · -- Case 1a: k odd, so g₂ = g^+(k) = Positive gene at rank k.
-        --   The type-3 mutation (ε = .Negative):
-        --     Gene.ofRankAlt g₁.rank .Negative + Gene.ofRankAlt k .Positive
-        --       → Gene.ofRankAlt (g₁.rank − 1) .Positive + Gene.ofRankAlt (k+1) .Negative
-        --
-        -- Step 1: g₂ is the Positive gene at rank k (from case hypothesis).
-        have hg₂type : g₂.type = .Positive := hg₂pol.mp hkodd
-        -- Step 2: g₁.rank ≤ k (minimality of g₁ in X, since g₂ ∈ X has rank k).
-        have hm_le_k : g₁.rank ≤ k := hg₂rank ▸ hg₁min g₂ hXg₂
-        -- Step 3: g₁ ≠ g₂.
-        -- If g₁ = g₂ then g₁.rank = k is odd (hkodd) yet g₁.type = .Positive ≠ .Negative
-        -- forces ¬Odd g₁.rank via hg₁type — contradiction.
-        have hg₁_ne_g₂ : g₁ ≠ g₂ := by
-          intro heq
-          have hpos : g₁.type = .Positive := heq ▸ hg₂type
-          have hnotNeg : g₁.type ≠ .Negative := hpos ▸ (by decide)
-          have hnotOdd : ¬Odd g₁.rank := mt hg₁type.mp hnotNeg
-          exact hnotOdd (heq ▸ hg₂rank ▸ hkodd)
-        -- Step 4: chromosome equalities.
-        -- g₁.type = negOnePow(g₁.rank-1) • .Negative (alternating-sign gene):
-        --   g₁.rank odd  → rank-1 even → negOnePow = +1 → .Negative = g₁.type ✓
-        --   g₁.rank even → rank-1 odd  → negOnePow = -1 → .Positive = g₁.type ✓
-        have hg₁_type_eq : (Int.negOnePow (↑(g₁.rank - 1))) • GeneType.Negative = g₁.type := by
-          have hpol : g₁.type ≠ .NonPolarized :=
-            IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
-              (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hXg₁))
-          rw [GeneType.negOnePow_smul']
-          rcases Nat.even_or_odd (g₁.rank - 1) with ⟨n, hn⟩ | ⟨n, hn⟩
-          · -- g₁.rank - 1 = 2n → g₁.rank = 2n + 1, Odd
-            have heven : Even (g₁.rank - 1) := ⟨n, hn⟩
-            simp only [if_pos heven]
-            exact (hg₁type.mp ⟨n, by have := g₁.rank_pos; omega⟩).symm
-          · -- g₁.rank - 1 = 2n + 1 → g₁.rank = 2n + 2, Even
-            have hnoteven : ¬Even (g₁.rank - 1) := fun ⟨m, hm⟩ ↦ by omega
-            simp only [if_neg hnoteven]
-            have hnotNeg : g₁.type ≠ .Negative := by
-              intro h
-              obtain ⟨m, hm⟩ := hg₁type.mpr h
-              exact hnoteven ⟨n + 1, by omega⟩
-            cases ht : g₁.type with
-            | NonPolarized => exact absurd ht hpol
-            | Positive => rfl
-            | Negative => exact absurd ht hnotNeg
-        -- g₂.type = negOnePow(k-1) • .Positive: k odd → k-1 even → negOnePow = +1 → .Positive ✓
-        have hg₂_type_eq : (Int.negOnePow (↑(k - 1))) • GeneType.Positive = g₂.type := by
-          rw [GeneType.negOnePow_smul']
-          rcases hkodd with ⟨n, hn⟩
-          have heven : Even (k - 1) := ⟨n, by omega⟩
-          simp only [if_pos heven]
-          exact hg₂type.symm
-        -- Gene.ofRankAlt g₁.rank .Negative = Finsupp.single g₁ 1
-        have hg₁_chr : Gene.ofRankAlt g₁.rank .Negative = Finsupp.single g₁ 1 := by
-          rw [Gene.ofRankAlt_def,
-            show (↑g₁.rank : ℤ) - 1 = ↑(g₁.rank - 1) from (Nat.cast_sub g₁.rank_pos).symm,
-            hg₁_type_eq, Gene.ofRank_eq_gene]
-        -- Gene.ofRankAlt k .Positive = Finsupp.single g₂ 1
-        have hg₂_chr : Gene.ofRankAlt k .Positive = Finsupp.single g₂ 1 := by
-          have hkpos : 0 < k := by obtain ⟨n, hn⟩ := hkodd; omega
-          rw [Gene.ofRankAlt_def,
-            show (↑k : ℤ) - 1 = ↑(k - 1) from (Nat.cast_sub hkpos).symm,
-            hg₂_type_eq, ← hg₂rank, Gene.ofRank_eq_gene]
-        -- Step 5: Set up the type-3 primitive mutation.
-        let ε : GeneType := .Negative
-        have hε : ε ≠ .NonPolarized := by decide
-        let X3 : Pi := Pi.X3 hε hm_le_k g₁.rank_pos
-        let Y3 : Pi := Pi.Y3 hε hm_le_k g₁.rank_pos
-        -- X3.val = Gene.ofRankAlt g₁.rank .Negative + Gene.ofRankAlt k .Positive
-        --        = single g₁ 1 + single g₂ 1
-        have hX3_eq : X3.val = Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
-          rw [Pi.X3_eq, GeneType.neg_negative, hg₁_chr, hg₂_chr]
-        -- Define rest = X.1.val − single g₁ 1 − single g₂ 1
-        let restval := X.1.val - Finsupp.single g₁ 1 - Finsupp.single g₂ 1
-        have hrest_mem : restval ∈ Pi := sub_mem_Pi _ (sub_mem_Pi _ X.1.2)
-        let rest_pi : Pi := ⟨restval, hrest_mem⟩
-        -- X.1.val = X3.val + restval
-        have hX_eq : X3.val + restval = X.1.val := by
-          rw [hX3_eq]; exact X_eq_X1_add_rest hXg₁ hXg₂ hg₁_ne_g₂
-        -- Step 6: Construct Z = Y3 + rest and prove Pi.Step X Z.
-        let Z : Pi := ⟨Y3.val + restval, add_mem Y3.2 hrest_mem⟩
-        have hprim : Pi.Primitive X3 Y3 := Pi.Primitive.type3 ε hε hm_le_k g₁.rank_pos
-        have hX_sub : X3 + rest_pi = X.1 := Subtype.ext hX_eq
-        refine ⟨Z, hX_sub ▸ Pi.Step.mk X3 Y3 rest_pi hprim, ?_⟩
-        -- Step 7: Show Z ≤ Y, i.e. Y3.val + restval ≤ Y.1.val.
-        -- Equivalently: Δ(X3→Y3, j) ≤ Δ(X→Y, j) at every sigma level j,
-        -- where Δ = sigma(Y,j) − sigma(X,j).
-        change Y3.val + restval ≤ Y.1.val
-        rw [le_iff_dominates]
-        intro j
-        rw [iterate_map_add, map_add]
-        have hdecomp : signature (prime^[j] X.1.val) =
-            signature (prime^[j] X3.val) + signature (prime^[j] restval) := by
-          rw [← hX_eq, iterate_map_add, map_add]
-        have hXYj : signature (prime^[j] X.1.val) ≤ signature (prime^[j] Y.1.val) :=
-          le_iff_dominates.mp hXY.le j
-        -- Split on j relative to g₁.rank and k.
-        rcases Nat.lt_or_ge j g₁.rank with hjm | hjm
-        · -- j < g₁.rank: mutation preserves sigma (Δ(X3→Y3, j) = 0).
-          -- prime^[j] X3 and prime^[j] Y3 have equal signatures by the iterate
-          -- signature equality for type-3 mutations.
-          have hY3X3 : signature (prime^[j] Y3.val) = signature (prime^[j] X3.val) := by
-            rw [Pi.Y3_eq, Pi.X3_eq]
-            have hpol : g₁.type ≠ .NonPolarized :=
-              IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
-                (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hXg₁))
-            have hg₁pos := g₁.rank_pos
-            -- negOnePow(g₁.rank-1)² = 1, so negOnePow(g₁.rank-1) • g₁.type = .Negative
-            have htype1 : (Int.negOnePow (↑(g₁.rank - 1))) • g₁.type = .Negative := by
-              rw [← hg₁_type_eq, GeneType.negOnePow_smul_smul,
-                show (↑(g₁.rank - 1) : ℤ) + ↑(g₁.rank - 1) = 2 * ↑(g₁.rank - 1) from by ring,
-                Int.negOnePow_two_mul, one_smul]
-            -- Apply mutation_type3_iterate_signature_eq with ε_lemma = g₁.type, m = 1,
-            -- n = k - g₁.rank + 1, k_param = g₁.rank - 1.
-            have h := mutation_type3_iterate_signature_eq (ε := g₁.type) hpol
-              (show 1 ≤ k - g₁.rank + 1 from by omega) le_rfl j (g₁.rank - 1) (by omega)
-            simp only [show 1 + (g₁.rank - 1) = g₁.rank from by omega,
-              show k - g₁.rank + 1 + (g₁.rank - 1) = k from by omega,
-              GeneType.smul_neg, htype1, show -GeneType.Negative = .Positive from rfl] at h
-            exact h.symm
-          rw [hY3X3, ← hdecomp]; exact hXYj
-        · by_cases hkj : k + 1 ≤ j
-          · -- j ≥ k+1: all genes in X3/Y3 have rank ≤ k+1 ≤ j, so prime^[j] = 0.
-            have hX3j : signature (prime^[j] X3.val) = 0 := by
-              rw [hX3_eq, iterate_map_add, map_add]
-              simp only [← Gene.ofRank_eq_gene, prime_iterate_ofRank,
-                show g₁.rank - j = 0 from by omega,
-                show g₂.rank - j = 0 from by rw [hg₂rank]; omega,
-                Gene.ofRank_zero, map_zero, add_zero]
-            have hY3j : signature (prime^[j] Y3.val) = 0 := by
-              rw [Pi.Y3_eq, iterate_map_add, map_add]
-              simp only [Gene.ofRankAlt_def, prime_iterate_ofRank,
-                show g₁.rank - 1 - j = 0 from by have := g₁.rank_pos; omega,
-                show k + 1 - j = 0 from by omega,
-                Gene.ofRank_zero, map_zero, add_zero]
-            rw [hY3j, zero_add]
-            rw [hdecomp, hX3j, zero_add] at hXYj
-            exact hXYj
-          · -- g₁.rank ≤ j ≤ k: intermediate range — need chain inequalities from §15.6/15.7.
-            -- c_{k-1}−c_k ≤ ⋯ ≤ c_0−c_1 < α = a_{k-1}−a_k shows Δ(X3→Y3,j) ≤ Δ(X→Y,j).
-            sorry
-      · -- Case 1b: k even, so g₂ = g^-(k).
-        --   Mutation: g_{-}(m) + g^-(k) → g_{-}(m-1) + g^+(k+1).
-        sorry
-    · -- Cases 2–4: ε₁ = +, Case 1 fails.
+    -- Let g₁ = g_{ε₁}(m) be the gene of minimal rank m in X (paper §15, p.30).
+    have hXne : X.1.val ≠ 0 := by
+      intro h; have := X.2; rw [h, rank_def, Finsupp.sum_zero_index] at this; omega
+    obtain ⟨g₁, hXg₁, hg₁min⟩ := Finset.exists_min_image X.1.val.support Gene.rank
+      (Finsupp.support_nonempty_iff.mpr hXne)
+    rw [Finsupp.mem_support_iff] at hXg₁
+    have hXg₁pos : 0 < X.1.val g₁ := Nat.pos_of_ne_zero hXg₁
+    by_cases hε₁ : g₁.type = .Negative
+    · -- Case 1: ε₁ = − (Type 1 mutation, paper §15.10 Cases 1–2).
+      sorry
+    · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
     sorry
