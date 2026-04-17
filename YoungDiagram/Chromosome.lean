@@ -85,6 +85,10 @@ lemma Gene.ofRank_eq_gene_smul {g : Gene} {m : ℕ} :
     m • Gene.ofRank g.rank g.type = single g m := by
   rw [← smul_single_one, ofRank_eq_gene]
 
+lemma Gene.ofRankAlt_eq_gene {n : ℕ} (hn : 1 ≤ n) {ε : GeneType} :
+    Gene.ofRankAlt n ε = single ⟨n, Int.negOnePow (n - 1) • ε, hn⟩ 1 := by
+  simp only [dif_neg (by omega : n ≠ 0)]
+
 lemma Gene.ofRankAlt_shift_negOnePow_smul {n k : ℕ} {ε : GeneType} :
   Gene.ofRankAlt (n + k) (Int.negOnePow k • ε) =
     Gene.ofRank (n + k) (Int.negOnePow (n - 1) • ε) := by

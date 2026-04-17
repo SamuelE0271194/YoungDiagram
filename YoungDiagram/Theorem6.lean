@@ -389,7 +389,7 @@ private lemma exists_mutation_le_disjoint_pair
 
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 
-/-- Cases 1–4 of §15.10 (all sorry). -/
+/-- Cases 1–4 of §15.10 (all s orry). -/
 private lemma exists_mutation_le_fifteen_ten (m : ℕ)
     (ih : ∀ k, k < m + 2 → ∀ X Y : nPi k, X.1 < Y.1 →
       ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1)
@@ -407,8 +407,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
   -- Split: either some k has a_k < c_k, or for all such k a_k = c_k (so b_k < d_k).
   -- From hsigeq: for k ≥ 1 with Y^(k) ≠ 0, sigma X k ≠ sigma Y k.
   -- Split on Case A (a₁ < c₁) vs Case B (a₁ = c₁, so b₁ < d₁).
-  by_cases ha : ∃ k : ℕ, 0 < k ∧ prime^[k] Y.1.val ≠ 0 ∧
-      (Sigma.sigma X.1 k).1 < (Sigma.sigma Y.1 k).1
+  by_cases ha : (Sigma.sigma X.1 1).1 < (Sigma.sigma Y.1 1).1
   · -- Case A: a₁ < c₁ (paper §15.10, Cases 1–4).
     -- Let g₁ = g_{ε₁}(m) be the gene of minimal rank m in X (paper §15, p.30).
     have hXne : X.1.val ≠ 0 := by
@@ -417,8 +416,84 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
       (Finsupp.support_nonempty_iff.mpr hXne)
     rw [Finsupp.mem_support_iff] at hXg₁
     have hXg₁pos : 0 < X.1.val g₁ := Nat.pos_of_ne_zero hXg₁
-    by_cases hε₁ : g₁.type = .Negative
-    · -- Case 1: ε₁ = − (Type 1 mutation, paper §15.10 Cases 1–2).
+
+    by_cases hε₁ : g₁.type = Int.negOnePow (g₁.rank - 1) • GeneType.Negative
+    · -- Case 1: ε₁ = − (i.e. g₁ = Gene.ofRankAlt g₁.rank .Negative as a Gene term).
+      have hg₂ : ∃ g₂ : Gene, (g₂.type = Int.negOnePow (g₂.rank - 1) • GeneType.Positive) ∧
+       0 < X.1.val g₂ := by
+        by_contra hno_g₂
+        push Not at hno_g₂
+        -- hno_g₂ : ∀ g : Gene, g.rank = 1 → g.type = .Positive → X.1.val g = 0
+        -- Since no rank-1 Positive gene exists in X, priming once does not decrease a.
+        have ha₁_eq_a₀ : (Sigma.sigma X.1 1).1 = (Sigma.sigma X.1 0).1 := by
+          simp only [Sigma.sigma, Function.iterate_one, Function.iterate_zero, id]
+          rw [signature_prime_fst, signature_fst]
+          apply Finsupp.sum_congr
+          intro g hg
+          congr 1
+          -- Goal: (Chromosome.signature (primeGene g)).1 = (Gene.signature g).1
+          have hg_in_X : 0 < X.1.val g :=
+            Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
+          have hg_pol : g.type ≠ .NonPolarized :=
+            IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g hg
+          -- Every gene in X has type Int.negOnePow(g.rank-1)•.Negative.
+          have hg_neg : g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative := by
+            have h_not_pos : g.type ≠ Int.negOnePow (g.rank - 1) • GeneType.Positive :=
+              fun heq => by have := hno_g₂ g heq; omega
+            simp only [GeneType.negOnePow_smul, GeneType.neg_positive,
+              GeneType.neg_negative] at h_not_pos ⊢
+            -- After simp: even case gives h_not_pos : g.type ≠ .Positive, goal : g.type = .Negative
+            --              odd case gives h_not_pos : g.type ≠ .Negative, goal : g.type = .Positive
+            split_ifs with heven
+            · simp only [if_pos heven] at h_not_pos
+              -- h_not_pos : g.type ≠ GeneType.Positive
+              cases ht : g.type with
+              | Positive => exact absurd ht h_not_pos
+              | Negative => rfl
+              | NonPolarized => exact absurd ht hg_pol
+            · simp only [if_neg heven] at h_not_pos
+              -- h_not_pos : g.type ≠ GeneType.Negative
+              cases ht : g.type with
+              | Positive => rfl
+              | Negative => exact absurd ht h_not_pos
+              | NonPolarized => exact absurd ht hg_pol
+          -- Gene.ofRankAlt g.rank .Negative = single g 1 (since g has the matching type).
+          have hofRankAlt : Gene.ofRankAlt g.rank GeneType.Negative = Finsupp.single g 1 := by
+            rw [Gene.ofRankAlt_eq_gene g.rank_pos]
+            congr 1
+            exact Gene.ext rfl hg_neg.symm
+          -- signature_prime_ofRankAlt_negative: priming g_-(k) leaves the first component fixed.
+          have hkey := signature_prime_ofRankAlt_negative g.rank_pos
+          rw [hofRankAlt, prime_single, one_smul, ← primeGene_def] at hkey
+          -- hkey : signature (single g 1) - signature (primeGene g) = (0, 1)
+          have hfst : (signature (Finsupp.single g 1)).1 = (signature (primeGene g)).1 := by
+            have h : (signature (Finsupp.single g 1)).1 - (signature (primeGene g)).1 = 0 :=
+              calc (signature (Finsupp.single g 1)).1 - (signature (primeGene g)).1
+                  = (signature (Finsupp.single g 1) - signature (primeGene g)).1 := rfl
+                _ = (0, 1).1 := congr_arg Prod.fst hkey
+                _ = 0 := rfl
+            linarith
+          -- signature (single g 1) has first component = g.signature.1.
+          have hsingle : (signature (Finsupp.single g 1)).1 = g.signature.1 := by
+            rw [signature_fst, Finsupp.sum_single_index (by simp), Nat.cast_one, one_smul]
+          linarith
+        -- a₀ = c₀ follows from equal ranks and componentwise dominance (X ≤ Y).
+        have ha₀_eq_c₀ : (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 := by
+          simp only [Sigma.sigma, Function.iterate_zero, id]
+          have hsig_le := (le_iff_dominates.mp hXY.le) 0
+          simp only [Function.iterate_zero, id] at hsig_le
+          have hXsum := @signature_sum_eq_rank X.1.val
+          have hYsum := @signature_sum_eq_rank Y.1.val
+          have hXrank : (X.1.val.rank : ℚ) = m + 2 := by exact_mod_cast X.2
+          have hYrank : (Y.1.val.rank : ℚ) = m + 2 := by exact_mod_cast Y.2
+          obtain ⟨h1_le, h2_le⟩ := Prod.le_def.mp hsig_le
+          linarith
+        -- c₁ ≤ c₀: sigma of Y is antitone.
+        have hc₁_le_c₀ : (Sigma.sigma Y.1 1).1 ≤ (Sigma.sigma Y.1 0).1 :=
+          (Prod.le_def.mp (Sigma.antitone Y.1 (Nat.zero_le 1))).1
+        -- a₁ = a₀ = c₀ ≥ c₁ > a₁: contradiction.
+        linarith
+      obtain ⟨g₂, hg₂type, hg₂pos⟩ := hg₂
       sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
