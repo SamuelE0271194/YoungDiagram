@@ -511,39 +511,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         simp only [GeneType.negOnePow_smul, GeneType.neg_negative, GeneType.neg_positive] at hcontra
         split_ifs at hcontra <;> simp_all
       -- Steps 4–6: construct the type-3 mutation step
-      have hε : GeneType.Negative ≠ .NonPolarized := by decide
-      let X3_pi : Pi := Pi.X3 hε hle g₁.rank_pos
-      let Y3_pi : Pi := Pi.Y3 hε hle g₁.rank_pos
-      have hX3_eq : X3_pi.val = Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
-        have h := Pi.X3_eq hε hle g₁.rank_pos
-        simp only [GeneType.neg_negative, hg₁chr, hg₂chr] at h
-        exact h
-      let restval : Chromosome := X.1.val - X3_pi.val
-      have hrest_mem : restval ∈ Pi := sub_mem_Pi X3_pi.val X.1.2
-      let rest_pi : Pi := ⟨restval, hrest_mem⟩
-      have hX_eq : X3_pi.val + restval = X.1.val := by
-        apply Finsupp.ext; intro g'
-        simp only [restval, Finsupp.add_apply, Finsupp.tsub_apply]
-        suffices h : X3_pi.val g' ≤ X.1.val g' by omega
-        rw [hX3_eq, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-        split_ifs with h1 h2
-        · exact absurd (h1.trans h2.symm) hne
-        · subst h1; exact hXg₁pos
-        · have h2 : g₂ = g' := by assumption
-          subst h2; exact hg₂pos
-        · omega
-      have hprim : Pi.Primitive X3_pi Y3_pi :=
-        Pi.Primitive.type3 .Negative hε hle g₁.rank_pos
-      have hstep_raw : Pi.Step (X3_pi + rest_pi) (Y3_pi + rest_pi) :=
-        Pi.Step.mk X3_pi Y3_pi rest_pi hprim
-      have hX_sub : X3_pi + rest_pi = X.1 := Subtype.ext hX_eq
-      refine ⟨Y3_pi + rest_pi, hX_sub ▸ hstep_raw, ?_⟩
-      -- Step 7: Z ≤ Y.1
-      rcases Nat.even_or_odd g₂.rank with ⟨t, hkt⟩ | ⟨t, hkt⟩
-      · -- k even: g₂.rank = 2 * t
-        sorry
-      · -- k odd
-        sorry
+      sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
