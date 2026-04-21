@@ -387,6 +387,23 @@ private lemma exists_mutation_le_disjoint_pair
         rw [hdecomp, hX1j, zero_add]
       rw [hY1j, zero_add, hrestj]; exact hXYj
 
+/-- If `X` and `Y` have the same rank and `X.1 ≤ Y.1` in `Pi`, then their sigma sequences
+agree in the first component at level 0 (i.e. `a₀ = c₀`).
+
+The key is that `signature_sum_eq_rank` gives `a₀ + b₀ = rank = c₀ + d₀`, and since
+`a₀ ≤ c₀` and `b₀ ≤ d₀` from sigma-dominance, equality is forced by linarith. -/
+private lemma sigma_zero_fst_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
+    (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 := by
+  simp only [Sigma.sigma, Function.iterate_zero, id]
+  have hsig_le := (le_iff_dominates.mp hXY) 0
+  simp only [Function.iterate_zero, id] at hsig_le
+  obtain ⟨h1_le, h2_le⟩ := Prod.le_def.mp hsig_le
+  have hXsum := @signature_sum_eq_rank X.1.val
+  have hYsum := @signature_sum_eq_rank Y.1.val
+  have hXrank : (X.1.val.rank : ℚ) = n := by exact_mod_cast X.2
+  have hYrank : (Y.1.val.rank : ℚ) = n := by exact_mod_cast Y.2
+  linarith
+
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 
 /-- Cases 1–4 of §15.10 (all s orry). -/
@@ -509,8 +526,39 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         intro heq; subst heq
         have hcontra := hε₁.symm.trans hg₂type
         simp only [GeneType.negOnePow_smul, GeneType.neg_negative, GeneType.neg_positive] at hcontra
-        split_ifs at hcontra <;> simp_all
-      -- Steps 4–6: construct the type-3 mutation step
+        split_ifs at hcontra <;>
+        simp_all
+      -- Step 4: type-3 primitive mutation pair
+      let X3 : Pi := Pi.X3 (hε := (by decide : GeneType.Negative ≠ .NonPolarized)) hle g₁.rank_pos
+      let Y3 : Pi := Pi.Y3 (hε := (by decide : GeneType.Negative ≠ .NonPolarized)) hle g₁.rank_pos
+      -- X3.val = Gene.ofRankAlt m .Negative + Gene.ofRankAlt k .Positive
+      -- Y3.val = Gene.ofRankAlt (m−1) .Positive + Gene.ofRankAlt (k+1) .Negative
+      have hX3_val : X3.val = Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
+        rw [Pi.X3_eq, GeneType.neg_negative, hg₁chr, hg₂chr]
+      -- Step 5: decompose X into X3 + rest
+      let rest : Chromosome := X.1.val - Finsupp.single g₁ 1 - Finsupp.single g₂ 1
+      have hrest_Pi : rest ∈ Pi := sub_mem_Pi _ (sub_mem_Pi _ X.1.2)
+      let rest_pi : Pi := ⟨rest, hrest_Pi⟩
+      have hX_eq : X3.val + rest = X.1.val := by
+        rw [hX3_val]; exact X_eq_X1_add_rest hXg₁pos hg₂pos hne
+      -- Step 6: construct Z and the mutation step
+      have hprim : Pi.Primitive X3 Y3 :=
+        Pi.Primitive.type3 GeneType.Negative (by decide) hle g₁.rank_pos
+      let Z : Pi := ⟨Y3.val + rest, add_mem Y3.2 hrest_Pi⟩
+      have hstep_raw : Pi.Step (X3 + rest_pi) (Y3 + rest_pi) :=
+        Pi.Step.mk X3 Y3 rest_pi hprim
+      have hX_sub : X3 + rest_pi = X.1 := Subtype.ext hX_eq
+      refine ⟨Z, hX_sub ▸ hstep_raw, ?_⟩
+      -- Step 7: Z ≤ Y
+      change Y3.val + rest ≤ Y.1.val
+      rw [le_iff_dominates]
+      intro j
+      rw [iterate_map_add, map_add]
+      have hdecomp : signature (prime^[j] X.1.val) =
+          signature (prime^[j] X3.val) + signature (prime^[j] rest) := by
+        conv_lhs => rw [← hX_eq]; rw [iterate_map_add, map_add]
+      have hXYj : signature (prime^[j] X.1.val) ≤ signature (prime^[j] Y.1.val) :=
+        le_iff_dominates.mp hXY.le j
       sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
@@ -552,6 +600,7 @@ theorem exists_mutation_le (n : ℕ) (X Y : nPi n)
       exact absurd (Subtype.ext (Pi_rank_one_eq_of_sig_eq X.1.2 Y.1.2 X.2 Y.2 hsig_eq))
                    (ne_of_lt hXY)
     | succ m =>
+      have ha₀_eq_c₀ := sigma_zero_fst_eq X Y hXY.le
       by_cases hcommon : ∃ g : Gene, 0 < X.1.val g ∧ 0 < Y.1.val g
       · exact exists_mutation_le_shared_gene m ih X Y hXY hcommon
       · by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ prime^[k] Y.1.val ≠ 0 ∧
