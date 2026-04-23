@@ -404,6 +404,76 @@ private lemma sigma_zero_fst_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
   have hYrank : (Y.1.val.rank : ℚ) = n := by exact_mod_cast Y.2
   linarith
 
+/-- **X-side equalities** (Step 5, Case 1 of §15, Djoković 1982).
+
+For `j < g₂.rank = k`, the alternating sigma-differences of `X` are all equal to `a₀ − a₁`:
+the `.1`-difference at even `j` and `.2`-difference at odd `j` equal
+`(Sigma.sigma X 0).1 − (Sigma.sigma X 1).1`.
+
+The proof uses the column-count formula: `aᵢ₋₁ − aᵢ` counts g₊-genes of rank ≥ i when i is odd,
+and g₋-genes of rank ≥ i when i is even. Minimality of k (among g₊-ranks) forces the g₊-count
+to equal P on the whole range [1, k], giving the constant chain. -/
+private lemma x_side_equalities
+    {X : Pi}
+    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
+      g.type = .Positive ∧ h.type = .Negative ∧
+      0 < X.val g ∧ 0 < X.val h)
+    {g₂ : Gene}
+    (hg₂type : Gene.ofRankAlt g₂.rank GeneType.Positive = Finsupp.single g₂ 1)
+    (hg₂pos : 0 < X.val g₂)
+    (hg₂min : ∀ g' : Gene,
+      Gene.ofRankAlt g'.rank GeneType.Positive = Finsupp.single g' 1 →
+      0 < X.val g' → g₂.rank ≤ g'.rank)
+    {j : ℕ} (hj : j < g₂.rank) :
+    (if Even j then
+      (Sigma.sigma X j).1 - (Sigma.sigma X (j + 1)).1
+    else
+      (Sigma.sigma X j).2 - (Sigma.sigma X (j + 1)).2) =
+    (Sigma.sigma X 0).1 - (Sigma.sigma X 1).1 := by
+  -- Column-count formula: the alternating sigma-diff at i equals the total multiplicity of
+  -- g₊-subscript genes in X with rank > i.
+  -- (For even i the `.1` diff counts g₊-genes contributing to column i+1; for odd i the `.2` diff.)
+  have hcol : ∀ i : ℕ, (if Even i then
+      (Sigma.sigma X i).1 - (Sigma.sigma X (i + 1)).1
+    else
+      (Sigma.sigma X i).2 - (Sigma.sigma X (i + 1)).2) =
+    ∑ g ∈ X.val.support.filter (fun g =>
+        i < g.rank ∧ g.type = Int.negOnePow (g.rank - 1) • GeneType.Positive),
+      (X.val g : ℚ) := by
+    sorry
+  rw [hcol j]
+  -- At i = 0 (even), rank > 0 holds for all genes (rank_pos), so the formula gives the
+  -- total g₊-count P = Σ_{g₊-genes in X} X.val g.
+  have hRHS : (Sigma.sigma X 0).1 - (Sigma.sigma X 1).1 =
+      ∑ g ∈ X.val.support.filter (fun g =>
+        g.type = Int.negOnePow (g.rank - 1) • GeneType.Positive), (X.val g : ℚ) := by
+    have h0 := hcol 0
+    -- Reduce the `if Even 0 then A(0+1) else B(0+1)` form in h0 to `A(1)` by proving heq
+    -- against an explicitly-written if-expression (avoiding the pattern-matching failure that
+    -- occurs when if_pos is applied directly to h0 whose `Even 0` may be stored unfolded).
+    have heq : (if Even (0 : ℕ) then (Sigma.sigma X 0).1 - (Sigma.sigma X (0 + 1)).1
+                else (Sigma.sigma X 0).2 - (Sigma.sigma X (0 + 1)).2) =
+               (Sigma.sigma X 0).1 - (Sigma.sigma X 1).1 := by
+      rw [if_pos (by norm_num : Even (0 : ℕ))]
+    rw [← heq, h0]
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext g; simp only [Finset.mem_filter]
+    exact ⟨fun ⟨hs, _, ht⟩ => ⟨hs, ht⟩, fun ⟨hs, ht⟩ => ⟨hs, g.rank_pos, ht⟩⟩
+  rw [hRHS]
+  -- Constancy: for j < g₂.rank every g₊-gene has rank ≥ g₂.rank > j,
+  -- so the condition `j < g.rank` is redundant and the two filter-sums agree.
+  apply Finset.sum_congr _ (fun _ _ => rfl)
+  ext g; simp only [Finset.mem_filter]
+  constructor
+  · rintro ⟨hsupp, _, htype⟩; exact ⟨hsupp, htype⟩
+  · rintro ⟨hsupp, htype⟩
+    refine ⟨hsupp, ?_, htype⟩
+    have hg2le : g₂.rank ≤ g.rank :=
+      hg₂min g
+        (by rw [Gene.ofRankAlt_eq_gene g.rank_pos]; congr 1; exact Gene.ext rfl htype.symm)
+        (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hsupp))
+    omega
+
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 
 /-- Cases 1–4 of §15.10 (all s orry). -/
@@ -582,8 +652,15 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           (Pi.Y3 hε_neg hle_ranks g₁.rank_pos)
           rest
           (Pi.Primitive.type3 GeneType.Negative hε_neg hle_ranks g₁.rank_pos)
+
       -- It remains to show Z ≤ Y.1.
-      exact ⟨Z, hstep, by sorry⟩
+      refine ⟨Z, hstep, ?_⟩
+      -- Case split on the parity of k = g₂.rank.
+      rcases Nat.even_or_odd g₂.rank with ⟨j, hk_even⟩ | ⟨j, hk_odd⟩
+      · -- k even
+        sorry
+      · -- k odd
+        sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
