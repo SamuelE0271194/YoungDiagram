@@ -619,8 +619,8 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         rw [← heq] at hg₂_type_eq; rw [hε₁] at hg₂_type_eq
         simp only [GeneType.negOnePow_smul, GeneType.neg_negative, GeneType.neg_positive]
           at hg₂_type_eq
-        split_ifs at hg₂_type_eq <;>
-        exact absurd hg₂_type_eq (by decide)
+        split_ifs at hg₂_type_eq;
+
       -- The primitive source chromosome equals single g₁ 1 + single g₂ 1.
       have hsrc_val : (Pi.X3 hε_neg hle_ranks g₁.rank_pos : Chromosome) =
           Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
