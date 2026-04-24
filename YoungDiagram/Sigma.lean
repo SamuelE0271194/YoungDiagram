@@ -128,4 +128,14 @@ where `(aₖ, bₖ) = σ(X)ₖ` and `(cₖ, dₖ) = σ(Y)ₖ`. -/
 lemma cond_15_8 {X Y : Variety.Pi} (h : X < Y) (k : ℕ) :
     a X k ≤ a Y k ∧ b X k ≤ b Y k := le_iff_dominates.1 h.le k
 
+/-- The drop in the first signature component when going from `σ(X)ₖ` to `σ(X)ₖ₊₁`
+equals the total multiplicity of genes in `X^(k)` that are positive in the alternating basis,
+i.e. genes `g` with `g.type = (-1)^(g.rank-1) • .Positive`. -/
+lemma sigma_fst_diff (hX : X ∈ Variety.Pi) :
+    (sigma X k).1 - (sigma X (k + 1)).1 =
+    (prime^[k] X).sum (fun g m ↦
+      if g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive
+      then (m : ℚ) else 0) := by
+  sorry
+
 end Sigma
