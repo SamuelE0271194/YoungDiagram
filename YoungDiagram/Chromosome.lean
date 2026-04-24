@@ -430,6 +430,17 @@ lemma signature_prime_ofRankAlt_negative {k : ℕ} (hk : 1 ≤ k) :
     simp only [if_neg h] at heq
     rw [heq, signature_ofRank_one_negative]; abel
 
+lemma prime_ofRankAlt_positive {k : ℕ} :
+    prime (Gene.ofRankAlt k GeneType.Positive) = Gene.ofRankAlt (k - 1) GeneType.Negative := by
+  cases k with
+  | zero => simp
+  | succ k =>
+    simp only [Gene.ofRankAlt_def, prime_ofRank, Nat.succ_sub_one]
+    congr 1
+    rw [show (Nat.succ k : ℤ) - 1 = ↑k from by push_cast; ring,
+        ← GeneType.neg_positive, GeneType.negOnePow_smul_neg,
+        show (↑k : ℤ) - 1 + 1 = ↑k from by ring]
+
 end prime
 
 section rank

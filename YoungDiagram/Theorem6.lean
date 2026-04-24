@@ -440,6 +440,75 @@ private lemma x_side_equalities
     ∑ g ∈ X.val.support.filter (fun g =>
         i < g.rank ∧ g.type = Int.negOnePow (g.rank - 1) • GeneType.Positive),
       (X.val g : ℚ) := by
+    intro i
+    -- ===== Lemma A (hiter) =====
+    -- Claim: signature (prime^[k] X.val) = X.val.sum (fun g m => m • (Gene.ofRank (g.rank - k) g.type).signature)
+    -- k = 0 : signature_def + (Gene.ofRank g.rank g.type).signature = g.signature
+    --         (by Gene.ofRank_def, dif_neg (show g.rank ≠ 0 by omega), Gene.ext rfl rfl, or
+    --          by signature_single after Gene.ofRank_def to get Finsupp.single g 1).
+    -- k+1   : signature_prime_iterate gives X.val.sum over (prime^[k] (primeGene g)).signature;
+    --         primeGene_def + prime_iterate_ofRank gives Gene.ofRank (g.rank - 1 - k) g.type;
+    --         g.rank - 1 - k = g.rank - (k+1) by Nat.sub_sub + Nat.add_comm 1 k (or omega).
+    have hiter : ∀ k : ℕ, signature (prime^[k] X.val) =
+        X.val.sum (fun g m => m • (Gene.ofRank (g.rank - k) g.type).signature) := by
+      sorry
+    -- ===== Lemma B (hpergene) =====
+    -- Claim: for each polarized h ∈ X.val.support,
+    --   (if Even i then sig(ofRank(h.rank-i) h.type).1 - sig(ofRank(h.rank-(i+1)) h.type).1
+    --              else sig(ofRank(h.rank-i) h.type).2 - sig(ofRank(h.rank-(i+1)) h.type).2)
+    --   = if i < h.rank ∧ h.type = negOnePow(h.rank-1) • Positive then 1 else 0.
+    -- Proof outline:
+    -- • i ≥ h.rank: h.rank - i = 0 and h.rank - (i+1) = 0 (Nat.sub_eq_zero_of_le),
+    --   so Gene.ofRank_zero + map_zero gives diff = 0; condition is false.
+    -- • i < h.rank: let n := h.rank - i ≥ 1 (Nat.one_le_iff_ne_zero.mpr (Nat.sub_ne_zero_of_lt hlt)).
+    --   h.rank - (i+1) = n - 1 (omega).
+    --   signature_ofRank_eq' (hk : 1 ≤ n, hε : hpol) gives sig(ofRank n h.type) =
+    --     sig(ofRank (n-1) h.type) + δ,
+    --   where δ = if Even n then sig(ofRank 1 (-h.type)) else sig(ofRank 1 h.type).
+    --   So diff = δ.
+    --   Parity: Even n = Even (h.rank - i) ↔ (Even h.rank ↔ Even i)
+    --     [since h.rank - i ≡ h.rank + i (mod 2) when i ≤ h.rank, by Nat.even_sub (le_of_lt hlt)].
+    --   Subscript-pos condition: negOnePow(h.rank-1) • Positive
+    --     = if Even (h.rank-1) then Positive else Negative  [GeneType.negOnePow_smul']
+    --     = if ¬ Even h.rank then Positive else Negative    [Nat.even_sub_one h.rank_pos].
+    --   Split on Even i (2 cases) × h.type ∈ {Positive, Negative} (2 cases, using hpol):
+    --     - (Even i, Positive, Even h.rank):   n even → δ = sig(ofRank 1 Negative) = (0,1); .1 = 0;
+    --         subcript-pos requires type = Negative → cond = false → RHS = 0. ✓
+    --     - (Even i, Positive, ¬Even h.rank):  n odd  → δ = sig(ofRank 1 Positive) = (1,0); .1 = 1;
+    --         subscript-pos: type must be Positive ✓ → cond = true → RHS = 1. ✓
+    --     - (Even i, Negative, Even h.rank):   n even → δ.1 = sig(ofRank 1 Positive).1 = 1;
+    --         subscript-pos: Negative = if ¬Even h.rank then Pos else Neg → Even h.rank → Neg → cond true → 1. ✓
+    --     - (Even i, Negative, ¬Even h.rank):  n odd  → δ.1 = sig(ofRank 1 Negative).1 = 0;
+    --         subscript-pos requires Positive → cond false → 0. ✓
+    --     (Odd i cases: flip the parity of n and check .2 instead of .1; symmetric.)
+    have hpergene : ∀ h : Gene, h ∈ X.val.support →
+        (if Even i
+         then (Gene.ofRank (h.rank - i) h.type).signature.1 -
+              (Gene.ofRank (h.rank - (i + 1)) h.type).signature.1
+         else (Gene.ofRank (h.rank - i) h.type).signature.2 -
+              (Gene.ofRank (h.rank - (i + 1)) h.type).signature.2) =
+        if i < h.rank ∧ h.type = (↑(h.rank - 1) : ℤ).negOnePow • GeneType.Positive
+        then 1 else 0 := by
+      intro h hh
+      have hpol : h.type ≠ .NonPolarized := IsPolarized_def'.mp (mem_Pi_iff.mp X.2) h hh
+      sorry
+    -- ===== Combining A + B =====
+    -- Goal (after simp only [Sigma.sigma]):
+    --   (if Even i then sig(prime^[i] X.val).1 - sig(prime^[i+1] X.val).1
+    --              else sig(prime^[i] X.val).2 - sig(prime^[i+1] X.val).2) = filter_sum
+    --
+    -- Step 1: rewrite both sigma values via hiter i and hiter (i+1).
+    -- Step 2: split_ifs with hi.
+    -- Step 3 (each branch): push .1 (or .2) through Finsupp.sum using
+    --     map_finsuppSum (AddMonoidHom.fst _ _) (or snd).
+    -- Step 4: combine the two sums using Finset.sum_sub_distrib (sub distributes over Finset.sum).
+    -- Step 5: apply hpergene g hg (after if_pos hi or if_neg hi) to each summand,
+    --     obtaining X.val.sum (fun g m => m • (if cond g then 1 else 0)).
+    -- Step 6: simplify m • (if cond then 1 else 0) = if cond then (m : ℚ) else 0
+    --     via smul_ite + nsmul_one + nsmul_zero (ℕ-smul on ℚ; use Nat.cast_smul_eq_nsmul).
+    -- Step 7: convert Finsupp.sum (fun g m => if cond g then (m : ℚ) else 0) to the filter sum
+    --     via Finsupp.sum_filter_index or by unfolding and using Finset.sum_ite + Finset.sum_const_zero.
+    simp only [Sigma.sigma]
     sorry
   rw [hcol j]
   -- At i = 0 (even), rank > 0 holds for all genes (rank_pos), so the formula gives the
