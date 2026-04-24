@@ -136,6 +136,59 @@ lemma sigma_fst_diff (hX : X ∈ Variety.Pi) :
     (prime^[k] X).sum (fun g m ↦
       if g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive
       then (m : ℚ) else 0) := by
-  sorry
+  -- Step 1: unfold sigma and set Y := prime^[k] X
+  simp only [sigma, Function.iterate_succ_apply']
+  set Y := prime^[k] X with hY
+  -- Step 2: Y is in Pi
+  have hYPi : Y ∈ Variety.Pi := Variety.prime_mem_Pi_iterate hX
+  -- Step 3: expand both sides by linearity, then combine into one sum
+  rw [signature_fst, signature_prime_fst]
+  simp only [Finsupp.sum, ← Finset.sum_sub_distrib]
+  -- Step 4: per-gene contribution
+  refine Finset.sum_congr rfl (fun g hg ↦ ?_)
+  have hpol : g.type ≠ GeneType.NonPolarized :=
+    (Chromosome.IsPolarized_def'.1 (Variety.mem_Pi_iff.1 hYPi)) g hg
+  rw [← smul_sub]
+  by_cases hpos : g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive
+  · -- Sub-case A: g is ofRankAlt Positive; signature difference is 1
+    rw [if_pos hpos]
+    have heq : Gene.ofRankAlt g.rank GeneType.Positive = single g 1 := by
+      rw [Gene.ofRankAlt_eq_gene g.rank_pos, ← hpos]
+    have hsig : g.signature.1 - (Chromosome.signature (primeGene g)).1 = 1 := by
+      have h := signature_prime_ofRankAlt_positive g.rank_pos
+      rw [heq] at h
+      have h1 : signature (single g 1) = g.signature := by
+        simp [signature_single g.rank_pos]
+      have h2 : prime (single g 1) = primeGene g := by
+        rw [prime_single, one_nsmul]; rfl
+      rw [h1, h2] at h
+      exact congr_arg Prod.fst h
+    simp [hsig]
+  · -- Sub-case B: g is ofRankAlt Negative; signature difference is 0
+    rw [if_neg hpos]
+    have hneg : g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Negative := by
+      simp only [GeneType.negOnePow_smul] at hpos ⊢
+      cases h : g.type
+      · exact absurd h hpol
+      · rw [h] at hpos
+        split_ifs with heven
+        · rw [if_pos heven] at hpos; exact absurd rfl hpos
+        · simp [GeneType.neg_negative]
+      · rw [h] at hpos
+        split_ifs with heven
+        · rfl
+        · rw [if_neg heven, GeneType.neg_positive] at hpos; exact absurd rfl hpos
+    have heq_neg : Gene.ofRankAlt g.rank GeneType.Negative = single g 1 := by
+      rw [Gene.ofRankAlt_eq_gene g.rank_pos, ← hneg]
+    have hsig : g.signature.1 - (Chromosome.signature (primeGene g)).1 = 0 := by
+      have h := signature_prime_ofRankAlt_negative g.rank_pos
+      rw [heq_neg] at h
+      have h1 : signature (single g 1) = g.signature := by
+        simp [signature_single g.rank_pos]
+      have h2 : prime (single g 1) = primeGene g := by
+        rw [prime_single, one_nsmul]; rfl
+      rw [h1, h2] at h
+      exact congr_arg Prod.fst h
+    simp [hsig]
 
 end Sigma
