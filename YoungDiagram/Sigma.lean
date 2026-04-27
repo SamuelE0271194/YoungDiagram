@@ -250,4 +250,51 @@ lemma sigma_snd_diff (hX : X ∈ Variety.Pi) :
       exact congr_arg Prod.snd h
     simp [hsig]
 
+/-- When `k` is even, the `Finsupp.sum` over `prime^[k] X` counting genes of type
+`(-1)^(rank-1) • Positive` equals the sum over genes of `X` with `rank > k` and the same
+type condition (using their rank in `X`).
+
+The parity hypothesis is needed because a gene `g` of rank `r` in `prime^[k] X` corresponds
+to a gene of rank `r + k` in `X`, and `negOnePow(r + k - 1) = negOnePow(r - 1)` iff `Even k`. -/
+lemma prime_iterate_sum_pos_eq (hk : Even k) :
+    (prime^[k] X).sum (fun g m ↦
+      if g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive
+      then (m : ℚ) else 0) =
+    ∑ g ∈ X.support.filter (fun g =>
+      k < g.rank ∧ g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive),
+    (X g : ℚ) := by
+  -- Step 1: unfold Finsupp.sum and replace each coefficient (prime^[k] X) g
+  --         with X ⟨g.rank + k, g.type, _⟩ via prime_iterate_coeff
+  simp only [Finsupp.sum]
+  conv_lhs => arg 2; ext g; rw [prime_iterate_coeff k X g]
+  -- Step 2: absorb the if-then-else into the summation domain
+  rw [← Finset.sum_filter]
+  -- Parity sub-lemma: negOnePow((r + k : ℤ) - 1) = negOnePow((r : ℤ) - 1) when Even k
+  have hpar : ∀ r : ℕ, Int.negOnePow ((r : ℤ) + k - 1) = Int.negOnePow ((r : ℤ) - 1) := by
+    have hkeven : Int.negOnePow (↑k : ℤ) = 1 := Int.negOnePow_even _ (by exact_mod_cast hk)
+    intro r
+    rw [show (↑r + ↑k - 1 : ℤ) = (↑r - 1) + ↑k by ring, Int.negOnePow_add, hkeven, mul_one]
+  -- Step 3: change of variables via φ : g ↦ ⟨g.rank + k, g.type, _⟩
+  --         with inverse φ⁻¹ : g' ↦ ⟨g'.rank - k, g'.type, _⟩
+  refine Finset.sum_bij'
+      (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
+      (fun g' hg' => (⟨g'.rank - k, g'.type, by sorry⟩ : Gene))
+      ?_ ?_ ?_ ?_ ?_
+  intro g hg
+  · -- (a) φ(g) ∈ X.support.filter (k < rank ∧ type cond)
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg ⊢
+    obtain ⟨hgsupp, hgtype⟩ := hg
+    refine ⟨by rwa [← prime_iterate_coeff], ?_, ?_⟩
+    · have := g.rank_pos; omega
+    · show g.type = Int.negOnePow ((↑(g.rank + k) : ℤ) - 1) • GeneType.Positive
+      push_cast; rw [hpar g.rank]; exact hgtype
+  · -- (b) φ⁻¹(g') ∈ (prime^[k] X).support.filter (type cond)
+    sorry
+  · -- (c) left inverse: ⟨g.rank + k - k, …⟩ = g
+    sorry
+  · -- (d) right inverse: ⟨g'.rank - k + k, …⟩ = g'
+    sorry
+  · -- (e) value equality: X ⟨g.rank + k, …⟩ = X ⟨g.rank + k, …⟩
+    sorry
+
 end Sigma
