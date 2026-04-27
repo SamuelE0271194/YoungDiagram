@@ -657,7 +657,14 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           (Pi.Y3 hε_neg hle_ranks g₁.rank_pos)
           rest
           (Pi.Primitive.type3 GeneType.Negative hε_neg hle_ranks g₁.rank_pos)
-
+      -- Step 4: σ(Z) = σ(X) + (0, 1) on [g₁.rank, g₂.rank], zero elsewhere.
+      -- The type-3 mutation with ε = Negative shifts the second sigma component up by 1
+      -- at each column i ∈ [g₁.rank, g₂.rank] and is the identity on all other columns.
+      have hstep4 : ∀ i : ℕ,
+          Sigma.sigma Z.val i =
+          Sigma.sigma X.1.val i +
+          if g₁.rank ≤ i ∧ i ≤ g₂.rank then (0, 1) else (0, 0) := by
+        sorry
       -- It remains to show Z ≤ Y.1.
       refine ⟨Z, hstep, ?_⟩
       -- Case split on the parity of k = g₂.rank.
@@ -674,7 +681,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 :=
           fun i hi => x_side_equalities hXpn hg₂type hg₂pos hg₂min hi
         -- 5b (Y-side weak chain): alternating sigma-differences of Y are non-increasing
-        -- This is sigma.cond_15_6
+        -- This is sigma.cond_15_6_compare_k_to_0
         -- 5c (strict inequality): a₀ = c₀ and a₁ < c₁ give c₀ - c₁ < P.
         have hstrict : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by

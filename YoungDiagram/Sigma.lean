@@ -370,6 +370,22 @@ lemma prime_iterate_sum_neg_eq (hk : ¬Even k) :
   · -- (e) value equality
     intros; rfl
 
-
+/-- (15.6) a₀ − a₁ ≥ bκ − bκ₊₁ (or a depending on sign of k) -/
+lemma cond_15_6_compare_k_to_0 (hX : X ∈ Variety.Pi) :
+    if Even k then a X k - a X (k + 1) ≤ a X 0 - a X 1
+              else b X k - b X (k + 1) ≤ a X 0 - a X 1 := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    have h15_6 := cond_15_6 X k hX
+    split_ifs with heven
+    · -- Even (k+1), so ¬Even k
+      have hkodd : ¬Even k := by rwa [Nat.even_add_one] at heven
+      simp only [hkodd, ↓reduceIte] at ih h15_6
+      exact h15_6.trans ih
+    · -- ¬Even (k+1), so Even k
+      have hkeven : Even k := by rwa [Nat.even_add_one, not_not] at heven
+      simp only [hkeven, ↓reduceIte] at ih h15_6
+      exact h15_6.trans ih
 
 end Sigma
