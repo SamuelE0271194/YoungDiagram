@@ -83,15 +83,19 @@ The three ingredients:
 - **Middle (strict inequality):** the Case 1 hypothesis $a_1 < c_1$ combined with $a_0 = c_0$.
 - **Right (equalities):** zig-zag inequalities (15.6) applied to $\sigma(X)$, saturated to equalities.
 
-> ### ⚠️ Unclear step: the $X$-side equalities
+> ### ✓ Proven: the $X$-side equalities (`x_side_equalities` in `Theorem6.lean`)
 >
 > The paper asserts that the zig-zag inequalities (15.6) applied to $\sigma(X)$ are saturated to **equalities** on the range $i = 1, \ldots, k$:
 >
 > $$a_0 - a_1 = b_1 - b_2 = a_2 - a_3 = \cdots = a_{k-1} - a_k.$$
 >
-> The structural reason these hold under the Case 1 reductions is not fully transparent. A rigorous justification would require writing $X = \sum_\alpha g_{\varepsilon_\alpha}(n_\alpha)$, expressing each column-difference $a_{i-1} - a_i$ and $b_{i-1} - b_i$ as a sum of indicators depending on gene ranks $n_\alpha$, subscripts $\varepsilon_\alpha$, and the parity of $i$, and showing these sums are constant on $[1, k]$.
+> This is now proved via a two-step column-count argument:
 >
-> Heuristically: minimality of $m$ (overall rank) and minimality of $k$ (among $g_{+}$-ranks) together with the uniform head-sign behavior of the subscript convention $g_{\pm}(n)$ should force (15.6) to be saturated on this range. But the paper leaves the detailed verification implicit, and the claim is stronger than it might first appear — it requires controlling how *all* genes of $X$ (including $g_{-}$-genes of intermediate rank) contribute column by column.
+> **Step 1 (column-count formula).** Using `Sigma.sigma_fst_diff` and `Sigma.prime_iterate_sum_pos_eq` / `prime_iterate_sum_neg_eq`, the alternating sigma-difference at column $i$ equals
+> $$\sum_{\substack{g \in \operatorname{supp}(X) \\ i < g.\mathrm{rank},\ g.\mathrm{type} = g_{+}\text{-family}}} X(g).$$
+> The right-hand side counts the total multiplicity of all subscript-positive ($g_{+}$-family) genes of $X$ with rank strictly greater than $i$.
+>
+> **Step 2 (constancy).** Since $k$ is the *minimum* rank of any $g_{+}$-family gene in $X$, every such gene has rank $\geq k > j$ for all $j < k$. Thus the condition "$j < g.\mathrm{rank}$" is redundant on the range $j \in \{0, \ldots, k-1\}$, the filter-sum equals the full $g_{+}$-family count $P$ throughout, and all alternating differences equal $P = a_0 - a_1$.
 
 ---
 

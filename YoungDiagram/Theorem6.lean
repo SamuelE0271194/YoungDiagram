@@ -664,7 +664,33 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
       rcases Nat.even_or_odd g₂.rank with ⟨j, hk_even⟩ | ⟨j, hk_odd⟩
       · -- k even
         sorry
-      · -- k odd
+      · -- k odd: g₂.rank = 2 * j + 1
+        -- Step 5: chain of inequalities.
+        -- 5a (X-side equalities, proved): for all i < g₂.rank, the alternating sigma-difference
+        -- of X equals P = (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1.
+        have hXchain : ∀ i : ℕ, i < g₂.rank →
+            (if Even i then (Sigma.sigma X.1 i).1 - (Sigma.sigma X.1 (i + 1)).1
+             else (Sigma.sigma X.1 i).2 - (Sigma.sigma X.1 (i + 1)).2) =
+            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 :=
+          fun i hi => x_side_equalities hXpn hg₂type hg₂pos hg₂min hi
+        -- 5b (Y-side weak chain): alternating sigma-differences of Y are non-increasing
+        -- on [1, g₂.rank], i.e. each is ≤ c₀ - c₁.
+        have hYchain : ∀ i : ℕ, 0 < i → i ≤ g₂.rank →
+            (if Even i then (Sigma.sigma Y.1 i).1 - (Sigma.sigma Y.1 (i + 1)).1
+             else (Sigma.sigma Y.1 i).2 - (Sigma.sigma Y.1 (i + 1)).2) ≤
+            (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := sorry
+        -- 5c (strict inequality): a₀ = c₀ and a₁ < c₁ give c₀ - c₁ < P.
+        have hstrict : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
+            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+          have ha₀ := sigma_zero_fst_eq X Y hXY.le
+          linarith
+        -- Step 6: telescoping to conclude Z ≤ Y.1.
+        -- The mutation adds alternating (1,0)/(0,1) increments to σ(X) on [g₁.rank, g₂.rank].
+        -- At each such column the strict inequality from step 5 (combined with X ≤ Y elsewhere)
+        -- absorbs the increment.
+        change Z.val ≤ Y.1.val
+        rw [le_iff_dominates]
+        intro i
         sorry
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
