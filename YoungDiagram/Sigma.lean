@@ -278,10 +278,12 @@ lemma prime_iterate_sum_pos_eq (hk : Even k) :
   --         with inverse φ⁻¹ : g' ↦ ⟨g'.rank - k, g'.type, _⟩
   refine Finset.sum_bij'
       (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
-      (fun g' hg' => (⟨g'.rank - k, g'.type, by sorry⟩ : Gene))
+      (fun g' hg' => (⟨g'.rank - k, g'.type, by
+        have hlt := (Finset.mem_filter.mp hg').2.1
+        omega⟩ : Gene))
       ?_ ?_ ?_ ?_ ?_
-  intro g hg
   · -- (a) φ(g) ∈ X.support.filter (k < rank ∧ type cond)
+    intro g hg
     simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg ⊢
     obtain ⟨hgsupp, hgtype⟩ := hg
     refine ⟨by rwa [← prime_iterate_coeff], ?_, ?_⟩
@@ -289,12 +291,27 @@ lemma prime_iterate_sum_pos_eq (hk : Even k) :
     · show g.type = Int.negOnePow ((↑(g.rank + k) : ℤ) - 1) • GeneType.Positive
       push_cast; rw [hpar g.rank]; exact hgtype
   · -- (b) φ⁻¹(g') ∈ (prime^[k] X).support.filter (type cond)
-    sorry
+    intro g' hg'
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg' ⊢
+    obtain ⟨hgsupp', hlt, hgtype'⟩ := hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt hlt
+    refine ⟨?_, ?_⟩
+    · rw [prime_iterate_coeff]
+      simp only [Nat.sub_add_cancel hle]
+      exact hgsupp'
+    · show g'.type = Int.negOnePow ((↑(g'.rank - k) : ℤ) - 1) • GeneType.Positive
+      have hcast : (↑(g'.rank - k) : ℤ) = ↑g'.rank - ↑k := Nat.cast_sub hle
+      have h := hpar (g'.rank - k)
+      rw [hcast, show (↑g'.rank - ↑k + ↑k - 1 : ℤ) = ↑g'.rank - 1 by ring] at h
+      rw [hcast, ← h]; exact hgtype'
   · -- (c) left inverse: ⟨g.rank + k - k, …⟩ = g
-    sorry
+    intro g _
+    exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
   · -- (d) right inverse: ⟨g'.rank - k + k, …⟩ = g'
-    sorry
+    intro g' hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt (Finset.mem_filter.mp hg').2.1
+    exact Gene.ext (Nat.sub_add_cancel hle) rfl
   · -- (e) value equality: X ⟨g.rank + k, …⟩ = X ⟨g.rank + k, …⟩
-    sorry
+    intros; rfl
 
 end Sigma
