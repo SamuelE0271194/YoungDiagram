@@ -674,11 +674,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 :=
           fun i hi => x_side_equalities hXpn hg₂type hg₂pos hg₂min hi
         -- 5b (Y-side weak chain): alternating sigma-differences of Y are non-increasing
-        -- on [1, g₂.rank], i.e. each is ≤ c₀ - c₁.
-        have hYchain : ∀ i : ℕ, 0 < i → i ≤ g₂.rank →
-            (if Even i then (Sigma.sigma Y.1 i).1 - (Sigma.sigma Y.1 (i + 1)).1
-             else (Sigma.sigma Y.1 i).2 - (Sigma.sigma Y.1 (i + 1)).2) ≤
-            (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := sorry
+        -- This is sigma.cond_15_6
         -- 5c (strict inequality): a₀ = c₀ and a₁ < c₁ give c₀ - c₁ < P.
         have hstrict : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
