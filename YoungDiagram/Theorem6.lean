@@ -415,12 +415,12 @@ and g₋-genes of rank ≥ i when i is even. Minimality of k (among g₊-ranks) 
 to equal P on the whole range [1, k], giving the constant chain. -/
 private lemma x_side_equalities
     {X : Pi}
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
+    (_ : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧
       0 < X.val g ∧ 0 < X.val h)
     {g₂ : Gene}
-    (hg₂type : Gene.ofRankAlt g₂.rank GeneType.Positive = Finsupp.single g₂ 1)
-    (hg₂pos : 0 < X.val g₂)
+    (_ : Gene.ofRankAlt g₂.rank GeneType.Positive = Finsupp.single g₂ 1)
+    (_ : 0 < X.val g₂)
     (hg₂min : ∀ g' : Gene,
       Gene.ofRankAlt g'.rank GeneType.Positive = Finsupp.single g' 1 →
       0 < X.val g' → g₂.rank ≤ g'.rank)
@@ -443,9 +443,9 @@ private lemma x_side_equalities
     intro i
     split_ifs
     · rw [Sigma.sigma_fst_diff X.val i X.2]
-      sorry
-    · sorry
-
+      exact Sigma.prime_iterate_sum_pos_eq X.val i ‹Even i›
+    · rw [Sigma.sigma_snd_diff X.val i X.2]
+      exact Sigma.prime_iterate_sum_neg_eq X.val i ‹¬Even i›
   rw [hcol j]
   -- At i = 0 (even), rank > 0 holds for all genes (rank_pos), so the formula gives the
   -- total g₊-count P = Σ_{g₊-genes in X} X.val g.

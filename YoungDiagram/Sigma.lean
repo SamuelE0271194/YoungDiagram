@@ -314,4 +314,62 @@ lemma prime_iterate_sum_pos_eq (hk : Even k) :
   · -- (e) value equality: X ⟨g.rank + k, …⟩ = X ⟨g.rank + k, …⟩
     intros; rfl
 
+lemma prime_iterate_sum_neg_eq (hk : ¬Even k) :
+    (prime^[k] X).sum (fun g m ↦
+      if g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Negative
+      then (m : ℚ) else 0) =
+    ∑ g ∈ X.support.filter (fun g =>
+      k < g.rank ∧ g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive),
+    (X g : ℚ) := by
+  simp only [Finsupp.sum]
+  conv_lhs => arg 2; ext g; rw [prime_iterate_coeff k X g]
+  rw [← Finset.sum_filter]
+  have hkodd : Int.negOnePow (↑k : ℤ) = -1 :=
+    Int.negOnePow_odd _ (by exact_mod_cast Nat.not_even_iff_odd.mp hk)
+  -- Parity sub-lemma: negOnePow(r + k - 1) • Positive = negOnePow(r - 1) • Negative when Odd k
+  have hpar : ∀ r : ℕ, Int.negOnePow ((r : ℤ) + k - 1) • GeneType.Positive =
+              Int.negOnePow ((r : ℤ) - 1) • GeneType.Negative := by
+    intro r
+    rw [show (↑r + ↑k - 1 : ℤ) = (↑r - 1) + ↑k by ring, ← GeneType.negOnePow_smul_smul,
+        hkodd, GeneType.neg_one_smul, GeneType.neg_positive]
+  refine Finset.sum_bij'
+      (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
+      (fun g' hg' => (⟨g'.rank - k, g'.type, by
+        have hlt := (Finset.mem_filter.mp hg').2.1
+        omega⟩ : Gene))
+      ?_ ?_ ?_ ?_ ?_
+  · -- (a) φ(g) ∈ X.support.filter (k < rank ∧ type cond Positive)
+    intro g hg
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg ⊢
+    obtain ⟨hgsupp, hgtype⟩ := hg
+    refine ⟨by rwa [← prime_iterate_coeff], ?_, ?_⟩
+    · have := g.rank_pos; omega
+    · show g.type = Int.negOnePow ((↑(g.rank + k) : ℤ) - 1) • GeneType.Positive
+      push_cast; rw [hpar g.rank]; exact hgtype
+  · -- (b) φ⁻¹(g') ∈ (prime^[k] X).support.filter (type cond Negative)
+    intro g' hg'
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg' ⊢
+    obtain ⟨hgsupp', hlt, hgtype'⟩ := hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt hlt
+    refine ⟨?_, ?_⟩
+    · rw [prime_iterate_coeff]
+      simp only [Nat.sub_add_cancel hle]
+      exact hgsupp'
+    · show g'.type = Int.negOnePow ((↑(g'.rank - k) : ℤ) - 1) • GeneType.Negative
+      have hcast : (↑(g'.rank - k) : ℤ) = ↑g'.rank - ↑k := Nat.cast_sub hle
+      have h := hpar (g'.rank - k)
+      rw [hcast, show (↑g'.rank - ↑k + ↑k - 1 : ℤ) = ↑g'.rank - 1 by ring] at h
+      rw [hcast, ← h]; exact hgtype'
+  · -- (c) left inverse: ⟨g.rank + k - k, …⟩ = g
+    intro g _
+    exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
+  · -- (d) right inverse: ⟨g'.rank - k + k, …⟩ = g'
+    intro g' hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt (Finset.mem_filter.mp hg').2.1
+    exact Gene.ext (Nat.sub_add_cancel hle) rfl
+  · -- (e) value equality
+    intros; rfl
+
+
+
 end Sigma
