@@ -657,15 +657,19 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           (Pi.Y3 hε_neg hle_ranks g₁.rank_pos)
           rest
           (Pi.Primitive.type3 GeneType.Negative hε_neg hle_ranks g₁.rank_pos)
-      -- Step 4: σ(Z) = σ(X) + (0, 1) on [g₁.rank, g₂.rank], zero elsewhere.
-      -- The type-3 mutation with ε = Negative shifts the second sigma component up by 1
-      -- at each column i ∈ [g₁.rank, g₂.rank] and is the identity on all other columns.
+      -- Step 4: σ(Z) = σ(X) + alternating increment on [g₁.rank, g₂.rank], zero elsewhere.
+      -- The type-3 mutation with ε = Negative adds (1,0) at odd columns and (0,1) at even
+      -- columns within [g₁.rank, g₂.rank], and is the identity outside this range.
       have hstep4 : ∀ i : ℕ,
           Sigma.sigma Z.val i =
           Sigma.sigma X.1.val i +
-          if g₁.rank ≤ i ∧ i ≤ g₂.rank then (0, 1) else (0, 0) := by
+          if g₁.rank ≤ i ∧ i ≤ g₂.rank then
+            if Even i then (0, 1) else (1, 0)
+          else (0, 0) := by
         sorry
       -- It remains to show Z ≤ Y.1.
+        --First show strict inequality (X,Y) on the appt indexes, then since Z is + 1 or 0,
+        -- have weak inequality (Z,Y)
       refine ⟨Z, hstep, ?_⟩
       -- Case split on the parity of k = g₂.rank.
       rcases Nat.even_or_odd g₂.rank with ⟨j, hk_even⟩ | ⟨j, hk_odd⟩
@@ -694,7 +698,42 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         change Z.val ≤ Y.1.val
         rw [le_iff_dominates]
         intro i
-        sorry
+        -- Unfold sigma so that hstep4 can rewrite the goal.
+        change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
+        -- Weak X ≤ Y at column i, componentwise (with explicit Sigma.sigma type).
+        have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
+          le_iff_dominates.mp hXY.le i
+        -- Rewrite σ(Z)(i) using the mutation increment formula.
+        rw [hstep4 i]
+        -- split_ifs handles the three branches: in-range even, in-range odd, out-of-range.
+        split_ifs with hin heven
+        · -- In range, even i: σ(Z)(i) = σ(X)(i) + (0, 1), increment at .2 component.
+          -- Suffices: (σ(X)(i)).2 < (σ(Y)(i)).2; integrality gives (σ(X)(i)).2 + 1 ≤ (σ(Y)(i)).2.
+          suffices h : (Sigma.sigma X.1.val i).2 < (Sigma.sigma Y.1.val i).2 by
+            constructor
+            · -- (σ(X)(i) + (0,1)).1 = (σ(X)(i)).1 + 0 ≤ (σ(Y)(i)).1
+              calc (Sigma.sigma X.1.val i + ((0, 1) : ℚ × ℚ)).1
+                  = (Sigma.sigma X.1.val i).1 + 0 := rfl
+                _ ≤ (Sigma.sigma Y.1.val i).1 := by linarith [hXY_i.1]
+            · -- (σ(X)(i)).2 + 1 ≤ (σ(Y)(i)).2: sigma values of Pi-chromosomes are integers,
+              -- so strict inequality implies gap ≥ 1.
+              sorry
+          sorry
+        · -- In range, odd i: σ(Z)(i) = σ(X)(i) + (1, 0), increment at .1 component.
+          -- Suffices: (σ(X)(i)).1 < (σ(Y)(i)).1; integrality gives (σ(X)(i)).1 + 1 ≤ (σ(Y)(i)).1.
+          suffices h : (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.1.val i).1 by
+            constructor
+            · -- (σ(X)(i)).1 + 1 ≤ (σ(Y)(i)).1: follows from h by integrality.
+              sorry
+            · -- (σ(X)(i) + (1,0)).2 = (σ(X)(i)).2 + 0 ≤ (σ(Y)(i)).2
+              calc (Sigma.sigma X.1.val i + ((1, 0) : ℚ × ℚ)).2
+                  = (Sigma.sigma X.1.val i).2 + 0 := rfl
+                _ ≤ (Sigma.sigma Y.1.val i).2 := by linarith [hXY_i.2]
+          sorry
+        · -- Outside mutation range: σ(Z)(i) = σ(X)(i) + (0,0) = σ(X)(i) ≤ σ(Y)(i).
+          have h00 : ((0, 0) : ℚ × ℚ) = 0 := rfl
+          rw [h00, add_zero]
+          exact hXY_i
     · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
       sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
