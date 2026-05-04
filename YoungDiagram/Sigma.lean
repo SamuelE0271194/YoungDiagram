@@ -370,6 +370,11 @@ lemma prime_iterate_sum_neg_eq (hk : ¬Even k) :
   · -- (e) value equality
     intros; rfl
 
+/-- For `X ∈ Π`, both components of `σ(X)ₖ` are natural numbers (as elements of ℚ). -/
+lemma sigma_isNat (hX : X ∈ Variety.Pi) : ∃ n : ℕ × ℕ, sigma X k = (↑n.1, ↑n.2) := by
+  simp only [sigma]
+  exact signature_pi_isNat (Variety.prime_mem_Pi_iterate hX)
+
 /-- (15.6) a₀ − a₁ ≥ bκ − bκ₊₁ (or a depending on sign of k) -/
 lemma cond_15_6_compare_k_to_0 (hX : X ∈ Variety.Pi) :
     if Even k then a X k - a X (k + 1) ≤ a X 0 - a X 1

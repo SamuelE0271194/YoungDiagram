@@ -666,8 +666,9 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           if g₁.rank ≤ i ∧ i ≤ g₂.rank then
             if Even i then (0, 1) else (1, 0)
           else (0, 0) := by
+        intro i
         sorry
-      -- It remains to show Z ≤ Y.1.
+        -- It remains to show Z ≤ Y.1.
         --First show strict inequality (X,Y) on the appt indexes, then since Z is + 1 or 0,
         -- have weak inequality (Z,Y)
       refine ⟨Z, hstep, ?_⟩
@@ -717,19 +718,76 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 _ ≤ (Sigma.sigma Y.1.val i).1 := by linarith [hXY_i.1]
             · -- (σ(X)(i)).2 + 1 ≤ (σ(Y)(i)).2: sigma values of Pi-chromosomes are integers,
               -- so strict inequality implies gap ≥ 1.
-              sorry
-          sorry
+              obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.1.2 (k := i))
+              obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.1.2 (k := i))
+              simp only [Sigma.sigma] at h ⊢
+              simp only [Prod.snd_add]
+              rw [hnX, hnY] at h ⊢
+              simp only at h ⊢
+              have hnXY : nX.2 < nY.2 := Nat.cast_lt.mp h
+              exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+          -- Step 1: predecessor i-1 exists (i ≥ 1) and is odd (i is even and i ≠ g₂.rank)
+          have hi_pos : 1 ≤ i := Nat.le_trans g₁.rank_pos hin.1
+          have hi_lt : i < g₂.rank := by
+            rcases Nat.lt_or_eq_of_le hin.2 with h | h
+            · exact h
+            · exact absurd heven (h ▸ hk_odd ▸ Nat.not_even_two_mul_add_one j)
+          have hpred_odd : ¬Even (i - 1) := by
+            simp only [Nat.even_iff] at *
+            omega
+          -- Step 2: X's .2-component difference at i-1 equals P
+          have hX_eq : (Sigma.sigma X.1 (i - 1)).2 - (Sigma.sigma X.1 i).2 =
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            have h := hXchain (i - 1) (by omega)
+            simp only [if_neg hpred_odd] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          -- Step 3: Y's .2-component difference at i-1 is ≤ c₀ − c₁
+          have hY_le : (Sigma.sigma Y.1.val (i - 1)).2 - (Sigma.sigma Y.1.val i).2 ≤
+              (Sigma.sigma Y.1.val 0).1 - (Sigma.sigma Y.1.val 1).1 := by
+            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (i - 1) Y.1.2
+            simp only [if_neg hpred_odd] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          -- Step 4: Y dominates X at column i-1 in the .2 component
+          have hXY_pred : (Sigma.sigma X.1.val (i - 1)).2 ≤ (Sigma.sigma Y.1.val (i - 1)).2 :=
+            (le_iff_dominates.mp hXY.le (i - 1)).2
+          -- Step 5: chain c₀-c₁ < P = σX(i-1).2 - σX(i).2 with σX(i-1).2 ≤ σY(i-1).2
+          linarith [hX_eq, hY_le, hstrict, hXY_pred]
         · -- In range, odd i: σ(Z)(i) = σ(X)(i) + (1, 0), increment at .1 component.
           -- Suffices: (σ(X)(i)).1 < (σ(Y)(i)).1; integrality gives (σ(X)(i)).1 + 1 ≤ (σ(Y)(i)).1.
           suffices h : (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.1.val i).1 by
             constructor
             · -- (σ(X)(i)).1 + 1 ≤ (σ(Y)(i)).1: follows from h by integrality.
-              sorry
+              obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val i X.1.2
+              obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val i Y.1.2
+              rw [hnX, hnY] at h ⊢
+              simp only [Prod.fst_add] at h ⊢
+              exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h)
             · -- (σ(X)(i) + (1,0)).2 = (σ(X)(i)).2 + 0 ≤ (σ(Y)(i)).2
               calc (Sigma.sigma X.1.val i + ((1, 0) : ℚ × ℚ)).2
                   = (Sigma.sigma X.1.val i).2 + 0 := rfl
                 _ ≤ (Sigma.sigma Y.1.val i).2 := by linarith [hXY_i.2]
-          sorry
+          -- Step 1: predecessor i-1 exists (i ≥ 1) and is even (i is odd)
+          have hi_pos : 1 ≤ i := Nat.le_trans g₁.rank_pos hin.1
+          have hpred_even : Even (i - 1) := by
+            simp only [Nat.even_iff] at *
+            omega
+          -- Step 2: X's .1-component difference at i-1 equals P
+          have hX_eq : (Sigma.sigma X.1 (i - 1)).1 - (Sigma.sigma X.1 i).1 =
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            have h := hXchain (i - 1) (by omega)
+            simp only [if_pos hpred_even] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          -- Step 3: Y's .1-component difference at i-1 is ≤ c₀ − c₁
+          have hY_le : (Sigma.sigma Y.1.val (i - 1)).1 - (Sigma.sigma Y.1.val i).1 ≤
+              (Sigma.sigma Y.1.val 0).1 - (Sigma.sigma Y.1.val 1).1 := by
+            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (i - 1) Y.1.2
+            simp only [if_pos hpred_even] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          -- Step 4: Y dominates X at column i-1 in the .1 component
+          have hXY_pred : (Sigma.sigma X.1.val (i - 1)).1 ≤ (Sigma.sigma Y.1.val (i - 1)).1 :=
+            (le_iff_dominates.mp hXY.le (i - 1)).1
+          -- Step 5: chain c₀-c₁ < P = σX(i-1).1 - σX(i).1 with σX(i-1).1 ≤ σY(i-1).1
+          linarith [hX_eq, hY_le, hstrict, hXY_pred]
         · -- Outside mutation range: σ(Z)(i) = σ(X)(i) + (0,0) = σ(X)(i) ≤ σ(Y)(i).
           have h00 : ((0, 0) : ℚ × ℚ) = 0 := rfl
           rw [h00, add_zero]
