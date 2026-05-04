@@ -674,8 +674,89 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
       refine ⟨Z, hstep, ?_⟩
       -- Case split on the parity of k = g₂.rank.
       rcases Nat.even_or_odd g₂.rank with ⟨j, hk_even⟩ | ⟨j, hk_odd⟩
-      · -- k even
-        sorry
+      · -- k even: g₂.rank = 2 * j
+        have hXchain : ∀ i : ℕ, i < g₂.rank →
+            (if Even i then (Sigma.sigma X.1 i).1 - (Sigma.sigma X.1 (i + 1)).1
+             else (Sigma.sigma X.1 i).2 - (Sigma.sigma X.1 (i + 1)).2) =
+            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 :=
+          fun i hi => x_side_equalities hXpn hg₂type hg₂pos hg₂min hi
+        have hstrict : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
+            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+          have ha₀ := sigma_zero_fst_eq X Y hXY.le
+          linarith
+        change Z.val ≤ Y.1.val
+        rw [le_iff_dominates]
+        intro i
+        change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
+        have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
+          le_iff_dominates.mp hXY.le i
+        rw [hstep4 i]
+        split_ifs with hin heven
+        · -- In range, even i: σ(Z)(i) = σ(X)(i) + (0, 1), increment at .2 component.
+          suffices h : (Sigma.sigma X.1.val i).2 < (Sigma.sigma Y.1.val i).2 by
+            constructor
+            · calc (Sigma.sigma X.1.val i + ((0, 1) : ℚ × ℚ)).1
+                  = (Sigma.sigma X.1.val i).1 + 0 := rfl
+                _ ≤ (Sigma.sigma Y.1.val i).1 := by linarith [hXY_i.1]
+            · obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.1.2 (k := i))
+              obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.1.2 (k := i))
+              simp only [Sigma.sigma] at h ⊢
+              simp only [Prod.snd_add]
+              rw [hnX, hnY] at h ⊢
+              simp only at h ⊢
+              have hnXY : nX.2 < nY.2 := Nat.cast_lt.mp h
+              exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+          -- No hi_lt needed: i ≤ g₂.rank and 1 ≤ i give i-1 < g₂.rank directly.
+          have hi_pos : 1 ≤ i := Nat.le_trans g₁.rank_pos hin.1
+          have hpred_odd : ¬Even (i - 1) := by
+            simp only [Nat.even_iff] at *; omega
+          have hX_eq : (Sigma.sigma X.1 (i - 1)).2 - (Sigma.sigma X.1 i).2 =
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            have h := hXchain (i - 1) (by omega)
+            simp only [if_neg hpred_odd] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          have hY_le : (Sigma.sigma Y.1.val (i - 1)).2 - (Sigma.sigma Y.1.val i).2 ≤
+              (Sigma.sigma Y.1.val 0).1 - (Sigma.sigma Y.1.val 1).1 := by
+            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (i - 1) Y.1.2
+            simp only [if_neg hpred_odd] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          have hXY_pred : (Sigma.sigma X.1.val (i - 1)).2 ≤ (Sigma.sigma Y.1.val (i - 1)).2 :=
+            (le_iff_dominates.mp hXY.le (i - 1)).2
+          linarith [hX_eq, hY_le, hstrict, hXY_pred]
+        · -- In range, odd i: σ(Z)(i) = σ(X)(i) + (1, 0), increment at .1 component.
+          suffices h : (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.1.val i).1 by
+            constructor
+            · obtain ⟨nX, hnX⟩ := signature_pi_isNat (prime_mem_Pi_iterate X.1.2 (k := i))
+              obtain ⟨nY, hnY⟩ := signature_pi_isNat (prime_mem_Pi_iterate Y.1.2 (k := i))
+              simp only [Sigma.sigma] at h ⊢
+              simp only [Prod.fst_add]
+              rw [hnX, hnY] at h ⊢
+              simp only at h ⊢
+              have hnXY : nX.1 < nY.1 := Nat.cast_lt.mp h
+              exact_mod_cast Nat.add_one_le_iff.mpr hnXY
+            · calc (Sigma.sigma X.1.val i + ((1, 0) : ℚ × ℚ)).2
+                  = (Sigma.sigma X.1.val i).2 + 0 := rfl
+                _ ≤ (Sigma.sigma Y.1.val i).2 := by linarith [hXY_i.2]
+          have hi_pos : 1 ≤ i := Nat.le_trans g₁.rank_pos hin.1
+          have hpred_even : Even (i - 1) := by
+            simp only [Nat.even_iff] at *; omega
+          have hX_eq : (Sigma.sigma X.1 (i - 1)).1 - (Sigma.sigma X.1 i).1 =
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            have h := hXchain (i - 1) (by omega)
+            simp only [if_pos hpred_even] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          have hY_le : (Sigma.sigma Y.1.val (i - 1)).1 - (Sigma.sigma Y.1.val i).1 ≤
+              (Sigma.sigma Y.1.val 0).1 - (Sigma.sigma Y.1.val 1).1 := by
+            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (i - 1) Y.1.2
+            simp only [if_pos hpred_even] at h
+            rwa [Nat.sub_add_cancel hi_pos] at h
+          have hXY_pred : (Sigma.sigma X.1.val (i - 1)).1 ≤ (Sigma.sigma Y.1.val (i - 1)).1 :=
+            (le_iff_dominates.mp hXY.le (i - 1)).1
+          linarith [hX_eq, hY_le, hstrict, hXY_pred]
+        · -- Outside mutation range: σ(Z)(i) = σ(X)(i) + (0,0) = σ(X)(i) ≤ σ(Y)(i).
+          have h00 : ((0, 0) : ℚ × ℚ) = 0 := rfl
+          rw [h00, add_zero]
+          exact hXY_i
       · -- k odd: g₂.rank = 2 * j + 1
         -- Step 5: chain of inequalities.
         -- 5a (X-side equalities, proved): for all i < g₂.rank, the alternating sigma-difference
