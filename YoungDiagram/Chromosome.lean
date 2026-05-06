@@ -181,6 +181,32 @@ lemma signature_ofRank_positive {k : ℕ} (hk : 1 ≤ k) :
     · have : Even (k - 1) := (iff_not_comm.1 (Nat.even_sub_one hk)).2 h1
       simp [Gene.signature_of_negative, this, Nat.cast_pred hk]; ring
 
+lemma signature_ofRank_negative {k : ℕ} (hk : 1 ≤ k) :
+    (Gene.ofRank k .Negative).signature =
+    (Gene.ofRank (k - 1) .Positive).signature + (0, 1) := by
+  rw [← GeneType.neg_positive, signature_ofRank_swap,
+    signature_ofRank_positive hk, Prod.swap_add, ← signature_ofRank_swap]; simp
+
+lemma signature_ofRank_general {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRank k ε).signature =
+    (Gene.ofRank (k - 1) (-ε)).signature + (Gene.ofRank 1 ε).signature := by
+  match ε, hε with
+  | .Positive, _ => simp [signature_ofRank_positive hk]
+  | .Negative, _ => simp [signature_ofRank_negative hk]
+
+lemma signature_ofRankAlt_general {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRankAlt k ε).signature =
+    (Gene.ofRankAlt (k - 1) (-ε)).signature + (Gene.ofRank 1 ε).signature := by
+    simp_all [Gene.ofRankAlt_def]
+    sorry
+
+lemma signature_ofRankAlt_general_b {k : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) :
+    (Gene.ofRankAlt (k + 1) ε).signature =
+    (Gene.ofRankAlt k (-ε)).signature + (Gene.ofRank 1 ε).signature := by
+    have hk' : 1 ≤ k + 1 := by simp
+    rw [signature_ofRankAlt_general hk' hε]
+    simp_all
+
 lemma signature_ofRank_eq {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
     (Gene.ofRank k ε).signature =
     (Gene.ofRank (k - 1) (- ε)).signature + (Gene.ofRank 1 ε).signature := by
@@ -283,6 +309,10 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
     change prime^[w + 1 + 1] (Gene.ofRank n ε) = _
     rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h2 rfl, prime_ofRank]
     ac_rfl
+
+lemma prime_iterate_ofRank_eq_zero {k n : ℕ} {ε : GeneType} (h : n ≤ k) :
+    prime^[k] (Gene.ofRank n ε) = 0 := by
+  rw [prime_iterate_ofRank, Nat.sub_eq_zero_of_le h, Gene.ofRank_zero]
 
 lemma signature_prime {X : Chromosome} :
     (signature X.prime) = X.sum (fun g m ↦ m • (primeGene g).signature) := by
@@ -451,6 +481,25 @@ lemma prime_ofRankAlt_negative {k : ℕ} :
     rw [show (Nat.succ k : ℤ) - 1 = ↑k from by push_cast; ring,
         ← GeneType.neg_negative, GeneType.negOnePow_smul_neg,
         show (↑k : ℤ) - 1 + 1 = ↑k from by ring]
+
+lemma prime_ofRankAlt {k : ℕ} {ε : GeneType} (hε : ε ≠ GeneType.NonPolarized) :
+    prime (Gene.ofRankAlt k ε) = Gene.ofRankAlt (k - 1) (-ε) := by
+  cases ε with
+  | NonPolarized => exact absurd rfl hε
+  | Positive => exact prime_ofRankAlt_positive
+  | Negative => exact prime_ofRankAlt_negative
+
+lemma prime_iterate_ofRankAlt {k n : ℕ} {ε : GeneType} (hε : ε ≠ GeneType.NonPolarized) :
+    prime^[n] (Gene.ofRankAlt k ε) = Gene.ofRankAlt (k - n) ((n : ℤ).negOnePow • ε) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [Function.iterate_succ_apply', ih,
+        prime_ofRankAlt (GeneType.smul_ne_nonPolarized_iff.mp hε),
+        Nat.sub_sub]
+    congr 1
+    push_cast
+    exact GeneType.neg_negOnePow_smul
 
 end prime
 

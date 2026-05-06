@@ -667,7 +667,29 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
             if Even i then (0, 1) else (1, 0)
           else (0, 0) := by
         intro i
-        sorry
+        -- sigma is additive on Chromosomes
+        have sigma_add : ∀ (A B : Chromosome),
+            Sigma.sigma (A + B) i = Sigma.sigma A i + Sigma.sigma B i :=
+          fun A B => by simp only [Sigma.sigma, iterate_map_add, map_add]
+        -- Z.val = Y3.val + rest.val (from the let definition and AddSubmonoid.coe_add)
+        have hZ_split : Sigma.sigma Z.val i =
+            Sigma.sigma (Pi.Y3 hε_neg hle_ranks g₁.rank_pos).val i +
+            Sigma.sigma rest.val i := by
+          change Sigma.sigma (Pi.Y3 hε_neg hle_ranks g₁.rank_pos + rest : Variety.Pi).val i = _
+          simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
+        -- X.1.val = X3.val + rest.val (from hdecomp and AddSubmonoid.coe_add)
+        have hX_split : Sigma.sigma X.1.val i =
+            Sigma.sigma (Pi.X3 hε_neg hle_ranks g₁.rank_pos).val i +
+            Sigma.sigma rest.val i := by
+          have hval : X.1.val = (Pi.X3 hε_neg hle_ranks g₁.rank_pos).val + rest.val := by
+            have h := congrArg Subtype.val hdecomp
+            simp only [AddSubmonoid.coe_add] at h
+            exact h
+          rw [hval, sigma_add]
+        rw [hZ_split, hX_split, Sigma.mutation_type3_sigma_eq hε_neg hle_ranks g₁.rank_pos i]
+        simp only [GeneType.neg_negative, signature_ofRank_one_negative,
+          signature_ofRank_one_positive]
+        abel
         -- It remains to show Z ≤ Y.1.
         --First show strict inequality (X,Y) on the appt indexes, then since Z is + 1 or 0,
         -- have weak inequality (Z,Y)
