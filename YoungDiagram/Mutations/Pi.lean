@@ -369,11 +369,13 @@ lemma Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
     rw [add_assoc, add_assoc]
     exact Pi.Step.mk X Y (Z + W) hPrim
 
-lemma Primitive.le_of_lt {X Y Z : Pi} (hXY : X < Y) (hXZ : Primitive X Z) : Z ≤ Y := by
-  cases hXZ with
-  | type1 ε hε hle hm => sorry
-  | type2 ε hε hle hm => sorry
-  | type3 ε hε hle hm => sorry
--- Proving this lemma should make things easier, but I'll comment it out for now.
+--lemma Primitive.le_of_lt {X Y Z : Pi} (hXY : X < Y) (hXZ : Primitive X Z) : Z ≤ Y := by
+--  cases hXZ with
+--  | type1 ε hε hle hm => sorry
+--  | type2 ε hε hle hm => sorry
+--  | type3 ε hε hle hm => sorry
+/- Proving this lemma should make things easier, but I'll comment it out for now.
+  I think proving this lemma would be quite challenging,
+  so I will prove them in the theorem when needed -/
 
 end Pi
