@@ -453,4 +453,168 @@ lemma mutation_type3_sigma_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
       simp [h1, h2, h3, h4]
       rfl
 
+lemma neg_type_of_b0_gt_a1_single (g : Gene) (hg : Finsupp.single g 1 ∈ Variety.Pi)
+    (h : a(Finsupp.single g 1)1 < b(Finsupp.single g 1)0) :
+    g.type = .Negative := by
+  have hpol : g.type ≠ .NonPolarized :=
+    (Chromosome.IsPolarized_def'.mp (Variety.mem_Pi_iff.mp hg)) g
+      (Finsupp.mem_support_iff.mpr (by simp))
+  cases hgt : g.type with
+  | Negative => rfl
+  | Positive =>
+    rcases Nat.even_or_odd g.rank with ⟨j, hj⟩ | ⟨j, hj⟩
+    · -- g.rank = 2 * j (even)
+      have hk : 1 ≤ g.rank - 1 := by have := g.rank_pos; omega
+      have hb₀ : b(Finsupp.single g 1)0 = (g.rank : ℚ) / 2 := by
+        simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+        rw [Gene.signature_of_positive hgt, if_pos ⟨j, hj⟩]; simp
+      have ha₁ : a(Finsupp.single g 1)1 = ((↑(g.rank - 1) : ℚ) + 1) / 2 := by
+        simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+          prime_single, one_nsmul, hgt]
+        rw [show Gene.ofRank (g.rank - 1) GeneType.Positive =
+              Finsupp.single (⟨g.rank - 1, GeneType.Positive, hk⟩ : Gene) 1 from
+              @Gene.ofRank_eq_gene ⟨g.rank - 1, GeneType.Positive, hk⟩,
+            signature_single hk, Gene.signature_of_positive rfl,
+            if_neg (show ¬Even (g.rank - 1) by rw [Nat.even_iff, hj]; omega)]
+        simp
+      rw [ha₁, hb₀] at h
+      linarith [show (↑(g.rank - 1) : ℚ) + 1 = g.rank
+        by exact_mod_cast Nat.sub_add_cancel g.rank_pos]
+    · -- g.rank = 2 * j + 1 (odd)
+      by_cases h1 : g.rank = 1
+      · -- g.rank = 1
+        have hb₀ : b(Finsupp.single g 1)0 = 0 := by
+          simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+          rw [Gene.signature_of_positive hgt,
+              if_neg (show ¬Even g.rank by rw [Nat.even_iff, hj]; omega)]
+          norm_num [h1]
+        have ha₁ : a(Finsupp.single g 1)1 = 0 := by
+          simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+            prime_single, one_nsmul, hgt, h1, Nat.sub_self, Gene.ofRank_zero, map_zero]
+          rfl
+        linarith
+      · -- g.rank > 1
+        have hk : 1 ≤ g.rank - 1 := by omega
+        have hb₀ : b(Finsupp.single g 1)0 = ((g.rank : ℚ) - 1) / 2 := by
+          simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+          rw [Gene.signature_of_positive hgt,
+              if_neg (show ¬Even g.rank by rw [Nat.even_iff, hj]; omega)]
+          simp
+        have ha₁ : a(Finsupp.single g 1)1 = (↑(g.rank - 1) : ℚ) / 2 := by
+          simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+            prime_single, one_nsmul, hgt]
+          rw [show Gene.ofRank (g.rank - 1) GeneType.Positive =
+                Finsupp.single (⟨g.rank - 1, GeneType.Positive, hk⟩ : Gene) 1 from
+                @Gene.ofRank_eq_gene ⟨g.rank - 1, GeneType.Positive, hk⟩,
+              signature_single hk, Gene.signature_of_positive rfl,
+              if_pos (show Even (g.rank - 1) by rw [Nat.even_iff, hj]; omega)]
+          simp
+        rw [ha₁, hb₀] at h
+        linarith [show (↑(g.rank - 1) : ℚ) = g.rank - 1 by exact_mod_cast Nat.cast_sub g.rank_pos]
+  | NonPolarized => exact absurd hgt hpol
+
+lemma pos_type_of_b0_le_a1_single (g : Gene) (hg : Finsupp.single g 1 ∈ Variety.Pi)
+    (h : a(Finsupp.single g 1)1 ≥ b(Finsupp.single g 1)0) :
+    g.type = .Positive := by
+  have hpol : g.type ≠ .NonPolarized :=
+    (Chromosome.IsPolarized_def'.mp (Variety.mem_Pi_iff.mp hg)) g
+      (Finsupp.mem_support_iff.mpr (by simp))
+  cases hgt : g.type with
+  | Positive => rfl
+  | Negative =>
+    rcases Nat.even_or_odd g.rank with ⟨j, hj⟩ | ⟨j, hj⟩
+    · -- g.rank = 2 * j (even)
+      have hk : 1 ≤ g.rank - 1 := by have := g.rank_pos; omega
+      have hb₀ : b(Finsupp.single g 1)0 = (g.rank : ℚ) / 2 := by
+        simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+        rw [Gene.signature_of_negative hgt, if_pos ⟨j, hj⟩]; simp
+      have ha₁ : a(Finsupp.single g 1)1 = ((↑(g.rank - 1) : ℚ) - 1) / 2 := by
+        simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+          prime_single, one_nsmul, hgt]
+        rw [show Gene.ofRank (g.rank - 1) GeneType.Negative =
+              Finsupp.single (⟨g.rank - 1, GeneType.Negative, hk⟩ : Gene) 1 from
+              @Gene.ofRank_eq_gene ⟨g.rank - 1, GeneType.Negative, hk⟩,
+            signature_single hk, Gene.signature_of_negative rfl,
+            if_neg (show ¬Even (g.rank - 1) by rw [Nat.even_iff, hj]; omega)]
+        simp
+      rw [ha₁, hb₀] at h
+      linarith [show (↑(g.rank - 1) : ℚ) + 1 = g.rank
+        by exact_mod_cast Nat.sub_add_cancel g.rank_pos]
+    · -- g.rank = 2 * j + 1 (odd)
+      by_cases h1 : g.rank = 1
+      · -- g.rank = 1
+        have hb₀ : b(Finsupp.single g 1)0 = 1 := by
+          simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+          rw [Gene.signature_of_negative hgt,
+              if_neg (show ¬Even g.rank by rw [Nat.even_iff, hj]; omega)]
+          norm_num [h1]
+        have ha₁ : a(Finsupp.single g 1)1 = 0 := by
+          simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+            prime_single, one_nsmul, hgt, h1, Nat.sub_self, Gene.ofRank_zero, map_zero]
+          rfl
+        linarith
+      · -- g.rank > 1
+        have hk : 1 ≤ g.rank - 1 := by omega
+        have hb₀ : b(Finsupp.single g 1)0 = ((g.rank : ℚ) + 1) / 2 := by
+          simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+          rw [Gene.signature_of_negative hgt,
+              if_neg (show ¬Even g.rank by rw [Nat.even_iff, hj]; omega)]
+          simp
+        have ha₁ : a(Finsupp.single g 1)1 = (↑(g.rank - 1) : ℚ) / 2 := by
+          simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+            prime_single, one_nsmul, hgt]
+          rw [show Gene.ofRank (g.rank - 1) GeneType.Negative =
+                Finsupp.single (⟨g.rank - 1, GeneType.Negative, hk⟩ : Gene) 1 from
+                @Gene.ofRank_eq_gene ⟨g.rank - 1, GeneType.Negative, hk⟩,
+              signature_single hk, Gene.signature_of_negative rfl,
+              if_pos (show Even (g.rank - 1) by rw [Nat.even_iff, hj]; omega)]
+          simp
+        rw [ha₁, hb₀] at h
+        linarith [show (↑(g.rank - 1) : ℚ) = g.rank - 1
+          by exact_mod_cast Nat.cast_sub g.rank_pos]
+  | NonPolarized => exact absurd hgt hpol
+
+lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
+    (h : a X 1 < b X 0) :
+    ∃ g : Gene, g.type = .Negative ∧ 0 < X g := by
+  have hb₀ : b X 0 = X.sum (fun g n => n • b(Finsupp.single g 1)0) := by
+    simp [sigma, signature_snd]
+  have ha₁ : a X 1 = X.sum (fun g n => n • a(Finsupp.single g 1)1) := by
+    simp [sigma, signature_prime_fst]
+  -- Step 2: find g₀ in supp(X) with a(single g₀ 1)1 < b(single g₀ 1)0
+  have hg₀ : ∃ g₀ ∈ X.support, 0 < X g₀ ∧
+      a(Finsupp.single g₀ 1)1 < b(Finsupp.single g₀ 1)0 := by
+    by_contra hall
+    push Not at hall
+    -- hall : ∀ g₀ ∈ X.support, 0 < X g₀ → a(Finsupp.single g₀ 1)1 ≥ b(Finsupp.single g₀ 1)0
+    -- assume all genes in X.support have type .Positive
+    suffices hpos : ∀ g ∈ X.support, g.type = .Positive by
+      have hle : b X 0 ≤ a X 1 := by
+        rw [hb₀, ha₁]
+        apply Finsupp.sum_le_sum
+        intro g hg_mem
+        gcongr
+        exact hall g hg_mem (Nat.pos_of_ne_zero (mem_support_iff.mp hg_mem))
+      linarith
+    intro g hg_mem
+    have hpol : g.type ≠ .NonPolarized :=
+      IsPolarized_def'.mp (Variety.mem_Pi_iff.mp hX) g hg_mem
+    cases hgt : g.type with
+    | Positive => rfl
+    | NonPolarized => exact absurd hgt hpol
+    | Negative =>
+      have hg_pi : Finsupp.single g 1 ∈ Variety.Pi :=
+        Variety.mem_Pi_iff.mpr ((IsPolarized_single Nat.one_ne_zero).2 (by simp [hgt]))
+      have hge : a(Finsupp.single g 1)1 ≥ b(Finsupp.single g 1)0 :=
+        hall g hg_mem (Nat.pos_of_ne_zero (mem_support_iff.mp hg_mem))
+      have hpos := pos_type_of_b0_le_a1_single g hg_pi hge
+      exact absurd hpos (by rw [hgt]; decide)
+  obtain ⟨g₀, hg₀_mem, hg₀_pos, hg₀_ineq⟩ := hg₀
+  have hg₀_pi : Finsupp.single g₀ 1 ∈ Variety.Pi := by
+    have hpol : g₀.type ≠ .NonPolarized :=
+      IsPolarized_def'.mp (Variety.mem_Pi_iff.mp hX) g₀ hg₀_mem
+    exact Variety.mem_Pi_iff.mpr ((IsPolarized_single Nat.one_ne_zero).2 hpol)
+  have hg₀_neg : g₀.type = .Negative := neg_type_of_b0_gt_a1_single g₀ hg₀_pi hg₀_ineq
+  exact ⟨g₀, hg₀_neg, hg₀_pos⟩
+
 end Sigma

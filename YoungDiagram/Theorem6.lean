@@ -404,6 +404,18 @@ private lemma sigma_zero_fst_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
   have hYrank : (Y.1.val.rank : ℚ) = n := by exact_mod_cast Y.2
   linarith
 
+private lemma sigma_zero_snd_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
+    (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 := by
+  simp only [Sigma.sigma, Function.iterate_zero, id]
+  have hsig_le := (le_iff_dominates.mp hXY) 0
+  simp only [Function.iterate_zero, id] at hsig_le
+  obtain ⟨h1_le, h2_le⟩ := Prod.le_def.mp hsig_le
+  have hXsum := @signature_sum_eq_rank X.1.val
+  have hYsum := @signature_sum_eq_rank Y.1.val
+  have hXrank : (X.1.val.rank : ℚ) = n := by exact_mod_cast X.2
+  have hYrank : (Y.1.val.rank : ℚ) = n := by exact_mod_cast Y.2
+  linarith
+
 /-- **X-side equalities** (Step 5, Case 1 of §15, Djoković 1982).
 
 For `j < g₂.rank = k`, the alternating sigma-differences of `X` are all equal to `a₀ − a₁`:
@@ -896,7 +908,89 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           rw [h00, add_zero]
           exact hXY_i
     · -- Cases 2-4
-      sorry
+      by_cases hg₁_one : g₁.rank = 1
+      · -- g₁.rank = 1 (case 2)
+        have hb₀_eq_d₀ : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
+          sigma_zero_snd_eq X Y hXY.le
+        have hb₀_gt_a₁ : (Sigma.sigma X.1 1).1 < (Sigma.sigma X.1 0).2 := by
+          have hd₀_ge_c₁ : (Sigma.sigma Y.1 1).1 ≤ (Sigma.sigma Y.1 0).2 := by
+            have h := Sigma.cond_15_5 Y.1.val 0
+            rw [if_pos (by norm_num : Even (0 : ℕ))] at h; exact h
+          linarith [hb₀_eq_d₀]
+        have hg₂_neg : ∃ g₂ : Gene,
+            g₂.type = .Negative ∧
+            0 < X.1.val g₂ ∧
+            ∀ g' : Gene, g'.type = .Negative → 0 < X.1.val g' → g₂.rank ≤ g'.rank := by
+          have hSne : (X.1.val.support.filter (fun g => g.type = .Negative)).Nonempty := by
+            obtain ⟨g, hgtype, hgpos⟩ := Sigma.neg_gene_of_b0_gt_a1 X.1.val X.1.2 hb₀_gt_a₁
+            exact ⟨g, Finset.mem_filter.mpr
+              ⟨Finsupp.mem_support_iff.mpr hgpos.ne', hgtype⟩⟩
+          obtain ⟨g₂, hg₂S, hg₂min⟩ := Finset.exists_min_image _ Gene.rank hSne
+          rw [Finset.mem_filter] at hg₂S
+          exact ⟨g₂, hg₂S.2,
+            Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg₂S.1),
+            fun g' hg'_neg hg'_pos => hg₂min g'
+              (Finset.mem_filter.mpr ⟨Finsupp.mem_support_iff.mpr hg'_pos.ne', hg'_neg⟩)⟩
+
+        obtain ⟨g₂, hg₂_type, hg₂_pos, hg₂_min⟩ := hg₂_neg
+        -- g₁ has type Positive (not Negative from hε₁, not NonPolarized from polarization).
+        have hg₁_type : g₁.type = .Positive := by
+          have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
+            (Finsupp.mem_support_iff.mpr hXg₁)
+          cases ht : g₁.type with
+          | Positive => rfl
+          | NonPolarized => exact absurd ht hpol
+          | Negative =>
+            exfalso; apply hε₁
+            rw [ht, hg₁_one]; simp [GeneType.negOnePow_smul]
+        -- g₁ ≠ g₂ (Positive vs Negative types are distinct).
+        have hg₁g₂_ne : g₁ ≠ g₂ := fun heq => by
+          rw [← heq, hg₁_type] at hg₂_type; exact absurd hg₂_type (by decide)
+        -- Hypotheses for Pi.Primitive.type1 (ε = Positive, m = 1, n = g₂.rank).
+        have hε_pos : GeneType.Positive ≠ .NonPolarized := by decide
+        have hle_ranks : 1 ≤ g₂.rank := g₂.rank_pos
+        -- ofRank 1 .Positive = single g₁ 1 (using g₁.rank = 1, g₁.type = .Positive).
+        have hg₁_ofRank : Gene.ofRank 1 GeneType.Positive = Finsupp.single g₁ 1 := by
+          have h := @Gene.ofRank_eq_gene g₁; rw [hg₁_one, hg₁_type] at h; exact h
+        -- ofRank g₂.rank .Negative = single g₂ 1 (using g₂.type = .Negative).
+        have hg₂_ofRank : Gene.ofRank g₂.rank GeneType.Negative = Finsupp.single g₂ 1 := by
+          have h := @Gene.ofRank_eq_gene g₂; rw [hg₂_type] at h; exact h
+        -- The type1 source chromosome equals single g₁ 1 + single g₂ 1.
+        have hsrc_val : (Pi.X1 hε_pos hle_ranks (le_refl 1) : Chromosome) =
+            Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
+          simp only [Pi.X1_eq, GeneType.neg_positive]; rw [hg₁_ofRank, hg₂_ofRank]
+        -- src ≤ X.1.val pointwise.
+        have hsrc_le : ∀ g : Gene,
+            (Pi.X1 hε_pos hle_ranks (le_refl 1) : Chromosome) g ≤ X.1.val g := by
+          intro g
+          rw [hsrc_val, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+          rcases eq_or_ne g g₁ with rfl | hne₁
+          · simp only [↓reduceIte, if_neg (Ne.symm hg₁g₂_ne)]; exact hXg₁pos
+          · rcases eq_or_ne g g₂ with rfl | hne₂
+            · simp only [if_neg (Ne.symm hne₁), ↓reduceIte, zero_add]; exact hg₂_pos
+            · simp only [if_neg (Ne.symm hne₁), if_neg (Ne.symm hne₂), add_zero, Nat.zero_le]
+        -- rest = X.1 − src, still in Pi.
+        let rest : Pi :=
+          ⟨X.1.val - (Pi.X1 hε_pos hle_ranks (le_refl 1) : Chromosome),
+            Variety.sub_mem_Pi _ X.1.2⟩
+        -- X.1 decomposes as src + rest.
+        have hdecomp : X.1 = Pi.X1 hε_pos hle_ranks (le_refl 1) + rest :=
+          Subtype.val_injective
+            (Finsupp.ext fun g => (add_tsub_cancel_of_le (hsrc_le g)).symm)
+        -- Z is the type1 mutation result: ofRank (g₂.rank+1) .Positive + rest.
+        let Z : Pi := Pi.Y1 hε_pos hle_ranks (le_refl 1) + rest
+        -- Construct the Pi-step.
+        have hstep : Pi.Step X.1 Z :=
+          hdecomp.symm ▸ Pi.Step.mk
+            (Pi.X1 hε_pos hle_ranks (le_refl 1))
+            (Pi.Y1 hε_pos hle_ranks (le_refl 1))
+            rest
+            (Pi.Primitive.type1 GeneType.Positive hε_pos hle_ranks (le_refl 1))
+        exact ⟨Z, hstep, sorry⟩
+      · -- g₁.rank ≥ 2 (Case 3-4)
+        have hg₁_ge2 : 2 ≤ g₁.rank := by
+          have := g₁.rank_pos; omega
+        sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
     sorry
 
