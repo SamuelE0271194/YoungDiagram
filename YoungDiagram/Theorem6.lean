@@ -895,7 +895,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           have h00 : ((0, 0) : ℚ × ℚ) = 0 := rfl
           rw [h00, add_zero]
           exact hXY_i
-    · -- Cases 2–4: ε₁ ≠ − (Type 1 mutation with ε₁ = + or NonPolarized).
+    · -- Cases 2-4
       sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
     sorry
