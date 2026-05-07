@@ -376,6 +376,8 @@ lemma Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
 --  | type3 ε hε hle hm => sorry
 /- Proving this lemma should make things easier, but I'll comment it out for now.
   I think proving this lemma would be quite challenging,
-  so I will prove them in the theorem when needed -/
+  so I will prove them in the theorem when needed :
+  Not sure if this is true in general (I dont think so)
+  only in specfic cases -/
 
 end Pi
