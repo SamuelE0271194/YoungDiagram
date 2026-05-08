@@ -408,11 +408,8 @@ lemma mutation_type3_sigma_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
       if Even i then (Gene.ofRank 1 ε).signature else (Gene.ofRank 1 (-ε)).signature
     else (0, 0) := by
   simp only [sigma, Pi.Y3_eq, Pi.X3_eq, iterate_map_add, map_add]
-  have h1 := prime_iterate_ofRankAlt (GeneType.neg_ne_nonPolarized_iff.mp hε) (k := m - 1) (n := i)
-  have h2 := prime_iterate_ofRankAlt hε (k := n + 1) (n := i)
-  have h3 := prime_iterate_ofRankAlt hε (k := m) (n := i)
-  have h4 := prime_iterate_ofRankAlt (GeneType.neg_ne_nonPolarized_iff.mp hε) (k := n) (n := i)
-  rw [h1, h2, h3, h4]
+  rw [@prime_iterate_ofRankAlt i (m - 1), @prime_iterate_ofRankAlt i (n + 1),
+    @prime_iterate_ofRankAlt i m, @prime_iterate_ofRankAlt i n]
   split_ifs with h hei
   · have h1 : m - 1 - i = 0 := by omega
     have h3 : m - i = 0 := by omega
