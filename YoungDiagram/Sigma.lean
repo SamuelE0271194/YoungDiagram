@@ -69,6 +69,10 @@ local notation "a" X:max k:max => Prod.fst (sigma X k)
 
 local notation "b" X:max k:max => Prod.snd (sigma X k)
 
+lemma sigma_linearity {X Y : Chromosome} {i : ℕ} :
+    sigma (X + Y) i = (sigma X i) + (sigma Y i) := by
+  simp [sigma]
+
 lemma antitone : Antitone (sigma X) := by
   refine antitone_nat_of_succ_le (fun _ ↦ ?_)
   simp only [sigma, Function.iterate_succ_apply']

@@ -988,7 +988,14 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
             (Pi.Primitive.type1 GeneType.Positive hε_pos hle_ranks (le_refl 1))
         have hsigma_diff_XZ : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
             (Sigma.sigma Z.val i) - (Sigma.sigma X.val i) = (1, 0) := by
-          sorry
+          intro i i_ub i_lb
+          simp [Z, hdecomp, Sigma.sigma_linearity, Pi.Y1_eq, Pi.X1_eq]
+          simp [Sigma.sigma]
+          simp [prime_iterate_ofRank]
+          have : 1 - i = 0 := by omega
+          simp [this]
+          simp [signature_ofRank_positive (by omega : 1 ≤ g₂.rank + 1 - i),
+              show g₂.rank + 1 - i - 1 = g₂.rank - i from by omega]
         have hsigma_diff_XY : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
             (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 := by
           sorry
@@ -1037,7 +1044,8 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
               have hZ_split : Sigma.sigma Z.val i =
                   Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i +
                   Sigma.sigma rest.val i := by
-                change Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1) + rest : Variety.Pi).val i = _
+                change Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1) + rest : Variety.Pi).val i =
+                 _
                 simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
               have hX_split : Sigma.sigma X.1.val i =
                   Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i +
@@ -1056,7 +1064,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 -- prime^[i] kills all genes in X1 (ranks 1, g₂.rank) and Y1 (rank g₂.rank+1)
                 have hX1_zero : Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i = 0 := by
                   simp only [Sigma.sigma, Pi.X1_eq, GeneType.neg_positive, iterate_map_add,
-                             prime_iterate_ofRank, map_add,
+                             prime_iterate_ofRank,
                              show 1 - i = 0 from by omega,
                              show g₂.rank - i = 0 from by omega,
                              Gene.ofRank_zero, map_zero, add_zero]
