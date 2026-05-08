@@ -422,7 +422,7 @@ lemma mutation_type3_sigma_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
     have h_sign_i_2 : (↑i + 1 : ℤ).negOnePow • ε = -ε := by
       rw [← GeneType.neg_negOnePow_smul, h_sign_i_1]
     simp [h_sign_i_1, h_sign_i_2, show n + 1 - i = (n - i) + 1 from by omega]
-    simp [signature_ofRankAlt_general_b hε]
+    simp [signature_ofRankAlt_general' hε]
   · -- m ≤ i ∧ i ≤ n, ¬Even i
     have h1 : m - 1 - i = 0 := by omega
     have h3 : m - i = 0 := by omega
@@ -434,7 +434,7 @@ lemma mutation_type3_sigma_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
       simp
     simp [h_sign_i_1, h_sign_i_2, show n + 1 - i = (n - i) + 1 from by omega]
     have hε_neg : -ε ≠ .NonPolarized := GeneType.neg_ne_nonPolarized_iff.mp hε
-    simp [signature_ofRankAlt_general_b hε_neg]
+    simp [signature_ofRankAlt_general' hε_neg]
     --
   · -- ¬(m ≤ i ∧ i ≤ n)
     push Not at h
