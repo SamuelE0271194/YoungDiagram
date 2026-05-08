@@ -1,5 +1,5 @@
 import Mathlib.Algebra.GroupWithZero.Submonoid.Pointwise
-import YoungDiagram.Chromosome
+import YoungDiagram.Chromosome.Lift
 
 abbrev Variety := AddSubmonoid Chromosome
 

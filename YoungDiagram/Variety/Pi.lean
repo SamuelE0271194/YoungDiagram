@@ -1,4 +1,6 @@
 import YoungDiagram.Variety.Basic
+import YoungDiagram.Chromosome.Order
+import YoungDiagram.Chromosome.Parity
 
 open Finsupp Chromosome Pointwise
 

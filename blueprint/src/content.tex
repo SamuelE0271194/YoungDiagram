@@ -24,6 +24,18 @@
   and a \emph{type} $\varepsilon \in \mathtt{GeneType}$.
 \end{definition}
 
+\begin{definition}[Genes of a fixed rank]
+  \label{def:Gene.ofRank}
+  \lean{Gene.ofRank, Gene.ofRankAlt}
+  \leanok
+  \uses{def:Gene}
+  For $n \ge 1$ and a type $\varepsilon$, $\mathtt{Gene.ofRank}\,n\,\varepsilon$
+  is the one-gene chromosome consisting of the gene $(n,\varepsilon)$ with
+  multiplicity one; for $n=0$ it is the zero chromosome.  The variant
+  $\mathtt{Gene.ofRankAlt}$ uses the alternating type
+  $(-1)^{n-1}\varepsilon$.
+\end{definition}
+
 \begin{definition}[Gene signature]
   \label{def:Gene.signature}
   \lean{Gene.signature}
@@ -67,6 +79,17 @@
   $\mathrm{sig}(X) = \sum_{g} X(g) \cdot \mathrm{sig}(g) \in \mathbb{Q} \times \mathbb{Q}$.
 \end{definition}
 
+\begin{lemma}[Signature of a basic gene]
+  \label{lem:Chromosome.signature_ofRank}
+  \lean{Chromosome.signature_ofRank, Chromosome.signature_ofRank_eq, Chromosome.signature_ofRank_eq'}
+  \leanok
+  \uses{def:Gene.ofRank, def:Chromosome.signature}
+  The signature of $\mathtt{Gene.ofRank}\,n\,\varepsilon$ is the signature of
+  the corresponding gene when $n\ne 0$, and zero when $n=0$.  For polarized
+  types the file also records the one-step recurrence obtained by lowering the
+  rank and changing, or preserving, the sign according to the parity.
+\end{lemma}
+
 \begin{definition}[Rank]
   \label{def:Chromosome.rank}
   \lean{Chromosome.rank}
@@ -84,15 +107,33 @@
   $\mathrm{sig}(X).1 + \mathrm{sig}(X).2 = \mathrm{rank}(X)$.
 \end{lemma}
 
+\begin{lemma}[Zero signature forces zero chromosome]
+  \label{lem:Chromosome.signature_eq_zero}
+  \lean{Chromosome.signature_eq_zero}
+  \leanok
+  \uses{def:Chromosome.signature, def:Chromosome.rank, lem:Chromosome.signature_sum_eq_rank}
+  If $\mathrm{sig}(X)=0$, then $X=0$.
+\end{lemma}
+
 \begin{definition}[Dominance order]
   \label{def:Chromosome.Dominates}
   \lean{Chromosome.Dominates}
   \leanok
-  \uses{def:Chromosome.signature}
+  \uses{def:Chromosome.signature, def:Chromosome.prime}
   For chromosomes $X$ and $Y$, we say $X$ \emph{dominates} $Y$ (written $Y \le X$) if
-  $\mathrm{sig}(X^{(k)}) \le \mathrm{sig}(Y^{(k)})$ componentwise for all $k \ge 0$,
+  $\mathrm{sig}(Y^{(k)}) \le \mathrm{sig}(X^{(k)})$ componentwise for all $k \ge 0$,
   where $X^{(k)}$ denotes the $k$-th derivative.
 \end{definition}
+
+\begin{lemma}[Dominance is compatible with addition]
+  \label{lem:Chromosome.ordered_cancel}
+  \lean{Chromosome.le_iff_dominates, Chromosome.sub_single_lt_sub_single}
+  \leanok
+  \uses{def:Chromosome.Dominates}
+  The dominance preorder is an ordered cancel additive monoid structure on
+  chromosomes.  In particular, subtracting the same present gene from two
+  strictly ordered chromosomes preserves strict order.
+\end{lemma}
 
 \section{Prime and lift operations}
 
@@ -102,9 +143,20 @@
   \leanok
   \uses{def:Chromosome}
   The \emph{prime} (derivative) operation $X \mapsto X'$ is the additive homomorphism
-  that maps a gene $(n, \varepsilon)$ with $n \ge 1$ to $(n-1, -\varepsilon)$,
-  and sends genes of rank $0$ to $0$.
+  that maps a gene $(n, \varepsilon)$ to the gene $(n-1,\varepsilon)$ when
+  $n>1$, and sends rank-one genes to $0$.
 \end{definition}
+
+\begin{lemma}[Prime on generators and coefficients]
+  \label{lem:Chromosome.prime_generators}
+  \lean{Chromosome.prime_ofRank, Chromosome.prime_iterate_ofRank, Chromosome.prime_coeff}
+  \leanok
+  \uses{def:Gene.ofRank, def:Chromosome.prime}
+  Prime lowers the rank of an $\mathtt{ofRank}$ generator by one, iterated
+  prime lowers it by the number of iterations, and the coefficient of a gene
+  $g$ in $X'$ is the coefficient of the rank-shifted gene $(g.rank+1,g.type)$
+  in $X$.
+\end{lemma}
 
 \begin{definition}[Lift (antiderivative)]
   \label{def:Chromosome.lift}
@@ -112,7 +164,7 @@
   \leanok
   \uses{def:Chromosome}
   The \emph{lift} operation is an additive homomorphism mapping a gene
-  $(n, \varepsilon)$ to $(n+1, -\varepsilon)$.
+  $(n,\varepsilon)$ to $(n+1,\varepsilon)$.
 \end{definition}
 
 \begin{lemma}[Prime-lift left inverse]
@@ -143,6 +195,16 @@
   We have $X = X_{\le k} + X_{> k}$.
 \end{definition}
 
+\begin{lemma}[Rank decomposition and lifting]
+  \label{lem:Chromosome.rank_decomposition}
+  \lean{Chromosome.rank_decomposition, Chromosome.prime_iterate_eq_prime_iterate_above, Chromosome.lift_prime}
+  \leanok
+  \uses{def:below_above, def:Chromosome.prime, def:Chromosome.lift}
+  The below/above filters decompose a chromosome.  The below part of rank
+  at most $k$ is killed by $k$ primes, so $X$ can be reconstructed from
+  $X^{(k)}$ by lifting, together with its below-$k$ part.
+\end{lemma}
+
 \begin{definition}[Parity decomposition]
   \label{def:parity}
   \lean{Chromosome.oddPart, Chromosome.evenPart}
@@ -159,6 +221,13 @@
   \uses{def:parity, def:Chromosome.prime}
   $(X')_{\mathrm{even}} = (X_{\mathrm{odd}})'$ and $(X')_{\mathrm{odd}} = (X_{\mathrm{even}})'$.
 \end{lemma}
+
+\begin{remark}[Module organization]
+  The Lean development now follows the mathematical blocks Basic, Signature,
+  Prime, Rank, Order, Lift, and Parity under the \texttt{Chromosome}
+  directory.  The module \texttt{YoungDiagram.Chromosome} re-exports them as
+  the stable public entry point.
+\end{remark}
 
 % ================================================================
 
@@ -280,8 +349,18 @@
   \leanok
   \uses{def:Variety}
   Given a pair of varieties $(V_1, V_2)$, the \emph{mixed variety} $\mathrm{Mix}(V_1, V_2)$
-  consists of all chromosomes whose odd part lies in $V_1$ and even part lies in $V_2$.
+  consists of all chromosomes whose even part lies in $V_1$ and odd part lies in $V_2$.
 \end{definition}
+
+\begin{lemma}[Prime of a mixed variety]
+  \label{lem:Variety.prime_Mix_eq}
+  \lean{Variety.prime_Mix_eq}
+  \leanok
+  \uses{def:Variety.Mix, lem:parity_prime}
+  If the two component varieties are closed under taking odd and even parts,
+  then prime swaps the two entries of a mixed variety:
+  $\mathrm{Mix}(V_1,V_2)'=\mathrm{Mix}(V_2',V_1')$.
+\end{lemma}
 
 \begin{definition}[Five labeled varieties]
   \label{def:Variety.Label}
@@ -291,10 +370,10 @@
   The five labeled varieties $V_0, \ldots, V_4$ indexed by $\mathrm{Fin}\,5$ are:
   \begin{itemize}
     \item $V_0 = \mathrm{Pi}$
-    \item $V_1 = \mathrm{Mix}(\mathrm{Pi}, \mathrm{Lambda})$
-    \item $V_2 = \mathrm{Lambda}$
-    \item $V_3 = \mathrm{Mix}(\mathrm{Lambda}, \mathrm{Pi})$
-    \item $V_4 = \mathrm{Mix}(\mathrm{Lambda}, \mathrm{Lambda})$
+    \item $V_1 = \mathrm{Mix}(\mathrm{Lambda}, \mathrm{Pi})$
+    \item $V_2 = \mathrm{Mix}(\mathrm{Pi}, \mathrm{Lambda})$
+    \item $V_3 = \mathrm{Mix}(2\mathrm{Lambda}, \mathrm{Pi})$
+    \item $V_4 = \mathrm{Mix}(\mathrm{Pi}, 2\mathrm{Lambda})$
   \end{itemize}
 \end{definition}
 
@@ -302,9 +381,20 @@
   \label{def:Label.prime}
   \lean{Variety.Label.prime}
   \leanok
+  \uses{def:Variety.Label}
   The prime operation on varieties induces a permutation of the five labels:
   $V_i' = V_{\pi(i)}$.
 \end{definition}
+
+\begin{lemma}[Prime tracks the labels]
+  \label{lem:Variety.Label.prime_eq}
+  \lean{Variety.Label.prime_eq, Variety.Label.prime_eq_iterate, Variety.prime_iterate_mem}
+  \leanok
+  \uses{def:Label.prime, lem:Variety.prime_Mix_eq}
+  For every label $i$, the variety prime of $V_i$ is exactly
+  $V_{\pi(i)}$.  Iterating this equality tracks membership after iterated
+  prime operations.
+\end{lemma}
 
 % ================================================================
 
@@ -328,6 +418,16 @@
   The sigma sequence is antitone (componentwise decreasing).
 \end{lemma}
 
+\begin{lemma}[First two sigma monotonicity conditions]
+  \label{lem:Sigma.cond_15_2_3}
+  \lean{Sigma.cond_15_2, Sigma.cond_15_3}
+  \leanok
+  \uses{def:Sigma.sigma, lem:Sigma.antitone, lem:Sigma.eventually_zero}
+  The first and second components separately form decreasing sequences and
+  both are eventually zero.  These are the formal versions of conditions
+  (15.2) and (15.3).
+\end{lemma}
+
 \begin{lemma}[Sigma is eventually zero]
   \label{lem:Sigma.eventually_zero}
   \lean{Sigma.eventually_zero}
@@ -348,10 +448,43 @@
 
 \begin{lemma}[Difference conditions for Pi]
   \label{lem:Sigma.cond_15_6}
-  \lean{Sigma.cond_15_6}
+  \lean{Sigma.cond_15_6, Sigma.cond_15_7}
   \leanok
   \uses{def:Sigma.sigma, def:Variety.Pi}
-  If $X \in \mathrm{Pi}$, then $a_X(k) - b_X(k+1) \le 1$ and $b_X(k) - a_X(k+1) \le 1$.
+  If $X \in \mathrm{Pi}$, the successive drops
+  $a_X(k)-a_X(k+1)$ and $b_X(k)-b_X(k+1)$ satisfy the alternating
+  inequalities (15.6) and (15.7).
+\end{lemma}
+
+\begin{lemma}[Sigma drops count alternating signs]
+  \label{lem:Sigma.sigma_diff}
+  \lean{Sigma.sigma_fst_diff, Sigma.sigma_snd_diff}
+  \leanok
+  \uses{def:Sigma.sigma, def:Variety.Pi}
+  For a polarized chromosome, the drop in the first sigma component from
+  $k$ to $k+1$ counts genes in $X^{(k)}$ that are positive in the alternating
+  basis; the drop in the second component counts the corresponding negative
+  genes.
+\end{lemma}
+
+\begin{lemma}[Comparing drops to the initial drop]
+  \label{lem:Sigma.compare_drops}
+  \lean{Sigma.cond_15_6_compare_drop_to_0, Sigma.cond_15_6_compare_k_to_0, Sigma.a1_ai_le_b0_bi_1}
+  \leanok
+  \uses{lem:Sigma.cond_15_6}
+  The alternating inequalities imply useful global comparisons: later drops
+  are bounded by the initial drop, and telescoping gives
+  $a_1-a_i \le b_0-b_{i-1}$ for $i\ge 1$.
+\end{lemma}
+
+\begin{lemma}[Rank-one sign tests]
+  \label{lem:Sigma.case_sign_tests}
+  \lean{Sigma.neg_type_of_b0_gt_a1_single, Sigma.pos_type_of_b0_le_a1_single, Sigma.neg_gene_of_b0_gt_a1}
+  \leanok
+  \uses{def:Sigma.sigma, def:Variety.Pi}
+  The inequalities between $b_0$ and $a_1$ detect the sign of a rank-one
+  polarized gene.  Summing this test over a chromosome produces a negative
+  gene whenever $b_0>a_1$.
 \end{lemma}
 
 \begin{lemma}[Dominance implies componentwise inequality]
@@ -428,6 +561,16 @@
   $\mathrm{Step}(X+Z, Y+Z)$ whenever $\mathrm{Primitive}(X, Y)$.
 \end{definition}
 
+\begin{definition}[Labeled step relation]
+  \label{def:Mutation.Step}
+  \lean{Mutation.Step}
+  \leanok
+  \uses{def:Variety.Label, def:Pi.Step}
+  The global mutation step relation is indexed by the five labels.  At label
+  $0$ it is the polarized step relation above; the remaining labels are
+  placeholders for the corresponding cases in the labeled varieties.
+\end{definition}
+
 \section{Properties of mutations on Pi}
 
 \begin{lemma}[Primitive mutations are mutations]
@@ -436,6 +579,15 @@
   \leanok
   \uses{def:Pi.Primitive, def:IsMutation}
   Every primitive mutation satisfies the mutation conditions.
+\end{lemma}
+
+\begin{lemma}[Steps are mutations]
+  \label{lem:Pi.Step.isMutation}
+  \lean{Pi.Step.isMutation, Pi.Step.add_right_pi}
+  \leanok
+  \uses{def:Pi.Step, lem:Pi.Primitive.isMutation}
+  A step remains a mutation after adding the same polarized summand to both
+  sides.
 \end{lemma}
 
 \begin{lemma}[Type 1 signature preservation]
@@ -487,6 +639,15 @@
   Type 3 mutations satisfy $Y_3 \le X_3$.
 \end{lemma}
 
+\begin{lemma}[Type 3 sigma increment]
+  \label{lem:Sigma.mutation_type3_sigma_eq}
+  \lean{Sigma.type3Increment, Sigma.mutation_type3_sigma_eq_increment, Sigma.mutation_type3_sigma_eq}
+  \leanok
+  \uses{def:Pi.X3Y3, def:Sigma.sigma}
+  For a type-3 primitive mutation, the sigma sequence of the target is obtained
+  from the source by adding an explicit interval-supported increment.
+\end{lemma}
+
 \section{Main mutation theorem}
 
 \begin{theorem}[Existence of mutations]
@@ -498,6 +659,37 @@
   either $X = Y$ or there exists a step mutation from $X$ towards $Y$:
   there exist $X' \in \mathrm{Pi}$ with $\mathrm{Step}(X, X')$ and $Y \le X' < X$.
 \end{theorem}
+
+\begin{lemma}[No-gene and rank-one reductions]
+  \label{lem:Theorem6.no_gene_reductions}
+  \lean{prime_iterate_no_gene_of_rank, prime_ne_zero_of_Y_no_gene, Y_no_gene_of_rank}
+  \leanok
+  \uses{def:Chromosome.prime, def:Variety.Pi}
+  The proof of the main mutation theorem repeatedly removes impossible
+  rank positions.  If a chromosome has no gene of a given rank, the same
+  absence can be read after applying enough primes, and this controls
+  non-vanishing of the prime sequence.
+\end{lemma}
+
+\begin{lemma}[Extracting primitive summands]
+  \label{lem:Theorem6.extracting_summands}
+  \lean{one_le_signature_fst_of_contains_positive, X_eq_X1_add_rest}
+  \leanok
+  \uses{def:Pi.X1Y1, def:Chromosome.signature}
+  When the comparison with $Y$ identifies a positive and a negative gene in
+  $X$, the proof extracts the corresponding type-1 primitive source together
+  with the remaining summand.
+\end{lemma}
+
+\begin{remark}[Induction in Theorem 6]
+  The Lean proof of \ref{thm:exists_mutation_le} proceeds by strong induction
+  on the common rank.  If $X$ and $Y$ share a gene, that common gene is removed
+  using cancellation and the induction hypothesis is applied to the remainder.
+  If they do not share a gene, the proof splits according to whether some
+  positive sigma level agrees, whether $X$ contains a positive/negative pair
+  of equal rank, and finally the numerical alternatives corresponding to
+  Djokovic's inequalities around (15.10).
+\end{remark}
 
 % ================================================================
 

@@ -1,4 +1,4 @@
-import YoungDiagram.Chromosome
+import YoungDiagram.Chromosome.Order
 
 open Chromosome
 

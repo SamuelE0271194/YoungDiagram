@@ -1,4 +1,5 @@
 import YoungDiagram.Variety.Basic
+import YoungDiagram.Chromosome.Parity
 
 open Finsupp
 
