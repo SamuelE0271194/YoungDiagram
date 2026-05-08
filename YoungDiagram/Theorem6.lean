@@ -988,7 +988,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
             (Pi.Primitive.type1 GeneType.Positive hε_pos hle_ranks (le_refl 1))
         have hsigma_diff_XZ : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
             (Sigma.sigma Z.val i) - (Sigma.sigma X.val i) = (1, 0) := by
-          intro i i_ub i_lb
+          intro i i_lb i_ub
           simp [Z, hdecomp, Sigma.sigma_linearity, Pi.Y1_eq, Pi.X1_eq]
           simp [Sigma.sigma]
           simp [prime_iterate_ofRank]
@@ -998,6 +998,15 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
               show g₂.rank + 1 - i - 1 = g₂.rank - i from by omega]
         have hsigma_diff_XY : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
             (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 := by
+          intro i i_lb i_ub
+          have hd0_di : (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val (i - 1)).2 ≥
+              (Sigma.sigma Y.1.val 1).1 - (Sigma.sigma Y.1.val i).1 :=
+            Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 i_lb
+          have ha_anti : (Sigma.sigma X.1.val i).1 ≤ (Sigma.sigma X.1.val 1).1 :=
+            (Prod.le_def.mp (Sigma.antitone X.1.val i_lb)).1
+          have hd0_di_strict : (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val (i - 1)).2 >
+              ((Sigma.sigma X.1.val 1).1 - (Sigma.sigma X.1.val i).1) +
+              ((Sigma.sigma X.1.val i).1 - (Sigma.sigma Y.1.val i).1) := by linarith
           sorry
         exact ⟨Z, hstep, by
           change Z.val ≤ Y.1.val

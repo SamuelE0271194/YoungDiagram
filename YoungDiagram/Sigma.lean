@@ -621,4 +621,36 @@ lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
   have hg₀_neg : g₀.type = .Negative := neg_type_of_b0_gt_a1_single g₀ hg₀_pi hg₀_ineq
   exact ⟨g₀, hg₀_neg, hg₀_pos⟩
 
+lemma a1_ai_le_b0_bi_1 (hX : X ∈ Variety.Pi) {i : ℕ} (h : i ≥ 1) :
+  (b X 0 - b X (i - 1)) ≥ (a X 1 - a X i) := by
+  obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le h
+  induction j with
+  | zero => simp
+  | succ j ih =>
+    induction j with
+    | zero => exact cond_15_7 X 0 hX
+    | succ j ih =>
+      by_cases hei : Even (j + 2)
+      · have hei1 : ¬ (Even (j + 1)) := Nat.even_add_one.mp hei
+        have : b X (j + 1) - b X (j + 2) ≥ a X (j + 2) - a X (j + 3) := by
+          have h := cond_15_6 X (j + 1) hX
+          rw [if_neg hei1] at h
+          exact h
+        have ih' := ih (by omega)
+        simp only [show 1 + (j + 1) = j + 2 from by omega,
+                   show j + 2 - 1 = j + 1 from by omega] at ih'
+        simp only [show 1 + (j + 1 + 1) = j + 3 from by omega,
+                   show j + 3 - 1 = j + 2 from by omega]
+        linarith
+      · have hei1 : Even (j + 1) := by rwa [Nat.even_add_one, not_not] at hei
+        have : b X (j + 1) - b X (j + 2) ≥ a X (j + 2) - a X (j + 3) := by
+          have h := cond_15_7 X (j + 1) hX
+          rw [if_pos hei1] at h
+          exact h
+        have ih' := ih (by omega)
+        simp only [show 1 + (j + 1) = j + 2 from by omega,
+                   show j + 2 - 1 = j + 1 from by omega] at ih'
+        simp only [show 1 + (j + 1 + 1) = j + 3 from by omega,
+                   show j + 3 - 1 = j + 2 from by omega]
+        linarith
 end Sigma
