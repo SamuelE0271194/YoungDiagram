@@ -491,6 +491,96 @@ private lemma x_side_equalities
         (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hsupp))
     omega
 
+private lemma prime_iterate_actual_type_sum_eq (X : Chromosome) (k : ℕ) (ε : GeneType) :
+    (prime^[k] X).sum (fun g m ↦ if g.type = ε then (m : ℚ) else 0) =
+    ∑ g ∈ X.support.filter (fun g => k < g.rank ∧ g.type = ε), (X g : ℚ) := by
+  simp only [Finsupp.sum]
+  conv_lhs => arg 2; ext g; rw [prime_iterate_coeff k X g]
+  rw [← Finset.sum_filter]
+  refine Finset.sum_bij'
+      (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
+      (fun g' hg' => (⟨g'.rank - k, g'.type, by
+        have hlt := (Finset.mem_filter.mp hg').2.1
+        omega⟩ : Gene))
+      ?_ ?_ ?_ ?_ ?_
+  · intro g hg
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg ⊢
+    obtain ⟨hgsupp, hgtype⟩ := hg
+    refine ⟨by rwa [← prime_iterate_coeff], ?_, ?_⟩
+    · have := g.rank_pos; omega
+    · exact hgtype
+  · intro g' hg'
+    simp only [Finset.mem_filter, Finsupp.mem_support_iff] at hg' ⊢
+    obtain ⟨hgsupp', hlt, hgtype'⟩ := hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt hlt
+    refine ⟨?_, ?_⟩
+    · rw [prime_iterate_coeff]
+      simp only [Nat.sub_add_cancel hle]
+      exact hgsupp'
+    · exact hgtype'
+  · intro g _
+    exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
+  · intro g' hg'
+    have hle : k ≤ g'.rank := Nat.le_of_lt (Finset.mem_filter.mp hg').2.1
+    exact Gene.ext (Nat.sub_add_cancel hle) rfl
+  · intros
+    rfl
+
+private lemma x_actual_negative_prefix_equalities
+    {X : Pi} {g₂ : Gene}
+    (hg₂_min : ∀ g' : Gene, g'.type = .Negative → 0 < X.val g' → g₂.rank ≤ g'.rank)
+    {i : ℕ} (hi : 1 ≤ i) (hi₂ : i ≤ g₂.rank) :
+    (Sigma.sigma X.val 0).2 - (Sigma.sigma X.val (i - 1)).2 =
+      (Sigma.sigma X.val 1).1 - (Sigma.sigma X.val i).1 := by
+  have hcount0 := Sigma.b0_sub_a1_eq_neg_count X.val X.2
+  have hcounti := Sigma.b0_sub_a1_eq_neg_count (prime^[i - 1] X.val)
+    (Variety.prime_mem_Pi_iterate X.2 (k := i - 1))
+  simp only [Sigma.sigma, Function.iterate_zero, id, Function.iterate_one] at hcount0 hcounti
+  have hcount :
+      (prime^[i - 1] X.val).sum
+          (fun g m => if g.type = GeneType.Negative then (m : ℚ) else 0) =
+        X.val.sum (fun g m => if g.type = GeneType.Negative then (m : ℚ) else 0) := by
+    rw [prime_iterate_actual_type_sum_eq X.val (i - 1) GeneType.Negative]
+    rw [Finsupp.sum, ← Finset.sum_filter]
+    apply Finset.sum_congr
+    · ext g
+      simp only [Finset.mem_filter]
+      constructor
+      · rintro ⟨hsupp, _, hneg⟩
+        exact ⟨hsupp, hneg⟩
+      · rintro ⟨hsupp, hneg⟩
+        refine ⟨hsupp, ?_, hneg⟩
+        have hpos : 0 < X.val g := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hsupp)
+        have hg₂_le := hg₂_min g hneg hpos
+        omega
+    · intro g _
+      rfl
+  have hprime_i : prime (prime^[i - 1] X.val) = prime^[i] X.val := by
+    rw [show i = i - 1 + 1 from by omega]
+    exact (Function.iterate_succ_apply' prime (i - 1) X.val).symm
+  simp only [Sigma.sigma, Function.iterate_zero, id, Function.iterate_one]
+  rw [← hprime_i]
+  linarith
+
+private lemma caseA2_strict_fst
+    {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
+    {g₂ : Gene}
+    (hg₂_min : ∀ g' : Gene, g'.type = .Negative → 0 < X.1.val g' → g₂.rank ≤ g'.rank)
+    (hb₀_eq_d₀ : (Sigma.sigma X.1.val 0).2 = (Sigma.sigma Y.1.val 0).2)
+    (ha : (Sigma.sigma X.1 1).1 < (Sigma.sigma Y.1 1).1)
+    {i : ℕ} (hi : 1 ≤ i) (hi₂ : i ≤ g₂.rank) :
+    (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.1.val i).1 := by
+  have hY_chain : (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val (i - 1)).2 ≥
+      (Sigma.sigma Y.1.val 1).1 - (Sigma.sigma Y.1.val i).1 :=
+    Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 hi
+  have hX_eq : (Sigma.sigma X.1.val 0).2 - (Sigma.sigma X.1.val (i - 1)).2 =
+      (Sigma.sigma X.1.val 1).1 - (Sigma.sigma X.1.val i).1 :=
+    x_actual_negative_prefix_equalities hg₂_min hi hi₂
+  have hXY_pred : (Sigma.sigma X.1.val (i - 1)).2 ≤
+      (Sigma.sigma Y.1.val (i - 1)).2 :=
+    (le_iff_dominates.mp hXY.le (i - 1)).2
+  linarith
+
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 
 /-- Cases 1–4 of §15.10 (all s orry). -/
@@ -999,15 +1089,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
         have hsigma_diff_XY : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
             (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 := by
           intro i i_lb i_ub
-          have hd0_di : (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val (i - 1)).2 ≥
-              (Sigma.sigma Y.1.val 1).1 - (Sigma.sigma Y.1.val i).1 :=
-            Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 i_lb
-          have ha_anti : (Sigma.sigma X.1.val i).1 ≤ (Sigma.sigma X.1.val 1).1 :=
-            (Prod.le_def.mp (Sigma.antitone X.1.val i_lb)).1
-          have hd0_di_strict : (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val (i - 1)).2 >
-              ((Sigma.sigma X.1.val 1).1 - (Sigma.sigma X.1.val i).1) +
-              ((Sigma.sigma X.1.val i).1 - (Sigma.sigma Y.1.val i).1) := by linarith
-          sorry
+          exact caseA2_strict_fst X Y hXY hg₂_min hb₀_eq_d₀ ha i_lb i_ub
         exact ⟨Z, hstep, by
           change Z.val ≤ Y.1.val
           rw [le_iff_dominates]
