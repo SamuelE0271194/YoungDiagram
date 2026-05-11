@@ -1175,7 +1175,12 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
       · -- g₁.rank ≥ 2 (Case 3-4)
         have hg₁_ge2 : 2 ≤ g₁.rank := by
           have := g₁.rank_pos; omega
-        sorry
+        by_cases h2g₁ : 2 ≤ X.1.val g₁
+        · -- Case 3: 2 * g₁ ≤ X (g₁ appears with multiplicity ≥ 2)
+          sorry
+        · -- Case 4: g₁ appears with multiplicity 1 in X
+          have hg₁_one : X.1.val g₁ = 1 := by omega
+          sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
     sorry
 
