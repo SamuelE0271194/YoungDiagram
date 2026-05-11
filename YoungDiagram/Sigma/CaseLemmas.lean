@@ -1,4 +1,5 @@
 import YoungDiagram.Sigma.Basic
+import YoungDiagram.Sigma.Diff
 
 open Chromosome Finsupp
 
@@ -176,6 +177,51 @@ lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
     · simp [hneg]
   linarith
 
+lemma sigma_0_type2_same_rank {m : ℕ} (hm : 1 < m) :
+    ∀ ε : GeneType, (hε : ε ≠ .NonPolarized) →
+    let X : Chromosome := Pi.X2 hε (le_refl m) hm
+    let Y : Chromosome := Pi.Y2 hε (le_refl m) hm
+    sigma X 0 = sigma Y 0 := by
+  induction m with
+  | zero => omega
+  | succ n ihn =>
+    cases n with
+    | zero => omega
+    | succ k =>
+      cases k with
+      | zero =>
+        intro ε hε
+        simp [Pi.X2_eq, Pi.Y2_eq, sigma]
+        -- m = 2
+        simp_all [signature_ofRank_even_half]
+        have sig4 : signature (Gene.ofRank 4 ε) = (2, 2) := by
+          rw [signature_ofRank_even_half (show Even 4 from ⟨2, rfl⟩)]; norm_num
+        simp [sig4]
+        norm_num
+      | succ j =>
+        intro ε hε
+        -- m = j + 3 > 2
+        simp [Pi.X2_eq, Pi.Y2_eq, sigma]
+        ring_nf at ihn
+        have : 1 < 2 + j := by omega
+        ring_nf
+        have h1 : 1 ≤ 1 + j := by omega
+        have h2 : 1 ≤ 3 + j := by omega
+        have h3 : 1 ≤ 5 + j := by omega
+        simp [signature_ofRank_eq h1 hε,
+              signature_ofRank_eq h2 hε,
+              signature_ofRank_eq h3 hε]
+        ring_nf
+        rw [add_comm]
+        abel_nf
+        simp
+        have hε1 : -ε ≠ .NonPolarized := GeneType.neg_ne_nonPolarized_iff.mp hε
+        have ihn_neg := ihn this (-ε) hε1
+        simp [sigma, Pi.X2_eq, Pi.Y2_eq] at ihn_neg
+        ring_nf at ihn_neg
+        have : j + 4 = 4 + j := by omega
+        simp_all
+
 /-- Sigma invariants of the type2 mutation X2 → Y2 when both genes have the same rank m.
     The source X2 = 2·gene(m,ε) and the target Y2 = gene(m-2,ε) + gene(m+2,ε) agree on sigma
     outside the window [m-1, m+1], and differ by (1,0) (resp. (0,1)) inside
@@ -188,6 +234,41 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
     (∀ i, m - 1 ≤ i → i ≤ m + 1 →
       sigma X i - sigma Y i = if i = m then (1, 1)
                               else if Even m then (1, 0) else (0, 1)) := by
-  sorry
+  refine ⟨?_, ?_, ?_⟩
+  · -- Range 1: i ≤ m - 2
+    intro i ih
+    induction i with
+    | zero =>
+      simp [sigma_0_type2_same_rank hm ε hε]
+    | succ n ihn =>
+      by_cases hn : n + 1 = m - 2
+      · -- n + 1 = m - 2
+        simp_all [Pi.X2_eq, Pi.Y2_eq]
+        simp [sigma_linearity]
+        simp [sigma, prime_iterate_ofRank_eq_zero, prime_iterate_ofRank]
+        have h1 : m - (m - 2) = 2 := by omega
+        have h2 : m + 2 - (m - 2) = 4 := by omega
+        simp [h1, h2]
+        simp [signature_ofRank_even_half]
+        have sig4 : signature (Gene.ofRank 4 ε) = (2, 2) := by
+          rw [signature_ofRank_even_half (show Even 4 from ⟨2, rfl⟩)]; norm_num
+        simp [sig4]
+        norm_num
+      · -- n + 1 ≠ m - 2
+        have h1 : n  ≤  m - 2 := by omega
+        simp_all [Pi.X2_eq, Pi.Y2_eq]
+        simp_all [sigma_linearity]
+        sorry
+
+  · -- Range 2: m + 2 ≤ i
+    intro i ih
+    simp [Pi.X2_eq, Pi.Y2_eq, sigma]
+    have ih' : i ≥ m := by linarith
+    have ih'' : i ≥ (m - 2) := by omega
+    simp [prime_iterate_ofRank_eq_zero ih,
+      prime_iterate_ofRank_eq_zero ih',
+      prime_iterate_ofRank_eq_zero ih'']
+  · -- Range 3: m - 1 ≤ i ≤ m + 1
+    sorry
 
 end Sigma
