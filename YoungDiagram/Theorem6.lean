@@ -1177,6 +1177,95 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           have := g₁.rank_pos; omega
         by_cases h2g₁ : 2 ≤ X.1.val g₁
         · -- Case 3: 2 * g₁ ≤ X (g₁ appears with multiplicity ≥ 2)
+          -- g₁ is polarized (not NonPolarized)
+          have hε : g₁.type ≠ .NonPolarized :=
+            IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁ (Finsupp.mem_support_iff.mpr hXg₁)
+          -- Gene.ofRank g₁.rank g₁.type = Finsupp.single g₁ 1
+          have hg₁_ofRank : Gene.ofRank g₁.rank g₁.type = Finsupp.single g₁ 1 :=
+            @Gene.ofRank_eq_gene g₁
+          -- Pi.X2 (with m = n = g₁.rank) equals Finsupp.single g₁ 2
+          have hsrc_val : (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2 : Chromosome) =
+              Finsupp.single g₁ 2 := by
+            simp only [Pi.X2_eq, hg₁_ofRank]
+            ext g; simp [Finsupp.single_apply]; split_ifs with heq <;> simp
+          -- Pi.X2 ≤ X.1.val pointwise
+          have hsrc_le : ∀ g : Gene,
+              (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2 : Chromosome) g ≤ X.1.val g := by
+            intro g
+            rw [hsrc_val, Finsupp.single_apply]
+            split_ifs with heq
+            · subst heq; exact h2g₁
+            · exact Nat.zero_le _
+          -- rest = X.1 − Pi.X2, still in Pi
+          let rest : Pi :=
+            ⟨X.1.val - (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2 : Chromosome),
+              Variety.sub_mem_Pi _ X.1.2⟩
+          -- X.1 decomposes as Pi.X2 + rest
+          have hdecomp : X.1 = Pi.X2 hε (le_refl g₁.rank) hg₁_ge2 + rest :=
+            Subtype.val_injective
+              (Finsupp.ext fun g => (add_tsub_cancel_of_le (hsrc_le g)).symm)
+          -- Z is the type2 mutation result: Pi.Y2 + rest
+          let Z : Pi := Pi.Y2 hε (le_refl g₁.rank) hg₁_ge2 + rest
+          -- Construct the Pi-step
+          have hstep : Pi.Step X.1 Z :=
+            hdecomp.symm ▸ Pi.Step.mk
+              (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2)
+              (Pi.Y2 hε (le_refl g₁.rank) hg₁_ge2)
+              rest
+              (Pi.Primitive.type2 g₁.type hε (le_refl g₁.rank) hg₁_ge2)
+          -- b₁ - b₂ = a₀ - a₁
+          have hb12_eq : (Sigma.sigma X.1 1).2 - (Sigma.sigma X.1 2).2 =
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            -- g₁.type is in the Positive family (not Negative by hε₁,
+             --not NonPolarized by polarization)
+            have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
+              (Finsupp.mem_support_iff.mpr hXg₁)
+            have hg₁_pos_type : g₁.type = Int.negOnePow (g₁.rank - 1) • GeneType.Positive := by
+              simp only [GeneType.negOnePow_smul, GeneType.neg_positive, GeneType.neg_negative]
+                at hε₁ ⊢
+              split_ifs with heven
+              · simp only [if_pos heven] at hε₁
+                cases ht : g₁.type with
+                | Positive => rfl
+                | Negative => exact absurd ht hε₁
+                | NonPolarized => exact absurd ht hpol
+              · simp only [if_neg heven] at hε₁
+                cases ht : g₁.type with
+                | Positive => exact absurd ht hε₁
+                | Negative => rfl
+                | NonPolarized => exact absurd ht hpol
+            -- Gene.ofRankAlt g₁.rank Positive = single g₁ 1
+            have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive = Finsupp.single g₁ 1
+                := by
+              rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
+              congr 1; exact Gene.ext rfl hg₁_pos_type.symm
+            -- Apply x_side_equalities at j = 1 (odd), using g₁ as the minimal Positive-family gene
+            have h := x_side_equalities hXpn hg₁_ofRankAlt hXg₁pos
+              (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
+              (show 1 < g₁.rank from hg₁_ge2)
+            simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
+            exact h
+          -- a₀ - a₁ > c₀ - c₁
+          have hstrict : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
+              (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+            have ha₀ := sigma_zero_fst_eq X Y hXY.le
+            linarith
+          -- c₀ - c₁ ≥ d₁ - d₂
+          have hd12_le : (Sigma.sigma Y.1 1).2 - (Sigma.sigma Y.1 2).2 ≤
+              (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := by
+            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
+            simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
+            exact h
+          -- b₁ ≤ d₁ from X ≤ Y at level 1
+          have hb1_le_d1 : (Sigma.sigma X.1 1).2 ≤ (Sigma.sigma Y.1 1).2 :=
+            (le_iff_dominates.mp hXY.le 1).2
+          -- b₁ - b₂ > d₁ - d₂: chain hb12_eq > hstrict ≥ hd12_le
+          have hb12_gt_d12 : (Sigma.sigma Y.1 1).2 - (Sigma.sigma Y.1 2).2 <
+              (Sigma.sigma X.1 1).2 - (Sigma.sigma X.1 2).2 := by
+            linarith [hb12_eq, hstrict, hd12_le]
+          -- d₂ > b₂: from b₁ ≤ d₁ and b₁ - b₂ > d₁ - d₂
+          have hd2_gt_b2 : (Sigma.sigma X.1 2).2 < (Sigma.sigma Y.1 2).2 := by
+            linarith [hb1_le_d1, hb12_gt_d12]
           sorry
         · -- Case 4: g₁ appears with multiplicity 1 in X
           have hg₁_one : X.1.val g₁ = 1 := by omega
