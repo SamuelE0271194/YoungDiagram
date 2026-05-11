@@ -176,4 +176,18 @@ lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
     · simp [hneg]
   linarith
 
+/-- Sigma invariants of the type2 mutation X2 → Y2 when both genes have the same rank m.
+    The source X2 = 2·gene(m,ε) and the target Y2 = gene(m-2,ε) + gene(m+2,ε) agree on sigma
+    outside the window [m-1, m+1], and differ by (1,0) (resp. (0,1)) inside
+    when m is even (resp. odd). -/
+lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized) (hm : 1 < m) :
+    let X : Chromosome := Pi.X2 hε (le_refl m) hm
+    let Y : Chromosome := Pi.Y2 hε (le_refl m) hm
+    (∀ i, i ≤ m - 2 → sigma X i = sigma Y i) ∧
+    (∀ i, m + 2 ≤ i → sigma X i = sigma Y i) ∧
+    (∀ i, m - 1 ≤ i → i ≤ m + 1 →
+      sigma X i - sigma Y i = if i = m then (1, 1)
+                              else if Even m then (1, 0) else (0, 1)) := by
+  sorry
+
 end Sigma
