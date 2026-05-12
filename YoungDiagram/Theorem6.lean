@@ -1266,7 +1266,129 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           -- d₂ > b₂: from b₁ ≤ d₁ and b₁ - b₂ > d₁ - d₂
           have hd2_gt_b2 : (Sigma.sigma X.1 2).2 < (Sigma.sigma Y.1 2).2 := by
             linarith [hb1_le_d1, hb12_gt_d12]
-          sorry
+          -- Extract the three parts of sigma_type2_same_rank:
+          -- hleft : sigma(Pi.X2) = sigma(Pi.Y2) for i ≤ m - 2
+          -- hright : sigma(Pi.X2) = sigma(Pi.Y2) for i ≥ m + 2
+          -- hwindow : the nonzero differences at i = m-1, m, m+1
+          obtain ⟨hleft, hright, hwindow⟩ :=
+            Sigma.sigma_type2_same_rank g₁.type hε hg₁_ge2
+          -- sigma(Z.val) = sigma(Pi.Y2.val) + sigma(rest.val)
+          have hZ_split : ∀ i, Sigma.sigma Z.val i =
+              Sigma.sigma (Pi.Y2 hε (le_refl g₁.rank) hg₁_ge2).val i +
+              Sigma.sigma rest.val i := fun i => by
+            change Sigma.sigma
+              (Pi.Y2 hε (le_refl g₁.rank) hg₁_ge2 + rest : Variety.Pi).val i = _
+            simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
+          -- sigma(X.1.val) = sigma(Pi.X2.val) + sigma(rest.val)
+          have hX_split : ∀ i, Sigma.sigma X.1.val i =
+              Sigma.sigma (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2).val i +
+              Sigma.sigma rest.val i := fun i => by
+            have hval : X.1.val =
+                (Pi.X2 hε (le_refl g₁.rank) hg₁_ge2).val + rest.val := by
+              have h := congrArg Subtype.val hdecomp
+              simp only [AddSubmonoid.coe_add] at h; exact h
+            simp only [hval, Sigma.sigma, iterate_map_add, map_add]
+          -- Prove Z ≤ Y.1 by checking each index
+          refine ⟨Z, hstep, ?_⟩
+          change Z.val ≤ Y.1.val
+          rw [le_iff_dominates]
+          intro i
+          change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
+          have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
+            le_iff_dominates.mp hXY.le i
+          by_cases hi1 : i ≤ g₁.rank - 2
+          · -- Left of window: sigma(Pi.Y2) i = sigma(Pi.X2) i, so sigma Z i = sigma X.1 i
+            rw [hZ_split, ← hleft i hi1, ← hX_split]; exact hXY_i
+          · by_cases hi2 : g₁.rank + 2 ≤ i
+            · -- Right of window: sigma(Pi.Y2) i = sigma(Pi.X2) i, so sigma Z i = sigma X.1 i
+              rw [hZ_split, ← hright i hi2, ← hX_split]; exact hXY_i
+            · -- Window: i ∈ {g₁.rank - 1, g₁.rank, g₁.rank + 1}
+              have hi_range : i = g₁.rank - 1 ∨ i = g₁.rank ∨ i = g₁.rank + 1 := by omega
+
+              by_cases heven : Even g₁.rank
+              · -- g₁.rank is even
+                -- for i = g₁.rank: c₁ - c_i ≤ d₀ - d_{i-1}
+                have hc1_ci_rank : (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 g₁.rank).1 ≤
+                  (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
+                  Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 (by omega)
+                -- for i = g₁.rank: d₀ - d_{i-1} ≤ b₀ - b_{i-1}
+                have hd0_di_rank : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 ≤
+                  (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 := by
+                  have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
+                    sigma_zero_snd_eq X Y hXY.le
+                  have hbm1_le_dm1 : (Sigma.sigma X.1 (g₁.rank - 1)).2 ≤
+                      (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
+                    (le_iff_dominates.mp hXY.le (g₁.rank - 1)).2
+                  linarith
+                -- b₀ - b_{j-1} = a₁ - a_j for all 1 ≤ j ≤ g₁.rank
+                have hb0_bi : ∀ j, 1 ≤ j → j ≤ g₁.rank →
+                    (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (j - 1)).2 =
+                    (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 j).1 :=
+                  fun j hj1 hj2 => x_actual_negative_prefix_equalities
+                    (fun g' _ hg'_pos =>
+                      hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
+                    hj1 hj2
+                -- for i = g₁.rank: b₀ - b_{i-1} = a₁ - a_i
+                have hb0_bi_rank := hb0_bi g₁.rank (by omega) (le_refl _)
+                -- for i = g₁.rank - 1: c₁ - c_i ≤ d₀ - d_{i-1}
+                have hc1_ci_rank1 : (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 (g₁.rank - 1)).1 ≤
+                  (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 :=
+                  Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 (by omega)
+                -- for i = g₁.rank - 1: d₀ - d_{i-1} ≤ b₀ - b_{i-1}
+                have hd0_di_rank1 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 ≤
+                  (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 := by
+                  have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
+                    sigma_zero_snd_eq X Y hXY.le
+                  have hbm2_le_dm2 : (Sigma.sigma X.1 (g₁.rank - 2)).2 ≤
+                      (Sigma.sigma Y.1 (g₁.rank - 2)).2 :=
+                    (le_iff_dominates.mp hXY.le (g₁.rank - 2)).2
+                  linarith
+                -- for i = g₁.rank - 1: b₀ - b_{i-1} = a₁ - a_i
+                have hb0_bi_rank1 := hb0_bi (g₁.rank - 1) (by omega) (by omega)
+                simp only [show g₁.rank - 1 - 1 = g₁.rank - 2 from by omega] at hb0_bi_rank1
+                -- a_{g₁.rank} < c_{g₁.rank}
+                have ha_lt_c_rank : (Sigma.sigma X.1 g₁.rank).1 <
+                    (Sigma.sigma Y.1 g₁.rank).1 := by
+                  have ha0_eq : (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 :=
+                    sigma_zero_fst_eq X Y hXY.le
+                  linarith [hc1_ci_rank, hd0_di_rank, hb0_bi_rank, hstrict]
+                -- a_{g₁.rank - 1} < c_{g₁.rank - 1}
+                have ha_lt_c_rank1 : (Sigma.sigma X.1 (g₁.rank - 1)).1 <
+                    (Sigma.sigma Y.1 (g₁.rank - 1)).1 := by
+                  have ha0_eq : (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 :=
+                    sigma_zero_fst_eq X Y hXY.le
+                  linarith [hc1_ci_rank1, hd0_di_rank1, hb0_bi_rank1, hstrict]
+                -- for i = g₁.rank - 1: d₂ - d_{i+1} ≤ c₁ - c_i
+                have hd2_c1_rank1 : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 g₁.rank).2 ≤
+                    (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 (g₁.rank - 1)).1 := by
+                  by_cases hrank2 : g₁.rank = 2
+                  · simp only [hrank2, sub_self, le_refl]
+                  · have h : g₁.rank - 1 ≥ 2 := by omega
+                    have := Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2 h
+                    rwa [show g₁.rank - 1 + 1 = g₁.rank from by omega] at this
+                -- for i = g₁.rank - 1: d₂ - d_{i+1} ≤ d₀ - d_{i-1}
+                have hd2_di1_rank1 : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 g₁.rank).2 ≤
+                    (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 :=
+                  hd2_c1_rank1.trans hc1_ci_rank1
+                -- for i = g₁.rank - 1: b₀ - b_{i-1} = b₂ - b_{i+1}
+                have hb0_b2_rank1 : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 =
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 g₁.rank).2 := by
+                  sorry
+                -- for i = g₁.rank: d₂ - d_{i+1} ≤ c₁ - c_i
+                have hd2_c1_rank : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 (g₁.rank + 1)).2 ≤
+                    (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 g₁.rank).1 :=
+                  Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2 hg₁_ge2
+                -- for i = g₁.rank: d₂ - d_{i+1} ≤ d₀ - d_{i-1}
+                have hd2_di1_rank : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 (g₁.rank + 1)).2 ≤
+                    (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
+                  hd2_c1_rank.trans hc1_ci_rank
+                -- for i = g₁.rank: b₀ - b_{i-1} = b₂ - b_{i+1}
+                have hb0_b2_rank : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 =
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 := by
+                  sorry
+                sorry
+              · -- g₁.rank is odd
+                sorry
         · -- Case 4: g₁ appears with multiplicity 1 in X
           have hg₁_one : X.1.val g₁ = 1 := by omega
           sorry

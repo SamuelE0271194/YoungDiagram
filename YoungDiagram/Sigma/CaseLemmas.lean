@@ -310,7 +310,6 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         simp [e1]
         ring_nf
         simp [e2]
-
   · -- Range 2: m + 2 ≤ i
     intro i ih
     simp [Pi.X2_eq, Pi.Y2_eq, sigma]

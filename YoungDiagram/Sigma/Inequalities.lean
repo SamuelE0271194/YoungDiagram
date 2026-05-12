@@ -66,4 +66,36 @@ lemma a1_ai_le_b0_bi_1 (hX : X ∈ Variety.Pi) {i : ℕ} (h : i ≥ 1) :
                    show j + 3 - 1 = j + 2 from by omega]
         linarith
 
+lemma b2_bi_2_le_a1_ai (hX : X ∈ Variety.Pi) {i : ℕ} (h : i ≥ 2) :
+  b X 2 - b X (i + 1) ≤ (a X 1 - a X i) := by
+  obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le h
+  induction j with
+  | zero =>
+    have := cond_15_7 X 1 hX
+    exact this
+  | succ j ih =>
+    by_cases hei : Even (j + 2)
+    · have step : b X (j + 3) - b X (j + 4) ≤ a X (j + 2) - a X (j + 3) := by
+        have h := cond_15_6 X (j + 2) hX
+        rw [if_pos hei] at h
+        exact h
+      have ih' : b X 2 - b X (2 + j + 1) ≤ a X 1 - a X (2 + j) := ih (by omega)
+      have h1 : 2 + (j + 1) + 1 = j + 4 := by omega
+      have h2 : 2 + (j + 1) = j + 3 := by omega
+      rw [h1, h2]
+      simp only [show j + 2 + 1 = j + 3 from by omega,
+                  show 2 + j = j + 2 from by omega] at ih'
+      linarith
+    · have step : b X (j + 3) - b X (j + 4) ≤ a X (j + 2) - a X (j + 3) := by
+        have h := cond_15_7 X (j + 2) hX
+        rw [if_neg hei] at h
+        exact h
+      have ih' : b X 2 - b X (2 + j + 1) ≤ a X 1 - a X (2 + j) := ih (by omega)
+      have h1 : 2 + (j + 1) + 1 = j + 4 := by omega
+      have h2 : 2 + (j + 1) = j + 3 := by omega
+      rw [h1, h2]
+      simp only [show j + 2 + 1 = j + 3 from by omega,
+                  show 2 + j = j + 2 from by omega] at ih'
+      linarith
+
 end Sigma
