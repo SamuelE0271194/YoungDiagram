@@ -232,8 +232,10 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
     (∀ i, i ≤ m - 2 → sigma X i = sigma Y i) ∧
     (∀ i, m + 2 ≤ i → sigma X i = sigma Y i) ∧
     (∀ i, m - 1 ≤ i → i ≤ m + 1 →
-      sigma X i - sigma Y i = if i = m then (1, 1)
-                              else if Even m then (1, 0) else (0, 1)) := by
+      sigma Y i - sigma X i = if i = m then (1, 1)
+                              else if i = m - 1 then
+                                if ε = .Positive then (0, 1) else (1, 0)
+                              else if ε = .Positive then (1, 0) else (0, 1)) := by
   refine ⟨?_, ?_, ?_⟩
   · -- Range 1: i ≤ m - 2
     intro i ih
@@ -318,6 +320,54 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
       prime_iterate_ofRank_eq_zero ih',
       prime_iterate_ofRank_eq_zero ih'']
   · -- Range 3: m - 1 ≤ i ≤ m + 1
-    sorry
+    intro i hi1 hi2
+    have hcases : i = m - 1 ∨ i = m ∨ i = m + 1 := by omega
+    rcases hcases with rfl | rfl | rfl
+    · -- i = m - 1
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have h1 : m - (m - 1) = 1 := by omega
+      have h2 : m - 2 - (m - 1) = 0 := by omega
+      have h3 : m + 2 - (m - 1) = 3 := by omega
+      simp only [h2, Gene.ofRank_zero, map_zero, h3, zero_add, h1]
+      rcases ε with _ | _ | _
+      · -- ε = NonPolarized (impossible)
+        simp_all
+      · -- ε = Positive
+        have hsig3 : (Gene.ofRank 3 .Positive).signature = (2, 1) := by
+          simp [signature_ofRank, Gene.signature_of_positive, show ¬Even 3 from by decide]; norm_num
+        simp_all
+        ring_nf
+        simp
+        omega
+      · -- ε = Negative
+        have hsig3 : (Gene.ofRank 3 .Negative).signature = (1, 2) := by
+          simp [signature_ofRank, Gene.signature_of_negative, show ¬Even 3 from by decide]; norm_num
+        simp_all
+        ring_nf
+        simp
+        omega
+    · -- i = m
+      simp [Pi.X2_eq, Pi.Y2_eq, sigma,
+            prime_iterate_ofRank_eq_zero,
+            prime_iterate_ofRank,
+            signature_ofRank_even_half]
+    · -- i = m + 1
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have h1 : m - (m + 1) = 0 := by omega
+      have h2 : (m - 2) - (m + 1) = 0 := by omega
+      have h3 : (m + 2) - (m + 1) = 1 := by omega
+      simp only [h2, Gene.ofRank_zero, map_zero, h3, zero_add, h1, add_zero, sub_zero,
+        Nat.add_eq_left, one_ne_zero, ↓reduceIte]
+      rcases ε with _ | _ | _
+      · -- ε = NonPolarized (impossible)
+        exact absurd rfl hε
+      · -- ε = Positive
+        simp [signature_ofRank_one_positive]
+        omega
+      · -- ε = Negative
+        simp [signature_ofRank_one_negative]
+        omega
 
 end Sigma
