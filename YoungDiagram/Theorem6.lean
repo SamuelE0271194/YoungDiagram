@@ -562,6 +562,14 @@ private lemma x_actual_negative_prefix_equalities
   rw [← hprime_i]
   linarith
 
+private lemma x_actual_negative_prefix_equalities2
+    {X : Pi} {g₂ : Gene}
+    (hg₂_min : ∀ g' : Gene, g'.type = .Negative → 0 < X.val g' → g₂.rank ≤ g'.rank)
+    {i : ℕ} (hi : 2 ≤ i) (hi₂ : i ≤ g₂.rank) :
+    (Sigma.sigma X.val 1).1 - (Sigma.sigma X.val i).1 =
+      (Sigma.sigma X.val 2).2 - (Sigma.sigma X.val (i + 1)).2 := by
+    sorry
+
 private lemma caseA2_strict_fst
     {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
     {g₂ : Gene}
@@ -1370,10 +1378,25 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 have hd2_di1_rank1 : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 g₁.rank).2 ≤
                     (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 :=
                   hd2_c1_rank1.trans hc1_ci_rank1
+                -- a₁ - a_{j} = b₂ - b_{j + 1} for all 2 ≤ j ≤ g₁.rank
+                have hb0_bi : ∀ j, 2 ≤ j → j ≤ g₁.rank →
+                    (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 j).1 =
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 (j + 1)).2 :=
+                  fun j hj1 hj2 => x_actual_negative_prefix_equalities2
+                    (fun g' _ hg'_pos =>
+                      hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
+                    hj1 hj2
+                -- for i = g₁.rank - 1: a₁ - a_i = b₂ - b_{i+1}
+                have ha1_ai_rank1 : (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 (g₁.rank - 1)).1 =
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 g₁.rank).2 := by
+                  by_cases hrank2 : g₁.rank = 2
+                  · simp only [hrank2, sub_self]
+                  · have h := hb0_bi (g₁.rank - 1) (by omega) (by omega)
+                    rwa [show g₁.rank - 1 + 1 = g₁.rank from by omega] at h
                 -- for i = g₁.rank - 1: b₀ - b_{i-1} = b₂ - b_{i+1}
                 have hb0_b2_rank1 : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 =
-                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 g₁.rank).2 := by
-                  sorry
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 g₁.rank).2 :=
+                  hb0_bi_rank1.trans ha1_ai_rank1
                 -- for i = g₁.rank: d₂ - d_{i+1} ≤ c₁ - c_i
                 have hd2_c1_rank : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 (g₁.rank + 1)).2 ≤
                     (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 g₁.rank).1 :=
@@ -1382,10 +1405,22 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 have hd2_di1_rank : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 (g₁.rank + 1)).2 ≤
                     (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
                   hd2_c1_rank.trans hc1_ci_rank
+                -- for i = g₁.rank: a₁ - a_i = b₂ - b_{i+1}
+                have ha1_ai_rank : (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 g₁.rank).1 =
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 :=
+                  hb0_bi g₁.rank hg₁_ge2 (le_refl _)
                 -- for i = g₁.rank: b₀ - b_{i-1} = b₂ - b_{i+1}
                 have hb0_b2_rank : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 =
-                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 := by
-                  sorry
+                    (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 :=
+                  hb0_bi_rank.trans ha1_ai_rank
+                -- b_{g₁.rank} < d_{g₁.rank}
+                have hb_lt_d_rank : (Sigma.sigma X.1 g₁.rank).2 <
+                    (Sigma.sigma Y.1 g₁.rank).2 := by
+                  linarith [hd2_di1_rank1, hd0_di_rank1, hb0_b2_rank1, hd2_gt_b2]
+                -- b_{g₁.rank + 1} < d_{g₁.rank + 1}
+                have hb_lt_d_rank1 : (Sigma.sigma X.1 (g₁.rank + 1)).2 <
+                    (Sigma.sigma Y.1 (g₁.rank + 1)).2 := by
+                  linarith [hd2_di1_rank, hd0_di_rank, hb0_b2_rank, hd2_gt_b2]
                 sorry
               · -- g₁.rank is odd
                 sorry
