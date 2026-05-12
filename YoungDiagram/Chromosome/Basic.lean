@@ -25,6 +25,10 @@ noncomputable abbrev Gene.ofRank (n : ℕ) (ε : GeneType) : Chromosome :=
 noncomputable abbrev Gene.ofRankAlt (n : ℕ) (ε : GeneType) : Chromosome :=
   Gene.ofRank n (Int.negOnePow (n - 1) • ε)
 
+lemma Gene.ofRank_is_gene {n : ℕ} (hn : n ≠ 0) (ε : GeneType) :
+    Gene.ofRank n ε = Finsupp.single ⟨n, ε, Nat.pos_of_ne_zero hn⟩ 1 := by
+  rw [Gene.ofRank, dif_neg hn]
+
 lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
   Gene.ofRank n ε = if h : n = 0 then 0
     else single ⟨n, ε, Nat.pos_of_ne_zero h⟩ 1 := rfl

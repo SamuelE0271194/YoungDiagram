@@ -255,10 +255,59 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         simp [sig4]
         norm_num
       · -- n + 1 ≠ m - 2
-        have h1 : n  ≤  m - 2 := by omega
+        have : n ≤ m - 2 := by omega
         simp_all [Pi.X2_eq, Pi.Y2_eq]
-        simp_all [sigma_linearity]
-        sorry
+        simp_all [sigma, prime_iterate_ofRank]
+        have : m - n ≥ 1 := by omega
+        have h1 := signature_ofRank_diff this hε
+        have h2 : signature (Gene.ofRank (m - (n + 1)) ε) = signature (Gene.ofRank (m - n) ε) -
+            (if Even (m - n) then
+              ((if ε = GeneType.Positive then 0 else 1),
+               (if ε = GeneType.Negative then 0 else 1))
+            else
+              ((if ε = GeneType.Positive then 1 else 0),
+               (if ε = GeneType.Negative then 1 else 0))) := by
+          rw [← h1]; exact (sub_sub_cancel _ _).symm
+        have h3 : signature (Gene.ofRank (m - 2 - (n + 1)) ε) =
+            signature (Gene.ofRank (m - 2 - n) ε) -
+            (if Even (m - 2 - n) then
+              ((if ε = GeneType.Positive then 0 else 1),
+               (if ε = GeneType.Negative then 0 else 1))
+            else
+              ((if ε = GeneType.Positive then 1 else 0),
+               (if ε = GeneType.Negative then 1 else 0))) := by
+          have := signature_ofRank_diff (show m - 2 - n ≥ 1 by omega) hε
+          rw [← this]; exact (sub_sub_cancel _ _).symm
+        have h4 : signature (Gene.ofRank (m + 1 - n) ε) =
+            signature (Gene.ofRank (2 + m - n) ε) -
+          (if Even (2 + m - n) then
+              ((if ε = GeneType.Positive then 0 else 1),
+               (if ε = GeneType.Negative then 0 else 1))
+            else
+              ((if ε = GeneType.Positive then 1 else 0),
+               (if ε = GeneType.Negative then 1 else 0))) := by
+          have : m + 1 - n =  2 + m - n - 1 := by omega
+          rw [this]
+          have := signature_ofRank_diff (show 2 + m - n ≥ 1 by omega) hε
+          rw [← this]; exact (sub_sub_cancel _ _).symm
+        simp [h2, h3, h4]
+        ring_nf
+        ring_nf at ihn
+        simp [ihn]
+        have e1 : Even (m -2 - n) = Even (2 + m - n) := by
+          apply propext
+          constructor
+          · intro ⟨k, hk⟩; exact ⟨k + 2, by omega⟩
+          · intro ⟨k, hk⟩; exact ⟨k - 2, by omega⟩
+        have e2 : Even (2 + m - n) = Even (m - n) := by
+          have : 2 + m - n - 2 = m - n := by omega
+          apply propext
+          constructor
+          · intro ⟨k, hk⟩; exact ⟨k - 1, by omega⟩
+          · intro ⟨k, hk⟩; exact ⟨k + 1, by omega⟩
+        simp [e1]
+        ring_nf
+        simp [e2]
 
   · -- Range 2: m + 2 ≤ i
     intro i ih

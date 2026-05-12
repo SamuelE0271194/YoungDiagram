@@ -19,6 +19,14 @@ lemma altType_add (r k : ℕ) (ε : GeneType) :
   ring_nf
   exact ⟨k, by omega⟩
 
+lemma altType_even (r : ℕ) (heven : Even r) (ε : GeneType) : altType r ε = -ε := by
+  unfold altType
+  simp [GeneType.negOnePow_smul, heven]
+
+lemma altType_odd (r : ℕ) (heven : ¬ Even r) (ε : GeneType) : altType r ε = ε := by
+  unfold altType
+  simp [GeneType.negOnePow_smul, heven]
+
 lemma altType_positive_ne_negative (r : ℕ) :
     altType r GeneType.Positive ≠ altType r GeneType.Negative := by
   unfold altType
@@ -73,6 +81,53 @@ lemma signature_sub_primeGene_eq_altType_counts (g : Gene) (hpol : g.type ≠ .N
     have hpos_ne : g.type ≠ altType g.rank GeneType.Positive := fun hpos =>
       altType_positive_ne_negative g.rank (hpos.symm.trans hneg)
     rw [if_neg hpos_ne, if_pos hneg]
+
+lemma signature_prime_gene_diff (g : Gene) (hpol : g.type ≠ .NonPolarized) :
+    g.signature - (primeGene g).signature =
+      if Even g.rank then
+        ((if g.type = GeneType.Positive then 0 else 1),
+         (if g.type = GeneType.Negative then 0 else 1))
+      else
+        ((if g.type = GeneType.Positive then 1 else 0),
+         (if g.type = GeneType.Negative then 1 else 0)) := by
+  rw [signature_sub_primeGene_eq_altType_counts g hpol]
+  by_cases heven : Even g.rank
+  · simp only [if_pos heven]
+    -- Even rank: negOnePow (rank - 1) = -1, so altType swaps Positive ↔ Negative
+    cases h : g.type with
+    | NonPolarized => exact absurd h hpol
+    | Positive => simp [altType_even g.rank heven]
+    | Negative => simp [altType_even g.rank heven]
+  · simp only [if_neg heven]
+    -- Odd rank: negOnePow (rank - 1) = 1, so altType preserves Positive and Negative
+    cases h : g.type with
+    | NonPolarized => exact absurd h hpol
+    | Positive => simp [altType_odd g.rank heven]
+    | Negative => simp [altType_odd g.rank heven]
+
+lemma signature_rank_diff {n : ℕ} {ε : GeneType} (hn : n ≥ 1) :
+    signature (Gene.ofRank n ε) - signature (Gene.ofRank (n - 1) ε) =
+      signature (Gene.ofRank n ε) - signature (prime (Gene.ofRank n ε)) := by
+  have : n ≠ 0 := by omega
+  simp [prime_ofRank]
+
+lemma signature_ofRank_diff {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) (hε : ε ≠ .NonPolarized) :
+    signature (Gene.ofRank n ε) - signature (Gene.ofRank (n - 1) ε) =
+      if Even n then
+        ((if ε = GeneType.Positive then 0 else 1),
+         (if ε = GeneType.Negative then 0 else 1))
+      else
+        ((if ε = GeneType.Positive then 1 else 0),
+         (if ε = GeneType.Negative then 1 else 0)) := by
+  rw [signature_rank_diff hn]
+  have hn' : n ≠ 0 := by omega
+  set g : Gene := ⟨n, ε, Nat.pos_of_ne_zero hn'⟩
+  have hg_sig : signature (Gene.ofRank n ε) = g.signature := by
+    rw [signature_ofRank, dif_neg hn']
+  have hprime_eq : prime (Gene.ofRank n ε) = primeGene g := by
+    rw [prime_ofRank, primeGene_def]
+  rw [hg_sig, hprime_eq]
+  exact signature_prime_gene_diff g hε
 
 /-- The drop in the first signature component when going from `σ(X)ₖ` to `σ(X)ₖ₊₁`
 equals the total multiplicity of genes in `X^(k)` that are positive in the alternating basis,
