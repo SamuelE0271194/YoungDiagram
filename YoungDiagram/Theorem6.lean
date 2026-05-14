@@ -1421,7 +1421,146 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 have hb_lt_d_rank1 : (Sigma.sigma X.1 (g₁.rank + 1)).2 <
                     (Sigma.sigma Y.1 (g₁.rank + 1)).2 := by
                   linarith [hd2_di1_rank, hd0_di_rank, hb0_b2_rank, hd2_gt_b2]
-                sorry
+                -- sigma Z i - sigma X.1 i equals the window difference from sigma_type2_same_rank
+                have hZX_diff : Sigma.sigma Z.val i - Sigma.sigma X.1.val i =
+                    if i = g₁.rank then (1, 1)
+                    else if i = g₁.rank - 1 then (1, 0)
+                    else (0, 1) := by
+                  -- Rewrite both sides using the Pi.Y2/Pi.X2 + rest decomposition;
+                  -- the rest terms are equal so they cancel
+                  rw [hZ_split, hX_split, add_sub_add_right_eq_sub]
+                  -- Derive index bounds from hi_range to apply hwindow
+                  have hibounds : g₁.rank - 1 ≤ i ∧ i ≤ g₁.rank + 1 := by
+                    rcases hi_range with rfl | rfl | rfl <;> omega
+                  -- Apply the window difference formula from sigma_type2_same_rank
+                  rw [hwindow i hibounds.1 hibounds.2]
+                  -- g₁.type = .Negative: rank is even so ↑g₁.rank - 1 is odd,
+                  -- and hε₁ (type ≠ negOnePow(rank-1)•Negative) then gives type ≠ Positive
+                  have htype_neg : g₁.type ≠ .Positive := by
+                    intro h
+                    apply hε₁
+                    have h_odd : ¬ Even ((g₁.rank : ℤ) - 1) := by
+                      simp [heven]
+                    simp only [GeneType.negOnePow_smul, GeneType.neg_negative,
+                                if_neg h_odd, h]
+                  simp [if_neg htype_neg]
+
+                rcases hi_range with hi | hi | hi
+                · -- i = g₁.rank - 1
+                  subst hi
+                  have hZX_diff' : Sigma.sigma Z.val (g₁.rank - 1) -
+                                  Sigma.sigma X.1.val (g₁.rank - 1) = (1, 0) := by
+                    simpa [show g₁.rank - 1 ≠ g₁.rank from by omega] using hZX_diff
+                  have hZX_diff' : Sigma.sigma Z.val (g₁.rank - 1) =
+                                  Sigma.sigma X.1.val (g₁.rank - 1) + (1, 0) := by
+                    ext
+                    · have h : (Sigma.sigma Z.val (g₁.rank - 1)).1 -
+                                (Sigma.sigma X.1.val (g₁.rank - 1)).1 = 1 :=
+                        calc (Sigma.sigma Z.val (g₁.rank - 1)).1 -
+                              (Sigma.sigma X.1.val (g₁.rank - 1)).1
+                            = (Sigma.sigma Z.val (g₁.rank - 1) -
+                               Sigma.sigma X.1.val (g₁.rank - 1)).1 := rfl
+                          _ = ((1 : ℚ), (0 : ℚ)).1 := congr_arg Prod.fst hZX_diff'
+                          _ = 1 := rfl
+                      simp only [Prod.fst_add]; linarith
+                    · have h : (Sigma.sigma Z.val (g₁.rank - 1)).2 -
+                                (Sigma.sigma X.1.val (g₁.rank - 1)).2 = 0 :=
+                        calc (Sigma.sigma Z.val (g₁.rank - 1)).2 -
+                              (Sigma.sigma X.1.val (g₁.rank - 1)).2
+                            = (Sigma.sigma Z.val (g₁.rank - 1) -
+                               Sigma.sigma X.1.val (g₁.rank - 1)).2 := rfl
+                          _ = ((1 : ℚ), (0 : ℚ)).2 := congr_arg Prod.snd hZX_diff'
+                          _ = 0 := rfl
+                      simp only [Prod.snd_add]; linarith
+                  rw [hZX_diff']
+                  constructor
+                  · -- .1: (sigma X).1 + 1 ≤ (sigma Y).1 by ha_lt_c_rank1 and integrality
+                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val (g₁.rank - 1) X.1.2
+                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val (g₁.rank - 1) Y.1.2
+                    rw [hnX, hnY] at ha_lt_c_rank1 ⊢
+                    simp only [Prod.fst_add] at ha_lt_c_rank1 ⊢
+                    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp ha_lt_c_rank1)
+                  · -- .2: (sigma X).2 + 0 ≤ (sigma Y).2 from hXY_i
+                    simp only [Prod.snd_add]
+                    linarith [hXY_i.2]
+                · -- i = g₁.rank
+                  subst hi
+                  have hZX_diff' : Sigma.sigma Z.val g₁.rank -
+                                   Sigma.sigma X.1.val g₁.rank = (1, 1) := by
+                    simpa using hZX_diff
+                  have hZX_diff' : Sigma.sigma Z.val g₁.rank =
+                                   Sigma.sigma X.1.val g₁.rank + (1, 1) := by
+                    ext
+                    · have h : (Sigma.sigma Z.val g₁.rank).1 -
+                                (Sigma.sigma X.1.val g₁.rank).1 = 1 :=
+                        calc (Sigma.sigma Z.val g₁.rank).1 -
+                              (Sigma.sigma X.1.val g₁.rank).1
+                            = (Sigma.sigma Z.val g₁.rank -
+                               Sigma.sigma X.1.val g₁.rank).1 := rfl
+                          _ = ((1 : ℚ), (1 : ℚ)).1 := congr_arg Prod.fst hZX_diff'
+                          _ = 1 := rfl
+                      simp only [Prod.fst_add]; linarith
+                    · have h : (Sigma.sigma Z.val g₁.rank).2 -
+                                (Sigma.sigma X.1.val g₁.rank).2 = 1 :=
+                        calc (Sigma.sigma Z.val g₁.rank).2 -
+                              (Sigma.sigma X.1.val g₁.rank).2
+                            = (Sigma.sigma Z.val g₁.rank -
+                               Sigma.sigma X.1.val g₁.rank).2 := rfl
+                          _ = ((1 : ℚ), (1 : ℚ)).2 := congr_arg Prod.snd hZX_diff'
+                          _ = 1 := rfl
+                      simp only [Prod.snd_add]; linarith
+                  rw [hZX_diff']
+                  constructor
+                  · -- .1: (sigma X).1 + 1 ≤ (sigma Y).1 by ha_lt_c_rank and integrality
+                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val g₁.rank X.1.2
+                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val g₁.rank Y.1.2
+                    rw [hnX, hnY] at ha_lt_c_rank ⊢
+                    simp only [Prod.fst_add] at ha_lt_c_rank ⊢
+                    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp ha_lt_c_rank)
+                  · -- .2: (sigma X).2 + 1 ≤ (sigma Y).2 by hb_lt_d_rank and integrality
+                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val g₁.rank X.1.2
+                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val g₁.rank Y.1.2
+                    rw [hnX, hnY] at hb_lt_d_rank ⊢
+                    simp only [Prod.snd_add] at hb_lt_d_rank ⊢
+                    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hb_lt_d_rank)
+                · -- i = g₁.rank + 1
+                  subst hi
+                  have hZX_diff' : Sigma.sigma Z.val (g₁.rank + 1) -
+                                   Sigma.sigma X.1.val (g₁.rank + 1) = (0, 1) := by
+                    simpa [show g₁.rank + 1 ≠ g₁.rank from by omega,
+                           show g₁.rank + 1 ≠ g₁.rank - 1 from by omega] using hZX_diff
+                  have hZX_diff' : Sigma.sigma Z.val (g₁.rank + 1) =
+                                   Sigma.sigma X.1.val (g₁.rank + 1) + (0, 1) := by
+                    ext
+                    · have h : (Sigma.sigma Z.val (g₁.rank + 1)).1 -
+                                (Sigma.sigma X.1.val (g₁.rank + 1)).1 = 0 :=
+                        calc (Sigma.sigma Z.val (g₁.rank + 1)).1 -
+                              (Sigma.sigma X.1.val (g₁.rank + 1)).1
+                            = (Sigma.sigma Z.val (g₁.rank + 1) -
+                               Sigma.sigma X.1.val (g₁.rank + 1)).1 := rfl
+                          _ = ((0 : ℚ), (1 : ℚ)).1 := congr_arg Prod.fst hZX_diff'
+                          _ = 0 := rfl
+                      simp only [Prod.fst_add]; linarith
+                    · have h : (Sigma.sigma Z.val (g₁.rank + 1)).2 -
+                                (Sigma.sigma X.1.val (g₁.rank + 1)).2 = 1 :=
+                        calc (Sigma.sigma Z.val (g₁.rank + 1)).2 -
+                              (Sigma.sigma X.1.val (g₁.rank + 1)).2
+                            = (Sigma.sigma Z.val (g₁.rank + 1) -
+                               Sigma.sigma X.1.val (g₁.rank + 1)).2 := rfl
+                          _ = ((0 : ℚ), (1 : ℚ)).2 := congr_arg Prod.snd hZX_diff'
+                          _ = 1 := rfl
+                      simp only [Prod.snd_add]; linarith
+                  rw [hZX_diff']
+                  constructor
+                  · -- .1: (sigma X).1 + 0 ≤ (sigma Y).1 from hXY_i
+                    simp only [Prod.fst_add]
+                    linarith [hXY_i.1]
+                  · -- .2: (sigma X).2 + 1 ≤ (sigma Y).2 by hb_lt_d_rank1 and integrality
+                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val (g₁.rank + 1) X.1.2
+                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val (g₁.rank + 1) Y.1.2
+                    rw [hnX, hnY] at hb_lt_d_rank1 ⊢
+                    simp only [Prod.snd_add] at hb_lt_d_rank1 ⊢
+                    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hb_lt_d_rank1)
               · -- g₁.rank is odd
                 sorry
         · -- Case 4: g₁ appears with multiplicity 1 in X
