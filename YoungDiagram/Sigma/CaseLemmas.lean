@@ -157,9 +157,329 @@ lemma b0_sub_a1_eq_neg_count (hX : X ∈ Variety.Pi) :
     rw [hba]
     ring
 
-lemma b0_eq_b2 {i : ℕ} (hg : ∀ g ∈ X.support, g.rank ≤ i + 2 → g.type = .Negative) :
-    b X 0 - b X i = b X 2 - b X (i + 2) := by sorry
+/-- For a polarized gene of rank ≥ 2, applying prime twice drops the signature by (1, 1). -/
+lemma signature_sub_prime2_ofRank (g : Gene) (hε : g.type ≠ .NonPolarized)
+    (hrank : 2 ≤ g.rank) :
+    (Gene.ofRank g.rank g.type).signature -
+      (Gene.ofRank (g.rank - 2) g.type).signature = (1, 1) := by
+  cases hgt : g.type with
+  | NonPolarized => exact absurd hgt hε
+  | Positive =>
+    rw [signature_ofRank_positive g.rank_pos,
+        signature_ofRank_negative (by omega : 1 ≤ g.rank - 1),
+        show g.rank - 1 - 1 = g.rank - 2 from by omega]
+    abel_nf
+    simp
+  | Negative =>
+    rw [signature_ofRank_negative g.rank_pos,
+        signature_ofRank_positive (by omega : 1 ≤ g.rank - 1),
+        show g.rank - 1 - 1 = g.rank - 2 from by omega]
+    abel_nf
+    simp
 
+lemma b0_minus_b2_pol_gene (g : Gene) (hε : g.type ≠ .NonPolarized)
+  (hrank : g.rank ≥ 2) :
+  b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 := by
+  have hb₀ : b (Finsupp.single g 1) 0 = (Gene.ofRank g.rank g.type).signature.2 := by
+    simp only [sigma, Function.iterate_zero, id]
+    rw [← Gene.ofRank_eq_gene]
+  have hb₂ : b (Finsupp.single g 1) 2 = (Gene.ofRank (g.rank - 2) g.type).signature.2 := by
+    simp only [sigma]
+    rw [← Gene.ofRank_eq_gene, prime_iterate_ofRank]
+  rw [hb₀, hb₂]
+  have := congr_arg Prod.snd (signature_sub_prime2_ofRank g hε hrank)
+  simpa using this
+
+lemma b0_minus_b2 {X : Variety.Pi} (m : ℕ)
+    (hm : m ≥ 2) (hmin : ∀ g ∈ X.val.support, m ≤ g.rank) :
+    b X 0 - b X 2 = X.val.sum (fun _ n => n) := by
+  -- Prove the equivalent statement for any Chromosome, then specialize.
+  -- The rank-≥-m hypothesis lifts to rank ≥ 2 via hm.
+  suffices h : ∀ (f : Chromosome),
+      (∀ g ∈ f.support, g.type ≠ .NonPolarized) →
+      (∀ g ∈ f.support, 2 ≤ g.rank) →
+      b f 0 - b f 2 = f.sum (fun _ n => (n : ℚ)) by
+    have hpol : ∀ g ∈ X.val.support, g.type ≠ .NonPolarized :=
+      IsPolarized_def'.mp (Variety.mem_Pi_iff.mp X.2)
+    exact_mod_cast h X.val hpol (fun g hg => hm.trans (hmin g hg))
+  intro f
+  -- Rewrite f as the sum of its individual genes via Finsupp.induction.
+  -- At each step, sigma_linearity splits b (single g n + f') k = b (single g n) k + b f' k,
+  -- and nsmul linearity gives b (single g n) k = n * b (single g 1) k.
+  induction f using Finsupp.induction with
+  | zero => simp [sigma, map_zero]
+  | single_add g n f' hgf hn ih =>
+    -- Finsupp.induction gives the term as (single g n + f')
+    intro hpol hrank
+    -- Lift hypotheses from (single g n + f').support to {g} and f'.support.
+    have hmem_g : g ∈ (Finsupp.single g n + f').support := by
+      simp [Finsupp.mem_support_iff, hn]
+    have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support := by
+      intro g' hg'
+      have hne : g' ≠ g := fun h => hgf (h ▸ hg')
+      simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne,
+            Finsupp.mem_support_iff.mp hg']
+    -- Conditions on the single gene g
+    have hpol_g : g.type ≠ .NonPolarized := hpol g hmem_g
+    have hrank_g : 2 ≤ g.rank := hrank g hmem_g
+    -- Conditions on f' (for the inductive hypothesis)
+    have hpol_f' : ∀ g' ∈ f'.support, g'.type ≠ .NonPolarized :=
+      fun g' hg' => hpol g' (hsupp_mono g' hg')
+    have hrank_f' : ∀ g' ∈ f'.support, 2 ≤ g'.rank :=
+      fun g' hg' => hrank g' (hsupp_mono g' hg')
+    -- Additivity: b (single g n + f') k = b (single g n) k + b f' k
+    have hadd : ∀ k, b (Finsupp.single g n + f') k = b (Finsupp.single g n) k + b f' k :=
+      fun k => congr_arg Prod.snd (sigma_linearity (X := Finsupp.single g n) (Y := f') (i := k))
+    -- Nsmul linearity: b (single g n) k = n * b (single g 1) k,
+    -- since single g n = n • single g 1 (smul_single_one g n)
+    -- and sigma (n • Y) k = n • sigma Y k (iterate_map_nsmul + map_nsmul).
+    have hnsmul : ∀ k, b (Finsupp.single g n) k = n * b (Finsupp.single g 1) k := by
+      intro k
+      have heq : Finsupp.single g n = n • Finsupp.single g 1 := (smul_single_one g n).symm
+      simp only [sigma, heq, iterate_map_nsmul, map_nsmul, nsmul_eq_mul]
+      simp
+    -- The single-gene result: b (single g 1) 0 - b (single g 1) 2 = 1
+    have hone : b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 :=
+      b0_minus_b2_pol_gene g hpol_g hrank_g
+    -- Inductive hypothesis applied to f'
+    have ih' : b f' 0 - b f' 2 = f'.sum (fun _ k => (k : ℚ)) := ih hpol_f' hrank_f'
+    -- Combine: b (single g n + f') 0 - b (single g n + f') 2
+    --        = (b f' 0 - b f' 2) + n * (b (single g 1) 0 - b (single g 1) 2)
+    --        = f'.sum ... + n * 1
+    have key : b (Finsupp.single g n + f') 0 - b (Finsupp.single g n + f') 2 =
+               (b f' 0 - b f' 2) + n * (b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2) := by
+      simp only [hadd, hnsmul]; ring
+    rw [key, ih', hone, mul_one]
+    -- Finsupp.sum of (single g n + f') = n + Finsupp.sum f'
+    rw [Finsupp.sum_add_index' (fun _ => by norm_cast) (fun _ _ _ => by push_cast; ring),
+        Finsupp.sum_single_index (by norm_cast)]
+    ring
+
+lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
+    (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
+    (hk : k + 2 ≤ m) :
+    b X k - b X (k + 2) = X.val.sum (fun _ n => n) := by
+  -- Step 1: Reduce to b (prime^[k] X) 0 - b (prime^[k] X) 2.
+  -- By sigma definition: b X k = (signature (prime^[k] X)).2 = b (prime^[k] X) 0.
+  -- Similarly b X (k+2) = b (prime^[k] X) 2 via prime^[k+2] = prime^[2] ∘ prime^[k].
+  have hbk : b X k = b (Chromosome.prime^[k] X) 0 := by
+    simp [sigma, Function.iterate_zero]
+  have hbk2 : b X (k + 2) = b (Chromosome.prime^[k] X) 2 := by
+    simp only [sigma]
+    rw [show k + 2 = 2 + k from Nat.add_comm k 2, Function.iterate_add_apply]
+  rw [hbk, hbk2]
+  -- Step 2: Let Y := prime^[k] X as a Variety.Pi element.
+  let Y : Variety.Pi := ⟨Chromosome.prime^[k] X, Variety.prime_mem_Pi_iterate X.2⟩
+  -- Step 3: All genes in Y have rank ≥ m - k ≥ 2.
+  have hmin_Y : ∀ g ∈ Y.val.support, m - k ≤ g.rank := by
+    intro g hg
+    rw [Finsupp.mem_support_iff, prime_iterate_coeff] at hg
+    have hgX : ⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ ∈ X.val.support :=
+      Finsupp.mem_support_iff.mpr hg
+    have := hmin _ hgX
+    simp
+    omega
+  have hm_Y : m - k ≥ 2 := by omega
+  -- Step 4: Apply b0_minus_b2 to Y.
+  rw [show b (Chromosome.prime^[k] X) 0 = b Y 0 from rfl,
+      show b (Chromosome.prime^[k] X) 2 = b Y 2 from rfl,
+      b0_minus_b2 (m - k) hm_Y hmin_Y]
+  -- Step 5: (prime^[k] X).sum (fun _ n => n) = X.val.sum (fun _ n => n).
+  -- Via prime_iterate_coeff: g ↦ ⟨g.rank + k, g.type, _⟩ is a bijection
+  -- from (prime^[k] X).support to X.val.support (since all ranks in X exceed k).
+  simp only [Finsupp.sum, Y]
+  -- Goal: ↑(∑ g ∈ (prime^[k] X).support, (prime^[k] X) g) = ↑(∑ g ∈ X.support, X g)
+  -- Strip outer ℕ→ℚ casts, then prove ℕ equality via the bijection g ↦ ⟨g.rank+k, g.type, _⟩.
+  norm_cast
+  refine Finset.sum_bij'
+      (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
+      (fun g' hg' =>
+        have hle : k + 2 ≤ g'.rank := by
+          have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
+          simp only at this; omega
+        (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
+      ?_ ?_ ?_ ?_ ?_
+  · -- forward maps into X.val.support
+    intro g hg
+    rw [Finsupp.mem_support_iff] at hg ⊢
+    rwa [← prime_iterate_coeff]
+  · -- backward maps into (prime^[k] X).support
+    intro g' hg'
+    rw [Finsupp.mem_support_iff] at hg' ⊢
+    rw [prime_iterate_coeff]
+    have hle : k ≤ g'.rank := by
+      have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+    simp only [Nat.sub_add_cancel hle]
+    exact hg'
+  · -- forward then backward = id
+    intro g _; exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
+  · -- backward then forward = id
+    intro g' hg'
+    have hle : k ≤ g'.rank := by
+      have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
+      simp only at this; omega
+    exact Gene.ext (Nat.sub_add_cancel hle) rfl
+  · -- coefficient preserved: (prime^[k] X) g = X.val ⟨g.rank + k, g.type, _⟩
+    intro g _; rw [prime_iterate_coeff]
+
+-- case 3
+/-- If all genes in X have rank ≥ m, and all rank-m genes are positive,
+    then for k ≤ m - 2 the b-sequence satisfies b₀ - bₖ = b₂ - b_{k+2}. -/
+lemma b0_eq_b2_positive {X : Variety.Pi} (m : ℕ)
+    (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
+    {k : ℕ} (hk : k ≤ m - 2) :
+    b X 0 - b X k = b X 2 - b X (k + 2) := by
+  by_cases hm : m ≥ 2
+  · -- m ≥ 2: both b X 0 - b X 2 and b X k - b X (k+2) equal X.val.sum (fun _ n => n).
+    have hk2 : k + 2 ≤ m := by omega
+    have h1 := b0_minus_b2 m hm hmin
+    have h2 := bk_minus_bk2 k m hmin hk2
+    linarith
+  · -- m < 2: k = 0 (since k ≤ m - 2 = 0 in ℕ), so both sides are 0.
+    have hk0 : k = 0 := by omega
+    subst hk0; ring
+
+-- case 2
+/-- If all genes in X have rank ≥ m, and all rank-m genes are negative,
+    then for k ≤ m - 1 the b-sequence satisfies b₀ - bₖ = b₂ - b_{k+2}. -/
+lemma b0_minus_b2_neg_gene (g : Gene) (hε : g.type = .Negative)
+  (hrank : g.rank = 1) :
+  b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 := by
+  have hb₀ : b (Finsupp.single g 1) 0 = 1 := by
+    simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+    rw [Gene.signature_of_negative hε, if_neg (show ¬Even g.rank by rw [hrank]; decide)]
+    norm_num [hrank]
+  have hb₂ : b (Finsupp.single g 1) 2 = 0 := by
+    simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+               prime_single, one_nsmul, hε, hrank, Nat.sub_self, Gene.ofRank_zero, map_zero]
+    rfl
+  linarith
+
+lemma b0_minus_b2_pos_gene (g : Gene) (hε : g.type = .Positive)
+  (hrank : g.rank = 1) :
+  b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 0 := by
+  have hb₀ : b (Finsupp.single g 1) 0 = 0 := by
+    simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
+    rw [Gene.signature_of_positive hε, if_neg (show ¬Even g.rank by rw [hrank]; decide)]
+    norm_num [hrank]
+  have hb₂ : b (Finsupp.single g 1) 2 = 0 := by
+    simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
+               prime_single, one_nsmul, hε, hrank, Nat.sub_self, Gene.ofRank_zero, map_zero]
+    rfl
+  linarith
+
+lemma b0_minus_b2_min_neg {X : Variety.Pi} (m : ℕ)
+    (hm : m ≥ 2) (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
+    (_hmin_type : ∀ g ∈ X.val.support, g.rank = m → g.type = .Negative) :
+    b X 0 - b X 2 = X.val.sum (fun _ n => n) :=
+  b0_minus_b2 m hm hmin
+
+--note the bound are less strict
+lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
+    (hk : k + 1 ≤ m) (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
+    (_hmin_type : ∀ g ∈ X.val.support, g.rank = m → g.type = .Negative) :
+    b X k - b X (k + 2) = X.val.sum (fun _ n => n) := by
+  rcases Nat.eq_or_lt_of_le hk with h | h
+  · -- k + 1 = m; reduce to b (prime^[k] X) 0 - b (prime^[k] X) 2
+    have hbk : b X k = b (Chromosome.prime^[k] X) 0 := by simp [sigma]
+    have hbk2 : b X (k + 2) = b (Chromosome.prime^[k] X) 2 := by
+      simp only [sigma]
+      rw [show k + 2 = 2 + k from Nat.add_comm k 2, Function.iterate_add_apply]
+    rw [hbk, hbk2]
+    let Y : Variety.Pi := ⟨Chromosome.prime^[k] X, Variety.prime_mem_Pi_iterate X.2⟩
+    -- Rank-1 genes in Y came from rank-(k+1) = rank-m genes in X, so are Negative by hmin_type.
+    have hrank1_neg : ∀ g ∈ Y.val.support, g.rank = 1 → g.type = .Negative := by
+      intro g hg hgr
+      rw [Finsupp.mem_support_iff, prime_iterate_coeff] at hg
+      have hgX : ⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ ∈ X.val.support :=
+        Finsupp.mem_support_iff.mpr hg
+      have hrank_eq : g.rank + k = m := by omega
+      exact _hmin_type ⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ hgX hrank_eq
+    have hb_Y : b Y 0 - b Y 2 = Y.val.sum (fun _ n => (n : ℚ)) := by
+      suffices h : ∀ (f : Chromosome),
+          (∀ g ∈ f.support, g.type ≠ .NonPolarized) →
+          (∀ g ∈ f.support, g.rank = 1 → g.type = .Negative) →
+          b f 0 - b f 2 = f.sum (fun _ n => (n : ℚ)) by
+        exact h Y.val (IsPolarized_def'.mp (Variety.mem_Pi_iff.mp Y.2)) hrank1_neg
+      intro f
+      induction f using Finsupp.induction with
+      | zero => simp [sigma, map_zero]
+      | single_add g n f' hgf hn ih =>
+        intro hpol hrneg
+        have hmem_g : g ∈ (Finsupp.single g n + f').support := by
+          simp [Finsupp.mem_support_iff, hn]
+        have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support := by
+          intro g' hg'
+          have hne : g' ≠ g := fun heq => hgf (heq ▸ hg')
+          simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne, Finsupp.mem_support_iff.mp hg']
+        have hpol_g := hpol g hmem_g
+        have hrneg_g := hrneg g hmem_g
+        have hpol_f' : ∀ g' ∈ f'.support, g'.type ≠ .NonPolarized :=
+          fun g' hg' => hpol g' (hsupp_mono g' hg')
+        have hrneg_f' : ∀ g' ∈ f'.support, g'.rank = 1 → g'.type = .Negative :=
+          fun g' hg' => hrneg g' (hsupp_mono g' hg')
+        have hadd : ∀ i, b (Finsupp.single g n + f') i = b (Finsupp.single g n) i + b f' i :=
+          fun i => congr_arg Prod.snd (sigma_linearity (X := Finsupp.single g n) (Y := f') (i := i))
+        have hnsmul : ∀ i, b (Finsupp.single g n) i = n * b (Finsupp.single g 1) i := by
+          intro i
+          simp only [sigma, (smul_single_one g n).symm, iterate_map_nsmul, map_nsmul, nsmul_eq_mul]
+          simp
+        have hone : b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 := by
+          by_cases hr : g.rank = 1
+          · exact b0_minus_b2_neg_gene g (hrneg_g hr) hr
+          · exact b0_minus_b2_pol_gene g hpol_g (by have := g.rank_pos; omega)
+        have ih' := ih hpol_f' hrneg_f'
+        have key : b (Finsupp.single g n + f') 0 - b (Finsupp.single g n + f') 2 =
+                   (b f' 0 - b f' 2) + n * (b (Finsupp.single g 1) 0
+                   - b (Finsupp.single g 1) 2) := by
+          simp only [hadd, hnsmul]; ring
+        rw [key, ih', hone, mul_one,
+            Finsupp.sum_add_index' (fun _ => by norm_cast) (fun _ _ _ => by push_cast; ring),
+            Finsupp.sum_single_index (by norm_cast)]
+        ring
+    have hsum : Y.val.sum (fun _ n => (n : ℚ)) = X.val.sum (fun _ n => (n : ℚ)) := by
+      simp only [Finsupp.sum, Y]
+      norm_cast
+      refine Finset.sum_bij'
+          (fun g _ => (⟨g.rank + k, g.type, Nat.le_add_right_of_le g.rank_pos⟩ : Gene))
+          (fun g' hg' =>
+            have hle : k + 1 ≤ g'.rank := by
+              have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
+              simp only at this; omega
+            (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
+          ?_ ?_ ?_ ?_ ?_
+      · intro g hg
+        rw [Finsupp.mem_support_iff] at hg ⊢
+        rwa [← prime_iterate_coeff]
+      · intro g' hg'
+        rw [Finsupp.mem_support_iff] at hg' ⊢
+        rw [prime_iterate_coeff]
+        have hle : k ≤ g'.rank := by
+          have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+        simp only [Nat.sub_add_cancel hle]
+        exact hg'
+      · intro g _; exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
+      · intro g' hg'
+        have hle : k ≤ g'.rank := by
+          have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
+          simp only at this; omega
+        exact Gene.ext (Nat.sub_add_cancel hle) rfl
+      · intro g _; rw [prime_iterate_coeff]
+    rw [show b (Chromosome.prime^[k] X) 0 = b Y 0 from rfl,
+        show b (Chromosome.prime^[k] X) 2 = b Y 2 from rfl, hb_Y, hsum]
+    norm_cast
+  · -- k + 2 ≤ m
+    exact bk_minus_bk2 k m hmin (by omega)
+
+lemma b0_eq_b2_negative {X : Variety.Pi} (m : ℕ) (hm : m ≥ 2)
+    (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
+    (hpos : ∀ g ∈ X.val.support, g.rank = m → g.type = .Negative)
+    {k : ℕ} (hk : k ≤ m - 1) :
+    b X 0 - b X k = b X 2 - b X (k + 2) := by
+  have h1 : b X 0 - b X 2 = X.val.sum (fun _ n => n) := b0_minus_b2 m hm hmin
+  have h2 : b X k - b X (k + 2) = X.val.sum (fun _ n => n) :=
+    bk_minus_bk2_min_neg k m (by omega) hmin hpos
+  linarith
 
 lemma bi_sum_ai1_eq_neg_count_1 {i : ℕ} (hX : X ∈ Variety.Pi) :
     b X i - a X (i + 1) =
