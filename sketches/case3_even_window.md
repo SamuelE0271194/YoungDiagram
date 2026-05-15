@@ -45,7 +45,7 @@ have ha_lt_c_rank1 : (sigma X (g₁.rank-1)).1 < (sigma Y (g₁.rank-1)).1 := by
 
 We need `b_i < d_i` at `i = g₁.rank` and `i = g₁.rank + 1`. This uses the chain:
 
-`d₂ - d_{i+1} ≤ c₁ - c_{i-1} ≤ d₀ - d_{i-2} ≤ b₀ - b_{i-2} = b₂ - b_{i+1}`
+`d₂ - d_{i+1} ≤ c₁ - c_i ≤ d₀ - d_{i-1} ≤ b₀ - b_{i-1} = b₂ - b_{i+1}`
 
 combined with `hd2_gt_b2 : b₂ < d₂`.
 
@@ -54,7 +54,7 @@ combined with `hd2_gt_b2 : b₂ < d₂`.
 have hd2_c1_rank  := Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2 hg₁_ge2
 have hd2_c1_rank1 : ... -- by_cases on rank = 2, else b2_bi_2_le_a1_ai
 
--- chain to d₀ - d_{i-2}
+-- chain to d₀ - d_{i-1}
 have hd2_di1_rank  := hd2_c1_rank.trans  hc1_ci_rank
 have hd2_di1_rank1 := hd2_c1_rank1.trans hc1_ci_rank1
 
@@ -63,7 +63,7 @@ have hb0_bi' : ∀ j, 2 ≤ j → j ≤ g₁.rank → ... := x_actual_negative_p
 have ha1_ai_rank  := hb0_bi' g₁.rank ...
 have ha1_ai_rank1 : ... -- by_cases on rank = 2
 
--- b₀ - b_{i-2} = b₂ - b_{i+1}
+-- b₀ - b_{i-1} = b₂ - b_{i+1}
 have hb0_b2_rank  := hb0_bi_rank.trans  ha1_ai_rank
 have hb0_b2_rank1 := hb0_bi_rank1.trans ha1_ai_rank1
 

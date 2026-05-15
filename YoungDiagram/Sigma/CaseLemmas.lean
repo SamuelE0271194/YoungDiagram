@@ -157,6 +157,75 @@ lemma b0_sub_a1_eq_neg_count (hX : X ∈ Variety.Pi) :
     rw [hba]
     ring
 
+lemma b0_eq_b2 {i : ℕ} (hg : ∀ g ∈ X.support, g.rank ≤ i + 2 → g.type = .Negative) :
+    b X 0 - b X i = b X 2 - b X (i + 2) := by sorry
+
+
+lemma bi_sum_ai1_eq_neg_count_1 {i : ℕ} (hX : X ∈ Variety.Pi) :
+    b X i - a X (i + 1) =
+     (prime^[i] X).sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) := by
+  -- b X i = b (prime^[i] X) 0, since sigma X i = signature (prime^[i] X)
+  have hbᵢ : b X i = b (prime^[i] X) 0 := by simp [sigma]
+  -- a X (i+1) = a (prime^[i] X) 1, since prime^[i+1] X = prime (prime^[i] X)
+  have haᵢ : a X (i + 1) = a (prime^[i] X) 1 := by
+    simp [sigma, Function.iterate_succ_apply']
+  rw [hbᵢ, haᵢ]
+  exact b0_sub_a1_eq_neg_count (prime^[i] X) (Variety.prime_mem_Pi_iterate hX)
+
+lemma neg_count_eq_aux (hg : ∀ g ∈ X.support, g.rank = 1 → g.type = .Positive) :
+    (prime X).sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
+    X.sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) := by
+  rw [prime_def]
+  rw [show (X.sum fun g m => m • primeGene g).sum
+            (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
+      X.sum (fun g m => (m • primeGene g).sum
+           (fun g' n => if g'.type = .Negative then (n : ℚ) else 0)) from
+    Finsupp.sum_sum_index (fun _ => by simp) (fun g m n => by split_ifs <;> push_cast <;> ring)]
+  refine Finsupp.sum_congr (fun g hg_supp => ?_)
+  by_cases hrank : g.rank = 1
+  · have hpos : g.type = .Positive := hg g hg_supp hrank
+    have hrank0 : g.rank - 1 = 0 := by omega
+    simp [primeGene_def, hrank0, Gene.ofRank_zero, hpos]
+  · have hne : g.rank - 1 ≠ 0 := by have := g.rank_pos; omega
+    rw [primeGene_def, Gene.ofRank_is_gene hne]
+    simp [Finsupp.sum_single_index]
+
+/-- Iterating prime i times preserves the negative gene count, provided all genes
+    of rank ≤ i in X are Positive (so prime^[i] kills no Negative genes). -/
+lemma neg_count_eq (i : ℕ) (hg : ∀ g ∈ X.support, g.rank ≤ i → g.type = .Positive) :
+    (prime^[i] X).sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
+    X.sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) := by
+  induction i with
+  | zero => simp
+  | succ i ih =>
+    rw [Function.iterate_succ_apply']
+    -- Reduce prime (prime^[i] X) to prime^[i] X using neg_count_eq_aux,
+    -- provided rank-1 genes of prime^[i] X are Positive.
+    rw [neg_count_eq_aux (X := prime^[i] X) (fun g' hg'_supp hrank1 => by
+      -- g' ∈ (prime^[i] X).support with rank 1 corresponds via prime_iterate_coeff
+      -- to gene ⟨g'.rank + i, g'.type, _⟩ of rank i+1 in X.support
+      have hcoeff := Finsupp.mem_support_iff.mp hg'_supp
+      rw [prime_iterate_coeff] at hcoeff
+      set g'' : Gene := ⟨g'.rank + i, g'.type, Nat.le_add_right_of_le g'.rank_pos⟩
+      have hXsupp : g'' ∈ X.support := Finsupp.mem_support_iff.mpr hcoeff
+      have hrank_le : g''.rank ≤ i + 1 := by change g'.rank + i ≤ i + 1; omega
+      exact hg g'' hXsupp hrank_le)]
+    -- Now apply the inductive hypothesis with the weakened rank bound
+    exact ih (fun g hg_supp hrank_le => hg g hg_supp (Nat.le_succ_of_le hrank_le))
+
+-- This is used in case 3
+lemma b0_bi_eq_a1_ai1 (hX : X ∈ Variety.Pi) (i : ℕ)
+    (hg : ∀ g ∈ X.support, g.rank ≤ i → g.type = .Positive) :
+    b X 0 - b X i = a X 1 - a X (i + 1) := by
+  -- b X 0 - a X 1 = neg_count X  (at index 0)
+  have h0 := bi_sum_ai1_eq_neg_count_1 X hX (i := 0)
+  simp at h0
+  -- b X i - a X (i+1) = neg_count (prime^[i] X)  (at index i)
+  have hi := bi_sum_ai1_eq_neg_count_1 X hX (i := i)
+  -- neg_count (prime^[i] X) = neg_count X  (since rank-≤i genes are Positive)
+  have heq := neg_count_eq X i hg
+  linarith
+
 lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
     (h : a X 1 < b X 0) :
     ∃ g : Gene, g.type = .Negative ∧ 0 < X g := by
