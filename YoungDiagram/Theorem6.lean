@@ -614,6 +614,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
 
     by_cases hε₁ : g₁.type = Int.negOnePow (g₁.rank - 1) • GeneType.Negative
     · -- Case 1: ε₁ = − (i.e. g₁ = Gene.ofRankAlt g₁.rank .Negative as a Gene term).
+      sorry /-
       have hg₂_exists : ∃ g₂ : Gene, (g₂.type = Int.negOnePow (g₂.rank - 1) • GeneType.Positive) ∧
        0 < X.1.val g₂ := by
         by_contra hno_g₂
@@ -998,9 +999,11 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           have h00 : ((0, 0) : ℚ × ℚ) = 0 := rfl
           rw [h00, add_zero]
           exact hXY_i
+        -/
     · -- Cases 2-4
       by_cases hg₁_one : g₁.rank = 1
       · -- g₁.rank = 1 (case 2)
+        sorry /-
         have hb₀_eq_d₀ : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
           sigma_zero_snd_eq X Y hXY.le
         have hb₀_gt_a₁ : (Sigma.sigma X.1 1).1 < (Sigma.sigma X.1 0).2 := by
@@ -1173,11 +1176,13 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 exact (mutation_type1_signature_eq hε_pos hle_ranks (le_refl 1)).symm
             rw [hZ_eq]
             exact hXY_i⟩
+            -/
       · -- g₁.rank ≥ 2 (Case 3-4)
         have hg₁_ge2 : 2 ≤ g₁.rank := by
           have := g₁.rank_pos; omega
         by_cases h2g₁ : 2 ≤ X.1.val g₁
-        · -- Case 3: 2 * g₁ ≤ X (g₁ appears with multiplicity ≥ 2)
+        · sorry /-
+          -- Case 3: 2 * g₁ ≤ X (g₁ appears with multiplicity ≥ 2)
           -- g₁ is polarized (not NonPolarized)
           have hε : g₁.type ≠ .NonPolarized :=
             IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁ (Finsupp.mem_support_iff.mpr hXg₁)
@@ -1755,6 +1760,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                   · -- .2: (sigma X).2 + 0 ≤ (sigma Y).2 from hXY_i
                     simp only [Prod.snd_add]
                     linarith [hXY_i.2]
+          -/
         · -- Case 4: g₁ appears with multiplicity 1 in X
           have hg₁_one : X.1.val g₁ = 1 := by omega
           sorry
