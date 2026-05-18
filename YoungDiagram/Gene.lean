@@ -126,6 +126,11 @@ lemma Gene.signature_of_negative {g : Gene} (hg : g.type = .Negative) :
   unfold Gene.signature
   simp only [hg]
 
+lemma Gene.signature_ofRank_even_half {g : Gene} (h : Even g.rank) :
+    g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
+  unfold Gene.signature
+  split <;> first | rfl | exact if_pos h
+
 lemma Gene.signature_sum_eq_rank (g : Gene) :
     g.signature.1 + g.signature.2 = (g.rank : ℚ) := by
   match h : g.type with

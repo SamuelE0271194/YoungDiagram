@@ -10,6 +10,9 @@ def maxRank (c : Chromosome) : ℕ := c.support.sup Gene.rank
 
 lemma maxRank_def {X : Chromosome} : X.maxRank = X.support.sup Gene.rank := rfl
 
+lemma le_maxRank {X : Chromosome} : ∀ g ∈ X.support, g.rank ≤ X.maxRank :=
+  fun _ hg ↦ Finset.le_sup hg
+
 lemma add_maxRank {X Y : Chromosome} :
     (X + Y).maxRank = X.maxRank ⊔ Y.maxRank := by
   rw [maxRank_def, support_add_eq', Finset.sup_union, maxRank_def, maxRank_def]
@@ -97,17 +100,6 @@ lemma prime_rank_lt {X : Chromosome} (hne : X ≠ 0) :
     · grind only [i.rank_pos]
     · exact Nat.pos_of_ne_zero <| mem_support_iff.1 hi
 
-lemma prime_iterate_eq_zero_rank_le {X : Chromosome} {k : ℕ} (hk : prime^[k] X = 0)
-    {g : Gene} (hg : g ∈ X.support) : g.rank ≤ k := by
-  by_contra h
-  push Not at h
-  have hpos : 1 ≤ g.rank - k := by omega
-  have heq : (⟨g.rank - k + k, g.type, Nat.le_add_right_of_le hpos⟩ : Gene) = g :=
-    Gene.ext (Nat.sub_add_cancel (by omega)) rfl
-  have h_coeff := prime_iterate_coeff k X ⟨g.rank - k, g.type, hpos⟩
-  rw [heq, hk, zero_apply] at h_coeff
-  exact (Finsupp.mem_support_iff.1 hg) h_coeff.symm
-
 lemma prime_iterate_rank_lt_of_ne_zero {X : Chromosome} {k : ℕ} (hk : 0 < k)
     (hne : prime^[k] X ≠ 0) : (prime^[k] X).rank < X.rank := by
   induction k using Nat.twoStepInduction with
@@ -130,34 +122,17 @@ lemma signature_eq_zero {X : Chromosome}
   have := (@signature_sum_eq_rank X).symm
   rwa [h, Prod.fst_zero, Prod.snd_zero, zero_add, Nat.cast_eq_zero] at this
 
-lemma maxRank_le_rank {X : Chromosome} : X.maxRank ≤ X.rank := by
-  rw [maxRank_def, rank_def]
-  apply Finset.sup_le
-  intro g hg
-  have hpos : 0 < X g := Nat.pos_of_ne_zero (mem_support_iff.mp hg)
-  calc g.rank = 1 * g.rank                        := (one_mul _).symm
-    _ ≤ X g * g.rank                               := Nat.mul_le_mul_right _ hpos
-    _ = X g • g.rank                               := (smul_eq_mul _ _).symm
-    _ ≤ X.sum (fun g n => n • g.rank)             := by
-        simp only [Finsupp.sum]
-        exact Finset.single_le_sum (f := fun g => X g • g.rank)
-          (fun g _ => Nat.zero_le _) hg
+lemma maxRank_le_rank {X : Chromosome} : X.maxRank ≤ X.rank :=
+  Finset.sup_le fun _ hg ↦
+    le_weight_of_ne_zero' Gene.rank (mem_support_iff.1 hg)
 
 lemma rank_eq_maxRank_single {X : Chromosome} (h : X.rank = X.maxRank) (hpos : 0 < X.maxRank) :
     ∃ g : Gene, g.rank = X.maxRank ∧ X = Finsupp.single g 1 := by
   sorry
 
 lemma prime_iterate_zero_of_maxRank_le {X : Chromosome} {k : ℕ} (h : X.maxRank ≤ k) :
-    prime^[k] X = 0 := by
-  ext g
-  rw [prime_iterate_coeff k X g, zero_apply]
-  by_contra hne
-  -- ⟨g.rank + k, ...⟩ is in X.support, so its rank ≤ X.maxRank ≤ k
-  have hmem := Finsupp.mem_support_iff.mpr hne
-  have hrank : g.rank + k ≤ X.maxRank := by
-    rw [maxRank_def]; exact Finset.le_sup (f := Gene.rank) hmem
-  have := g.rank_pos
-  omega
+    prime^[k] X = 0 :=
+  prime_iterate_eq_zero_rank_le.1 fun _ hg ↦ (le_trans (le_maxRank _ hg) h)
 
 end rank
 
