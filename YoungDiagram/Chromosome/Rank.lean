@@ -10,6 +10,9 @@ def maxRank (c : Chromosome) : ℕ := c.support.sup Gene.rank
 
 lemma maxRank_def {X : Chromosome} : X.maxRank = X.support.sup Gene.rank := rfl
 
+lemma maxRank_zero : maxRank 0 = 0 := by
+  rw [maxRank_def, support_zero, Finset.sup_empty, Nat.bot_eq_zero]
+
 lemma le_maxRank {X : Chromosome} : ∀ g ∈ X.support, g.rank ≤ X.maxRank :=
   fun _ hg ↦ Finset.le_sup hg
 
@@ -57,6 +60,9 @@ lemma rank_def {X : Chromosome} : X.rank = X.sum (fun g count ↦ count • g.ra
 
 lemma rank_zero {X : Chromosome} (h : X.rank = 0) : X = 0 :=
   (weight_eq_zero_iff_eq_zero _).1 h
+
+lemma rank_zero_iff {X : Chromosome} : X.rank = 0 ↔ X = 0 :=
+  ⟨rank_zero, by intro h; rw [h, map_zero]⟩
 
 lemma rank_single {n : ℕ} {g : Gene} :
   rank (single g n) = n • g.rank := weight_single ..
@@ -122,13 +128,34 @@ lemma signature_eq_zero {X : Chromosome}
   have := (@signature_sum_eq_rank X).symm
   rwa [h, Prod.fst_zero, Prod.snd_zero, zero_add, Nat.cast_eq_zero] at this
 
-lemma maxRank_le_rank {X : Chromosome} : X.maxRank ≤ X.rank :=
+lemma maxRank_le_rank (X : Chromosome) : X.maxRank ≤ X.rank :=
   Finset.sup_le fun _ hg ↦
     le_weight_of_ne_zero' Gene.rank (mem_support_iff.1 hg)
 
-lemma rank_eq_maxRank_single {X : Chromosome} (h : X.rank = X.maxRank) (hpos : 0 < X.maxRank) :
+lemma rank_eq_maxRank_single {X : Chromosome}
+    (h : X.rank = X.maxRank) (hpos : 0 < X.maxRank) :
     ∃ g : Gene, g.rank = X.maxRank ∧ X = Finsupp.single g 1 := by
-  sorry
+  induction X using Finsupp.induction with
+  | zero => simp only [maxRank_zero, lt_self_iff_false] at hpos
+  | single_add a b f ha hb hf =>
+    rw [add_maxRank, ← Gene.ofRank_eq_gene_smul, smul_maxRank hb, maxRank_ofRank,
+      map_add, map_nsmul, rank_ofRank] at *
+    by_cases hle : a.rank ≤ maxRank f
+    · rw [Nat.max_eq_right hle] at *
+      have := nonpos_iff_eq_zero.1 <| add_le_iff_nonpos_left.1 <| h ▸ maxRank_le_rank f
+      rw [this, zero_add] at h
+      specialize hf h hpos
+      obtain (h0 | h0) := nsmul_eq_zero_iff.1 this
+      · rwa [h0, Gene.ofRank_zero, nsmul_zero, zero_add]
+      · rwa [h0, zero_smul, zero_add]
+    · rw [Nat.max_eq_left (Nat.le_of_not_ge hle)] at *
+      have := le_self_nsmul (Nat.zero_le a.rank) hb
+      nth_rw 1 [← h, smul_eq_mul, smul_eq_mul, add_le_iff_nonpos_right,
+        nonpos_iff_eq_zero, rank_zero_iff] at this
+      rw [this, map_zero, add_zero, smul_eq_mul,
+        mul_eq_right₀ (Nat.ne_zero_of_lt hpos)] at h
+      rw [this, add_zero, h, one_nsmul]
+      exact ⟨a, rfl, Gene.ofRank_eq_gene⟩
 
 lemma prime_iterate_zero_of_maxRank_le {X : Chromosome} {k : ℕ} (h : X.maxRank ≤ k) :
     prime^[k] X = 0 :=
