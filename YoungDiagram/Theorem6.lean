@@ -2446,19 +2446,136 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                       have hc01_le_a01_sub1 :
                           (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 ≤
                           (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 := by
-                        sorry
+                        have ha0_eq_c0 := sigma_zero_fst_eq X Y hXY.le
+                        have ha : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
+                            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+                          linarith [sigma_zero_fst_eq X Y hXY.le]
+                        obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val 1 X.1.2
+                        obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val 1 Y.1.2
+                        have hX1 : (Sigma.sigma X.1 1).1 = ↑nX.1 := congr_arg Prod.fst hnX
+                        have hY1 : (Sigma.sigma Y.1 1).1 = ↑nY.1 := congr_arg Prod.fst hnY
+                        have hlt : (↑nX.1 : ℚ) < ↑nY.1 := by linarith
+                        have hlt_nat : nX.1 < nY.1 := by exact_mod_cast hlt
+                        have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+                          exact_mod_cast (by omega : nX.1 + 1 ≤ nY.1)
+                        linarith
                       have ha01_sub1_eq_am_sub1 :
                           (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
                           (Sigma.sigma X.1 (g₁.rank - 1)).1 - (Sigma.sigma X.1 g₁.rank).1 - 1 := by
-                        sorry
+                        have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
+                          rw [Sigma.altType_odd g₁.rank heven]; exact hε_pos
+                        have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
+                            Finsupp.single g₁ 1 := by
+                          rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
+                          congr 1; exact Gene.ext rfl hg₁_altType.symm
+                        have h := x_side_equalities hXpn hg₁_ofRankAlt hXg₁pos
+                          (fun g' _ hg' => hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
+                          (show g₁.rank - 1 < g₁.rank from by omega)
+                        rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                        have heven_sub1 : Even (g₁.rank - 1) := by
+                          obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp heven
+                          exact ⟨r, by omega⟩
+                        simp only [if_pos heven_sub1] at h
+                        linarith
                       have ham_sub1_eq_bm :
                           (Sigma.sigma X.1 (g₁.rank - 1)).1 - (Sigma.sigma X.1 g₁.rank).1 - 1 =
                           (Sigma.sigma X.1 g₁.rank).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 := by
-                        sorry
+                        have hLHS : (Sigma.sigma X.1 (g₁.rank - 1)).1 -
+                            (Sigma.sigma X.1 g₁.rank).1 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank - 1 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          have h := Sigma.sigma_fst_diff X.1.val (g₁.rank - 1) X.1.2
+                          rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                          rw [h, Sigma.prime_iterate_sum_pos_eq X.1.val (g₁.rank - 1)
+                                  (show Even (g₁.rank - 1) from by
+                                    obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp heven
+                                    exact ⟨r, by omega⟩)]
+                          rfl
+                        have hRHS : (Sigma.sigma X.1 g₁.rank).2 -
+                            (Sigma.sigma X.1 (g₁.rank + 1)).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_snd_diff X.1.val g₁.rank X.1.2,
+                              Sigma.prime_iterate_sum_neg_eq X.1.val g₁.rank heven]
+                          rfl
+                        have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
+                          rw [Sigma.altType_odd g₁.rank heven]; exact hε_pos
+                        have hfilter_split :
+                            X.1.val.support.filter (fun g =>
+                              g₁.rank - 1 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) =
+                            {g₁} ∪ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) := by
+                          ext g
+                          simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_singleton,
+                                     Finsupp.mem_support_iff]
+                          constructor
+                          · rintro ⟨hsupp, hrank, htype⟩
+                            by_cases heq : g = g₁
+                            · left; exact heq
+                            · right
+                              refine ⟨hsupp, ?_, htype⟩
+                              rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with h | h
+                              · exact h
+                              · exfalso; apply heq
+                                exact Gene.ext h.symm
+                                  (by rw [← h, ← hg₁_altType] at htype; exact htype)
+                          · rintro (rfl | ⟨hsupp, hrank, htype⟩)
+                            · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by omega, hg₁_altType⟩
+                            · exact ⟨hsupp, by omega, htype⟩
+                        have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
+                            g₁.rank < g.rank ∧ g.type = Sigma.altType g.rank GeneType.Positive)) := by
+                          simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
+                          rintro g rfl ⟨_, hlt, _⟩
+                          exact absurd hlt (lt_irrefl _)
+                        rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
+                            show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
+                        ring
                       have hbm_eq_aj :
                           (Sigma.sigma X.1 g₁.rank).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 =
                           (Sigma.sigma X.1 j).1 - (Sigma.sigma X.1 (j + 1)).1 := by
-                        sorry
+                        have hLHS : (Sigma.sigma X.1 g₁.rank).2 -
+                            (Sigma.sigma X.1 (g₁.rank + 1)).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_snd_diff X.1.val g₁.rank X.1.2,
+                              Sigma.prime_iterate_sum_neg_eq X.1.val g₁.rank heven]
+                          rfl
+                        have hRHS : (Sigma.sigma X.1 j).1 -
+                            (Sigma.sigma X.1 (j + 1)).1 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_fst_diff X.1.val j X.1.2,
+                              Sigma.prime_iterate_sum_pos_eq X.1.val j hjeven]
+                          rfl
+                        have hfilter_eq :
+                            X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) =
+                            X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) := by
+                          ext g
+                          simp only [Finset.mem_filter, Finsupp.mem_support_iff]
+                          constructor
+                          · rintro ⟨hg_supp, hg_rank, hg_type⟩
+                            exact ⟨hg_supp,
+                              by have := hg₂min g
+                                    (Nat.pos_of_ne_zero hg_supp)
+                                    hg_rank; omega,
+                              hg_type⟩
+                          · rintro ⟨hg_supp, hg_rank, hg_type⟩
+                            exact ⟨hg_supp, by omega, hg_type⟩
+                        rw [hLHS, hRHS, hfilter_eq]
                       linarith
                     · -- j is odd
                       have hcj_le_c12 :
