@@ -98,10 +98,10 @@ lemma signature_ofRank_general {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : �
 
 lemma signature_ofRank_even_half {k : ℕ} {ε : GeneType} (hk : Even k) :
     (Gene.ofRank k ε).signature = ((k : ℚ) / 2, (k : ℚ) / 2) := by
-  by_cases hk_zero : k = 0
-  · simp [hk_zero]; rfl
-  · simp only [signature_ofRank, hk_zero, ↓reduceDIte, Gene.signature, hk, ↓reduceIte]
-    split <;> rfl
+  rw [signature_ofRank]
+  split_ifs with h
+  · rw [h, Nat.cast_zero, zero_div]; rfl
+  · rwa [Gene.signature_ofRank_even_half]
 
 lemma signature_ofRank_even {k : ℕ} {ε : GeneType} (hk : Even k) :
     (Gene.ofRank k ε).signature = (Gene.ofRank k (- ε)).signature := by

@@ -179,20 +179,33 @@ lemma prime_iterate_coeff (k : ℕ) (X : Chromosome) (g : Gene) :
   | zero => rfl
   | succ n hn => rw [Function.iterate_succ_apply, hn X.prime, prime_coeff]; rfl
 
-lemma rank_one_of_prime_eq_zero {X : Chromosome} (hprime : X.prime = 0) :
-    ∀ g ∈ X.support, g.rank = 1 := by
-  by_contra!
-  rcases this with ⟨g, ⟨h1, h2⟩⟩
-  have hpos : 1 ≤ g.rank - 1 := by grind only [g.rank_pos]
-  refine (Finsupp.mem_support_iff.1 h1) ?_
-  convert (hprime ▸ @prime_coeff X ⟨g.rank - 1, g.type, hpos⟩).symm
-  simp only; omega
+lemma prime_iterate_eq_zero_rank_le {X : Chromosome} {k : ℕ} :
+    (∀ g ∈ X.support, g.rank ≤ k) ↔ prime^[k] X = 0 := by
+  constructor
+  · intro hk; ext g
+    rw [zero_apply, prime_iterate_coeff, ← notMem_support_iff]
+    intro h; specialize hk _ h
+    rw [add_le_iff_nonpos_left, nonpos_iff_eq_zero] at hk
+    absurd g.rank_pos
+    exact Std.Rxc.size_eq_zero_iff_not_le.1 hk
+  · intro hk g hg
+    by_contra! h
+    have hpos : 1 ≤ g.rank - k := by omega
+    have heq : ⟨g.rank - k + k, g.type, Nat.le_add_right_of_le hpos⟩ = g :=
+      Gene.ext (Nat.sub_add_cancel h.le) rfl
+    have h_coeff := prime_iterate_coeff k X ⟨g.rank - k, g.type, hpos⟩
+    rw [heq, hk, zero_apply] at h_coeff
+    exact (mem_support_iff.1 hg) h_coeff.symm
+
+lemma rank_one_of_prime_eq_zero {X : Chromosome} (hprime : X.prime = 0)
+    {g : Gene} (hg : g ∈ X.support) : g.rank = 1 :=
+  (Nat.le_antisymm g.rank_pos ((@prime_iterate_eq_zero_rank_le X 1).2 hprime g hg)).symm
 
 lemma prime_ne_zero_of_rank_ge_two {X : Chromosome} (hne : X ≠ 0)
     (hrank : ∀ g ∈ X.support, 2 ≤ g.rank) : X.prime ≠ 0 := by
   by_contra!
   obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.2 hne
-  grind only [hrank g hg, rank_one_of_prime_eq_zero this g hg]
+  grind only [hrank g hg, rank_one_of_prime_eq_zero this hg]
 
 lemma prime_iterate_ne_zero_if_prime_ne {X : Chromosome} {j k : ℕ} (hle : j ≤ k)
     (hne : prime^[k] X ≠ 0) : prime^[j] X ≠ 0 := by

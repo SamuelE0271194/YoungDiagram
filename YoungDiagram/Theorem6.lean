@@ -1769,7 +1769,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
               intro hzero
               -- All genes in X have rank ≤ g₁.rank (prime_iterate_eq_zero_rank_le)
               have hrank_le : ∀ g ∈ X.1.val.support, g.rank ≤ g₁.rank :=
-                fun g hg => prime_iterate_eq_zero_rank_le hzero hg
+                fun g hg => prime_iterate_eq_zero_rank_le.2 hzero g hg
               -- Combined with hg₁min (minimal rank ≥ g₁.rank): rank = g₁.rank exactly
               have hrank_eq : ∀ g ∈ X.1.val.support, g.rank = g₁.rank :=
                 fun g hg => le_antisymm (hrank_le g hg) (hg₁min g hg)
@@ -1823,7 +1823,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
               apply Nat.le_antisymm
               · -- Upper: Y.maxRank ≤ Y.rank = X.rank = g₁.rank
                 calc Y.1.val.maxRank
-                    ≤ Y.1.val.rank := maxRank_le_rank
+                    ≤ Y.1.val.rank := maxRank_le_rank _
                   _ = X.1.val.rank := hYX_rank
                   _ = g₁.rank      := hX_rank_eq
               · -- Lower: if Y.maxRank < g₁.rank then prime^[g₁.rank-1] Y = 0,
