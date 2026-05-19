@@ -2170,7 +2170,59 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                         linarith
                       have hb0_eq_bj : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
                           (Sigma.sigma X.1 j).2 - (Sigma.sigma X.1 (j + 1)).2 := by
-                        sorry
+                        have hLHS : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              0 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Negative),
+                            (X.1.val g : ℚ) := by
+                          have h1 := Sigma.sigma_snd_diff X.1.val 0 X.1.2
+                          have h2 := Sigma.prime_iterate_sum_eq X.1.val 0 GeneType.Negative
+                          simp only [Function.iterate_zero, id,
+                            show Int.negOnePow (0 : ℤ) = 1 from
+                              Int.negOnePow_even _ ⟨0, rfl⟩,
+                            one_smul] at h1 h2
+                          exact h1.trans h2
+                        have hRHS : (Sigma.sigma X.1 j).2 - (Sigma.sigma X.1 (j + 1)).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Negative),
+                            (X.1.val g : ℚ) := by
+                          have h1 := Sigma.sigma_snd_diff X.1.val j X.1.2
+                          have h2 := Sigma.prime_iterate_sum_eq X.1.val j GeneType.Negative
+                          simp only [show Int.negOnePow (j : ℤ) = 1 from
+                            Int.negOnePow_even _ (by exact_mod_cast hjeven),
+                            one_smul] at h2
+                          exact h1.trans h2
+                        have hfilter_eq :
+                            X.1.val.support.filter (fun g =>
+                              0 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Negative) =
+                            X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Negative) := by
+                          ext g
+                          simp only [Finset.mem_filter, Finsupp.mem_support_iff]
+                          constructor
+                          · rintro ⟨hg_supp, _, hg_type⟩
+                            refine ⟨hg_supp, ?_, hg_type⟩
+                            have hmin := hg₁min g (Finsupp.mem_support_iff.mpr hg_supp)
+                            rcases eq_or_lt_of_le hmin with h_eq | h_lt
+                            · have halttype :
+                                  Sigma.altType g.rank GeneType.Negative =
+                                  GeneType.Positive := by
+                                rw [show g.rank = g₁.rank from h_eq.symm,
+                                    Sigma.altType_even g₁.rank heven,
+                                    GeneType.neg_negative]
+                              rw [halttype] at hg_type
+                              exact absurd hXpn (not_not.mpr
+                                ⟨g, g₁, h_eq.symm, hg_type, hε_neg,
+                                 Nat.pos_of_ne_zero hg_supp, hXg₁pos⟩)
+                            · exact by
+                                have := hg₂min g (Nat.pos_of_ne_zero hg_supp) h_lt
+                                omega
+                          · rintro ⟨hg_supp, hg_rank, hg_type⟩
+                            exact ⟨hg_supp, g.rank_pos, hg_type⟩
+                        rw [hLHS, hRHS, hfilter_eq]
                       linarith
                     · -- j is odd
                       have hdj_le_c01 : (Sigma.sigma Y.1 j).2 - (Sigma.sigma Y.1 (j + 1)).2 ≤
@@ -2193,15 +2245,124 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                         linarith
                       have ha01_sub1_eq_bm : (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
                           (Sigma.sigma X.1 (g₁.rank - 1)).2 - (Sigma.sigma X.1 g₁.rank).2 - 1 := by
-                        sorry
+                        have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
+                          rw [Sigma.altType_even g₁.rank heven, GeneType.neg_positive]; exact hε_neg
+                        have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
+                            Finsupp.single g₁ 1 := by
+                          rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
+                          congr 1; exact Gene.ext rfl hg₁_altType.symm
+                        have h := x_side_equalities hXpn hg₁_ofRankAlt hXg₁pos
+                          (fun g' _ hg' => hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
+                          (show g₁.rank - 1 < g₁.rank from by omega)
+                        rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                        have hodd : ¬Even (g₁.rank - 1) := by
+                          obtain ⟨r, hr⟩ := heven; intro ⟨s, hs⟩; omega
+                        simp only [hodd, if_false] at h
+                        linarith
                       have hbm_sub1_eq_am : (Sigma.sigma X.1 (g₁.rank - 1)).2 -
                           (Sigma.sigma X.1 g₁.rank).2 - 1 =
                           (Sigma.sigma X.1 g₁.rank).1 - (Sigma.sigma X.1 (g₁.rank + 1)).1 := by
-                        sorry
+                        -- Step 1: rewrite LHS drop via sigma_snd_diff + prime_iterate_sum_neg_eq
+                        have hLHS : (Sigma.sigma X.1 (g₁.rank - 1)).2 -
+                            (Sigma.sigma X.1 g₁.rank).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank - 1 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          have h := Sigma.sigma_snd_diff X.1.val (g₁.rank - 1) X.1.2
+                          rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                          rw [h, Sigma.prime_iterate_sum_neg_eq X.1.val (g₁.rank - 1)
+                                  (show ¬Even (g₁.rank - 1) from by
+                                    obtain ⟨r, hr⟩ := heven
+                                    intro ⟨s, hs⟩; omega)]
+                          rfl
+                        -- Step 2: rewrite RHS drop via sigma_fst_diff + prime_iterate_sum_pos_eq
+                        have hRHS : (Sigma.sigma X.1 g₁.rank).1 -
+                            (Sigma.sigma X.1 (g₁.rank + 1)).1 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_fst_diff X.1.val g₁.rank X.1.2,
+                              Sigma.prime_iterate_sum_pos_eq X.1.val g₁.rank heven]
+                          rfl
+                        -- g₁ satisfies the LHS filter: altType g₁.rank Positive = Negative = g₁.type
+                        have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
+                          rw [Sigma.altType_even g₁.rank heven, GeneType.neg_positive]
+                          exact hε_neg
+                        -- Split: LHS filter = {g₁} ∪ RHS filter (g₁ not in RHS filter)
+                        have hfilter_split :
+                            X.1.val.support.filter (fun g =>
+                              g₁.rank - 1 < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) =
+                            {g₁} ∪ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) := by
+                          ext g
+                          simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_singleton,
+                                     Finsupp.mem_support_iff]
+                          constructor
+                          · rintro ⟨hsupp, hrank, htype⟩
+                            by_cases heq : g = g₁
+                            · left; exact heq
+                            · right
+                              refine ⟨hsupp, ?_, htype⟩
+                              rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with h | h
+                              · exact h
+                              · exfalso; apply heq
+                                exact Gene.ext h.symm
+                                  (by rw [← h, ← hg₁_altType] at htype; exact htype)
+                          · rintro (rfl | ⟨hsupp, hrank, htype⟩)
+                            · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by omega, hg₁_altType⟩
+                            · exact ⟨hsupp, by omega, htype⟩
+                        have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
+                            g₁.rank < g.rank ∧ g.type = Sigma.altType g.rank GeneType.Positive)) := by
+                          simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
+                          rintro g rfl ⟨_, hlt, _⟩
+                          exact absurd hlt (lt_irrefl _)
+                        rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
+                            show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
+                        ring
                       have ham_eq_bj : (Sigma.sigma X.1 g₁.rank).1 -
                           (Sigma.sigma X.1 (g₁.rank + 1)).1 =
                           (Sigma.sigma X.1 j).2 - (Sigma.sigma X.1 (j + 1)).2 := by
-                        sorry
+                        have hLHS : (Sigma.sigma X.1 g₁.rank).1 -
+                            (Sigma.sigma X.1 (g₁.rank + 1)).1 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_fst_diff X.1.val g₁.rank X.1.2,
+                              Sigma.prime_iterate_sum_pos_eq X.1.val g₁.rank heven]
+                          rfl
+                        have hRHS : (Sigma.sigma X.1 j).2 -
+                            (Sigma.sigma X.1 (j + 1)).2 =
+                            ∑ g ∈ X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive),
+                            (X.1.val g : ℚ) := by
+                          rw [Sigma.sigma_snd_diff X.1.val j X.1.2,
+                              Sigma.prime_iterate_sum_neg_eq X.1.val j hjeven]
+                          rfl
+                        have hfilter_eq :
+                            X.1.val.support.filter (fun g =>
+                              g₁.rank < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) =
+                            X.1.val.support.filter (fun g =>
+                              j < g.rank ∧
+                              g.type = Sigma.altType g.rank GeneType.Positive) := by
+                          ext g
+                          simp only [Finset.mem_filter, Finsupp.mem_support_iff]
+                          constructor
+                          · rintro ⟨hg_supp, hg_rank, hg_type⟩
+                            exact ⟨hg_supp,
+                              by have := hg₂min g
+                                    (Nat.pos_of_ne_zero hg_supp)
+                                    hg_rank; omega,
+                              hg_type⟩
+                          · rintro ⟨hg_supp, hg_rank, hg_type⟩
+                            exact ⟨hg_supp, by omega, hg_type⟩
+                        rw [hLHS, hRHS, hfilter_eq]
                       linarith
                   have hbj_lt_dj : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank →
                       (Sigma.sigma X.1 j).2 < (Sigma.sigma Y.1 j).2 := by
@@ -2235,6 +2396,19 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                   · simp only [Prod.snd_add]
                     exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hbj)
                 · -- g₁.rank is odd
+                  have hε_pos : ε = .Positive := by
+                    have hne_neg : ε ≠ .Negative := by
+                      intro h; apply hε₁
+                      have h_even : Even ((g₁.rank : ℤ) - 1) := by
+                        have hodd : Odd g₁.rank := Nat.not_even_iff_odd.mp heven
+                        obtain ⟨r, hr⟩ := hodd
+                        exact ⟨↑r, by push_cast [hr]; ring⟩
+                      simp only [GeneType.negOnePow_smul, if_pos h_even, one_smul]
+                      rw [← h]
+                    cases ht : ε with
+                    | Positive => rfl
+                    | Negative => exact absurd ht hne_neg
+                    | NonPolarized => exact absurd ht hε
                   -- a_{rank} < c_{rank}
                   have ha_lt_c_rank : (Sigma.sigma X.1 g₁.rank).1 <
                       (Sigma.sigma Y.1 g₁.rank).1 := by
@@ -2259,7 +2433,84 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                         (by omega) (le_refl _)
                     linarith [sigma_zero_fst_eq X Y hXY.le, hc1_ci_rank, hd0_di_rank,
                       hb0_bi_rank, hstrict]
-                  sorry
+                  have hci_sub_le_ai_sub : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank - 1 →
+                      (Sigma.sigma Y.1 j).1 - (Sigma.sigma Y.1 (j + 1)).1 ≤
+                      (Sigma.sigma X.1 j).1 - (Sigma.sigma X.1 (j + 1)).1 := by
+                    intro j hj1 hj2
+                    by_cases hjeven : Even j
+                    · -- j is even
+                      have hcj_le_c01 :
+                          (Sigma.sigma Y.1 j).1 - (Sigma.sigma Y.1 (j + 1)).1 ≤
+                          (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := by
+                        simpa [hjeven] using Sigma.cond_15_6_compare_k_to_0 Y.1.val j Y.1.2
+                      have hc01_le_a01_sub1 :
+                          (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 ≤
+                          (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 := by
+                        sorry
+                      have ha01_sub1_eq_am_sub1 :
+                          (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
+                          (Sigma.sigma X.1 (g₁.rank - 1)).1 - (Sigma.sigma X.1 g₁.rank).1 - 1 := by
+                        sorry
+                      have ham_sub1_eq_bm :
+                          (Sigma.sigma X.1 (g₁.rank - 1)).1 - (Sigma.sigma X.1 g₁.rank).1 - 1 =
+                          (Sigma.sigma X.1 g₁.rank).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 := by
+                        sorry
+                      have hbm_eq_aj :
+                          (Sigma.sigma X.1 g₁.rank).2 - (Sigma.sigma X.1 (g₁.rank + 1)).2 =
+                          (Sigma.sigma X.1 j).1 - (Sigma.sigma X.1 (j + 1)).1 := by
+                        sorry
+                      linarith
+                    · -- j is odd
+                      have hcj_le_c12 :
+                          (Sigma.sigma Y.1 j).1 - (Sigma.sigma Y.1 (j + 1)).1 ≤
+                          (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 2).1 := by
+                        sorry
+                      have hc12_le_d01 :
+                          (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 2).1 ≤
+                          (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 := by
+                        sorry
+                      have hd01_le_b01 :
+                          (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 ≤
+                          (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 := by
+                        sorry
+                      have hb01_eq_aj :
+                          (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
+                          (Sigma.sigma X.1 j).1 - (Sigma.sigma X.1 (j + 1)).1 := by
+                        sorry
+                      linarith
+
+                  have haj_lt_cj : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank →
+                      (Sigma.sigma X.1 j).1 < (Sigma.sigma Y.1 j).1 := by
+                    intro j hj1 hj2
+                    obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hj1
+                    induction d with
+                    | zero => simpa using ha_lt_c_rank
+                    | succ d ih =>
+                      have ihd := ih (by omega) (by omega)
+                      have hstep := hci_sub_le_ai_sub (g₁.rank + d) (by omega) (by omega)
+                      change (Sigma.sigma X.1 (g₁.rank + d + 1)).1 <
+                           (Sigma.sigma Y.1 (g₁.rank + d + 1)).1
+                      simp at hstep
+                      linarith
+
+                  refine ⟨fun j hj1 hj2 => ?_, h_outside_range⟩
+                  have haj := haj_lt_cj j hj1 hj2
+                  obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
+                  obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
+                  rw [hnX, hnY] at haj ⊢
+                  rw [show (Gene.ofRank 1 ε).signature = (1, 0) from by
+                    rw [hε_pos]
+                    simp [Gene.signature, Gene.ofRank, show ¬ Even 1 from by decide]]
+                  constructor
+                  · simp only [Prod.fst_add]
+                    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp haj)
+                  · have h2 := (le_iff_dominates.mp hXY.le j).2
+                    simp at h2
+                    simp only [Prod.snd_add, add_zero]
+                    simp [Sigma.sigma] at hnX
+                    simp [Sigma.sigma] at hnY
+                    rw [hnX, hnY] at h2
+                    exact h2
               by_cases hin : g₁.rank ≤ i ∧ i ≤ g₂.rank
               · obtain ⟨hi1, hi2⟩ := hin
                 -- Inside [g₁.rank, g₂.rank]: sigma(Y1)(i) - sigma(X1)(i) = sig(ofRank 1 ε)
