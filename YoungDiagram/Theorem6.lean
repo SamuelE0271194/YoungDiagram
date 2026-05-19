@@ -2074,11 +2074,12 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                           | Negative => rfl
                           | NonPolarized => exact absurd ht hpol
                       -- Gene.ofRankAlt g₁.rank Positive = single g₁ 1
-                      have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive = Finsupp.single g₁ 1
-                          := by
+                      have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
+                           Finsupp.single g₁ 1 := by
                         rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
                         congr 1; exact Gene.ext rfl hg₁_pos_type.symm
-                      -- Apply x_side_equalities at j = 1 (odd), using g₁ as the minimal Positive-family gene
+                      -- Apply x_side_equalities at j = 1 (odd),
+                        -- using g₁ as the minimal Positive-family gene
                       have h := x_side_equalities hXpn hg₁_ofRankAlt hXg₁pos
                         (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
                         (show 1 < g₁.rank from hg₁_ge2)
@@ -2140,24 +2141,56 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                     · -- j is even
                       have hdj_le_d0 : (Sigma.sigma Y.1 j).2 - (Sigma.sigma Y.1 (j + 1)).2 ≤
                           (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 := by
-                        sorry
+                        have key : ∀ n : ℕ,
+                            (Sigma.sigma Y.1.val (n + n)).2 -
+                            (Sigma.sigma Y.1.val (n + n + 1)).2 ≤
+                            (Sigma.sigma Y.1.val 0).2 - (Sigma.sigma Y.1.val 1).2 := by
+                          intro n
+                          induction n with
+                          | zero => simp
+                          | succ n ih =>
+                            have h1 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
+                                (Sigma.drop Y.1.val (n + n + 1)).1 := by
+                              have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
+                              rw [if_neg (fun heven =>
+                                (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h; exact h
+                            have h2 : (Sigma.drop Y.1.val (n + n + 1)).1 ≤
+                                (Sigma.drop Y.1.val (n + n)).2 := by
+                              have h := Sigma.cond_15_7_drop Y.1.val (n + n) Y.1.2
+                              rw [if_pos ⟨n, rfl⟩] at h; exact h
+                            simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
+                            rw [show n + 1 + (n + 1) = n + n + 2 from by omega]; linarith
+                        obtain ⟨m, hm⟩ := hjeven
+                        rw [hm]; exact key m
                       have hd0_le_b0 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 ≤
                           (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 := by
-                        sorry
+                        have hb0_eq_d0 := sigma_zero_snd_eq X Y hXY.le
+                        have hb1_le_d1 : (Sigma.sigma X.1 1).2 ≤ (Sigma.sigma Y.1 1).2 :=
+                          (le_iff_dominates.mp hXY.le 1).2
+                        linarith
                       have hb0_eq_bj : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
                           (Sigma.sigma X.1 j).2 - (Sigma.sigma X.1 (j + 1)).2 := by
                         sorry
                       linarith
                     · -- j is odd
-                      have hdj_le_d12 : (Sigma.sigma Y.1 j).2 - (Sigma.sigma Y.1 (j + 1)).2 ≤
-                          (Sigma.sigma Y.1 1).2 - (Sigma.sigma Y.1 2).2 := by
-                        sorry
-                      have hd12_le_c01 : (Sigma.sigma Y.1 1).2 - (Sigma.sigma Y.1 2).2 ≤
+                      have hdj_le_c01 : (Sigma.sigma Y.1 j).2 - (Sigma.sigma Y.1 (j + 1)).2 ≤
                           (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := by
-                        sorry
+                        simpa [hjeven] using Sigma.cond_15_6_compare_k_to_0 Y.1.val j Y.1.2
                       have hc01_le_a01_sub1 : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 ≤
                           (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 := by
-                        sorry
+                        have ha0_eq_c0 := sigma_zero_fst_eq X Y hXY.le
+                        have ha : (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 <
+                            (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
+                          linarith [sigma_zero_fst_eq X Y hXY.le]
+                        obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val 1 X.1.2
+                        obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val 1 Y.1.2
+                        have hX1 : (Sigma.sigma X.1 1).1 = ↑nX.1 := congr_arg Prod.fst hnX
+                        have hY1 : (Sigma.sigma Y.1 1).1 = ↑nY.1 := congr_arg Prod.fst hnY
+                        have hlt : (↑nX.1 : ℚ) < ↑nY.1 := by linarith
+                        have hlt_nat : nX.1 < nY.1 := by exact_mod_cast hlt
+                        have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+                          exact_mod_cast (by omega : nX.1 + 1 ≤ nY.1)
+                        linarith
                       have ha01_sub1_eq_bm : (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
                           (Sigma.sigma X.1 (g₁.rank - 1)).2 - (Sigma.sigma X.1 g₁.rank).2 - 1 := by
                         sorry
@@ -2179,7 +2212,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                     | succ d ih =>
                       have ihd := ih (by omega) (by omega)
                       have hstep := hdi_sub_le_bi_sub (g₁.rank + d) (by omega) (by omega)
-                      show (Sigma.sigma X.1 (g₁.rank + d + 1)).2 <
+                      change (Sigma.sigma X.1 (g₁.rank + d + 1)).2 <
                            (Sigma.sigma Y.1 (g₁.rank + d + 1)).2
                       simp at hstep
                       linarith
