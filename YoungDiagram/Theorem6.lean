@@ -6,6 +6,8 @@ import YoungDiagram.Theorem6.Case4A
 open Variety hiding prime prime_def
 open Chromosome
 
+set_option maxHeartbeats 0
+
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 /-- Dispatcher for Cases 1–4 of §15.10.  The completed subcases live in
 `YoungDiagram.Theorem6.Case1`, `.Case2`, `.Case3`, and `.Case4A`. -/
@@ -225,7 +227,118 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
           · exact exists_mutation_le_case4a X Y hXY hXpn ha hε₁ hXg₁ hXg₁pos
               hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂
           · -- Case 4b: g₂.type ≠ -g₁.type (same type family)
-            sorry
+            by_cases hparity : Even (g₂.rank - g₁.rank)
+            · -- (g₂.rank - g₁.rank) is even
+              -- Mutation: Pi.Primitive.type2 with ε = g₁.type, m = g₁.rank, n = g₂.rank
+              -- Source (Pi.X2): Gene.ofRank m ε + Gene.ofRank n ε = single g₁ 1 + single g₂ 1
+              -- Target (Pi.Y2): Gene.ofRank (m-2) ε + Gene.ofRank (n+2) ε
+              let ε := g₁.type
+              have hε : ε ≠ .NonPolarized :=
+                IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁ (Finsupp.mem_support_iff.mpr hXg₁)
+              have hle : g₁.rank ≤ g₂.rank := le_of_lt hg₂rank
+              -- g₂.type = g₁.type = ε (since g₂.type ≠ -g₁.type and g₂ is polarized)
+              have hg₂_type : g₂.type = g₁.type := by
+                have hpol₁ : g₁.type ≠ .NonPolarized := hε
+                have hpol₂ : g₂.type ≠ .NonPolarized :=
+                  IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₂
+                    (Finsupp.mem_support_iff.mpr hg₂pos.ne')
+                match ht₁ : g₁.type, hpol₁ with
+                | .Positive, _ =>
+                  cases ht₂ : g₂.type
+                  · tauto
+                  · rw [ht₂, ht₁] at hε₂
+                  · rw [ht₂, ht₁, GeneType.neg_positive] at hε₂; tauto
+                | .Negative, _ =>
+                  cases ht₂ : g₂.type
+                  · tauto
+                  · rw [ht₂, ht₁, GeneType.neg_negative] at hε₂; tauto
+                  · rw [ht₂, ht₁] at hε₂
+              -- Gene.ofRank g₁.rank ε = single g₁ 1
+              have hg₁_ofRank : Gene.ofRank g₁.rank ε = Finsupp.single g₁ 1 :=
+                Gene.ofRank_eq_gene
+              -- Gene.ofRank g₂.rank ε = single g₂ 1
+              have hg₂_ofRank : Gene.ofRank g₂.rank ε = Finsupp.single g₂ 1 := by
+                have h := @Gene.ofRank_eq_gene g₂; rw [hg₂_type] at h; exact h
+              -- The type2 source chromosome equals single g₁ 1 + single g₂ 1
+              have hsrc_val : (Pi.X2 hε hle hg₁_ge2 : Chromosome) =
+                  Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
+                simp only [Pi.X2_eq]; rw [hg₁_ofRank, hg₂_ofRank]
+              -- src ≤ X.1.val pointwise
+              have hne : g₁ ≠ g₂ := fun h => absurd hg₂rank (h ▸ lt_irrefl _)
+              have hsrc_le : ∀ g : Gene,
+                  (Pi.X2 hε hle hg₁_ge2 : Chromosome) g ≤ X.1.val g := by
+                intro gen
+                rw [hsrc_val, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                rcases eq_or_ne gen g₁ with rfl | hng₁
+                · simp [Ne.symm hne, hg₁_one]
+                · rcases eq_or_ne gen g₂ with rfl | hng₂
+                  · simp only [Ne.symm hng₁]; exact hg₂pos
+                  · simp [Ne.symm hng₁, Ne.symm hng₂]
+              -- rest = X.1 − src, still in Pi
+              let rest : Pi :=
+                ⟨X.1.val - (Pi.X2 hε hle hg₁_ge2 : Chromosome),
+                  Variety.sub_mem_Pi _ X.1.2⟩
+              -- X.1 decomposes as Pi.X2 + rest
+              have hdecomp : X.1 = Pi.X2 hε hle hg₁_ge2 + rest :=
+                Subtype.val_injective
+                  (Finsupp.ext fun g => (add_tsub_cancel_of_le (hsrc_le g)).symm)
+              -- Z is the type2 mutation result: Pi.Y2 + rest
+              let Z : Pi := Pi.Y2 hε hle hg₁_ge2 + rest
+              -- Construct the Pi-step
+              have hstep : Pi.Step X.1 Z :=
+                hdecomp.symm ▸ Pi.Step.mk
+                  (Pi.X2 hε hle hg₁_ge2)
+                  (Pi.Y2 hε hle hg₁_ge2)
+                  rest
+                  (Pi.Primitive.type2 ε hε hle hg₁_ge2)
+              refine ⟨Z, hstep, ?_⟩
+              change Z.val ≤ Y.1.val
+              rw [le_iff_dominates]
+              intro i
+              change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
+              have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
+                le_iff_dominates.mp hXY.le i
+              have hZ_split : Sigma.sigma Z.val i =
+                  Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val i +
+                  Sigma.sigma rest.val i := by
+                change Sigma.sigma (Pi.Y2 hε hle hg₁_ge2 + rest : Variety.Pi).val i = _
+                simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
+              have hX_split : Sigma.sigma X.1.val i =
+                  Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val i +
+                  Sigma.sigma rest.val i := by
+                have hval : X.1.val = (Pi.X2 hε hle hg₁_ge2).val + rest.val := by
+                  have h := congrArg Subtype.val hdecomp
+                  simp only [AddSubmonoid.coe_add] at h; exact h
+                simp only [hval, Sigma.sigma, iterate_map_add, map_add]
+              -- Key condition: the type2 sigma increment ≤ sigma(Y) - sigma(X)
+              have hXY_sigma : ∀ j,
+                  Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j +
+                  Sigma.sigma X.1.val j ≤
+                  Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j +
+                  Sigma.sigma Y.1.val j := by
+                intro j
+                have hXYj : Sigma.sigma X.1.val j ≤ Sigma.sigma Y.1.val j :=
+                  le_iff_dominates.mp hXY.le j
+                obtain ⟨hcase1, hcase2, hcase3⟩ :=
+                  Sigma.sigma_type2_mn_rank ε hε hg₂rank hg₁_ge2 hparity
+                by_cases hjl : j ≤ g₁.rank - 2
+                · rw [← hcase1 j hjl]
+                  sorry
+                · by_cases hjr : g₂.rank + 2 ≤ j
+                  · rw [← hcase2 j hjr]
+                    sorry
+                  · push Not at hjl hjr
+                    sorry
+              rw [hZ_split]
+              have h1 := (hXY_sigma i).1
+              have h2 := (hXY_sigma i).2
+              rw [hX_split] at h1 h2
+              simp only [Prod.fst_add, Prod.snd_add] at h1 h2
+              refine ⟨?_, ?_⟩
+              · simp only [Prod.fst_add]; linarith
+              · simp only [Prod.snd_add]; linarith
+            · -- (g₂.rank - g₁.rank) is odd
+              sorry
   · -- Case B: a₁ = c₁ for all relevant k, so b₁ < d₁ (from hsigeq and dominance).
     sorry
 
