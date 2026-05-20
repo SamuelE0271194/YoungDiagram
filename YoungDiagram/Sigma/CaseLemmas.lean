@@ -758,4 +758,59 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         simp [signature_ofRank_one_negative]
         omega
 
+lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+  (hmn : m < n) (hm : 1 < m) (hnm_even : Even (n - m)) :
+    let hle : m ≤ n := Nat.le_of_lt hmn
+    let X : Chromosome := Pi.X2 hε hle hm
+    let Y : Chromosome := Pi.Y2 hε hle hm
+    (∀ i, i ≤ m - 2 → sigma X i = sigma Y i) ∧
+    (∀ i, n + 2 ≤ i → sigma X i = sigma Y i) ∧
+    (∀ i, m - 1 ≤ i → i ≤ n + 1 →
+      sigma Y i - sigma X i = if (i > m - 1) ∧ (i < n + 1) then (1, 1)
+                              else if i = m - 1 then
+                                if ε = .Positive then (0, 1) else (1, 0)
+                              else
+                                if ε = .Positive then (1, 0) else (0, 1)) := by
+  have h1 : ∀ i, i ≤ m - 2 →
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
+    intro i hi
+    simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+    rw [signature_ofRank_eq₂ (k := m - i) (by omega) hε,
+        signature_ofRank_eq₂ (k := n + 2 - i) (by omega) hε,
+        show m - i - 2 = m - 2 - i from by omega,
+        show n + 2 - i - 2 = n - i from by omega]
+    abel
+  have h2 : ∀ i, n + 2 ≤ i →
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
+    intro i ih
+    simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+    -- After prime_iterate_ofRank, goal is in terms of Gene.ofRank (k - i) ε.
+    -- Since n + 2 ≤ i, all rank subtractions are 0 in Nat.
+    simp only [show m - i = 0 from by omega, show n - i = 0 from by omega,
+               show m - 2 - i = 0 from by omega, show n + 2 - i = 0 from by omega,
+               Gene.ofRank_zero, map_zero, add_zero]
+  have h3 : ∀ i, m - 1 ≤ i → i ≤ n + 1 →
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i -
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      if (i > m - 1) ∧ (i < n + 1) then (1, 1)
+      else if i = m - 1 then
+        if ε = .Positive then (0, 1) else (1, 0)
+      else if ε = .Positive then (1, 0) else (0, 1) := by
+    intro i hi1 hi2
+    rcases (show i = m - 1 ∨ (m - 1 < i ∧ i < n + 1) ∨ i = n + 1 by omega) with
+        rfl | ⟨him, hin⟩ | rfl
+    · -- i = m - 1
+      simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega, if_false, if_true]
+      sorry
+    · -- m - 1 < i < n + 1
+      simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩]
+      sorry
+    · -- i = n + 1
+      simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega, if_false,
+                 show n + 1 ≠ m - 1 from by omega, if_false]
+      sorry
+  exact ⟨h1, h2, h3⟩
+
 end Sigma
