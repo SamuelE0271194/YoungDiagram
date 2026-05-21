@@ -3,9 +3,6 @@ import YoungDiagram.Theorem6.Prelim
 open Variety hiding prime prime_def
 open Chromosome
 
-set_option maxHeartbeats 900000 in
--- Case 4a is the long Djoković inequality chase after (15.10), so keep the
--- heartbeat increase scoped to this declaration instead of the whole file.
 set_option linter.flexible false in
 lemma exists_mutation_le_case4a
     {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
@@ -121,17 +118,8 @@ lemma exists_mutation_le_case4a
                        Gene.ofRank_zero, map_zero, add_zero]
       by_cases heven : Even g₁.rank
       · -- g₁.rank is even
-        have hε_neg : ε = .Negative := by
-          have hne_pos : ε ≠ .Positive := by
-            intro h; apply hε₁
-            have h_odd : ¬ Even ((g₁.rank : ℤ) - 1) := by
-              obtain ⟨r, hr⟩ := heven; intro ⟨k, hk⟩; omega
-            simp only [GeneType.negOnePow_smul, GeneType.neg_negative, if_neg h_odd]
-            rw [← h]
-          cases ht : ε with
-          | Positive => exact absurd ht hne_pos
-          | Negative => rfl
-          | NonPolarized => exact absurd ht hε
+        have hε_neg : ε = .Negative :=
+          gene_type_eq_negative_of_even_of_ne_negOnePow_negative heven hε hε₁
         -- b_{rank} < d_{rank}
         have hb_lt_d_rank : (Sigma.sigma X.1 g₁.rank).2 <
             (Sigma.sigma Y.1 g₁.rank).2 := by
@@ -144,15 +132,12 @@ lemma exists_mutation_le_case4a
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
             -- g₁.type is in the Positive family (not Negative by hε₁,
              --not NonPolarized by polarization)
-            have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
-              (Finsupp.mem_support_iff.mpr hXg₁)
             -- Gene.ofRankAlt g₁.rank Positive = single g₁ 1
             have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
                  Finsupp.single g₁ 1 := by
-              rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
-              congr 1
-              exact Gene.ext rfl
-                (gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hpol hε₁).symm
+              exact ofRankAlt_eq_single_of_type_eq_altType <| by
+                simpa [Sigma.altType] using
+                  gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hε hε₁
             -- Apply x_side_equalities at j = 1 (odd),
               -- using g₁ as the minimal Positive-family gene
             have h := x_side_equalities
@@ -190,13 +175,8 @@ lemma exists_mutation_le_case4a
               no_neg_gene_rank_g (show g₁.rank - 2 ≤ g₁.rank - 1 from by omega)
             simp only [show g₁.rank - 2 + 2 = g₁.rank from by omega] at h; exact h
           have hd0_di_rank1 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 ≤
-              (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 := by
-            have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
-              sigma_zero_snd_eq X Y hXY.le
-            have hbm2_le_dm2 : (Sigma.sigma X.1 (g₁.rank - 2)).2 ≤
-                (Sigma.sigma Y.1 (g₁.rank - 2)).2 :=
-              (le_iff_dominates.mp hXY.le (g₁.rank - 2)).2
-            linarith
+              (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 :=
+            theorem6_snd_gap_le_of_dominates X Y hXY.le
           have hd2_c1_rank1 : (Sigma.sigma Y.1 2).2 - (Sigma.sigma Y.1 g₁.rank).2 ≤
               (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 (g₁.rank - 1)).1 := by
             by_cases hrank2 : g₁.rank = 2
@@ -455,36 +435,18 @@ lemma exists_mutation_le_case4a
             linarith
         refine ⟨fun j hj1 hj2 => ?_, h_outside_range⟩
         have hbj := hbj_lt_dj j hj1 hj2
-        obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
-        obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
-        rw [hnX, hnY] at hbj ⊢
         rw [show (Gene.ofRank 1 ε).signature = (0, 1) from by
           rw [hε_neg]
           simp [Gene.signature, Gene.ofRank, show ¬ Even 1 from by decide]]
         constructor
         · have h1 := (le_iff_dominates.mp hXY.le j).1
-          simp at h1
           simp only [Prod.fst_add, add_zero]
-          simp [Sigma.sigma] at hnX
-          simp [Sigma.sigma] at hnY
-          rw [hnX, hnY] at h1
-          exact h1
-        · simp only [Prod.snd_add]
-          exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hbj)
+          simpa [Sigma.sigma] using h1
+        · simpa using theorem6_sigma_snd_add_one_le_of_lt X.1.2 Y.1.2 j hbj
       · -- g₁.rank is odd
-        have hε_pos : ε = .Positive := by
-          have hne_neg : ε ≠ .Negative := by
-            intro h; apply hε₁
-            have h_even : Even ((g₁.rank : ℤ) - 1) := by
-              have hodd : Odd g₁.rank := Nat.not_even_iff_odd.mp heven
-              obtain ⟨r, hr⟩ := hodd
-              exact ⟨↑r, by push_cast [hr]; ring⟩
-            simp only [GeneType.negOnePow_smul, if_pos h_even]
-            rw [← h]
-          cases ht : ε with
-          | Positive => rfl
-          | Negative => exact absurd ht hne_neg
-          | NonPolarized => exact absurd ht hε
+        have hodd : Odd g₁.rank := Nat.not_even_iff_odd.mp heven
+        have hε_pos : ε = .Positive :=
+          gene_type_eq_positive_of_odd_of_ne_negOnePow_negative hodd hε hε₁
         -- a_{rank} < c_{rank}
         have ha_lt_c_rank : (Sigma.sigma X.1 g₁.rank).1 <
             (Sigma.sigma Y.1 g₁.rank).1 := by
@@ -495,13 +457,8 @@ lemma exists_mutation_le_case4a
               (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
             Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 (by omega)
           have hd0_di_rank : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 ≤
-              (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 := by
-            have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
-              sigma_zero_snd_eq X Y hXY.le
-            have hbm1_le_dm1 : (Sigma.sigma X.1 (g₁.rank - 1)).2 ≤
-                (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
-              (le_iff_dominates.mp hXY.le (g₁.rank - 1)).2
-            linarith
+              (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 :=
+            theorem6_snd_gap_le_of_dominates X Y hXY.le
           have hb0_bi_rank : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 =
               (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 g₁.rank).1 :=
             x_actual_negative_prefix_equalities
@@ -762,22 +719,14 @@ lemma exists_mutation_le_case4a
             linarith
         refine ⟨fun j hj1 hj2 => ?_, h_outside_range⟩
         have haj := haj_lt_cj j hj1 hj2
-        obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
-        obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
-        rw [hnX, hnY] at haj ⊢
         rw [show (Gene.ofRank 1 ε).signature = (1, 0) from by
           rw [hε_pos]
           simp [Gene.signature, Gene.ofRank, show ¬ Even 1 from by decide]]
         constructor
-        · simp only [Prod.fst_add]
-          exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp haj)
+        · simpa using theorem6_sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 j haj
         · have h2 := (le_iff_dominates.mp hXY.le j).2
-          simp at h2
           simp only [Prod.snd_add, add_zero]
-          simp [Sigma.sigma] at hnX
-          simp [Sigma.sigma] at hnY
-          rw [hnX, hnY] at h2
-          exact h2
+          simpa [Sigma.sigma] using h2
     by_cases hin : g₁.rank ≤ i ∧ i ≤ g₂.rank
     · obtain ⟨hi1, hi2⟩ := hin
       -- Inside [g₁.rank, g₂.rank]: sigma(Y1)(i) - sigma(X1)(i) = sig(ofRank 1 ε)
@@ -798,21 +747,7 @@ lemma exists_mutation_le_case4a
         rw [hZ_split, hX_split, add_sub_add_right_eq_sub]; exact hdiff
       have hZX_eq : Sigma.sigma Z.val i =
           Sigma.sigma X.1.val i + (Gene.ofRank 1 ε).signature :=
-        Prod.ext
-          (by have h : (Sigma.sigma Z.val i).1 - (Sigma.sigma X.1.val i).1 =
-                  (Gene.ofRank 1 ε).signature.1 :=
-                calc (Sigma.sigma Z.val i).1 - (Sigma.sigma X.1.val i).1
-                    = (Sigma.sigma Z.val i - Sigma.sigma X.1.val i).1 := rfl
-                  _ = _ := congr_arg Prod.fst hZX_diff
-              simp_all
-              linarith)
-          (by have h : (Sigma.sigma Z.val i).2 - (Sigma.sigma X.1.val i).2 =
-                  (Gene.ofRank 1 ε).signature.2 :=
-                calc (Sigma.sigma Z.val i).2 - (Sigma.sigma X.1.val i).2
-                    = (Sigma.sigma Z.val i - Sigma.sigma X.1.val i).2 := rfl
-                  _ = _ := congr_arg Prod.snd hZX_diff
-              simp_all
-              linarith)
+        theorem6_sigma_eq_add_of_sub_eq hZX_diff
       rw [hZX_eq]
       exact hXY_sigma.1 i hi1 hi2
     · -- Outside [g₁.rank, g₂.rank]: sigma(Z)(i) = sigma(X)(i) ≤ sigma(Y)(i)

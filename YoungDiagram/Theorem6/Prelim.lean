@@ -6,6 +6,13 @@ open Chromosome
 
 abbrev nPi (n : ℕ) := {X : Pi // X.1.rank = n}
 
+lemma ofRankAlt_eq_single_of_type_eq_altType {g : Gene} {ε : GeneType}
+    (h : g.type = Sigma.altType g.rank ε) :
+    Gene.ofRankAlt g.rank ε = Finsupp.single g 1 := by
+  rw [Gene.ofRankAlt_eq_gene g.rank_pos]
+  congr 1
+  exact Gene.ext rfl h.symm
+
 lemma gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative {g : Gene}
     (hpol : g.type ≠ .NonPolarized)
     (hne : ¬ g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative) :
@@ -49,6 +56,51 @@ lemma gene_type_eq_negOnePow_negative_of_ne_negOnePow_positive {g : Gene}
       | Negative => exact absurd ht hne'
       | NonPolarized => exact absurd ht hpol
     simpa [GeneType.negOnePow_smul, GeneType.neg_negative, heven] using hpos
+
+lemma gene_type_eq_negative_of_even_of_ne_negOnePow_negative {g : Gene} (heven : Even g.rank)
+    (hpol : g.type ≠ .NonPolarized)
+    (hne : ¬ g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative) : g.type = .Negative := by
+  have hfamily := gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hpol hne
+  have hodd : ¬ Even ((g.rank : ℤ) - 1) := by simp [heven]
+  simpa [GeneType.negOnePow_smul, GeneType.neg_positive, hodd] using hfamily
+
+lemma gene_type_eq_positive_of_odd_of_ne_negOnePow_negative {g : Gene} (hodd : Odd g.rank)
+    (hpol : g.type ≠ .NonPolarized)
+    (hne : ¬ g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative) : g.type = .Positive := by
+  have hfamily := gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hpol hne
+  have h_even : Even ((g.rank : ℤ) - 1) := by simp [hodd]
+  simpa [GeneType.negOnePow_smul, GeneType.neg_positive, h_even] using hfamily
+
+lemma theorem6_sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
+  ext
+  · have hfst : p.1 - q.1 = δ.1 := congrArg Prod.fst h
+    have : p.1 = q.1 + δ.1 := by linarith
+    simpa using this
+  · have hsnd : p.2 - q.2 = δ.2 := congrArg Prod.snd h
+    have : p.2 = q.2 + δ.2 := by linarith
+    simpa using this
+
+lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
+    (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
+    (h : (Sigma.sigma X i).1 < (Sigma.sigma Y i).1) :
+    (Sigma.sigma X i).1 + 1 ≤ (Sigma.sigma Y i).1 := by
+  obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
+  obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
+  rw [hnX, hnY] at h ⊢
+  have h' : (nX.1 : ℚ) < nY.1 := by simpa using h
+  change (nX.1 : ℚ) + 1 ≤ nY.1
+  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
+
+lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
+    (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
+    (h : (Sigma.sigma X i).2 < (Sigma.sigma Y i).2) :
+    (Sigma.sigma X i).2 + 1 ≤ (Sigma.sigma Y i).2 := by
+  obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
+  obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
+  rw [hnX, hnY] at h ⊢
+  have h' : (nX.2 : ℚ) < nY.2 := by simpa using h
+  change (nX.2 : ℚ) + 1 ≤ nY.2
+  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
 
 /-! ## Case 1: X and Y share a gene -/
 
@@ -492,6 +544,14 @@ lemma sigma_zero_fst_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
 lemma sigma_zero_snd_eq {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
     (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 :=
   congrArg Prod.snd (sigma_zero_eq X Y hXY)
+
+lemma theorem6_snd_gap_le_of_dominates {n i : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
+    (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 i).2 ≤
+      (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 i).2 := by
+  have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 := sigma_zero_snd_eq X Y hXY
+  have hbi_le_di : (Sigma.sigma X.1 i).2 ≤ (Sigma.sigma Y.1 i).2 :=
+    (le_iff_dominates.mp hXY i).2
+  linarith
 
 /-- **X-side equalities** (Step 5, Case 1 of §15, Djoković 1982).
 
