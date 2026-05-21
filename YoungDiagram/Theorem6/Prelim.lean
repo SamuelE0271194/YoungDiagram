@@ -6,6 +6,50 @@ open Chromosome
 
 abbrev nPi (n : ℕ) := {X : Pi // X.1.rank = n}
 
+lemma gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative {g : Gene}
+    (hpol : g.type ≠ .NonPolarized)
+    (hne : ¬ g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative) :
+    g.type = Int.negOnePow (g.rank - 1) • GeneType.Positive := by
+  by_cases heven : Even ((g.rank : ℤ) - 1)
+  · have hne' : g.type ≠ .Negative := by
+      simpa [GeneType.negOnePow_smul, GeneType.neg_negative, heven] using hne
+    have hpos : g.type = .Positive := by
+      cases ht : g.type with
+      | Positive => rfl
+      | Negative => exact absurd ht hne'
+      | NonPolarized => exact absurd ht hpol
+    simpa [GeneType.negOnePow_smul, GeneType.neg_positive, heven] using hpos
+  · have hne' : g.type ≠ .Positive := by
+      simpa [GeneType.negOnePow_smul, GeneType.neg_negative, heven] using hne
+    have hneg : g.type = .Negative := by
+      cases ht : g.type with
+      | Positive => exact absurd ht hne'
+      | Negative => rfl
+      | NonPolarized => exact absurd ht hpol
+    simpa [GeneType.negOnePow_smul, GeneType.neg_positive, heven] using hneg
+
+lemma gene_type_eq_negOnePow_negative_of_ne_negOnePow_positive {g : Gene}
+    (hpol : g.type ≠ .NonPolarized)
+    (hne : ¬ g.type = Int.negOnePow (g.rank - 1) • GeneType.Positive) :
+    g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative := by
+  by_cases heven : Even ((g.rank : ℤ) - 1)
+  · have hne' : g.type ≠ .Positive := by
+      simpa [GeneType.negOnePow_smul, GeneType.neg_positive, heven] using hne
+    have hneg : g.type = .Negative := by
+      cases ht : g.type with
+      | Positive => exact absurd ht hne'
+      | Negative => rfl
+      | NonPolarized => exact absurd ht hpol
+    simpa [GeneType.negOnePow_smul, GeneType.neg_negative, heven] using hneg
+  · have hne' : g.type ≠ .Negative := by
+      simpa [GeneType.negOnePow_smul, GeneType.neg_positive, heven] using hne
+    have hpos : g.type = .Positive := by
+      cases ht : g.type with
+      | Positive => rfl
+      | Negative => exact absurd ht hne'
+      | NonPolarized => exact absurd ht hpol
+    simpa [GeneType.negOnePow_smul, GeneType.neg_negative, heven] using hpos
+
 /-! ## Case 1: X and Y share a gene -/
 
 /-- Remove a shared gene from both X and Y, apply IH, then reattach. -/

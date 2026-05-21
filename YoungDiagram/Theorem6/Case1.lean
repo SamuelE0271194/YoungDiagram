@@ -33,23 +33,7 @@ lemma exists_mutation_le_case1 (m : ℕ)
       have hg_neg : g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative := by
         have h_not_pos : g.type ≠ Int.negOnePow (g.rank - 1) • GeneType.Positive :=
           fun heq => by have := hno_g₂ g heq; omega
-        simp only [GeneType.negOnePow_smul, GeneType.neg_positive,
-          GeneType.neg_negative] at h_not_pos ⊢
-        -- After simp: even case gives h_not_pos : g.type ≠ .Positive, goal : g.type = .Negative
-        --              odd case gives h_not_pos : g.type ≠ .Negative, goal : g.type = .Positive
-        split_ifs with heven
-        · simp only [if_pos heven] at h_not_pos
-          -- h_not_pos : g.type ≠ GeneType.Positive
-          cases ht : g.type with
-          | Positive => exact absurd ht h_not_pos
-          | Negative => rfl
-          | NonPolarized => exact absurd ht hg_pol
-        · simp only [if_neg heven] at h_not_pos
-          -- h_not_pos : g.type ≠ GeneType.Negative
-          cases ht : g.type with
-          | Positive => rfl
-          | Negative => exact absurd ht h_not_pos
-          | NonPolarized => exact absurd ht hg_pol
+        exact gene_type_eq_negOnePow_negative_of_ne_negOnePow_positive hg_pol h_not_pos
       -- Gene.ofRankAlt g.rank .Negative = single g 1 (since g has the matching type).
       have hofRankAlt : Gene.ofRankAlt g.rank GeneType.Negative = Finsupp.single g 1 := by
         rw [Gene.ofRankAlt_eq_gene g.rank_pos]

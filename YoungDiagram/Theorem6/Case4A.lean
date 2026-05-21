@@ -146,28 +146,13 @@ lemma exists_mutation_le_case4a
              --not NonPolarized by polarization)
             have hpol := IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁
               (Finsupp.mem_support_iff.mpr hXg₁)
-            have hg₁_pos_type : g₁.type =
-                Int.negOnePow (g₁.rank - 1) • GeneType.Positive := by
-              simp only [GeneType.negOnePow_smul,
-                         GeneType.neg_positive,
-                         GeneType.neg_negative]
-                at hε₁ ⊢
-              split_ifs with heven
-              · simp only [if_pos heven] at hε₁
-                cases ht : g₁.type with
-                | Positive => rfl
-                | Negative => exact absurd ht hε₁
-                | NonPolarized => exact absurd ht hpol
-              · simp only [if_neg heven] at hε₁
-                cases ht : g₁.type with
-                | Positive => exact absurd ht hε₁
-                | Negative => rfl
-                | NonPolarized => exact absurd ht hpol
             -- Gene.ofRankAlt g₁.rank Positive = single g₁ 1
             have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
                  Finsupp.single g₁ 1 := by
               rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
-              congr 1; exact Gene.ext rfl hg₁_pos_type.symm
+              congr 1
+              exact Gene.ext rfl
+                (gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hpol hε₁).symm
             -- Apply x_side_equalities at j = 1 (odd),
               -- using g₁ as the minimal Positive-family gene
             have h := x_side_equalities
