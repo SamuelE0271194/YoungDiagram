@@ -6,7 +6,7 @@ import YoungDiagram.Theorem6.Case4A
 open Variety hiding prime prime_def
 open Chromosome
 
-set_option maxHeartbeats 0
+set_option maxHeartbeats 400000
 
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 /-- Dispatcher for Cases 1–4 of §15.10.  The completed subcases live in
@@ -320,15 +320,43 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 have hXYj : Sigma.sigma X.1.val j ≤ Sigma.sigma Y.1.val j :=
                   le_iff_dominates.mp hXY.le j
                 obtain ⟨hcase1, hcase2, hcase3⟩ :=
-                  Sigma.sigma_type2_mn_rank ε hε hg₂rank hg₁_ge2 hparity
+                  Sigma.sigma_type2_mn_rank ε hε hg₂rank hg₁_ge2
                 by_cases hjl : j ≤ g₁.rank - 2
                 · rw [← hcase1 j hjl]
-                  sorry
+                  exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
+                          by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
                 · by_cases hjr : g₂.rank + 2 ≤ j
                   · rw [← hcase2 j hjr]
-                    sorry
-                  · push Not at hjl hjr
-                    sorry
+                    exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
+                            by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
+                  · -- Middle window: g₁.rank - 1 ≤ j ≤ g₂.rank + 1
+                    push Not at hjl hjr
+                    -- hcase3 gives the exact delta D = sigma Y2 j - sigma X2 j
+                    have hjl' : g₁.rank - 1 ≤ j := by omega
+                    have hjr' : j ≤ g₂.rank + 1 := by omega
+                    have hdelta := hcase3 j hjl' hjr'
+                    -- Convert all sigma values to naturals for component arithmetic
+                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
+                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
+                    obtain ⟨nX2, hnX2⟩ :=
+                      Sigma.sigma_isNat (Pi.X2 hε hle hg₁_ge2).val j
+                        (Pi.X2 hε hle hg₁_ge2).2
+                    obtain ⟨nY2, hnY2⟩ :=
+                      Sigma.sigma_isNat (Pi.Y2 hε hle hg₁_ge2).val j
+                        (Pi.Y2 hε hle hg₁_ge2).2
+                    -- Key: sigma Y.1 j > sigma X.1 j strictly in the window;
+                    -- this follows from hsigeq + prime^[j] Y ≠ 0, then integrality gives
+                    -- (sigma Y j).1 ≥ (sigma X j).1 + D.1 and similarly for .2.
+                    -- The two strict inequalities needed (one or both depending on D):
+                    have hfst : (Sigma.sigma X.1.val j).1 + (nY2.1 : ℚ) - nX2.1 ≤
+                        (Sigma.sigma Y.1.val j).1 := by
+                      sorry
+                    have hsnd : (Sigma.sigma X.1.val j).2 + (nY2.2 : ℚ) - nX2.2 ≤
+                        (Sigma.sigma Y.1.val j).2 := by
+                      sorry
+                    rw [hnX2, hnY2]
+                    exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1, hfst],
+                            by simp only [Prod.snd_add]; linarith [hXYj.2, hsnd]⟩
               rw [hZ_split]
               have h1 := (hXY_sigma i).1
               have h2 := (hXY_sigma i).2

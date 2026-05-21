@@ -759,7 +759,7 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         omega
 
 lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
-  (hmn : m < n) (hm : 1 < m) (hnm_even : Even (n - m)) :
+  (hmn : m < n) (hm : 1 < m) :
     let hle : m ≤ n := Nat.le_of_lt hmn
     let X : Chromosome := Pi.X2 hε hle hm
     let Y : Chromosome := Pi.Y2 hε hle hm
@@ -803,14 +803,55 @@ lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         rfl | ⟨him, hin⟩ | rfl
     · -- i = m - 1
       simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega, if_false, if_true]
-      sorry
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have h1 : m - (m - 1) = 1 := by omega
+      have h2 : m - 2 - (m - 1) = 0 := by omega
+      simp only [h2, Gene.ofRank_zero, map_zero, zero_add, h1]
+      rcases ε with _ | _ | _
+      · exact absurd rfl hε
+      · have hsig3' : (Gene.ofRank (n + 2 - (m - 1)) .Positive).signature =
+            (Gene.ofRank (n - (m - 1)) .Positive).signature + (1, 1) := by
+          rw [← show n + 2 - (m - 1) - 2 = n - (m - 1) from by omega]
+          exact signature_ofRank_positive₂ (by omega)
+        simp only [hsig3', signature_ofRank_one_positive, if_true]
+        ring_nf
+        simp
+      · have hsig3' : (Gene.ofRank (n + 2 - (m - 1)) .Negative).signature =
+            (Gene.ofRank (n - (m - 1)) .Negative).signature + (1, 1) := by
+          rw [← show n + 2 - (m - 1) - 2 = n - (m - 1) from by omega]
+          exact signature_ofRank_eq₂ (by omega) (by decide)
+        simp only [hsig3', signature_ofRank_one_negative]
+        ring_nf
+        simp
     · -- m - 1 < i < n + 1
       simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩]
-      sorry
+      simp
+      simp [Pi.X2_eq, Pi.Y2_eq, sigma, prime_iterate_ofRank]
+      have h1 : m - 2 - i = 0 := by omega
+      have h2 : m - i = 0 := by omega
+      simp [h1, h2]
+      have h3 : 2 ≤ n + 2 - i := by omega
+      simp [signature_ofRank_eq₂ h3 hε]
+      have h4 : n + 2 - i - 2 = n - i := by omega
+      simp [h4]
     · -- i = n + 1
       simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega, if_false,
                  show n + 1 ≠ m - 1 from by omega, if_false]
-      sorry
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have h1 : n - (n + 1) = 0 := by omega
+      have h2 : (m - 2) - (n + 1) = 0 := by omega
+      have h3 : (n + 2) - (n + 1) = 1 := by omega
+      have h4 : m - (n + 1) = 0 := by omega
+      simp only [h2, Gene.ofRank_zero, map_zero, h3, zero_add, h1, add_zero, sub_zero, h4]
+      rcases ε with _ | _ | _
+      · -- ε = NonPolarized (impossible)
+        exact absurd rfl hε
+      · -- ε = Positive
+        simp [signature_ofRank_one_positive]
+      · -- ε = Negative
+        simp [signature_ofRank_one_negative]
   exact ⟨h1, h2, h3⟩
 
 end Sigma
