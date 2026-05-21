@@ -21,6 +21,22 @@ lemma mem_support_single_add_of_mem_support {g g' : Gene} {n : ℕ} {f : Chromos
   have hne : g' ≠ g := fun h => hgf (h ▸ hg')
   simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne, Finsupp.mem_support_iff.mp hg']
 
+lemma b_single_add (g : Gene) (n : ℕ) (f : Chromosome) (k : ℕ) :
+    b (Finsupp.single g n + f) k = b (Finsupp.single g n) k + b f k :=
+  congr_arg Prod.snd (sigma_linearity (X := Finsupp.single g n) (Y := f) (i := k))
+
+lemma b_single_nsmul (g : Gene) (n k : ℕ) :
+    b (Finsupp.single g n) k = n * b (Finsupp.single g 1) k := by
+  have heq : Finsupp.single g n = n • Finsupp.single g 1 := (smul_single_one g n).symm
+  simp only [sigma, heq, iterate_map_nsmul, map_nsmul, nsmul_eq_mul]
+  simp
+
+lemma b_single_add_diff (g : Gene) (n : ℕ) (f : Chromosome) (i j : ℕ) :
+    b (Finsupp.single g n + f) i - b (Finsupp.single g n + f) j =
+      (b f i - b f j) + n * (b (Finsupp.single g 1) i - b (Finsupp.single g 1) j) := by
+  rw [b_single_add, b_single_add, b_single_nsmul g n i, b_single_nsmul g n j]
+  ring
+
 lemma single_b0_eq_a1_of_positive (g : Gene) (hgt : g.type = .Positive) :
     b(Finsupp.single g 1)0 = a(Finsupp.single g 1)1 := by
   rcases Nat.even_or_odd g.rank with ⟨j, hj⟩ | ⟨j, hj⟩
@@ -234,29 +250,12 @@ lemma b0_minus_b2 {X : Variety.Pi} (m : ℕ)
       fun g' hg' => hpol g' (hsupp_mono g' hg')
     have hrank_f' : ∀ g' ∈ f'.support, 2 ≤ g'.rank :=
       fun g' hg' => hrank g' (hsupp_mono g' hg')
-    -- Additivity: b (single g n + f') k = b (single g n) k + b f' k
-    have hadd : ∀ k, b (Finsupp.single g n + f') k = b (Finsupp.single g n) k + b f' k :=
-      fun k => congr_arg Prod.snd (sigma_linearity (X := Finsupp.single g n) (Y := f') (i := k))
-    -- Nsmul linearity: b (single g n) k = n * b (single g 1) k,
-    -- since single g n = n • single g 1 (smul_single_one g n)
-    -- and sigma (n • Y) k = n • sigma Y k (iterate_map_nsmul + map_nsmul).
-    have hnsmul : ∀ k, b (Finsupp.single g n) k = n * b (Finsupp.single g 1) k := by
-      intro k
-      have heq : Finsupp.single g n = n • Finsupp.single g 1 := (smul_single_one g n).symm
-      simp only [sigma, heq, iterate_map_nsmul, map_nsmul, nsmul_eq_mul]
-      simp
     -- The single-gene result: b (single g 1) 0 - b (single g 1) 2 = 1
     have hone : b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 :=
       b0_minus_b2_pol_gene g hpol_g hrank_g
     -- Inductive hypothesis applied to f'
     have ih' : b f' 0 - b f' 2 = f'.sum (fun _ k => (k : ℚ)) := ih hpol_f' hrank_f'
-    -- Combine: b (single g n + f') 0 - b (single g n + f') 2
-    --        = (b f' 0 - b f' 2) + n * (b (single g 1) 0 - b (single g 1) 2)
-    --        = f'.sum ... + n * 1
-    have key : b (Finsupp.single g n + f') 0 - b (Finsupp.single g n + f') 2 =
-               (b f' 0 - b f' 2) + n * (b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2) := by
-      simp only [hadd, hnsmul]; ring
-    rw [key, ih', hone, mul_one]
+    rw [b_single_add_diff g n f' 0 2, ih', hone, mul_one]
     -- Finsupp.sum of (single g n + f') = n + Finsupp.sum f'
     rw [Finsupp.sum_add_index' (fun _ => by norm_cast) (fun _ _ _ => by push_cast; ring),
         Finsupp.sum_single_index (by norm_cast)]
@@ -409,22 +408,12 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
           fun g' hg' => hpol g' (hsupp_mono g' hg')
         have hrneg_f' : ∀ g' ∈ f'.support, g'.rank = 1 → g'.type = .Negative :=
           fun g' hg' => hrneg g' (hsupp_mono g' hg')
-        have hadd : ∀ i, b (Finsupp.single g n + f') i = b (Finsupp.single g n) i + b f' i :=
-          fun i => congr_arg Prod.snd (sigma_linearity (X := Finsupp.single g n) (Y := f') (i := i))
-        have hnsmul : ∀ i, b (Finsupp.single g n) i = n * b (Finsupp.single g 1) i := by
-          intro i
-          simp only [sigma, (smul_single_one g n).symm, iterate_map_nsmul, map_nsmul, nsmul_eq_mul]
-          simp
         have hone : b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 := by
           by_cases hr : g.rank = 1
           · exact b0_minus_b2_neg_gene g (hrneg_g hr) hr
           · exact b0_minus_b2_pol_gene g hpol_g (by have := g.rank_pos; omega)
         have ih' := ih hpol_f' hrneg_f'
-        have key : b (Finsupp.single g n + f') 0 - b (Finsupp.single g n + f') 2 =
-                   (b f' 0 - b f' 2) + n * (b (Finsupp.single g 1) 0
-                   - b (Finsupp.single g 1) 2) := by
-          simp only [hadd, hnsmul]; ring
-        rw [key, ih', hone, mul_one,
+        rw [b_single_add_diff g n f' 0 2, ih', hone, mul_one,
             Finsupp.sum_add_index' (fun _ => by norm_cast) (fun _ _ _ => by push_cast; ring),
             Finsupp.sum_single_index (by norm_cast)]
         ring
@@ -483,23 +472,36 @@ lemma bi_sum_ai1_eq_neg_count_1 {i : ℕ} (hX : X ∈ Variety.Pi) :
   rw [hbᵢ, haᵢ]
   exact b0_sub_a1_eq_neg_count (prime^[i] X) (Variety.prime_mem_Pi_iterate hX)
 
+lemma neg_count_sum_prime_expand :
+    (X.sum (fun g m => m • primeGene g)).sum
+        (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
+      X.sum (fun g m =>
+        (m • primeGene g).sum (fun g' n => if g'.type = .Negative then (n : ℚ) else 0)) := by
+  rw [Finsupp.sum_sum_index (fun _ => by simp) (fun g m n => by split_ifs <;> push_cast <;> ring)]
+
 lemma neg_count_eq_aux (hg : ∀ g ∈ X.support, g.rank = 1 → g.type = .Positive) :
     (prime X).sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
     X.sum (fun g n => if g.type = .Negative then (n : ℚ) else 0) := by
-  rw [prime_def]
-  rw [show (X.sum fun g m => m • primeGene g).sum
-            (fun g n => if g.type = .Negative then (n : ℚ) else 0) =
-      X.sum (fun g m => (m • primeGene g).sum
-           (fun g' n => if g'.type = .Negative then (n : ℚ) else 0)) from
-    Finsupp.sum_sum_index (fun _ => by simp) (fun g m n => by split_ifs <;> push_cast <;> ring)]
+  rw [prime_def, neg_count_sum_prime_expand]
   refine Finsupp.sum_congr (fun g hg_supp => ?_)
   by_cases hrank : g.rank = 1
   · have hpos : g.type = .Positive := hg g hg_supp hrank
-    have hrank0 : g.rank - 1 = 0 := by omega
-    simp [primeGene_def, hrank0, Gene.ofRank_zero, hpos]
+    simp [primeGene_def, hrank, Gene.ofRank_zero, hpos]
   · have hne : g.rank - 1 ≠ 0 := by have := g.rank_pos; omega
     rw [primeGene_def, Gene.ofRank_is_gene hne]
     simp [Finsupp.sum_single_index]
+
+lemma rank_one_positive_of_prime_iterate_support (i : ℕ)
+    (hg : ∀ g ∈ X.support, g.rank ≤ i + 1 → g.type = .Positive) :
+    ∀ g' ∈ (prime^[i] X).support, g'.rank = 1 → g'.type = .Positive := by
+  intro g' hg' hrank1
+  rw [Finsupp.mem_support_iff, prime_iterate_coeff] at hg'
+  set g'' : Gene := ⟨g'.rank + i, g'.type, Nat.le_add_right_of_le g'.rank_pos⟩
+  have hXsupp : g'' ∈ X.support := Finsupp.mem_support_iff.mpr hg'
+  have hrank_le : g''.rank ≤ i + 1 := by
+    change g'.rank + i ≤ i + 1
+    omega
+  exact hg g'' hXsupp hrank_le
 
 /-- Iterating prime i times preserves the negative gene count, provided all genes
     of rank ≤ i in X are Positive (so prime^[i] kills no Negative genes). -/
@@ -509,20 +511,9 @@ lemma neg_count_eq (i : ℕ) (hg : ∀ g ∈ X.support, g.rank ≤ i → g.type 
   induction i with
   | zero => simp
   | succ i ih =>
-    rw [Function.iterate_succ_apply']
-    -- Reduce prime (prime^[i] X) to prime^[i] X using neg_count_eq_aux,
-    -- provided rank-1 genes of prime^[i] X are Positive.
-    rw [neg_count_eq_aux (X := prime^[i] X) (fun g' hg'_supp hrank1 => by
-      -- g' ∈ (prime^[i] X).support with rank 1 corresponds via prime_iterate_coeff
-      -- to gene ⟨g'.rank + i, g'.type, _⟩ of rank i+1 in X.support
-      have hcoeff := Finsupp.mem_support_iff.mp hg'_supp
-      rw [prime_iterate_coeff] at hcoeff
-      set g'' : Gene := ⟨g'.rank + i, g'.type, Nat.le_add_right_of_le g'.rank_pos⟩
-      have hXsupp : g'' ∈ X.support := Finsupp.mem_support_iff.mpr hcoeff
-      have hrank_le : g''.rank ≤ i + 1 := by change g'.rank + i ≤ i + 1; omega
-      exact hg g'' hXsupp hrank_le)]
-    -- Now apply the inductive hypothesis with the weakened rank bound
-    exact ih (fun g hg_supp hrank_le => hg g hg_supp (Nat.le_succ_of_le hrank_le))
+    rw [Function.iterate_succ_apply', neg_count_eq_aux (X := prime^[i] X)]
+    · exact ih (fun g hg_supp hrank_le => hg g hg_supp (Nat.le_succ_of_le hrank_le))
+    · exact rank_one_positive_of_prime_iterate_support (X := X) i hg
 
 -- This is used in case 3
 lemma b0_bi_eq_a1_ai1 (hX : X ∈ Variety.Pi) (i : ℕ)
@@ -557,50 +548,88 @@ lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
     · simp [hneg]
   linarith
 
+lemma signature_ofRank_add_two (r : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
+    signature (Gene.ofRank (r + 2) ε) = signature (Gene.ofRank r ε) + (1, 1) :=
+  signature_ofRank_eq₂ (k := r + 2) (by omega) hε
+
+lemma signature_ofRank_add_two_sub_self (r : ℕ) {ε : GeneType}
+    (hε : ε ≠ .NonPolarized) :
+    signature (Gene.ofRank (r + 2) ε) - signature (Gene.ofRank r ε) = (1, 1) := by
+  rw [signature_ofRank_add_two r hε]
+  simp
+
+lemma sigma_type2_left_eq {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hle : m ≤ n) (hm : 1 < m) :
+    ∀ i, i ≤ m - 2 → sigma (Pi.X2 hε hle hm) i = sigma (Pi.Y2 hε hle hm) i := by
+  intro i hi
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+  rw [show m - i = m - 2 - i + 2 from by omega,
+      show n + 2 - i = n - i + 2 from by omega,
+      signature_ofRank_add_two (m - 2 - i) hε,
+      signature_ofRank_add_two (n - i) hε]
+  abel
+
+lemma sigma_type2_right_eq {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hle : m ≤ n) (hm : 1 < m) :
+    ∀ i, n + 2 ≤ i → sigma (Pi.X2 hε hle hm) i = sigma (Pi.Y2 hε hle hm) i := by
+  intro i hi
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+  simp only [show m - i = 0 from by omega, show n - i = 0 from by omega,
+    show m - 2 - i = 0 from by omega, show n + 2 - i = 0 from by omega,
+    Gene.ofRank_zero, map_zero, add_zero]
+
+lemma sigma_type2_left_boundary {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hle : m ≤ n) (hm : 1 < m) :
+    sigma (Pi.Y2 hε hle hm) (m - 1) - sigma (Pi.X2 hε hle hm) (m - 1) =
+      if ε = .Positive then (0, 1) else (1, 0) := by
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+  simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+  have hm1 : m - (m - 1) = 1 := by omega
+  have hm0 : m - 2 - (m - 1) = 0 := by omega
+  have hnrank : n + 2 - (m - 1) = n - (m - 1) + 2 := by omega
+  rw [hnrank, signature_ofRank_add_two (n - (m - 1)) hε]
+  simp only [hm1, hm0, Gene.ofRank_zero, map_zero, zero_add]
+  rcases ε with _ | _ | _
+  · exact absurd rfl hε
+  · simp [sub_eq_add_neg, add_assoc, add_comm]
+  · simp [sub_eq_add_neg, add_assoc, add_comm]
+
+lemma sigma_type2_mid {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hle : m ≤ n) (hm : 1 < m) :
+    ∀ i, m ≤ i → i ≤ n → sigma (Pi.Y2 hε hle hm) i - sigma (Pi.X2 hε hle hm) i = (1, 1) := by
+  intro i him hin
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+  simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+  have hmX : m - i = 0 := by omega
+  have hmY : m - 2 - i = 0 := by omega
+  have hnrank : n + 2 - i = n - i + 2 := by omega
+  rw [hnrank, signature_ofRank_add_two (n - i) hε]
+  simp only [hmX, hmY, Gene.ofRank_zero, map_zero, zero_add]
+  simp
+
+lemma sigma_type2_right_boundary {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hle : m ≤ n) (hm : 1 < m) :
+    sigma (Pi.Y2 hε hle hm) (n + 1) - sigma (Pi.X2 hε hle hm) (n + 1) =
+      if ε = .Positive then (1, 0) else (0, 1) := by
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+  simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+  have hmX : m - (n + 1) = 0 := by omega
+  have hnX : n - (n + 1) = 0 := by omega
+  have hmY : m - 2 - (n + 1) = 0 := by omega
+  have hnY : n + 2 - (n + 1) = 1 := by omega
+  simp only [hmX, hnX, hmY, hnY, Gene.ofRank_zero, map_zero, zero_add, add_zero]
+  rcases ε with _ | _ | _
+  · exact absurd rfl hε
+  · simp [signature_ofRank_one_positive]
+  · simp [signature_ofRank_one_negative]
+
 lemma sigma_0_type2_same_rank {m : ℕ} (hm : 1 < m) :
     ∀ ε : GeneType, (hε : ε ≠ .NonPolarized) →
     let X : Chromosome := Pi.X2 hε (le_refl m) hm
     let Y : Chromosome := Pi.Y2 hε (le_refl m) hm
     sigma X 0 = sigma Y 0 := by
-  induction m with
-  | zero => omega
-  | succ n ihn =>
-    cases n with
-    | zero => omega
-    | succ k =>
-      cases k with
-      | zero =>
-        intro ε hε
-        simp [Pi.X2_eq, Pi.Y2_eq, sigma]
-        -- m = 2
-        simp_all [signature_ofRank_even_half]
-        have sig4 : signature (Gene.ofRank 4 ε) = (2, 2) := by
-          rw [signature_ofRank_even_half (show Even 4 from ⟨2, rfl⟩)]; norm_num
-        simp [sig4]
-        norm_num
-      | succ j =>
-        intro ε hε
-        -- m = j + 3 > 2
-        simp [Pi.X2_eq, Pi.Y2_eq, sigma]
-        ring_nf at ihn
-        have : 1 < 2 + j := by omega
-        ring_nf
-        have h1 : 1 ≤ 1 + j := by omega
-        have h2 : 1 ≤ 3 + j := by omega
-        have h3 : 1 ≤ 5 + j := by omega
-        simp [signature_ofRank_eq h1 hε,
-              signature_ofRank_eq h2 hε,
-              signature_ofRank_eq h3 hε]
-        ring_nf
-        rw [add_comm]
-        abel_nf
-        simp
-        have hε1 : -ε ≠ .NonPolarized := GeneType.neg_ne_nonPolarized_iff.mp hε
-        have ihn_neg := ihn this (-ε) hε1
-        simp [sigma, Pi.X2_eq, Pi.Y2_eq] at ihn_neg
-        ring_nf at ihn_neg
-        have : j + 4 = 4 + j := by omega
-        simp_all
+  intro ε hε
+  simpa using sigma_type2_left_eq ε hε (le_refl m) hm 0 (by omega)
 
 /-- Sigma invariants of the type2 mutation X2 → Y2 when both genes have the same rank m.
     The source X2 = 2·gene(m,ε) and the target Y2 = gene(m-2,ε) + gene(m+2,ε) agree on sigma
@@ -616,172 +645,32 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
                               else if i = m - 1 then
                                 if ε = .Positive then (0, 1) else (1, 0)
                               else if ε = .Positive then (1, 0) else (0, 1)) := by
-  refine ⟨?_, ?_, ?_⟩
-  · -- Range 1: i ≤ m - 2
-    intro i ih
-    induction i with
-    | zero =>
-      simp [sigma_0_type2_same_rank hm ε hε]
-    | succ n ihn =>
-      by_cases hn : n + 1 = m - 2
-      · -- n + 1 = m - 2
-        simp_all [Pi.X2_eq, Pi.Y2_eq]
-        simp [sigma_linearity]
-        simp [sigma, prime_iterate_ofRank_eq_zero, prime_iterate_ofRank]
-        have h1 : m - (m - 2) = 2 := by omega
-        have h2 : m + 2 - (m - 2) = 4 := by omega
-        simp [h1, h2]
-        simp [signature_ofRank_even_half]
-        have sig4 : signature (Gene.ofRank 4 ε) = (2, 2) := by
-          rw [signature_ofRank_even_half (show Even 4 from ⟨2, rfl⟩)]; norm_num
-        simp [sig4]
-        norm_num
-      · -- n + 1 ≠ m - 2
-        have : n ≤ m - 2 := by omega
-        simp_all [Pi.X2_eq, Pi.Y2_eq]
-        simp_all [sigma, prime_iterate_ofRank]
-        have : m - n ≥ 1 := by omega
-        have h1 := signature_ofRank_diff this hε
-        have h2 : signature (Gene.ofRank (m - (n + 1)) ε) = signature (Gene.ofRank (m - n) ε) -
-            (if Even (m - n) then
-              ((if ε = GeneType.Positive then 0 else 1),
-               (if ε = GeneType.Negative then 0 else 1))
-            else
-              ((if ε = GeneType.Positive then 1 else 0),
-               (if ε = GeneType.Negative then 1 else 0))) := by
-          rw [← h1]; exact (sub_sub_cancel _ _).symm
-        have h3 : signature (Gene.ofRank (m - 2 - (n + 1)) ε) =
-            signature (Gene.ofRank (m - 2 - n) ε) -
-            (if Even (m - 2 - n) then
-              ((if ε = GeneType.Positive then 0 else 1),
-               (if ε = GeneType.Negative then 0 else 1))
-            else
-              ((if ε = GeneType.Positive then 1 else 0),
-               (if ε = GeneType.Negative then 1 else 0))) := by
-          have := signature_ofRank_diff (show m - 2 - n ≥ 1 by omega) hε
-          rw [← this]; exact (sub_sub_cancel _ _).symm
-        have h4 : signature (Gene.ofRank (m + 1 - n) ε) =
-            signature (Gene.ofRank (2 + m - n) ε) -
-          (if Even (2 + m - n) then
-              ((if ε = GeneType.Positive then 0 else 1),
-               (if ε = GeneType.Negative then 0 else 1))
-            else
-              ((if ε = GeneType.Positive then 1 else 0),
-               (if ε = GeneType.Negative then 1 else 0))) := by
-          have : m + 1 - n =  2 + m - n - 1 := by omega
-          rw [this]
-          have := signature_ofRank_diff (show 2 + m - n ≥ 1 by omega) hε
-          rw [← this]; exact (sub_sub_cancel _ _).symm
-        simp [h2, h3, h4]
-        ring_nf
-        ring_nf at ihn
-        simp [ihn]
-        have e1 : Even (m -2 - n) = Even (2 + m - n) := by
-          apply propext
-          constructor
-          · intro ⟨k, hk⟩; exact ⟨k + 2, by omega⟩
-          · intro ⟨k, hk⟩; exact ⟨k - 2, by omega⟩
-        have e2 : Even (2 + m - n) = Even (m - n) := by
-          have : 2 + m - n - 2 = m - n := by omega
-          apply propext
-          constructor
-          · intro ⟨k, hk⟩; exact ⟨k - 1, by omega⟩
-          · intro ⟨k, hk⟩; exact ⟨k + 1, by omega⟩
-        simp [e1]
-        ring_nf
-        simp [e2]
-  · -- Range 2: m + 2 ≤ i
-    intro i ih
-    simp [Pi.X2_eq, Pi.Y2_eq, sigma]
-    have ih' : i ≥ m := by linarith
-    have ih'' : i ≥ (m - 2) := by omega
-    simp [prime_iterate_ofRank_eq_zero ih,
-      prime_iterate_ofRank_eq_zero ih',
-      prime_iterate_ofRank_eq_zero ih'']
-  · -- Range 3: m - 1 ≤ i ≤ m + 1
-    intro i hi1 hi2
-    have hcases : i = m - 1 ∨ i = m ∨ i = m + 1 := by omega
-    rcases hcases with rfl | rfl | rfl
-    · -- i = m - 1
-      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
-      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
-      have h1 : m - (m - 1) = 1 := by omega
-      have h2 : m - 2 - (m - 1) = 0 := by omega
-      have h3 : m + 2 - (m - 1) = 3 := by omega
-      simp only [h2, Gene.ofRank_zero, map_zero, h3, zero_add, h1]
-      rcases ε with _ | _ | _
-      · -- ε = NonPolarized (impossible)
-        simp_all
-      · -- ε = Positive
-        have hsig3 : (Gene.ofRank 3 .Positive).signature = (2, 1) := by
-          simp [signature_ofRank, Gene.signature_of_positive, show ¬Even 3 from by decide]; norm_num
-        simp_all
-        ring_nf
-        simp
-        omega
-      · -- ε = Negative
-        have hsig3 : (Gene.ofRank 3 .Negative).signature = (1, 2) := by
-          simp [signature_ofRank, Gene.signature_of_negative, show ¬Even 3 from by decide]; norm_num
-        simp_all
-        ring_nf
-        simp
-        omega
-    · -- i = m
-      simp [Pi.X2_eq, Pi.Y2_eq, sigma,
-            prime_iterate_ofRank_eq_zero,
-            prime_iterate_ofRank,
-            signature_ofRank_even_half]
-    · -- i = m + 1
-      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
-      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
-      have h1 : m - (m + 1) = 0 := by omega
-      have h2 : (m - 2) - (m + 1) = 0 := by omega
-      have h3 : (m + 2) - (m + 1) = 1 := by omega
-      simp only [h2, Gene.ofRank_zero, map_zero, h3, zero_add, h1, add_zero, sub_zero,
-        Nat.add_eq_left, one_ne_zero, ↓reduceIte]
-      rcases ε with _ | _ | _
-      · -- ε = NonPolarized (impossible)
-        exact absurd rfl hε
-      · -- ε = Positive
-        simp [signature_ofRank_one_positive]
-        omega
-      · -- ε = Negative
-        simp [signature_ofRank_one_negative]
-        omega
-
-lemma signature_ofRank_add_two (r : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
-    signature (Gene.ofRank (r + 2) ε) = signature (Gene.ofRank r ε) + (1, 1) :=
-  signature_ofRank_eq₂ (k := r + 2) (by omega) hε
-
-lemma signature_ofRank_add_two_sub_self (r : ℕ) {ε : GeneType}
-    (hε : ε ≠ .NonPolarized) :
-    signature (Gene.ofRank (r + 2) ε) - signature (Gene.ofRank r ε) = (1, 1) := by
-  rw [signature_ofRank_add_two r hε]
-  simp
+  refine ⟨sigma_type2_left_eq ε hε (le_refl m) hm, sigma_type2_right_eq ε hε (le_refl m) hm, ?_⟩
+  intro i hi1 hi2
+  by_cases him1 : i = m - 1
+  · rw [him1]
+    simpa [show m - 1 ≠ m by omega] using sigma_type2_left_boundary ε hε (le_refl m) hm
+  · by_cases him : i = m
+    · rw [him]
+      have hmid := sigma_type2_mid ε hε (le_refl m) hm m (le_refl m) (le_refl m)
+      simpa using hmid
+    · have : i = m + 1 := by omega
+      rw [this]
+      simpa [show m + 1 ≠ m - 1 by omega] using sigma_type2_right_boundary ε hε (le_refl m) hm
 
 lemma sigma_type2_mn_rank_left {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
     (hmn : m < n) (hm : 1 < m) :
     ∀ i, i ≤ m - 2 →
       sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
-      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
-  intro i hi
-  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
-  rw [show m - i = m - 2 - i + 2 from by omega,
-      show n + 2 - i = n - i + 2 from by omega,
-      signature_ofRank_add_two (m - 2 - i) hε,
-      signature_ofRank_add_two (n - i) hε]
-  abel
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i :=
+  sigma_type2_left_eq ε hε (Nat.le_of_lt hmn) hm
 
 lemma sigma_type2_mn_rank_right {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
     (hmn : m < n) (hm : 1 < m) :
     ∀ i, n + 2 ≤ i →
       sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
-      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
-  intro i hi
-  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
-  simp only [show m - i = 0 from by omega, show n - i = 0 from by omega,
-    show m - 2 - i = 0 from by omega, show n + 2 - i = 0 from by omega,
-    Gene.ofRank_zero, map_zero, add_zero]
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i :=
+  sigma_type2_right_eq ε hε (Nat.le_of_lt hmn) hm
 
 lemma sigma_type2_mn_rank_window {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
     (hmn : m < n) (hm : 1 < m) :
@@ -793,45 +682,19 @@ lemma sigma_type2_mn_rank_window {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonP
         if ε = .Positive then (0, 1) else (1, 0)
       else if ε = .Positive then (1, 0) else (0, 1) := by
   intro i hi1 hi2
-  rcases (show i = m - 1 ∨ (m - 1 < i ∧ i < n + 1) ∨ i = n + 1 by omega) with
-      rfl | ⟨him, hin⟩ | rfl
-  · simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega,
-      if_false, if_true]
-    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
-    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
-    have hm1 : m - (m - 1) = 1 := by omega
-    have hm0 : m - 2 - (m - 1) = 0 := by omega
-    have hnrank : n + 2 - (m - 1) = n - (m - 1) + 2 := by omega
-    rw [hnrank]
-    rw [signature_ofRank_add_two (n - (m - 1)) hε]
-    simp only [hm1, hm0, Gene.ofRank_zero, map_zero, zero_add]
-    rcases ε with _ | _ | _
-    · exact absurd rfl hε
-    · simp [sub_eq_add_neg, add_assoc, add_comm]
-    · simp [sub_eq_add_neg, add_assoc, add_comm]
-  · simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩, true_and, if_true]
-    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
-    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
-    have hmX : m - i = 0 := by omega
-    have hmY : m - 2 - i = 0 := by omega
-    have hnrank : n + 2 - i = n - i + 2 := by omega
-    rw [hnrank]
-    rw [signature_ofRank_add_two (n - i) hε]
-    simp only [hmX, hmY, Gene.ofRank_zero, map_zero, zero_add]
-    simp
-  · simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega,
-      if_false, show n + 1 ≠ m - 1 from by omega]
-    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
-    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
-    have hmX : m - (n + 1) = 0 := by omega
-    have hnX : n - (n + 1) = 0 := by omega
-    have hmY : m - 2 - (n + 1) = 0 := by omega
-    have hnY : n + 2 - (n + 1) = 1 := by omega
-    simp only [hmX, hnX, hmY, hnY, Gene.ofRank_zero, map_zero, zero_add, add_zero]
-    rcases ε with _ | _ | _
-    · exact absurd rfl hε
-    · simp [signature_ofRank_one_positive]
-    · simp [signature_ofRank_one_negative]
+  by_cases him1 : i = m - 1
+  · rw [him1]
+    simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega, if_false, if_true]
+    simpa using sigma_type2_left_boundary ε hε (Nat.le_of_lt hmn) hm
+  · by_cases hin1 : i = n + 1
+    · rw [hin1]
+      simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega,
+        if_false, show n + 1 ≠ m - 1 from by omega]
+      simpa using sigma_type2_right_boundary ε hε (Nat.le_of_lt hmn) hm
+    · have him : m ≤ i := by omega
+      have hin : i ≤ n := by omega
+      simp only [show (i > m - 1) ∧ (i < n + 1) from by omega, true_and, if_true]
+      simpa using sigma_type2_mid ε hε (Nat.le_of_lt hmn) hm i him hin
 
 lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
   (hmn : m < n) (hm : 1 < m) :
