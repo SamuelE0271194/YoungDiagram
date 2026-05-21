@@ -320,7 +320,7 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                 have hXYj : Sigma.sigma X.1.val j ≤ Sigma.sigma Y.1.val j :=
                   le_iff_dominates.mp hXY.le j
                 obtain ⟨hcase1, hcase2, hcase3⟩ :=
-                  Sigma.sigma_type2_mn_rank ε hε hg₂rank hg₁_ge2 hparity
+                  Sigma.sigma_type2_mn_rank ε hε hg₂rank hg₁_ge2
                 by_cases hjl : j ≤ g₁.rank - 2
                 · rw [← hcase1 j hjl]
                   sorry

@@ -834,7 +834,7 @@ lemma sigma_type2_mn_rank_window {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonP
     · simp [signature_ofRank_one_negative]
 
 lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
-  (hmn : m < n) (hm : 1 < m) (hnm_even : Even (n - m)) :
+  (hmn : m < n) (hm : 1 < m) :
     let hle : m ≤ n := Nat.le_of_lt hmn
     let X : Chromosome := Pi.X2 hε hle hm
     let Y : Chromosome := Pi.Y2 hε hle hm
@@ -846,7 +846,6 @@ lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
                                 if ε = .Positive then (0, 1) else (1, 0)
                               else
                                 if ε = .Positive then (1, 0) else (0, 1)) := by
-  have _hnm_even := hnm_even
   exact ⟨sigma_type2_mn_rank_left ε hε hmn hm,
     sigma_type2_mn_rank_right ε hε hmn hm,
     sigma_type2_mn_rank_window ε hε hmn hm⟩
