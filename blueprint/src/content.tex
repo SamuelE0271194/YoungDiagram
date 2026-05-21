@@ -660,25 +660,16 @@
   there exist $X' \in \mathrm{Pi}$ with $\mathrm{Step}(X, X')$ and $Y \le X' < X$.
 \end{theorem}
 
-\begin{lemma}[No-gene and rank-one reductions]
-  \label{lem:Theorem6.no_gene_reductions}
-  \lean{prime_iterate_no_gene_of_rank, prime_ne_zero_of_Y_no_gene, Y_no_gene_of_rank}
+\begin{lemma}[Disjoint positive-negative pair reduction]
+  \label{lem:Theorem6.disjoint_pair}
+  \lean{exists_mutation_le_disjoint_pair}
   \leanok
-  \uses{def:Chromosome.prime, def:Variety.Pi}
-  The proof of the main mutation theorem repeatedly removes impossible
-  rank positions.  If a chromosome has no gene of a given rank, the same
-  absence can be read after applying enough primes, and this controls
-  non-vanishing of the prime sequence.
-\end{lemma}
-
-\begin{lemma}[Extracting primitive summands]
-  \label{lem:Theorem6.extracting_summands}
-  \lean{one_le_signature_fst_of_contains_positive, X_eq_X1_add_rest}
-  \leanok
-  \uses{def:Pi.X1Y1, def:Chromosome.signature}
-  When the comparison with $Y$ identifies a positive and a negative gene in
-  $X$, the proof extracts the corresponding type-1 primitive source together
-  with the remaining summand.
+  \uses{def:Chromosome.prime, def:Variety.Pi, def:Pi.X1Y1, def:Chromosome.signature}
+  In the disjoint-support case, if $X$ contains a positive and a negative
+  gene of equal rank, the proof extracts the corresponding type-1 primitive
+  source and shows that the resulting mutation remains below $Y$.  The Lean
+  proof packages the rank-absence and summand-extraction facts used for this
+  step as internal auxiliaries of this lemma.
 \end{lemma}
 
 \begin{remark}[Induction in Theorem 6]
