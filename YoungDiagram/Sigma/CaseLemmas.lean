@@ -771,6 +771,7 @@ lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
                                 if ε = .Positive then (0, 1) else (1, 0)
                               else
                                 if ε = .Positive then (1, 0) else (0, 1)) := by
+  have _hnm_even := hnm_even
   have h1 : ∀ i, i ≤ m - 2 →
       sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
       sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
@@ -803,14 +804,44 @@ lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         rfl | ⟨him, hin⟩ | rfl
     · -- i = m - 1
       simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega, if_false, if_true]
-      sorry
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have hm1 : m - (m - 1) = 1 := by omega
+      have hm0 : m - 2 - (m - 1) = 0 := by omega
+      have hnrank : n + 2 - (m - 1) = n - (m - 1) + 2 := by omega
+      rw [hnrank]
+      rw [signature_ofRank_eq₂ (k := n - (m - 1) + 2) (by omega) hε]
+      simp only [hm1, hm0, Gene.ofRank_zero, map_zero, zero_add]
+      rcases ε with _ | _ | _
+      · exact absurd rfl hε
+      · simp [sub_eq_add_neg, add_assoc, add_comm]
+      · simp [sub_eq_add_neg, add_assoc, add_comm]
     · -- m - 1 < i < n + 1
       simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩]
-      sorry
+      simp only [true_and, if_true]
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have hmX : m - i = 0 := by omega
+      have hmY : m - 2 - i = 0 := by omega
+      have hnrank : n + 2 - i = n - i + 2 := by omega
+      rw [hnrank]
+      rw [signature_ofRank_eq₂ (k := n - i + 2) (by omega) hε]
+      simp only [hmX, hmY, Gene.ofRank_zero, map_zero, zero_add]
+      simp
     · -- i = n + 1
       simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega, if_false,
                  show n + 1 ≠ m - 1 from by omega, if_false]
-      sorry
+      simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+      simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+      have hmX : m - (n + 1) = 0 := by omega
+      have hnX : n - (n + 1) = 0 := by omega
+      have hmY : m - 2 - (n + 1) = 0 := by omega
+      have hnY : n + 2 - (n + 1) = 1 := by omega
+      simp only [hmX, hnX, hmY, hnY, Gene.ofRank_zero, map_zero, zero_add, add_zero]
+      rcases ε with _ | _ | _
+      · exact absurd rfl hε
+      · simp [signature_ofRank_one_positive]
+      · simp [signature_ofRank_one_negative]
   exact ⟨h1, h2, h3⟩
 
 end Sigma
