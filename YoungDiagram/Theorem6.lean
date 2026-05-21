@@ -335,28 +335,89 @@ private lemma exists_mutation_le_fifteen_ten (m : ℕ)
                     have hjl' : g₁.rank - 1 ≤ j := by omega
                     have hjr' : j ≤ g₂.rank + 1 := by omega
                     have hdelta := hcase3 j hjl' hjr'
-                    -- Convert all sigma values to naturals for component arithmetic
-                    obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
-                    obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
-                    obtain ⟨nX2, hnX2⟩ :=
-                      Sigma.sigma_isNat (Pi.X2 hε hle hg₁_ge2).val j
-                        (Pi.X2 hε hle hg₁_ge2).2
-                    obtain ⟨nY2, hnY2⟩ :=
-                      Sigma.sigma_isNat (Pi.Y2 hε hle hg₁_ge2).val j
-                        (Pi.Y2 hε hle hg₁_ge2).2
-                    -- Key: sigma Y.1 j > sigma X.1 j strictly in the window;
-                    -- this follows from hsigeq + prime^[j] Y ≠ 0, then integrality gives
-                    -- (sigma Y j).1 ≥ (sigma X j).1 + D.1 and similarly for .2.
-                    -- The two strict inequalities needed (one or both depending on D):
-                    have hfst : (Sigma.sigma X.1.val j).1 + (nY2.1 : ℚ) - nX2.1 ≤
-                        (Sigma.sigma Y.1.val j).1 := by
-                      sorry
-                    have hsnd : (Sigma.sigma X.1.val j).2 + (nY2.2 : ℚ) - nX2.2 ≤
-                        (Sigma.sigma Y.1.val j).2 := by
-                      sorry
-                    rw [hnX2, hnY2]
-                    exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1, hfst],
-                            by simp only [Prod.snd_add]; linarith [hXYj.2, hsnd]⟩
+                    by_cases h_g1_rank_even : Even g₁.rank
+                    · -- g₁.rank even → negOnePow(g₁.rank - 1) = -1 → (-1)•Negative = Positive
+                      -- so hε₁ : ε ≠ Positive, and hε : ε ≠ NonPolarized, hence ε = Negative
+                      have hε_neg : ε = GeneType.Negative := by
+                        have hnodd : ¬Even ((g₁.rank : ℤ) - 1) := by
+                          obtain ⟨k, hk⟩ := h_g1_rank_even
+                          intro ⟨m, hm⟩
+                          omega
+                        simp only [GeneType.negOnePow_smul, if_neg hnodd,
+                                   GeneType.neg_negative] at hε₁
+                        match h : ε with
+                        | .Positive    => exact absurd h hε₁
+                        | .Negative    => rfl
+                        | .NonPolarized =>
+                          have : ε ≠ .NonPolarized := by assumption
+                          exact absurd h this
+                      have haj_lt_cj : ∀ j, g₁.rank - 1 ≤ j → j ≤ g₂.rank →
+                          (Sigma.sigma X.1.val j).1 < (Sigma.sigma Y.1.val j).1 := by
+                        sorry
+                      have hbj_lt_dj : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank + 1 →
+                          (Sigma.sigma X.1.val j).2 < (Sigma.sigma Y.1.val j).2 := by
+                        sorry
+                      have hε_ne_pos : ε ≠ .Positive := hε_neg ▸ by decide
+                      simp only [if_neg hε_ne_pos] at hdelta
+                      -- hdelta : sigma Y2 j - sigma X2 j =
+                      --   if (j > g₁.rank-1) ∧ (j < g₂.rank+1) then (1,1)
+                      --   else if j = g₁.rank-1 then (1,0) else (0,1)
+                      obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val j X.1.2
+                      obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val j Y.1.2
+                      rw [hnX, hnY] at hXYj
+                      rcases (show j = g₁.rank - 1 ∨
+                                   (g₁.rank ≤ j ∧ j ≤ g₂.rank) ∨
+                                   j = g₂.rank + 1 from by omega)
+                          with hjbd | ⟨hjl2, hjr2⟩ | hjbd2
+                      · -- Left boundary: j = g₁.rank - 1, delta = (1, 0)
+                        rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
+                            if_pos hjbd] at hdelta
+                        have haj := haj_lt_cj j (by omega) (by omega)
+                        rw [hnX, hnY] at haj
+                        have hd1 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).1 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).1 = 1 :=
+                          congr_arg Prod.fst hdelta
+                        have hd2 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).2 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).2 = 0 :=
+                          congr_arg Prod.snd hdelta
+                        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
+                          by exact_mod_cast Nat.succ_le.mpr (Nat.cast_lt.mp haj)
+                        exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
+                               by simp only [Prod.snd_add, hnX, hnY]; linarith [hXYj.2]⟩
+                      · -- Interior: g₁.rank ≤ j ≤ g₂.rank, delta = (1, 1)
+                        rw [if_pos (show (j > g₁.rank - 1) ∧ (j < g₂.rank + 1)
+                                    from ⟨by omega, by omega⟩)] at hdelta
+                        have haj := haj_lt_cj j (by omega) hjr2
+                        have hbj := hbj_lt_dj j hjl2 (by omega)
+                        rw [hnX, hnY] at haj hbj
+                        have hd1 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).1 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).1 = 1 :=
+                          congr_arg Prod.fst hdelta
+                        have hd2 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).2 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).2 = 1 :=
+                          congr_arg Prod.snd hdelta
+                        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
+                          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
+                        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
+                          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+                        exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
+                               by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
+                      · -- Right boundary: j = g₂.rank + 1, delta = (0, 1)
+                        rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
+                            if_neg (by omega : j ≠ g₁.rank - 1)] at hdelta
+                        have hbj := hbj_lt_dj j (by omega) (by omega)
+                        rw [hnX, hnY] at hbj
+                        have hd1 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).1 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).1 = 0 :=
+                          congr_arg Prod.fst hdelta
+                        have hd2 : (Sigma.sigma (Pi.Y2 hε hle hg₁_ge2).val j).2 -
+                                   (Sigma.sigma (Pi.X2 hε hle hg₁_ge2).val j).2 = 1 :=
+                          congr_arg Prod.snd hdelta
+                        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
+                          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+                        exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith [hXYj.1],
+                               by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
+                    · sorry
               rw [hZ_split]
               have h1 := (hXY_sigma i).1
               have h2 := (hXY_sigma i).2
