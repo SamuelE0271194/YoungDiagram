@@ -11,6 +11,16 @@ local notation "a" X:max k:max => Prod.fst (sigma X k)
 
 local notation "b" X:max k:max => Prod.snd (sigma X k)
 
+lemma mem_support_single_add_self (g : Gene) {n : ℕ} {f : Chromosome} (hn : n ≠ 0) :
+    g ∈ (Finsupp.single g n + f).support := by
+  simp [Finsupp.mem_support_iff, hn]
+
+lemma mem_support_single_add_of_mem_support {g g' : Gene} {n : ℕ} {f : Chromosome}
+    (hgf : g ∉ f.support) (hg' : g' ∈ f.support) :
+    g' ∈ (Finsupp.single g n + f).support := by
+  have hne : g' ≠ g := fun h => hgf (h ▸ hg')
+  simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne, Finsupp.mem_support_iff.mp hg']
+
 lemma single_b0_eq_a1_of_positive (g : Gene) (hgt : g.type = .Positive) :
     b(Finsupp.single g 1)0 = a(Finsupp.single g 1)1 := by
   rcases Nat.even_or_odd g.rank with ⟨j, hj⟩ | ⟨j, hj⟩
@@ -212,13 +222,10 @@ lemma b0_minus_b2 {X : Variety.Pi} (m : ℕ)
     -- Finsupp.induction gives the term as (single g n + f')
     intro hpol hrank
     -- Lift hypotheses from (single g n + f').support to {g} and f'.support.
-    have hmem_g : g ∈ (Finsupp.single g n + f').support := by
-      simp [Finsupp.mem_support_iff, hn]
-    have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support := by
-      intro g' hg'
-      have hne : g' ≠ g := fun h => hgf (h ▸ hg')
-      simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne,
-            Finsupp.mem_support_iff.mp hg']
+    have hmem_g : g ∈ (Finsupp.single g n + f').support :=
+      mem_support_single_add_self g hn
+    have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support :=
+      fun _ => mem_support_single_add_of_mem_support hgf
     -- Conditions on the single gene g
     have hpol_g : g.type ≠ .NonPolarized := hpol g hmem_g
     have hrank_g : 2 ≤ g.rank := hrank g hmem_g
@@ -345,28 +352,14 @@ lemma b0_eq_b2_positive {X : Variety.Pi} (m : ℕ)
 lemma b0_minus_b2_neg_gene (g : Gene) (hε : g.type = .Negative)
   (hrank : g.rank = 1) :
   b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 1 := by
-  have hb₀ : b (Finsupp.single g 1) 0 = 1 := by
-    simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
-    rw [Gene.signature_of_negative hε, if_neg (show ¬Even g.rank by rw [hrank]; decide)]
-    norm_num [hrank]
-  have hb₂ : b (Finsupp.single g 1) 2 = 0 := by
-    simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
-               prime_single, one_nsmul, hε, hrank, Nat.sub_self, Gene.ofRank_zero, map_zero]
-    rfl
-  linarith
+  rw [show g = (⟨1, GeneType.Negative, by decide⟩ : Gene) from Gene.ext hrank hε]
+  norm_num [sigma, Gene.signature, prime_single, primeGene_def]
 
 lemma b0_minus_b2_pos_gene (g : Gene) (hε : g.type = .Positive)
   (hrank : g.rank = 1) :
   b (Finsupp.single g 1) 0 - b (Finsupp.single g 1) 2 = 0 := by
-  have hb₀ : b (Finsupp.single g 1) 0 = 0 := by
-    simp only [sigma, Function.iterate_zero, id, signature_single g.rank_pos]
-    rw [Gene.signature_of_positive hε, if_neg (show ¬Even g.rank by rw [hrank]; decide)]
-    norm_num [hrank]
-  have hb₂ : b (Finsupp.single g 1) 2 = 0 := by
-    simp only [sigma, Function.iterate_succ_apply', Function.iterate_zero, id,
-               prime_single, one_nsmul, hε, hrank, Nat.sub_self, Gene.ofRank_zero, map_zero]
-    rfl
-  linarith
+  rw [show g = (⟨1, GeneType.Positive, by decide⟩ : Gene) from Gene.ext hrank hε]
+  norm_num [sigma, Gene.signature, prime_single, primeGene_def]
 
 lemma b0_minus_b2_min_neg {X : Variety.Pi} (m : ℕ)
     (hm : m ≥ 2) (hmin : ∀ g ∈ X.val.support, m ≤ g.rank)
@@ -406,12 +399,10 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
       | zero => simp [sigma, map_zero]
       | single_add g n f' hgf hn ih =>
         intro hpol hrneg
-        have hmem_g : g ∈ (Finsupp.single g n + f').support := by
-          simp [Finsupp.mem_support_iff, hn]
-        have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support := by
-          intro g' hg'
-          have hne : g' ≠ g := fun heq => hgf (heq ▸ hg')
-          simp [Finsupp.mem_support_iff, Finsupp.add_apply, hne, Finsupp.mem_support_iff.mp hg']
+        have hmem_g : g ∈ (Finsupp.single g n + f').support :=
+          mem_support_single_add_self g hn
+        have hsupp_mono : ∀ g' ∈ f'.support, g' ∈ (Finsupp.single g n + f').support :=
+          fun _ => mem_support_single_add_of_mem_support hgf
         have hpol_g := hpol g hmem_g
         have hrneg_g := hrneg g hmem_g
         have hpol_f' : ∀ g' ∈ f'.support, g'.type ≠ .NonPolarized :=
@@ -758,6 +749,90 @@ lemma sigma_type2_same_rank {m : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
         simp [signature_ofRank_one_negative]
         omega
 
+lemma signature_ofRank_add_two (r : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
+    signature (Gene.ofRank (r + 2) ε) = signature (Gene.ofRank r ε) + (1, 1) :=
+  signature_ofRank_eq₂ (k := r + 2) (by omega) hε
+
+lemma signature_ofRank_add_two_sub_self (r : ℕ) {ε : GeneType}
+    (hε : ε ≠ .NonPolarized) :
+    signature (Gene.ofRank (r + 2) ε) - signature (Gene.ofRank r ε) = (1, 1) := by
+  rw [signature_ofRank_add_two r hε]
+  simp
+
+lemma sigma_type2_mn_rank_left {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hmn : m < n) (hm : 1 < m) :
+    ∀ i, i ≤ m - 2 →
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
+  intro i hi
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+  rw [show m - i = m - 2 - i + 2 from by omega,
+      show n + 2 - i = n - i + 2 from by omega,
+      signature_ofRank_add_two (m - 2 - i) hε,
+      signature_ofRank_add_two (n - i) hε]
+  abel
+
+lemma sigma_type2_mn_rank_right {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hmn : m < n) (hm : 1 < m) :
+    ∀ i, n + 2 ≤ i →
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
+  intro i hi
+  simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
+  simp only [show m - i = 0 from by omega, show n - i = 0 from by omega,
+    show m - 2 - i = 0 from by omega, show n + 2 - i = 0 from by omega,
+    Gene.ofRank_zero, map_zero, add_zero]
+
+lemma sigma_type2_mn_rank_window {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
+    (hmn : m < n) (hm : 1 < m) :
+    ∀ i, m - 1 ≤ i → i ≤ n + 1 →
+      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i -
+      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
+      if (i > m - 1) ∧ (i < n + 1) then (1, 1)
+      else if i = m - 1 then
+        if ε = .Positive then (0, 1) else (1, 0)
+      else if ε = .Positive then (1, 0) else (0, 1) := by
+  intro i hi1 hi2
+  rcases (show i = m - 1 ∨ (m - 1 < i ∧ i < n + 1) ∨ i = n + 1 by omega) with
+      rfl | ⟨him, hin⟩ | rfl
+  · simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega,
+      if_false, if_true]
+    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+    have hm1 : m - (m - 1) = 1 := by omega
+    have hm0 : m - 2 - (m - 1) = 0 := by omega
+    have hnrank : n + 2 - (m - 1) = n - (m - 1) + 2 := by omega
+    rw [hnrank]
+    rw [signature_ofRank_add_two (n - (m - 1)) hε]
+    simp only [hm1, hm0, Gene.ofRank_zero, map_zero, zero_add]
+    rcases ε with _ | _ | _
+    · exact absurd rfl hε
+    · simp [sub_eq_add_neg, add_assoc, add_comm]
+    · simp [sub_eq_add_neg, add_assoc, add_comm]
+  · simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩, true_and, if_true]
+    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+    have hmX : m - i = 0 := by omega
+    have hmY : m - 2 - i = 0 := by omega
+    have hnrank : n + 2 - i = n - i + 2 := by omega
+    rw [hnrank]
+    rw [signature_ofRank_add_two (n - i) hε]
+    simp only [hmX, hmY, Gene.ofRank_zero, map_zero, zero_add]
+    simp
+  · simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega,
+      if_false, show n + 1 ≠ m - 1 from by omega]
+    simp only [Pi.X2_eq, Pi.Y2_eq, sigma]
+    simp only [iterate_map_add, prime_iterate_ofRank, map_add]
+    have hmX : m - (n + 1) = 0 := by omega
+    have hnX : n - (n + 1) = 0 := by omega
+    have hmY : m - 2 - (n + 1) = 0 := by omega
+    have hnY : n + 2 - (n + 1) = 1 := by omega
+    simp only [hmX, hnX, hmY, hnY, Gene.ofRank_zero, map_zero, zero_add, add_zero]
+    rcases ε with _ | _ | _
+    · exact absurd rfl hε
+    · simp [signature_ofRank_one_positive]
+    · simp [signature_ofRank_one_negative]
+
 lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
   (hmn : m < n) (hm : 1 < m) (hnm_even : Even (n - m)) :
     let hle : m ≤ n := Nat.le_of_lt hmn
@@ -771,46 +846,9 @@ lemma sigma_type2_mn_rank {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
                                 if ε = .Positive then (0, 1) else (1, 0)
                               else
                                 if ε = .Positive then (1, 0) else (0, 1)) := by
-  have h1 : ∀ i, i ≤ m - 2 →
-      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
-      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
-    intro i hi
-    simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
-    rw [signature_ofRank_eq₂ (k := m - i) (by omega) hε,
-        signature_ofRank_eq₂ (k := n + 2 - i) (by omega) hε,
-        show m - i - 2 = m - 2 - i from by omega,
-        show n + 2 - i - 2 = n - i from by omega]
-    abel
-  have h2 : ∀ i, n + 2 ≤ i →
-      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
-      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i := by
-    intro i ih
-    simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
-    -- After prime_iterate_ofRank, goal is in terms of Gene.ofRank (k - i) ε.
-    -- Since n + 2 ≤ i, all rank subtractions are 0 in Nat.
-    simp only [show m - i = 0 from by omega, show n - i = 0 from by omega,
-               show m - 2 - i = 0 from by omega, show n + 2 - i = 0 from by omega,
-               Gene.ofRank_zero, map_zero, add_zero]
-  have h3 : ∀ i, m - 1 ≤ i → i ≤ n + 1 →
-      sigma (Pi.Y2 hε (Nat.le_of_lt hmn) hm) i -
-      sigma (Pi.X2 hε (Nat.le_of_lt hmn) hm) i =
-      if (i > m - 1) ∧ (i < n + 1) then (1, 1)
-      else if i = m - 1 then
-        if ε = .Positive then (0, 1) else (1, 0)
-      else if ε = .Positive then (1, 0) else (0, 1) := by
-    intro i hi1 hi2
-    rcases (show i = m - 1 ∨ (m - 1 < i ∧ i < n + 1) ∨ i = n + 1 by omega) with
-        rfl | ⟨him, hin⟩ | rfl
-    · -- i = m - 1
-      simp only [show ¬((m - 1 > m - 1) ∧ (m - 1 < n + 1)) from by omega, if_false, if_true]
-      sorry
-    · -- m - 1 < i < n + 1
-      simp only [show (i > m - 1) ∧ (i < n + 1) from ⟨him, hin⟩]
-      sorry
-    · -- i = n + 1
-      simp only [show ¬((n + 1 > m - 1) ∧ (n + 1 < n + 1)) from by omega, if_false,
-                 show n + 1 ≠ m - 1 from by omega, if_false]
-      sorry
-  exact ⟨h1, h2, h3⟩
+  have _hnm_even := hnm_even
+  exact ⟨sigma_type2_mn_rank_left ε hε hmn hm,
+    sigma_type2_mn_rank_right ε hε hmn hm,
+    sigma_type2_mn_rank_window ε hε hmn hm⟩
 
 end Sigma
