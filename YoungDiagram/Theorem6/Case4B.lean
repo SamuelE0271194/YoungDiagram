@@ -1,6 +1,7 @@
 import YoungDiagram.Theorem6.Case4B.EvenGapEvenRank
 import YoungDiagram.Theorem6.Case4B.EvenGapOddRank
-import YoungDiagram.Theorem6.Case4B.OddGap
+import YoungDiagram.Theorem6.Case4B.OddGapEvenRank
+import YoungDiagram.Theorem6.Case4B.OddGapOddRank
 
 open Variety hiding prime prime_def
 open Chromosome
@@ -33,5 +34,8 @@ lemma exists_mutation_le_case4b
     · exact exists_mutation_le_case4b_evenGap_oddRank X Y hXY hXpn ha hε₁ hXg₁
         hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity
         h_g1_rank_even
-  · exact exists_mutation_le_case4b_oddGap X Y hXY hXpn ha hε₁ hXg₁ hXg₁pos
-      hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity
+  · by_cases h_g1_rank_even : Even g₁.rank
+    · exact exists_mutation_le_case4b_oddGap_evenRank X Y hXY hXpn ha hε₁
+        hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
+    · exact exists_mutation_le_case4b_oddGap_oddRank X Y hXY hXpn ha hε₁
+        hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
