@@ -39,7 +39,7 @@ private lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Ge
     · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by have := g.rank_pos; omega, hg₁_altType⟩
     · exact ⟨hsupp, by have := g₁.rank_pos; omega, htype⟩
 
-private lemma support_filter_negative_eq_tail_of_even {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ}
+lemma support_filter_negative_eq_tail_of_even {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ}
     (hXpn : ¬∃ g h, g.rank = h.rank ∧ g.type = GeneType.Positive ∧
       h.type = GeneType.Negative ∧ 0 < X g ∧ 0 < X h)
     (hXg₁pos : 0 < X g₁) (hg₁min : ∀ g ∈ X.support, g₁.rank ≤ g.rank)
@@ -67,7 +67,7 @@ private lemma support_filter_negative_eq_tail_of_even {X : Chromosome} {g₁ g�
   · rintro ⟨hg_supp, hg_rank, hg_type⟩
     exact ⟨hg_supp, g.rank_pos, hg_type⟩
 
-private lemma support_filter_negative_eq_tail_of_odd {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ}
+lemma support_filter_negative_eq_tail_of_odd {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ}
     (hXpn : ¬∃ g h, g.rank = h.rank ∧ g.type = GeneType.Positive ∧
       h.type = GeneType.Negative ∧ 0 < X g ∧ 0 < X h)
     (hXg₁pos : 0 < X g₁) (hg₁min : ∀ g ∈ X.support, g₁.rank ≤ g.rank)
