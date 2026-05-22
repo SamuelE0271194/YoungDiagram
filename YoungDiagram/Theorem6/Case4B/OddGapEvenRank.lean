@@ -6,9 +6,6 @@ open Chromosome Sigma
 
 /-! Case 4b, odd rank-gap and even lower rank. -/
 
-set_option maxHeartbeats 800000 in
--- This branch reuses the negative-type type2 window chain and needs extra elaboration budget.
-set_option linter.unusedVariables false in
 lemma exists_mutation_le_case4b_oddGap_evenRank
     {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
     {g₁ g₂ : Gene}
@@ -94,10 +91,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                 simpa [show g₁.rank - 1 - 1 = g₁.rank - 2 from by omega] using h
               have hstrict :
                   (sigma Y.1 0).1 - (sigma Y.1 1).1 <
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                have ha0_eq : (sigma X.1 0).1 = (sigma Y.1 0).1 :=
-                  sigma_zero_fst_eq X Y hXY.le
-                linarith
+                  (sigma X.1 0).1 - (sigma X.1 1).1 :=
+                fst_zero_gap_strict_of_fst_one_lt X Y hXY.le ha
               have ha0_eq : (sigma X.1 0).1 = (sigma Y.1 0).1 :=
                 sigma_zero_fst_eq X Y hXY.le
               linarith [hc1_ci_rank1, hd0_di_rank1, hb0_bi_rank1, hstrict]
@@ -127,10 +122,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                   (by omega) (le_refl g₁.rank)
               have hstrict :
                   (sigma Y.1 0).1 - (sigma Y.1 1).1 <
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                have ha0_eq : (sigma X.1 0).1 = (sigma Y.1 0).1 :=
-                  sigma_zero_fst_eq X Y hXY.le
-                linarith
+                  (sigma X.1 0).1 - (sigma X.1 1).1 :=
+                fst_zero_gap_strict_of_fst_one_lt X Y hXY.le ha
               have ha0_eq : (sigma X.1 0).1 = (sigma Y.1 0).1 :=
                 sigma_zero_fst_eq X Y hXY.le
               linarith [hc1_ci_rank, hd0_di_rank, hb0_bi_rank, hstrict]
@@ -386,29 +379,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
             have hbm_lt_dm :
                 (sigma X.1.val g₁.rank).2 <
                 (sigma Y.1.val g₁.rank).2 := by
-              have hstrict :
-                  (sigma Y.1 0).1 - (sigma Y.1 1).1 <
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                linarith [sigma_zero_fst_eq X Y hXY.le]
-              have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-                (le_iff_dominates.mp hXY.le 1).2
-              have hb12_eq :
-                  (sigma X.1 1).2 - (sigma X.1 2).2 =
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                have h := x_side_equalities
-                  (fun g' _ hg'_pos =>
-                    hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
-                  (show 1 < g₁.rank from hg₁_ge2)
-                simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
-                exact h
-              have hd12_le :
-                  (sigma Y.1 1).2 - (sigma Y.1 2).2 ≤
-                  (sigma Y.1 0).1 - (sigma Y.1 1).1 := by
-                have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
-                simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
-                exact h
-              have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 := by
-                linarith
+              have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 :=
+                snd_two_lt_of_fst_one_lt_and_min_rank X Y hXY.le ha hg₁min hg₁_ge2
               have no_neg_gene_rank_g : ∀ g' ∈ X.1.val.support,
                   g'.rank = g₁.rank → g'.type = .Negative := by
                 intro g' hg'_supp hg'_rank
@@ -458,29 +430,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
               have hge4 : g₁.rank ≥ 4 := by
                 obtain ⟨k, hk⟩ := h_g1_rank_even
                 omega
-              have hstrict :
-                  (sigma Y.1 0).1 - (sigma Y.1 1).1 <
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                linarith [sigma_zero_fst_eq X Y hXY.le]
-              have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-                (le_iff_dominates.mp hXY.le 1).2
-              have hb12_eq :
-                  (sigma X.1 1).2 - (sigma X.1 2).2 =
-                  (sigma X.1 0).1 - (sigma X.1 1).1 := by
-                have h := x_side_equalities
-                  (fun g' _ hg'_pos =>
-                    hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
-                  (show 1 < g₁.rank from hg₁_ge2)
-                simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
-                exact h
-              have hd12_le :
-                  (sigma Y.1 1).2 - (sigma Y.1 2).2 ≤
-                  (sigma Y.1 0).1 - (sigma Y.1 1).1 := by
-                have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
-                simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
-                exact h
-              have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 := by
-                linarith
+              have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 :=
+                snd_two_lt_of_fst_one_lt_and_min_rank X Y hXY.le ha hg₁min hg₁_ge2
               have no_neg_gene_rank_g : ∀ g' ∈ X.1.val.support,
                   g'.rank = g₁.rank → g'.type = .Negative := by
                 intro g' hg'_supp hg'_rank

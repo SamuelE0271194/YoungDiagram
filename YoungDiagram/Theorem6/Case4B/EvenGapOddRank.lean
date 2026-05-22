@@ -6,7 +6,6 @@ open Chromosome Sigma
 
 /-! Case 4b, even rank-gap and odd lower rank. -/
 
-set_option linter.unusedVariables false in
 lemma exists_mutation_le_case4b_evenGap_oddRank
     {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
     {g₁ g₂ : Gene}
@@ -69,30 +68,10 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
             | NonPolarized => exact absurd ht hg₂_ne_np
           have hstrict :
               (sigma Y.1 0).1 - (sigma Y.1 1).1 <
-              (sigma X.1 0).1 - (sigma X.1 1).1 := by
-            linarith [sigma_zero_fst_eq X Y hXY.le]
-          have hb12_eq :
-              (sigma X.1 1).2 - (sigma X.1 2).2 =
-              (sigma X.1 0).1 - (sigma X.1 1).1 := by
-            have h := x_side_equalities
-              (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
-              (show 1 < g₁.rank from hg₁_ge2)
-            simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
-            exact h
-          have hd12_le :
-              (sigma Y.1 1).2 - (sigma Y.1 2).2 ≤
-              (sigma Y.1 0).1 - (sigma Y.1 1).1 := by
-            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
-            simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
-            exact h
-          have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-            (le_iff_dominates.mp hXY.le 1).2
-          have hb12_gt_d12 :
-              (sigma Y.1 1).2 - (sigma Y.1 2).2 <
-              (sigma X.1 1).2 - (sigma X.1 2).2 := by
-            linarith [hb12_eq, hstrict, hd12_le]
-          have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 := by
-            linarith [hb1_le_d1, hb12_gt_d12]
+              (sigma X.1 0).1 - (sigma X.1 1).1 :=
+            fst_zero_gap_strict_of_fst_one_lt X Y hXY.le ha
+          have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 :=
+            snd_two_lt_of_fst_one_lt_and_min_rank X Y hXY.le ha hg₁min hg₁_ge2
           have all_rel :
               (sigma X.1 g₁.rank).1 < (sigma Y.1 g₁.rank).1 ∧
               (sigma X.1 (g₁.rank + 1)).1 < (sigma Y.1 (g₁.rank + 1)).1 ∧

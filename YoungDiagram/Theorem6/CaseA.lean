@@ -15,7 +15,6 @@ subcases of the original dispatcher, not from the final Case B branch. The final
 Case B branch is proved in `Theorem6.lean` by applying sign-duality to this lemma.
 -/
 
-set_option maxHeartbeats 0 in
 -- Case A contains several large linear-arithmetic window checks inherited from §15.10.
 lemma exists_mutation_le_fifteen_ten_caseA (m : ℕ)
     (_ih : ∀ k, k < m + 2 → ∀ X Y : nPi k, X.1 < Y.1 →

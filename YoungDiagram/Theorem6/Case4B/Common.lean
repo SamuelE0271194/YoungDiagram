@@ -140,6 +140,12 @@ lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Gene} {τ 
     · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by have := g.rank_pos; omega, hg₁_altType⟩
     · exact ⟨hsupp, by have := g₁.rank_pos; omega, htype⟩
 
+lemma fst_zero_gap_strict_of_fst_one_lt {n : ℕ} (X Y : nPi n)
+    (hXY : X.1 ≤ Y.1) (ha : (sigma X.1 1).1 < (sigma Y.1 1).1) :
+    (sigma Y.1 0).1 - (sigma Y.1 1).1 <
+      (sigma X.1 0).1 - (sigma X.1 1).1 := by
+  linarith [sigma_zero_fst_eq X Y hXY]
+
 lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (hXY : X.1 ≤ Y.1) (ha : (sigma X.1 1).1 < (sigma Y.1 1).1) :
     (sigma Y.1 0).1 - (sigma Y.1 1).1 ≤
@@ -152,6 +158,34 @@ lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
   have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
     exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hlt)
   linarith [sigma_zero_fst_eq X Y hXY]
+
+lemma snd_two_lt_of_fst_one_lt_and_min_rank {n : ℕ} (X Y : nPi n)
+    (hXY : X.1 ≤ Y.1) (ha : (sigma X.1 1).1 < (sigma Y.1 1).1)
+    {g₁ : Gene}
+    (hg₁min : ∀ g ∈ X.1.val.support, g₁.rank ≤ g.rank)
+    (hg₁_ge2 : 2 ≤ g₁.rank) :
+    (sigma X.1 2).2 < (sigma Y.1 2).2 := by
+  have hstrict :
+      (sigma Y.1 0).1 - (sigma Y.1 1).1 <
+      (sigma X.1 0).1 - (sigma X.1 1).1 :=
+    fst_zero_gap_strict_of_fst_one_lt X Y hXY ha
+  have hb12_eq :
+      (sigma X.1 1).2 - (sigma X.1 2).2 =
+      (sigma X.1 0).1 - (sigma X.1 1).1 := by
+    have h := x_side_equalities
+      (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
+      (show 1 < g₁.rank from hg₁_ge2)
+    simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
+    exact h
+  have hd12_le :
+      (sigma Y.1 1).2 - (sigma Y.1 2).2 ≤
+      (sigma Y.1 0).1 - (sigma Y.1 1).1 := by
+    have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
+    simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
+    exact h
+  have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
+    (le_iff_dominates.mp hXY 1).2
+  linarith
 
 lemma fst_lt_of_gap_chain {n i j : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1)
     (hstrict : (sigma Y.1 0).1 - (sigma Y.1 1).1 <
