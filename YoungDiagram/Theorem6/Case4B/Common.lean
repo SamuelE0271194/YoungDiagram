@@ -3,6 +3,59 @@ import YoungDiagram.Theorem6.Prelim
 open Variety hiding prime prime_def
 open Chromosome Sigma
 
+lemma gene_type_eq_of_X_pos_not_opposite {n : ℕ} (X : nPi n) {g₁ g₂ : Gene}
+    (hε₁ : g₁.type ≠ .NonPolarized) (hg₂pos : 0 < X.1.val g₂)
+    (hε₂ : ¬ g₂.type = -g₁.type) :
+    g₂.type = g₁.type := by
+  have hε₂pol : g₂.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₂
+      (Finsupp.mem_support_iff.mpr hg₂pos.ne')
+  match ht₁ : g₁.type, hε₁ with
+  | .Positive, _ =>
+    cases ht₂ : g₂.type
+    · exact absurd ht₂ hε₂pol
+    · rw [ht₂, ht₁] at hε₂
+    · rw [ht₂, ht₁, GeneType.neg_positive] at hε₂; tauto
+  | .Negative, _ =>
+    cases ht₂ : g₂.type
+    · exact absurd ht₂ hε₂pol
+    · rw [ht₂, ht₁, GeneType.neg_negative] at hε₂; tauto
+    · rw [ht₂, ht₁] at hε₂
+
+lemma support_same_rank_type_eq_negative {n : ℕ} (X : nPi n)
+    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
+      g.type = .Positive ∧ h.type = .Negative ∧
+      0 < X.1.val g ∧ 0 < X.1.val h)
+    {g₁ g : Gene} (hε_neg : g₁.type = .Negative) (hXg₁pos : 0 < X.1.val g₁)
+    (hg_supp : g ∈ X.1.val.support) (hrank : g.rank = g₁.rank) :
+    g.type = .Negative := by
+  have hg_ne_np : g.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g hg_supp
+  have hg_ne_pos : g.type ≠ .Positive := fun hg_pos => hXpn
+    ⟨g, g₁, hrank, hg_pos, hε_neg,
+      Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg_supp), hXg₁pos⟩
+  cases ht : g.type with
+  | Positive => exact absurd ht hg_ne_pos
+  | Negative => rfl
+  | NonPolarized => exact absurd ht hg_ne_np
+
+lemma support_same_rank_type_eq_positive {n : ℕ} (X : nPi n)
+    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
+      g.type = .Positive ∧ h.type = .Negative ∧
+      0 < X.1.val g ∧ 0 < X.1.val h)
+    {g₁ g : Gene} (hε_pos : g₁.type = .Positive) (hXg₁pos : 0 < X.1.val g₁)
+    (hg_supp : g ∈ X.1.val.support) (hrank : g.rank = g₁.rank) :
+    g.type = .Positive := by
+  have hg_ne_np : g.type ≠ .NonPolarized :=
+    IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g hg_supp
+  have hg_ne_neg : g.type ≠ .Negative := fun hg_neg => hXpn
+    ⟨g₁, g, hrank.symm, hε_pos, hg_neg, hXg₁pos,
+      Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg_supp)⟩
+  cases ht : g.type with
+  | Positive => rfl
+  | Negative => exact absurd ht hg_ne_neg
+  | NonPolarized => exact absurd ht hg_ne_np
+
 /-- Common type-2 mutation constructor for Case 4b with even rank-gap.
 
 The parity-specific files only have to prove `hXY_sigma`: the sigma increment of
@@ -26,21 +79,7 @@ lemma exists_mutation_le_case4b_evenGap_of_sigma_window
     IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁ (Finsupp.mem_support_iff.mpr hXg₁)
   have hle : g₁.rank ≤ g₂.rank := le_of_lt hg₂rank
   have hg₂_type : g₂.type = g₁.type := by
-    have hpol₁ : g₁.type ≠ .NonPolarized := hε
-    have hpol₂ : g₂.type ≠ .NonPolarized :=
-      IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₂
-        (Finsupp.mem_support_iff.mpr hg₂pos.ne')
-    match ht₁ : g₁.type, hpol₁ with
-    | .Positive, _ =>
-      cases ht₂ : g₂.type
-      · tauto
-      · rw [ht₂, ht₁] at hε₂
-      · rw [ht₂, ht₁, GeneType.neg_positive] at hε₂; tauto
-    | .Negative, _ =>
-      cases ht₂ : g₂.type
-      · tauto
-      · rw [ht₂, ht₁, GeneType.neg_negative] at hε₂; tauto
-      · rw [ht₂, ht₁] at hε₂
+    exact gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂
   have hg₁_ofRank : Gene.ofRank g₁.rank ε = Finsupp.single g₁ 1 :=
     Gene.ofRank_eq_gene
   have hg₂_ofRank : Gene.ofRank g₂.rank ε = Finsupp.single g₂ 1 := by
@@ -145,6 +184,15 @@ lemma fst_zero_gap_strict_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (sigma Y.1 0).1 - (sigma Y.1 1).1 <
       (sigma X.1 0).1 - (sigma X.1 1).1 := by
   linarith [sigma_zero_fst_eq X Y hXY]
+
+lemma snd_zero_gap_le_of_dominates {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
+    (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
+      (sigma X.1.val 0).2 - (sigma X.1.val 1).2 := by
+  have hb0_eq_d0 : (sigma X.1 0).2 = (sigma Y.1 0).2 :=
+    sigma_zero_snd_eq X Y hXY
+  have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
+    (le_iff_dominates.mp hXY 1).2
+  linarith
 
 lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (hXY : X.1 ≤ Y.1) (ha : (sigma X.1 1).1 < (sigma Y.1 1).1) :

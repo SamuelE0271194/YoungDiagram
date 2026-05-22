@@ -57,15 +57,7 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
             refine ⟨a + b, ?_⟩
             omega
           have hg₂_pos : g₂.type = .Positive := by
-            have hg₂_ne_np :=
-              IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₂
-                (Finsupp.mem_support_iff.mpr hg₂pos.ne')
-            have hg₂_ne_neg : g₂.type ≠ .Negative := by
-              simpa [hε_pos, GeneType.neg_positive] using hε₂
-            cases ht : g₂.type with
-            | Positive => rfl
-            | Negative => exact absurd ht hg₂_ne_neg
-            | NonPolarized => exact absurd ht hg₂_ne_np
+            rw [gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂, hε_pos]
           have hstrict :
               (sigma Y.1 0).1 - (sigma Y.1 1).1 <
               (sigma X.1 0).1 - (sigma X.1 1).1 :=
@@ -95,17 +87,8 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
               · have no_neg_gene_rank_g : ∀ g' ∈ X.1.val.support,
                     g'.rank = g₁.rank → g'.type = .Positive := by
                   intro g' hg'_supp hg'_rank
-                  have hg'_ne_np : g'.type ≠ .NonPolarized :=
-                    IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g' hg'_supp
-                  have hg'_ne_neg : g'.type ≠ .Negative := by
-                    intro hg'_neg
-                    apply hXpn
-                    exact ⟨g₁, g', hg'_rank.symm, hε_pos, hg'_neg, hXg₁pos,
-                      Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg'_supp)⟩
-                  cases ht' : g'.type with
-                  | Positive => rfl
-                  | Negative => exact absurd ht' hg'_ne_neg
-                  | NonPolarized => exact absurd ht' hg'_ne_np
+                  exact support_same_rank_type_eq_positive X hXpn hε_pos hXg₁pos
+                    hg'_supp hg'_rank
                 have h := Sigma.b0_bi_eq_a1_ai1 X.1.val X.1.2 (j - 1)
                   (fun g hg_supp hrank_le => by
                     have hg_rank_eq : g.rank = g₁.rank := by
@@ -222,12 +205,8 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
                 exact key m
               have hd0_le_b0 :
                   (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
-                  (sigma X.1.val 0).2 - (sigma X.1.val 1).2 := by
-                have hb0_eq_d0 : (sigma X.1 0).2 = (sigma Y.1 0).2 :=
-                  sigma_zero_snd_eq X Y hXY.le
-                have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-                  (le_iff_dominates.mp hXY.le 1).2
-                linarith
+                  (sigma X.1.val 0).2 - (sigma X.1.val 1).2 :=
+                snd_zero_gap_le_of_dominates X Y hXY.le
               have hb0_eq_bj :
                   (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
                   (sigma X.1.val j).2 - (sigma X.1.val (j + 1)).2 := by
@@ -535,11 +514,8 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
                   simpa using Sigma.cond_15_7 Y.1.val 0 Y.1.2
                 have hd01_le_b01 :
                     (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
-                    (sigma X.1.val 0).2 - (sigma X.1.val 1).2 := by
-                  have hb0_eq_d0 := sigma_zero_snd_eq X Y hXY.le
-                  have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-                    (le_iff_dominates.mp hXY.le 1).2
-                  linarith
+                    (sigma X.1.val 0).2 - (sigma X.1.val 1).2 :=
+                  snd_zero_gap_le_of_dominates X Y hXY.le
                 have hb01_eq_aj :
                     (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
                     (sigma X.1.val g₂.rank).1 - (sigma X.1.val (g₂.rank + 1)).1 := by
@@ -637,11 +613,8 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
                   simpa using Sigma.cond_15_7 Y.1.val 0 Y.1.2
                 have hd01_le_b01 :
                     (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
-                    (sigma X.1.val 0).2 - (sigma X.1.val 1).2 := by
-                  have hb0_eq_d0 := sigma_zero_snd_eq X Y hXY.le
-                  have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
-                    (le_iff_dominates.mp hXY.le 1).2
-                  linarith
+                    (sigma X.1.val 0).2 - (sigma X.1.val 1).2 :=
+                  snd_zero_gap_le_of_dominates X Y hXY.le
                 have hb01_eq_aj :
                     (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
                     (sigma X.1.val j).1 - (sigma X.1.val (j + 1)).1 := by
