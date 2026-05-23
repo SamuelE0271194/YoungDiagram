@@ -46,18 +46,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
       have hjl' : g₁.rank - 1 ≤ j := by omega
       have hjr' : j ≤ g₂.rank + 1 := by omega
       have hdelta := hcase3 j hjl' hjr'
-      have hε_neg : g₁.type = GeneType.Negative := by
-        have hnodd : ¬Even ((g₁.rank : ℤ) - 1) := by
-          obtain ⟨k, hk⟩ := h_g1_rank_even
-          intro ⟨m, hm⟩
-          omega
-        simp only [GeneType.negOnePow_smul, if_neg hnodd,
-                    GeneType.neg_negative] at hε₁
-        match h : g₁.type with
-        | .Positive => exact absurd h hε₁
-        | .Negative => rfl
-        | .NonPolarized =>
-          exact absurd h hε
+      have hε_neg : g₁.type = GeneType.Negative :=
+        gene_type_eq_negative_of_even_of_ne_negOnePow_negative h_g1_rank_even hε hε₁
       have haj_lt_cj : ∀ j, g₁.rank - 1 ≤ j → j ≤ g₂.rank →
           (sigma X.1.val j).1 < (sigma Y.1.val j).1 := by
         have ham1_lt_cm1 :
@@ -470,32 +460,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                 omega
               have hdj_le_d0 :
                   (sigma Y.1.val j).2 - (sigma Y.1.val (j + 1)).2 ≤
-                  (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 := by
-                have key : ∀ n : ℕ,
-                    (sigma Y.1.val (n + n)).2 -
-                    (sigma Y.1.val (n + n + 1)).2 ≤
-                    (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 := by
-                  intro n
-                  induction n with
-                  | zero => simp
-                  | succ n ih =>
-                    have h1 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
-                        (Sigma.drop Y.1.val (n + n + 1)).1 := by
-                      have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
-                      rw [if_neg (fun heven =>
-                        (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
-                      exact h
-                    have h2 : (Sigma.drop Y.1.val (n + n + 1)).1 ≤
-                        (Sigma.drop Y.1.val (n + n)).2 := by
-                      have h := Sigma.cond_15_7_drop Y.1.val (n + n) Y.1.2
-                      rw [if_pos ⟨n, rfl⟩] at h
-                      exact h
-                    simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
-                    rw [show n + 1 + (n + 1) = n + n + 2 from by omega]
-                    linarith
-                obtain ⟨m, hm⟩ := hjeven
-                rw [hm]
-                exact key m
+                  (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 :=
+                snd_drop_even_le_snd_drop_zero Y.1.2 hjeven
               have hd0_le_b0 :
                   (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
                   (sigma X.1.val 0).2 - (sigma X.1.val 1).2 :=

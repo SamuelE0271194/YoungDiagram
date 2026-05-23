@@ -177,32 +177,8 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
         by_cases hjeven : Even j
         · have hdj_le_d0 :
               (sigma Y.1.val j).2 - (sigma Y.1.val (j + 1)).2 ≤
-              (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 := by
-            have key : ∀ n : ℕ,
-                (sigma Y.1.val (n + n)).2 -
-                (sigma Y.1.val (n + n + 1)).2 ≤
-                (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 := by
-              intro n
-              induction n with
-              | zero => simp
-              | succ n ih =>
-                have h1 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
-                    (Sigma.drop Y.1.val (n + n + 1)).1 := by
-                  have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
-                  rw [if_neg (fun heven =>
-                    (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
-                  exact h
-                have h2 : (Sigma.drop Y.1.val (n + n + 1)).1 ≤
-                    (Sigma.drop Y.1.val (n + n)).2 := by
-                  have h := Sigma.cond_15_7_drop Y.1.val (n + n) Y.1.2
-                  rw [if_pos ⟨n, rfl⟩] at h
-                  exact h
-                simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
-                rw [show n + 1 + (n + 1) = n + n + 2 from by omega]
-                linarith
-            obtain ⟨m, hm⟩ := hjeven
-            rw [hm]
-            exact key m
+              (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 :=
+            snd_drop_even_le_snd_drop_zero Y.1.2 hjeven
           have hd0_le_b0 :
               (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
               (sigma X.1.val 0).2 - (sigma X.1.val 1).2 :=
@@ -600,33 +576,8 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
             omega
           have hcj_le_c12 :
               (sigma Y.1.val j).1 - (sigma Y.1.val (j + 1)).1 ≤
-              (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 := by
-            have key : ∀ n : ℕ,
-                (sigma Y.1.val (n + n + 1)).1 -
-                (sigma Y.1.val (n + n + 2)).1 ≤
-                (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 := by
-              intro n
-              induction n with
-              | zero => simp
-              | succ n ih =>
-                have h1 : (Sigma.drop Y.1.val (n + n + 3)).1 ≤
-                    (Sigma.drop Y.1.val (n + n + 2)).2 := by
-                  have h := Sigma.cond_15_7_drop Y.1.val (n + n + 2) Y.1.2
-                  rw [if_pos ⟨n + 1, by omega⟩] at h
-                  exact h
-                have h2 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
-                    (Sigma.drop Y.1.val (n + n + 1)).1 := by
-                  have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
-                  rw [if_neg (fun heven =>
-                    (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
-                  exact h
-                simp only [Sigma.drop_fst, Sigma.drop_snd] at h1 h2
-                rw [show n + 1 + (n + 1) + 1 = n + n + 3 from by omega,
-                    show n + 1 + (n + 1) + 2 = n + n + 4 from by omega]
-                linarith
-            obtain ⟨m, hm⟩ := Nat.not_even_iff_odd.mp hjeven
-            rw [show j = m + m + 1 from by omega]
-            exact key m
+              (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 :=
+            fst_drop_odd_le_fst_drop_one Y.1.2 hjeven
           have hc12_le_d01 :
               (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 ≤
               (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 := by

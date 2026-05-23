@@ -194,6 +194,63 @@ lemma snd_zero_gap_le_of_dominates {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
     (le_iff_dominates.mp hXY 1).2
   linarith
 
+lemma snd_drop_even_le_snd_drop_zero {X : Chromosome} (hX : X ∈ Variety.Pi)
+    {j : ℕ} (hj : Even j) :
+    (sigma X j).2 - (sigma X (j + 1)).2 ≤
+      (sigma X 0).2 - (sigma X 1).2 := by
+  have key : ∀ n : ℕ,
+      (sigma X (n + n)).2 - (sigma X (n + n + 1)).2 ≤
+        (sigma X 0).2 - (sigma X 1).2 := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+      have h1 : (Sigma.drop X (n + n + 2)).2 ≤
+          (Sigma.drop X (n + n + 1)).1 := by
+        have h := Sigma.cond_15_7_drop X (n + n + 1) hX
+        rw [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
+        exact h
+      have h2 : (Sigma.drop X (n + n + 1)).1 ≤
+          (Sigma.drop X (n + n)).2 := by
+        have h := Sigma.cond_15_7_drop X (n + n) hX
+        rw [if_pos ⟨n, rfl⟩] at h
+        exact h
+      simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
+      rw [show n + 1 + (n + 1) = n + n + 2 from by omega]
+      linarith
+  obtain ⟨m, hm⟩ := hj
+  rw [hm]
+  exact key m
+
+lemma fst_drop_odd_le_fst_drop_one {X : Chromosome} (hX : X ∈ Variety.Pi)
+    {j : ℕ} (hj : ¬Even j) :
+    (sigma X j).1 - (sigma X (j + 1)).1 ≤
+      (sigma X 1).1 - (sigma X 2).1 := by
+  have key : ∀ n : ℕ,
+      (sigma X (n + n + 1)).1 - (sigma X (n + n + 2)).1 ≤
+        (sigma X 1).1 - (sigma X 2).1 := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+      have h1 : (Sigma.drop X (n + n + 3)).1 ≤
+          (Sigma.drop X (n + n + 2)).2 := by
+        have h := Sigma.cond_15_7_drop X (n + n + 2) hX
+        rw [if_pos ⟨n + 1, by omega⟩] at h
+        exact h
+      have h2 : (Sigma.drop X (n + n + 2)).2 ≤
+          (Sigma.drop X (n + n + 1)).1 := by
+        have h := Sigma.cond_15_7_drop X (n + n + 1) hX
+        rw [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
+        exact h
+      simp only [Sigma.drop_fst, Sigma.drop_snd] at h1 h2
+      rw [show n + 1 + (n + 1) + 1 = n + n + 3 from by omega,
+          show n + 1 + (n + 1) + 2 = n + n + 4 from by omega]
+      linarith
+  obtain ⟨m, hm⟩ := Nat.not_even_iff_odd.mp hj
+  rw [show j = m + m + 1 from by omega]
+  exact key m
+
 lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (hXY : X.1 ≤ Y.1) (ha : (sigma X.1 1).1 < (sigma Y.1 1).1) :
     (sigma Y.1 0).1 - (sigma Y.1 1).1 ≤
