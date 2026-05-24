@@ -136,8 +136,8 @@ lemma exists_mutation_le_case4b_evenGap_of_sigma_window
   rw [hX_split] at h1 h2
   simp only [Prod.fst_add, Prod.snd_add] at h1 h2
   refine ⟨?_, ?_⟩
-  · simp only [Prod.fst_add]; omega
-  · simp only [Prod.snd_add]; omega
+  · simp only [Prod.fst_add]; linarith
+  · simp only [Prod.snd_add]; linarith
 
 lemma support_filter_tail_eq {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ} {τ : GeneType}
     (hg₂min : ∀ g', 0 < X g' → g₁.rank < g'.rank → g₂.rank ≤ g'.rank)
@@ -146,12 +146,11 @@ lemma support_filter_tail_eq {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ} {τ :
       X.support.filter (fun g => j < g.rank ∧ g.type = Sigma.altType g.rank τ) := by
   ext g
   simp only [Finset.mem_filter, Finsupp.mem_support_iff]
-  constructor
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, by have := hg₂min g (Nat.pos_of_ne_zero hg_supp) hg_rank; omega,
-      hg_type⟩
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, by omega, hg_type⟩
+  refine ⟨fun ⟨hg_supp, hg_rank, hg_type⟩ =>
+    ⟨hg_supp, ?_, hg_type⟩, fun ⟨hg_supp, hg_rank, hg_type⟩ =>
+    ⟨hg_supp, by omega, hg_type⟩⟩
+  have := hg₂min g (Nat.pos_of_ne_zero hg_supp) hg_rank
+  omega
 
 lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Gene} {τ : GeneType}
     (hg₁_one : X g₁ = 1) (hg₁_altType : g₁.type = Sigma.altType g₁.rank τ) :
@@ -180,6 +179,7 @@ lemma fst_zero_gap_strict_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (sigma Y.1 0).1 - (sigma Y.1 1).1 <
       (sigma X.1 0).1 - (sigma X.1 1).1 := by
   linarith [sigma_zero_fst_eq X Y hXY]
+
 
 lemma snd_zero_gap_le_of_dominates {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
     (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤

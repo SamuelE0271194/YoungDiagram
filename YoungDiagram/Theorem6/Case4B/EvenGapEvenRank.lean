@@ -41,8 +41,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
     · rw [← hcase2 j hjr]
       exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
               by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
-    · -- Middle window: `g₁.rank - 1 ≤ j ≤ g₂.rank + 1`.
-      push Not at hjl hjr
+    · push_neg at hjl hjr
       have hjl' : g₁.rank - 1 ≤ j := by omega
       have hjr' : j ≤ g₂.rank + 1 := by omega
       have hdelta := hcase3 j hjl' hjr'
