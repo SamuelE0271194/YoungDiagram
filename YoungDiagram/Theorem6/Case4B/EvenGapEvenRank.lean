@@ -266,11 +266,9 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                 change signature (prime^[k] Y.1.val.prime) =
                     signature (prime^[k + 1] Y.1.val)
                 rw [Function.iterate_succ_apply]
-              have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val.prime (i - 1)
-                (Variety.prime_mem_Pi Y.1.2)
-              simp only [if_pos hi_pred_even, sigma_shift,
-                Nat.sub_add_cancel hi_pos] at h
-              exact h
+              simpa [if_pos hi_pred_even, sigma_shift, Nat.sub_add_cancel hi_pos] using
+                Sigma.cond_15_6_compare_k_to_0 Y.1.val.prime (i - 1)
+                  (Variety.prime_mem_Pi Y.1.2)
             have hc1_le_d0 :
                 (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 ≤
                 (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 :=
