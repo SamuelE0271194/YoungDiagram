@@ -41,8 +41,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
     · rw [← hcase2 j hjr]
       exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
               by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
-    · -- Middle window: `g₁.rank - 1 ≤ j ≤ g₂.rank + 1`.
-      push Not at hjl hjr
+    · push Not at hjl hjr
       have hjl' : g₁.rank - 1 ≤ j := by omega
       have hjr' : j ≤ g₂.rank + 1 := by omega
       have hdelta := hcase3 j hjl' hjr'
@@ -445,8 +444,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
         have hg₂_odd : Odd g₂.rank := by
           obtain ⟨a, ha⟩ := h_g1_rank_even
           obtain ⟨b, hb⟩ := Nat.not_even_iff_odd.mp hparity
-          refine ⟨a + b, ?_⟩
-          omega
+          exact ⟨a + b, by omega⟩
         have hg₂_neg : g₂.type = .Negative := by
           rw [gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂, hε_neg]
         have hdi_sub_le_bi_sub : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank →
@@ -534,9 +532,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                       hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
                     (show g₁.rank - 1 < g₁.rank from by omega)
                   rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
-                  have hodd : ¬Even (g₁.rank - 1) := by
+                  have hodd : ¬Even (g₁.rank - 1) := fun h' => by
                     obtain ⟨r, hr⟩ := h_g1_rank_even
-                    intro h'
                     obtain ⟨s, hs⟩ := h'
                     omega
                   simp only [hodd, if_false] at h
@@ -673,9 +670,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                       hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
                     (show g₁.rank - 1 < g₁.rank from by omega)
                   rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
-                  have hodd : ¬Even (g₁.rank - 1) := by
+                  have hodd : ¬Even (g₁.rank - 1) := fun h' => by
                     obtain ⟨r, hr⟩ := h_g1_rank_even
-                    intro h'
                     obtain ⟨s, hs⟩ := h'
                     omega
                   simp only [hodd, if_false] at h
@@ -793,8 +789,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                     (g₁.rank ≤ j ∧ j ≤ g₂.rank) ∨
                     j = g₂.rank + 1 from by omega)
           with hjbd | ⟨hjl2, hjr2⟩ | hjbd2
-      · -- Left boundary: delta = `(1, 0)`.
-        rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
+      · rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
             if_pos hjbd] at hdelta
         have haj := haj_lt_cj j (by omega) (by omega)
         rw [hnX, hnY] at haj
@@ -808,8 +803,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
           by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith [hXYj.2]⟩
-      · -- Interior: delta = `(1, 1)`.
-        rw [if_pos (show (j > g₁.rank - 1) ∧ (j < g₂.rank + 1)
+      · rw [if_pos (show (j > g₁.rank - 1) ∧ (j < g₂.rank + 1)
                     from ⟨by omega, by omega⟩)] at hdelta
         have haj := haj_lt_cj j (by omega) hjr2
         have hbj := hbj_lt_dj j hjl2 (by omega)
@@ -826,8 +820,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
           by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
-      · -- Right boundary: delta = `(0, 1)`.
-        rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
+      · rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
             if_neg (by omega : j ≠ g₁.rank - 1)] at hdelta
         have hbj := hbj_lt_dj j (by omega) (by omega)
         rw [hnX, hnY] at hbj

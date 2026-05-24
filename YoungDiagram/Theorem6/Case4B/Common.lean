@@ -22,7 +22,6 @@ lemma gene_type_eq_of_X_pos_not_opposite {n : ℕ} (X : nPi n) {g₁ g₂ : Gene
     · rw [ht₂, ht₁, GeneType.neg_negative] at hε₂; tauto
     · rw [ht₂, ht₁] at hε₂
 
-
 lemma support_same_rank_type_eq_negative {n : ℕ} (X : nPi n)
     (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧
@@ -39,6 +38,7 @@ lemma support_same_rank_type_eq_negative {n : ℕ} (X : nPi n)
   | Positive => exact absurd ht hg_ne_pos
   | Negative => rfl
   | NonPolarized => exact absurd ht hg_ne_np
+
 
 lemma support_same_rank_type_eq_positive {n : ℕ} (X : nPi n)
     (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
@@ -97,8 +97,7 @@ lemma exists_mutation_le_case4b_evenGap_of_sigma_window
     rcases eq_or_ne gen g₁ with rfl | hng₁
     · simp [Ne.symm hne, hg₁_one]
     · rcases eq_or_ne gen g₂ with rfl | hng₂
-      · simp only [Ne.symm hng₁]
-        exact hg₂pos
+      · simpa [Ne.symm hng₁] using hg₂pos
       · simp [Ne.symm hng₁, Ne.symm hng₂]
   let rest : Pi :=
     ⟨X.1.val - (Pi.X2 hε hle hg₁_ge2 : Chromosome),
@@ -164,12 +163,10 @@ lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Gene} {τ 
   · rintro ⟨hsupp, hrank, htype⟩
     by_cases heq : g = g₁
     · exact Or.inl heq
-    · right
-      refine ⟨hsupp, ?_, htype⟩
-      rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with h | h
-      · exact h
-      · exfalso
-        exact heq (Gene.ext h.symm (by rw [← h, ← hg₁_altType] at htype; exact htype))
+    refine Or.inr ⟨hsupp, ?_, htype⟩
+    rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with h | h
+    · exact h
+    · exact absurd (Gene.ext h.symm (by rw [← h, ← hg₁_altType] at htype; exact htype)) heq
   · rintro (rfl | ⟨hsupp, hrank, htype⟩)
     · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by have := g.rank_pos; omega, hg₁_altType⟩
     · exact ⟨hsupp, by have := g₁.rank_pos; omega, htype⟩
@@ -179,7 +176,6 @@ lemma fst_zero_gap_strict_of_fst_one_lt {n : ℕ} (X Y : nPi n)
     (sigma Y.1 0).1 - (sigma Y.1 1).1 <
       (sigma X.1 0).1 - (sigma X.1 1).1 := by
   linarith [sigma_zero_fst_eq X Y hXY]
-
 
 lemma snd_zero_gap_le_of_dominates {n : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
     (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 ≤
@@ -272,14 +268,12 @@ lemma snd_two_lt_of_fst_one_lt_and_min_rank {n : ℕ} (X Y : nPi n)
     have h := x_side_equalities
       (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
       (show 1 < g₁.rank from hg₁_ge2)
-    simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
-    exact h
+    simpa [show ¬Even 1 from by decide] using h
   have hd12_le :
       (sigma Y.1 1).2 - (sigma Y.1 2).2 ≤
       (sigma Y.1 0).1 - (sigma Y.1 1).1 := by
     have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
-    simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
-    exact h
+    simpa [show ¬Even (2 - 1 : ℕ) from by decide] using h
   have hb1_le_d1 : (sigma X.1 1).2 ≤ (sigma Y.1 1).2 :=
     (le_iff_dominates.mp hXY 1).2
   linarith
