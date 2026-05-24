@@ -168,12 +168,9 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                     ((g₁.rank : ℤ) - 1) • GeneType.Positive := by
                 have h1 : Int.negOnePow ((g₁.rank : ℤ) - 1) • GeneType.Positive =
                     GeneType.Negative := by
-                  have h := Sigma.altType_even g₁.rank h_g1_rank_even
-                    GeneType.Positive
-                  simp only [Sigma.altType, GeneType.neg_positive] at h
-                  exact h
-                rw [h1]
-                exact hε_neg
+                  have h := Sigma.altType_even g₁.rank h_g1_rank_even GeneType.Positive
+                  simpa [Sigma.altType, GeneType.neg_positive] using h
+                rw [h1]; exact hε_neg
               have hfilter_split :
                   X.1.val.support.filter (fun g =>
                     0 < g.rank ∧
@@ -185,23 +182,17 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                 ext g
                 simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_singleton,
                             Finsupp.mem_support_iff]
-                constructor
-                · rintro ⟨hsupp, _, htype⟩
-                  by_cases heq : g = g₁
-                  · left
-                    exact heq
-                  · right
-                    refine ⟨hsupp, ?_, htype⟩
+                refine ⟨fun ⟨hsupp, _, htype⟩ => ?_, ?_⟩
+                · by_cases heq : g = g₁
+                  · exact Or.inl heq
+                  · refine Or.inr ⟨hsupp, ?_, htype⟩
                     have hge := hg₁min g (Finsupp.mem_support_iff.mpr hsupp)
                     rcases Nat.lt_or_eq_of_le hge with h | h
                     · exact h
-                    · exfalso
-                      apply heq
-                      exact Gene.ext h.symm
-                        (by rw [← h, ← hg₁_posfam] at htype; exact htype)
+                    · exact absurd (Gene.ext h.symm
+                        (by rw [← h, ← hg₁_posfam] at htype; exact htype)) heq
                 · rintro (rfl | ⟨hsupp, hrank', htype⟩)
-                  · exact ⟨by rw [hg₁_one]; exact one_ne_zero,
-                            by omega, hg₁_posfam⟩
+                  · exact ⟨hg₁_one ▸ one_ne_zero, by omega, hg₁_posfam⟩
                   · exact ⟨hsupp, by omega, htype⟩
               have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
                   g₁.rank < g.rank ∧

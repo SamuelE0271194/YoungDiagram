@@ -211,16 +211,14 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
             simpa [hjeven] using Sigma.cond_15_6_compare_k_to_0 Y.1.val j Y.1.2
           have hc01_le_a01_sub1 :
               (sigma Y.1.val 0).1 - (sigma Y.1.val 1).1 ≤
-              (sigma X.1.val 0).1 - (sigma X.1.val 1).1 - 1 := by
-            exact fst_zero_gap_le_sub_one_of_fst_one_lt X Y hXY.le ha
+              (sigma X.1.val 0).1 - (sigma X.1.val 1).1 - 1 :=
+            fst_zero_gap_le_sub_one_of_fst_one_lt X Y hXY.le ha
           have ha01_sub1_eq_am_sub1 :
               (sigma X.1.val 0).1 - (sigma X.1.val 1).1 - 1 =
               (sigma X.1.val (g₁.rank - 1)).1 - (sigma X.1.val g₁.rank).1 - 1 := by
-            have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
-              rw [Sigma.altType_odd g₁.rank h_g1_rank_odd]; exact hε_pos
             have h := x_side_equalities
               (fun g' _ hg' => hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
-              (show g₁.rank - 1 < g₁.rank from by omega)
+              (show g₁.rank - 1 < g₁.rank by omega)
             rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
             have heven_sub1 : Even (g₁.rank - 1) := by
               obtain ⟨r, hr⟩ := hodd; exact ⟨r, by omega⟩
@@ -258,8 +256,8 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
                   g.type = Sigma.altType g.rank GeneType.Positive) =
                 {g₁} ∪ X.1.val.support.filter (fun g =>
                   g₁.rank < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Positive) := by
-              exact support_filter_rank_pred_altType_split hg₁_one hg₁_altType
+                  g.type = Sigma.altType g.rank GeneType.Positive) :=
+              support_filter_rank_pred_altType_split hg₁_one hg₁_altType
             have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
                 g₁.rank < g.rank ∧ g.type =
                 Sigma.altType g.rank GeneType.Positive)) := by
