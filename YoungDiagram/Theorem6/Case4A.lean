@@ -198,8 +198,8 @@ lemma exists_mutation_le_case4a
           Sigma.sigma (Pi.X1 hε hle g₁.rank_pos).val j) := by
       have h_outside_range : ∀ j, ¬(g₁.rank ≤ j ∧ j ≤ g₂.rank) →
           Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos).val j =
-          Sigma.sigma (Pi.X1 hε hle g₁.rank_pos).val j := by
-        exact type1_sigma_outside_range_eq hε hle g₁.rank_pos
+          Sigma.sigma (Pi.X1 hε hle g₁.rank_pos).val j :=
+        type1_sigma_outside_range_eq hε hle g₁.rank_pos
       by_cases heven : Even g₁.rank
       · have hε_neg : ε = .Negative :=
           gene_type_eq_negative_of_even_of_ne_negOnePow_negative heven hε hε₁
