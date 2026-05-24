@@ -168,6 +168,7 @@ lemma exists_mutation_le_case3
     change Z.val ≤ Y.1.val
     rw [le_iff_dominates]
     intro i
+    change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
     have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
       le_iff_dominates.mp hXY.le i
     by_cases hi1 : i ≤ g₁.rank - 2

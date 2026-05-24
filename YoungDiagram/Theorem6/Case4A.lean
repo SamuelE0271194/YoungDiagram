@@ -291,8 +291,7 @@ lemma exists_mutation_le_case4a
               rw [hm]; exact key m
             have hd0_le_b0 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 ≤
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 := by
-              have := sigma_zero_snd_eq X Y hXY.le
-              linarith [(le_iff_dominates.mp hXY.le 1).2]
+              linarith [sigma_zero_snd_eq X Y hXY.le, (le_iff_dominates.mp hXY.le 1).2]
             have hb0_eq_bj : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
                 (Sigma.sigma X.1 j).2 - (Sigma.sigma X.1 (j + 1)).2 := by
               have hLHS : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
@@ -566,8 +565,7 @@ lemma exists_mutation_le_case4a
             have hd01_le_b01 :
                 (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 ≤
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 := by
-              have := sigma_zero_snd_eq X Y hXY.le
-              linarith [(le_iff_dominates.mp hXY.le 1).2]
+              linarith [sigma_zero_snd_eq X Y hXY.le, (le_iff_dominates.mp hXY.le 1).2]
             have hb01_eq_aj :
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 =
                 (Sigma.sigma X.1 j).1 - (Sigma.sigma X.1 (j + 1)).1 := by
