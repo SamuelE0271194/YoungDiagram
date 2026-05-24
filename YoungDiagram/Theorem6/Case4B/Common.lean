@@ -22,6 +22,7 @@ lemma gene_type_eq_of_X_pos_not_opposite {n : ℕ} (X : nPi n) {g₁ g₂ : Gene
     · rw [ht₂, ht₁, GeneType.neg_negative] at hε₂; tauto
     · rw [ht₂, ht₁] at hε₂
 
+
 lemma support_same_rank_type_eq_negative {n : ℕ} (X : nPi n)
     (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧
