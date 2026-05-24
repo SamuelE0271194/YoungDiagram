@@ -302,16 +302,12 @@ lemma exists_mutation_le_case3
               (Sigma.sigma X.1 (g₁.rank + 1)).1 < (Sigma.sigma Y.1 (g₁.rank + 1)).1 ∧
               (Sigma.sigma X.1 g₁.rank).2       < (Sigma.sigma Y.1 g₁.rank).2       ∧
               (Sigma.sigma X.1 (g₁.rank - 1)).2 < (Sigma.sigma Y.1 (g₁.rank - 1)).2 := by
-            -- Step 1: auxiliary inequalities for the .1 component
-            -- for i = g₁.rank: c₁ - c_{rank} ≤ d₀ - d_{rank-1}
             have hc1_ci_rank : (Sigma.sigma Y.1 1).1 - (Sigma.sigma Y.1 g₁.rank).1 ≤
                 (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 :=
               Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2 (by omega)
-            -- for i = g₁.rank: d₀ - d_{rank-1} ≤ b₀ - b_{rank-1}
             have hd0_di_rank : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 1)).2 ≤
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 1)).2 :=
               snd_gap_le_of_dominates X Y hXY.le
-            -- b₀ - b_{j-1} = a₁ - a_j for all 1 ≤ j ≤ g₁.rank + 1
             have hb0_bi : ∀ j, 1 ≤ j → j ≤ g₁.rank + 1 →
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (j - 1)).2 =
                 (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 j).1 := by
