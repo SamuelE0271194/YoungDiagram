@@ -381,15 +381,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
           have hb01_eq_aj :
               (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
               (sigma X.1.val j).1 - (sigma X.1.val (j + 1)).1 := by
-            have hLHS : (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
-                ∑ g ∈ X.1.val.support.filter (fun g =>
-                  0 < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative),
-                (X.1.val g : ℚ) := by
-              have h1 := Sigma.sigma_snd_diff X.1.val 0 X.1.2
-              have h2 := Sigma.prime_iterate_sum_eq X.1.val 0 GeneType.Negative
-              simp only [Function.iterate_zero, id] at h1 h2
-              exact h1.trans h2
             have hRHS : (sigma X.1.val j).1 - (sigma X.1.val (j + 1)).1 =
                 ∑ g ∈ X.1.val.support.filter (fun g =>
                   j < g.rank ∧
@@ -401,16 +392,9 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
               have h2 := Sigma.prime_iterate_sum_eq X.1.val j GeneType.Positive
               simp only [hkodd, GeneType.neg_one_smul, GeneType.neg_positive] at h2
               exact h1.trans h2
-            have hfilter_eq :
-                X.1.val.support.filter (fun g =>
-                  0 < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative) =
-                X.1.val.support.filter (fun g =>
-                  j < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative) := by
-              exact support_filter_negative_eq_tail_of_odd hXpn hXg₁pos hg₁min
-                hg₂min h_g1_rank_odd hε_pos hj2'
-            rw [hLHS, hRHS, hfilter_eq]
+            rw [hb01_sum_eq, hRHS,
+                support_filter_negative_eq_tail_of_odd hXpn hXg₁pos hg₁min
+                  hg₂min h_g1_rank_odd hε_pos hj2']
           linarith
       have haj_lt_cj : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank + 1 →
           (sigma X.1.val j).1 < (sigma Y.1.val j).1 := by
