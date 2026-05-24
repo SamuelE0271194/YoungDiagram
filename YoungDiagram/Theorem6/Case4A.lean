@@ -269,19 +269,14 @@ lemma exists_mutation_le_case4a
                 induction n with
                 | zero => simp
                 | succ n ih =>
-                  have h1 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
-                      (Sigma.drop Y.1.val (n + n + 1)).1 := by
-                    have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
-                    rw [if_neg (fun heven =>
-                      (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h; exact h
-                  have h2 : (Sigma.drop Y.1.val (n + n + 1)).1 ≤
-                      (Sigma.drop Y.1.val (n + n)).2 := by
-                    have h := Sigma.cond_15_7_drop Y.1.val (n + n) Y.1.2
-                    rw [if_pos ⟨n, rfl⟩] at h; exact h
+                  have h1 := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
+                  rw [if_neg (fun he => (Nat.even_add_one.mp he) ⟨n, rfl⟩)] at h1
+                  have h2 := Sigma.cond_15_7_drop Y.1.val (n + n) Y.1.2
+                  rw [if_pos ⟨n, rfl⟩] at h2
                   simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
                   rw [show n + 1 + (n + 1) = n + n + 2 from by omega]; linarith
-              obtain ⟨m, hm⟩ := hjeven
-              rw [hm]; exact key m
+              obtain ⟨m, rfl⟩ := hjeven
+              exact key m
             have hd0_le_b0 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 1).2 ≤
                 (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 1).2 := by
               have hb0_eq_d0 := sigma_zero_snd_eq X Y hXY.le
@@ -525,10 +520,8 @@ lemma exists_mutation_le_case4a
                 induction n with
                 | zero => simp
                 | succ n ih =>
-                  have h1 : (Sigma.drop Y.1.val (n + n + 3)).1 ≤
-                      (Sigma.drop Y.1.val (n + n + 2)).2 := by
-                    have h := Sigma.cond_15_7_drop Y.1.val (n + n + 2) Y.1.2
-                    rw [if_pos ⟨n + 1, by omega⟩] at h; exact h
+                  have h1 := Sigma.cond_15_7_drop Y.1.val (n + n + 2) Y.1.2
+                  rw [if_pos ⟨n + 1, by omega⟩] at h1
                   have h2 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
                       (Sigma.drop Y.1.val (n + n + 1)).1 := by
                     have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
