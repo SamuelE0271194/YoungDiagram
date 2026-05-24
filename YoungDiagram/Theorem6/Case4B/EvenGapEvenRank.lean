@@ -314,8 +314,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                     (by exact_mod_cast Nat.not_even_iff_odd.mp hi_even)
                 have h1 := Sigma.sigma_fst_diff X.1.val i X.1.2
                 have h2 := Sigma.prime_iterate_sum_eq X.1.val i GeneType.Positive
-                simp only [hkodd, GeneType.neg_one_smul,
-                            GeneType.neg_positive] at h2
+                simp only [hkodd, GeneType.neg_one_smul, GeneType.neg_positive] at h2
                 exact h1.trans h2
               have hfilter_eq :
                   X.1.val.support.filter (fun g =>

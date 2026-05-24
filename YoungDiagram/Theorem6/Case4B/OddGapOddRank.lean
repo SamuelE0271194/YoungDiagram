@@ -57,6 +57,11 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
         obtain ⟨r, hr⟩ := hodd; exact ⟨r, by omega⟩
       have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
         rw [Sigma.altType_odd g₁.rank h_g1_rank_odd]; exact hε_pos
+      have hdisjoint : Disjoint ({g₁} : Finset Gene) (X.1.val.support.filter (fun g =>
+          g₁.rank < g.rank ∧ g.type = Sigma.altType g.rank GeneType.Positive)) := by
+        simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
+        rintro g rfl ⟨_, hlt, _⟩
+        exact absurd hlt (lt_irrefl _)
       have hstrict :
           (sigma Y.1 0).1 - (sigma Y.1 1).1 <
           (sigma X.1 0).1 - (sigma X.1 1).1 :=
@@ -249,12 +254,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                   g₁.rank < g.rank ∧
                   g.type = Sigma.altType g.rank GeneType.Positive) :=
               support_filter_rank_pred_altType_split hg₁_one hg₁_altType
-            have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
-                g₁.rank < g.rank ∧ g.type =
-                Sigma.altType g.rank GeneType.Positive)) := by
-              simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
-              rintro g rfl ⟨_, hlt, _⟩
-              exact absurd hlt (lt_irrefl _)
             rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
                 show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
             ring
@@ -373,12 +372,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                     g₁.rank < g.rank ∧
                     g.type = Sigma.altType g.rank GeneType.Positive) :=
                 support_filter_rank_pred_altType_split hg₁_one hg₁_altType
-              have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
-                  g₁.rank < g.rank ∧ g.type =
-                  Sigma.altType g.rank GeneType.Positive)) := by
-                simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
-                rintro g rfl ⟨_, hlt, _⟩
-                exact absurd hlt (lt_irrefl _)
               rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
                   show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
               ring
@@ -479,12 +472,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                     g₁.rank < g.rank ∧
                     g.type = Sigma.altType g.rank GeneType.Positive) :=
                 support_filter_rank_pred_altType_split hg₁_one hg₁_altType
-              have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
-                  g₁.rank < g.rank ∧ g.type =
-                  Sigma.altType g.rank GeneType.Positive)) := by
-                simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
-                rintro g rfl ⟨_, hlt, _⟩
-                exact absurd hlt (lt_irrefl _)
               rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
                   show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
               ring

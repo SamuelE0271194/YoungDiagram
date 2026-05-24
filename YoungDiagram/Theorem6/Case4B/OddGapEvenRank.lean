@@ -269,8 +269,7 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                 (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 := by
               have hi_pos : 1 ≤ i := by omega
               have hi_pred_even : Even (i - 1) := by
-                simp only [Nat.even_iff] at *
-                omega
+                simp only [Nat.even_iff] at *; omega
               have sigma_shift : ∀ k, sigma Y.1.val.prime k =
                   sigma Y.1.val (k + 1) := fun k => by
                 change signature (prime^[k] Y.1.val.prime) =
