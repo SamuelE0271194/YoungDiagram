@@ -35,27 +35,24 @@ lemma exists_mutation_le_case4b_evenGap_oddRank
     sigma_type2_mn_rank g₁.type hε hg₂rank hm
   by_cases hjl : j ≤ g₁.rank - 2
   · rw [← hcase1 j hjl]
-    exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
-            by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
+    exact ⟨by simp [Prod.fst_add]; linarith [hXYj.1],
+            by simp [Prod.snd_add]; linarith [hXYj.2]⟩
   · by_cases hjr : g₂.rank + 2 ≤ j
     · rw [← hcase2 j hjr]
-      exact ⟨by simp only [Prod.fst_add]; linarith [hXYj.1],
-              by simp only [Prod.snd_add]; linarith [hXYj.2]⟩
+      exact ⟨by simp [Prod.fst_add]; linarith [hXYj.1],
+              by simp [Prod.snd_add]; linarith [hXYj.2]⟩
     · push Not at hjl hjr
       have hjl' : g₁.rank - 1 ≤ j := by omega
       have hjr' : j ≤ g₂.rank + 1 := by omega
       have hdelta := hcase3 j hjl' hjr'
       have hodd : Odd g₁.rank := Nat.not_even_iff_odd.mp h_g1_rank_odd
-      have hg₁_ge3 : 3 ≤ g₁.rank := by
-        obtain ⟨k, hk⟩ := hodd
-        omega
+      have hg₁_ge3 : 3 ≤ g₁.rank := by obtain ⟨k, hk⟩ := hodd; omega
       have hε_pos : g₁.type = GeneType.Positive :=
         gene_type_eq_positive_of_odd_of_ne_negOnePow_negative hodd hε hε₁
       have hg₂_odd : Odd g₂.rank := by
         obtain ⟨a, ha⟩ := hodd
         obtain ⟨b, hb⟩ := hparity
-        refine ⟨a + b, ?_⟩
-        omega
+        exact ⟨a + b, by omega⟩
       have hg₂_pos : g₂.type = .Positive := by
         rw [gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂, hε_pos]
       have hstrict :

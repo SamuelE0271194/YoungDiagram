@@ -79,18 +79,16 @@ lemma exists_mutation_le_case4b_evenGap_of_sigma_window
   have hε : ε ≠ .NonPolarized :=
     IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g₁ (Finsupp.mem_support_iff.mpr hXg₁)
   have hle : g₁.rank ≤ g₂.rank := le_of_lt hg₂rank
-  have hg₂_type : g₂.type = g₁.type := by
-    exact gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂
+  have hg₂_type : g₂.type = g₁.type :=
+    gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂
   have hg₁_ofRank : Gene.ofRank g₁.rank ε = Finsupp.single g₁ 1 :=
     Gene.ofRank_eq_gene
   have hg₂_ofRank : Gene.ofRank g₂.rank ε = Finsupp.single g₂ 1 := by
     have h := @Gene.ofRank_eq_gene g₂
-    rw [hg₂_type] at h
-    exact h
+    rwa [hg₂_type] at h
   have hsrc_val : (Pi.X2 hε hle hg₁_ge2 : Chromosome) =
       Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
-    simp only [Pi.X2_eq]
-    rw [hg₁_ofRank, hg₂_ofRank]
+    rw [Pi.X2_eq, hg₁_ofRank, hg₂_ofRank]
   have hne : g₁ ≠ g₂ := fun h => absurd hg₂rank (h ▸ lt_irrefl _)
   have hsrc_le : ∀ g : Gene,
       (Pi.X2 hε hle hg₁_ge2 : Chromosome) g ≤ X.1.val g := by
@@ -124,25 +122,22 @@ lemma exists_mutation_le_case4b_evenGap_of_sigma_window
       sigma (Pi.Y2 hε hle hg₁_ge2).val i +
       sigma rest.val i := by
     change sigma (Pi.Y2 hε hle hg₁_ge2 + rest : Variety.Pi).val i = _
-    simp only [AddSubmonoid.coe_add, sigma, iterate_map_add, map_add]
+    simp [sigma, iterate_map_add]
   have hX_split : sigma X.1.val i =
       sigma (Pi.X2 hε hle hg₁_ge2).val i +
       sigma rest.val i := by
     have hval : X.1.val = (Pi.X2 hε hle hg₁_ge2).val + rest.val := by
       have h := congrArg Subtype.val hdecomp
-      simp only [AddSubmonoid.coe_add] at h
-      exact h
-    simp only [hval, sigma, iterate_map_add, map_add]
+      simpa using h
+    simp [hval, sigma, iterate_map_add]
   rw [hZ_split]
   have h1 := (hXY_sigma hε hle hg₁_ge2 i).1
   have h2 := (hXY_sigma hε hle hg₁_ge2 i).2
   rw [hX_split] at h1 h2
   simp only [Prod.fst_add, Prod.snd_add] at h1 h2
   refine ⟨?_, ?_⟩
-  · simp only [Prod.fst_add]
-    linarith
-  · simp only [Prod.snd_add]
-    linarith
+  · simp only [Prod.fst_add]; omega
+  · simp only [Prod.snd_add]; omega
 
 lemma support_filter_tail_eq {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ} {τ : GeneType}
     (hg₂min : ∀ g', 0 < X g' → g₁.rank < g'.rank → g₂.rank ≤ g'.rank)
