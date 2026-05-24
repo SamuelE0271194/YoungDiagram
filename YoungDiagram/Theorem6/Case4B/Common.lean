@@ -204,13 +204,11 @@ lemma snd_drop_even_le_snd_drop_zero {X : Chromosome} (hX : X ∈ Variety.Pi)
       have h1 : (Sigma.drop X (n + n + 2)).2 ≤
           (Sigma.drop X (n + n + 1)).1 := by
         have h := Sigma.cond_15_7_drop X (n + n + 1) hX
-        rw [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
-        exact h
+        rwa [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
       have h2 : (Sigma.drop X (n + n + 1)).1 ≤
           (Sigma.drop X (n + n)).2 := by
         have h := Sigma.cond_15_7_drop X (n + n) hX
-        rw [if_pos ⟨n, rfl⟩] at h
-        exact h
+        rwa [if_pos ⟨n, rfl⟩] at h
       simp only [Sigma.drop_snd, Sigma.drop_fst] at h1 h2
       rw [show n + 1 + (n + 1) = n + n + 2 from by omega]
       linarith
@@ -232,13 +230,11 @@ lemma fst_drop_odd_le_fst_drop_one {X : Chromosome} (hX : X ∈ Variety.Pi)
       have h1 : (Sigma.drop X (n + n + 3)).1 ≤
           (Sigma.drop X (n + n + 2)).2 := by
         have h := Sigma.cond_15_7_drop X (n + n + 2) hX
-        rw [if_pos ⟨n + 1, by omega⟩] at h
-        exact h
+        rwa [if_pos ⟨n + 1, by omega⟩] at h
       have h2 : (Sigma.drop X (n + n + 2)).2 ≤
           (Sigma.drop X (n + n + 1)).1 := by
         have h := Sigma.cond_15_7_drop X (n + n + 1) hX
-        rw [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
-        exact h
+        rwa [if_neg (fun heven => (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h
       simp only [Sigma.drop_fst, Sigma.drop_snd] at h1 h2
       rw [show n + 1 + (n + 1) + 1 = n + n + 3 from by omega,
           show n + 1 + (n + 1) + 2 = n + n + 4 from by omega]
@@ -256,8 +252,8 @@ lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
   have hX1 : (sigma X.1 1).1 = ↑nX.1 := congr_arg Prod.fst hnX
   have hY1 : (sigma Y.1 1).1 = ↑nY.1 := congr_arg Prod.fst hnY
   have hlt : (↑nX.1 : ℚ) < ↑nY.1 := by linarith
-  have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
-    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hlt)
+  have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
+    mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hlt)
   linarith [sigma_zero_fst_eq X Y hXY]
 
 lemma snd_two_lt_of_fst_one_lt_and_min_rank {n : ℕ} (X Y : nPi n)
