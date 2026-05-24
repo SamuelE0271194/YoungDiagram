@@ -157,8 +157,7 @@ lemma exists_mutation_le_case4a
     rcases eq_or_ne gen g₁ with rfl | hng₁
     · simp [Ne.symm hne, hg₁_one]
     · rcases eq_or_ne gen g₂ with rfl | hng₂
-      · simp only [Ne.symm hng₁]
-        exact hg₂pos
+      · simpa [Ne.symm hng₁] using hg₂pos
       · simp [Ne.symm hng₁, Ne.symm hng₂]
   let rest : Pi :=
     ⟨X.1.val - (Pi.X1 hε hle g₁.rank_pos : Chromosome),
