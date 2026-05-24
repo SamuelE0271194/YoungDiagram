@@ -213,6 +213,14 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
         rw [Sigma.sigma_snd_diff X.1.val g₁.rank X.1.2,
             Sigma.prime_iterate_sum_neg_eq X.1.val g₁.rank h_g1_rank_odd]
         rfl
+      have hb01_sum_eq : (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
+          ∑ g ∈ X.1.val.support.filter (fun g =>
+            0 < g.rank ∧ g.type = Sigma.altType g.rank GeneType.Negative),
+          (X.1.val g : ℚ) := by
+        have h1 := Sigma.sigma_snd_diff X.1.val 0 X.1.2
+        have h2 := Sigma.prime_iterate_sum_eq X.1.val 0 GeneType.Negative
+        simp only [Function.iterate_zero, id] at h1 h2
+        exact h1.trans h2
       have hdi_sub_le_bi_sub : ∀ j, g₁.rank - 1 ≤ j → j ≤ g₂.rank - 1 →
           (sigma Y.1.val j).2 - (sigma Y.1.val (j + 1)).2 ≤
           (sigma X.1.val j).2 - (sigma X.1.val (j + 1)).2 := by
@@ -229,15 +237,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
           have hb0_eq_bj :
               (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
               (sigma X.1.val j).2 - (sigma X.1.val (j + 1)).2 := by
-            have hLHS : (sigma X.1.val 0).2 - (sigma X.1.val 1).2 =
-                ∑ g ∈ X.1.val.support.filter (fun g =>
-                  0 < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative),
-                (X.1.val g : ℚ) := by
-              have h1 := Sigma.sigma_snd_diff X.1.val 0 X.1.2
-              have h2 := Sigma.prime_iterate_sum_eq X.1.val 0 GeneType.Negative
-              simp only [Function.iterate_zero, id] at h1 h2
-              exact h1.trans h2
             have hRHS : (sigma X.1.val j).2 - (sigma X.1.val (j + 1)).2 =
                 ∑ g ∈ X.1.val.support.filter (fun g =>
                   j < g.rank ∧
@@ -249,16 +248,9 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                 Int.negOnePow_even _ (by exact_mod_cast hjeven),
                 one_smul] at h2
               exact h1.trans h2
-            have hfilter_eq :
-                X.1.val.support.filter (fun g =>
-                  0 < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative) =
-                X.1.val.support.filter (fun g =>
-                  j < g.rank ∧
-                  g.type = Sigma.altType g.rank GeneType.Negative) :=
-              support_filter_negative_eq_tail_of_odd hXpn hXg₁pos hg₁min
-                hg₂min h_g1_rank_odd hε_pos hj2
-            rw [hLHS, hRHS, hfilter_eq]
+            rw [hb01_sum_eq, hRHS,
+                support_filter_negative_eq_tail_of_odd hXpn hXg₁pos hg₁min
+                  hg₂min h_g1_rank_odd hε_pos hj2]
           linarith
         · have hdj_le_c01 :
               (sigma Y.1.val j).2 - (sigma Y.1.val (j + 1)).2 ≤
