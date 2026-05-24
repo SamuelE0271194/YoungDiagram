@@ -212,21 +212,14 @@ lemma exists_mutation_le_case4a
             (le_iff_dominates.mp hXY.le 1).2
           have hb12_eq : (Sigma.sigma X.1 1).2 - (Sigma.sigma X.1 2).2 =
             (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 := by
-            have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
-                 Finsupp.single g₁ 1 := by
-              exact ofRankAlt_eq_single_of_type_eq_altType <| by
-                simpa [Sigma.altType] using
-                  gene_type_eq_negOnePow_positive_of_ne_negOnePow_negative hε hε₁
             have h := x_side_equalities
               (fun g' _ hg'_pos => hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
               (show 1 < g₁.rank from hg₁_ge2)
-            simp only [show ¬Even 1 from by norm_num, ↓reduceIte] at h
-            exact h
+            simpa [show ¬Even 1 from by norm_num] using h
           have hd12_le : (Sigma.sigma Y.1 1).2 - (Sigma.sigma Y.1 2).2 ≤
               (Sigma.sigma Y.1 0).1 - (Sigma.sigma Y.1 1).1 := by
-            have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
-            simp only [show ¬Even (2 - 1 : ℕ) from by norm_num, if_false] at h
-            exact h
+            simpa [show ¬Even (2 - 1 : ℕ) from by norm_num]
+              using Sigma.cond_15_6_compare_k_to_0 Y.1.val (2 - 1) Y.1.2
           have hd2_gt_b2 : (Sigma.sigma X.1 2).2 < (Sigma.sigma Y.1 2).2 := by
             linarith [hb12_eq, hstrict, hd12_le, hb1_le_d1]
           have no_neg_gene_rank_g : ∀ g' ∈ X.1.val.support,
@@ -247,7 +240,7 @@ lemma exists_mutation_le_case4a
               (Sigma.sigma X.1 2).2 - (Sigma.sigma X.1 g₁.rank).2 := by
             have h := Sigma.b0_eq_b2_negative g₁.rank hg₁_ge2 hg₁min
               no_neg_gene_rank_g (show g₁.rank - 2 ≤ g₁.rank - 1 from by omega)
-            simp only [show g₁.rank - 2 + 2 = g₁.rank from by omega] at h; exact h
+            simpa [show g₁.rank - 2 + 2 = g₁.rank from by omega] using h
           have hd0_di_rank1 : (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 (g₁.rank - 2)).2 ≤
               (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 (g₁.rank - 2)).2 :=
             theorem6_snd_gap_le_of_dominates X Y hXY.le
@@ -326,12 +319,6 @@ lemma exists_mutation_le_case4a
               exact fst_zero_gap_le_sub_one_of_fst_one_lt X Y hXY.le ha
             have ha01_sub1_eq_bm : (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
                 (Sigma.sigma X.1 (g₁.rank - 1)).2 - (Sigma.sigma X.1 g₁.rank).2 - 1 := by
-              have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
-                rw [Sigma.altType_even g₁.rank heven, GeneType.neg_positive]; exact hε_neg
-              have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
-                  Finsupp.single g₁ 1 := by
-                rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
-                congr 1; exact Gene.ext rfl hg₁_altType.symm
               have h := x_side_equalities
                 (fun g' _ hg' => hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
                 (show g₁.rank - 1 < g₁.rank from by omega)
@@ -459,19 +446,12 @@ lemma exists_mutation_le_case4a
             have ha01_sub1_eq_am_sub1 :
                 (Sigma.sigma X.1 0).1 - (Sigma.sigma X.1 1).1 - 1 =
                 (Sigma.sigma X.1 (g₁.rank - 1)).1 - (Sigma.sigma X.1 g₁.rank).1 - 1 := by
-              have hg₁_altType : g₁.type = Sigma.altType g₁.rank GeneType.Positive := by
-                rw [Sigma.altType_odd g₁.rank heven]; exact hε_pos
-              have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Positive =
-                  Finsupp.single g₁ 1 := by
-                rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]
-                congr 1; exact Gene.ext rfl hg₁_altType.symm
               have h := x_side_equalities
                 (fun g' _ hg' => hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
                 (show g₁.rank - 1 < g₁.rank from by omega)
               rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
               have heven_sub1 : Even (g₁.rank - 1) := by
-                obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp heven
-                exact ⟨r, by omega⟩
+                obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp heven; exact ⟨r, by omega⟩
               simp only [if_pos heven_sub1] at h
               linarith
             have ham_sub1_eq_bm :

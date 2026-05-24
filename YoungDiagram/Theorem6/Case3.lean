@@ -144,13 +144,9 @@ lemma exists_mutation_le_case3
         (Sigma.sigma X.1 1).2 - (Sigma.sigma X.1 2).2 := by linarith
     -- d₂ > b₂
     have hd2_gt_b2 : (Sigma.sigma X.1 2).2 < (Sigma.sigma Y.1 2).2 := by linarith
-    -- Extract the three parts of sigma_type2_same_rank:
-    -- hleft : sigma(Pi.X2) = sigma(Pi.Y2) for i ≤ m - 2
-    -- hright : sigma(Pi.X2) = sigma(Pi.Y2) for i ≥ m + 2
-    -- hwindow : the nonzero differences at i = m-1, m, m+1
+    -- sigma_type2_same_rank: hleft for i ≤ m - 2, hright for i ≥ m + 2, hwindow on the gap
     obtain ⟨hleft, hright, hwindow⟩ :=
       Sigma.sigma_type2_same_rank g₁.type hε hg₁_ge2
-    -- sigma(Z.val) = sigma(Pi.Y2.val) + sigma(rest.val)
     have hZ_split : ∀ i, Sigma.sigma Z.val i =
         Sigma.sigma (Pi.Y2 hε (le_refl g₁.rank) hg₁_ge2).val i +
         Sigma.sigma rest.val i := fun i => by
@@ -264,35 +260,29 @@ lemma exists_mutation_le_case3
             rw [hwindow i hibounds.1 hibounds.2]
             simp [hg₁_type]
           rcases hi_range with hi | hi | hi
-          · -- i = g₁.rank - 1
-            subst hi
+          · subst hi
             have hZX_eq : Sigma.sigma Z.val (g₁.rank - 1) =
                 Sigma.sigma X.1.val (g₁.rank - 1) + (1, 0) :=
               sigma_eq_add_of_sub_eq <| by
                 simpa [show g₁.rank - 1 ≠ g₁.rank from by omega] using hZX_diff
             rw [hZX_eq]
-            constructor
-            · exact sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 (g₁.rank - 1) ha_lt_c_rank1
-            · simpa using hXY_i.2
-          · -- i = g₁.rank
-            subst hi
+            exact ⟨sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 (g₁.rank - 1) ha_lt_c_rank1,
+              by simpa using hXY_i.2⟩
+          · subst hi
             have hZX_eq : Sigma.sigma Z.val g₁.rank = Sigma.sigma X.1.val g₁.rank + (1, 1) :=
               sigma_eq_add_of_sub_eq <| by simpa using hZX_diff
             rw [hZX_eq]
-            constructor
-            · exact sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 g₁.rank ha_lt_c_rank
-            · exact sigma_snd_add_one_le_of_lt X.1.2 Y.1.2 g₁.rank hb_lt_d_rank
-          · -- i = g₁.rank + 1
-            subst hi
+            exact ⟨sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 g₁.rank ha_lt_c_rank,
+              sigma_snd_add_one_le_of_lt X.1.2 Y.1.2 g₁.rank hb_lt_d_rank⟩
+          · subst hi
             have hZX_eq : Sigma.sigma Z.val (g₁.rank + 1) =
                 Sigma.sigma X.1.val (g₁.rank + 1) + (0, 1) :=
               sigma_eq_add_of_sub_eq <| by
                 simpa [show g₁.rank + 1 ≠ g₁.rank from by omega,
                   show g₁.rank + 1 ≠ g₁.rank - 1 from by omega] using hZX_diff
             rw [hZX_eq]
-            constructor
-            · simpa using hXY_i.1
-            · exact sigma_snd_add_one_le_of_lt X.1.2 Y.1.2 (g₁.rank + 1) hb_lt_d_rank1
+            refine ⟨by simpa using hXY_i.1, ?_⟩
+            exact sigma_snd_add_one_le_of_lt X.1.2 Y.1.2 (g₁.rank + 1) hb_lt_d_rank1
         · -- g₁.rank is odd
           have hodd : Odd g₁.rank := Nat.not_even_iff_odd.mp heven
           have hg₁_ge3 : 3 ≤ g₁.rank := by
