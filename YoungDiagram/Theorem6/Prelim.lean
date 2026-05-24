@@ -72,7 +72,7 @@ lemma gene_type_eq_positive_of_odd_of_ne_negOnePow_negative {g : Gene} (hodd : O
   simpa [GeneType.negOnePow_smul, GeneType.neg_positive, h_even] using hfamily
 
 lemma theorem6_sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
-  linear_combination h
+  rw [← h]; abel
 
 lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -81,8 +81,8 @@ lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  push_cast at h ⊢
-  omega
+  simp only at h ⊢
+  exact_mod_cast Nat.add_one_le_iff.mpr (by exact_mod_cast h)
 
 lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -91,8 +91,8 @@ lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  push_cast at h ⊢
-  omega
+  simp only at h ⊢
+  exact_mod_cast Nat.add_one_le_iff.mpr (by exact_mod_cast h)
 
 /-! ## Case 1: X and Y share a gene -/
 
