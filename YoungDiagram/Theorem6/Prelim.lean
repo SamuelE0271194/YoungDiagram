@@ -72,13 +72,7 @@ lemma gene_type_eq_positive_of_odd_of_ne_negOnePow_negative {g : Gene} (hodd : O
   simpa [GeneType.negOnePow_smul, GeneType.neg_positive, h_even] using hfamily
 
 lemma theorem6_sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
-  ext
-  · have hfst : p.1 - q.1 = δ.1 := congrArg Prod.fst h
-    have : p.1 = q.1 + δ.1 := by linarith
-    simpa using this
-  · have hsnd : p.2 - q.2 = δ.2 := congrArg Prod.snd h
-    have : p.2 = q.2 + δ.2 := by linarith
-    simpa using this
+  linear_combination h
 
 lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -87,9 +81,8 @@ lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  have h' : (nX.1 : ℚ) < nY.1 := by simpa using h
-  change (nX.1 : ℚ) + 1 ≤ nY.1
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
+  push_cast at h ⊢
+  omega
 
 lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -98,9 +91,8 @@ lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  have h' : (nX.2 : ℚ) < nY.2 := by simpa using h
-  change (nX.2 : ℚ) + 1 ≤ nY.2
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
+  push_cast at h ⊢
+  omega
 
 /-! ## Case 1: X and Y share a gene -/
 
@@ -320,7 +312,8 @@ private lemma prod_lt_or_lt_of_le_ne {p q : ℚ × ℚ} (hle : p ≤ q) (hne : p
 
 private lemma cast_add_one_le_of_lt {m n : ℕ} (h : (m : ℚ) < n) :
     (m : ℚ) + 1 ≤ n := by
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h)
+  have : m < n := by exact_mod_cast h
+  exact_mod_cast this
 
 private lemma signature_type1_eq_before {ε : GeneType} (hε : ε ≠ .NonPolarized)
     {r j : ℕ} (hr : 1 ≤ r) (hj : j < r) :
