@@ -115,8 +115,9 @@ private lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val 1 Y.1.2
   have hX1 : (Sigma.sigma X.1 1).1 = ↑nX.1 := congr_arg Prod.fst hnX
   have hY1 : (Sigma.sigma Y.1 1).1 = ↑nY.1 := congr_arg Prod.fst hnY
-  have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
-    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp (by linarith))
+  have hlt : (↑nX.1 : ℚ) < ↑nY.1 := hX1 ▸ hY1 ▸ ha
+  have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
+    mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hlt)
   linarith [sigma_zero_fst_eq X Y hXY]
 
 set_option linter.flexible false in
@@ -180,15 +181,14 @@ lemma exists_mutation_le_case4a
       le_iff_dominates.mp hXY.le i
     have hZ_split : Sigma.sigma Z.val i =
         Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos).val i + Sigma.sigma rest.val i := by
-      change Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos + rest : Variety.Pi).val i = _
-      simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
+      show Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos + rest : Variety.Pi).val i = _
+      simp [Sigma.sigma, iterate_map_add, map_add]
     have hX_split : Sigma.sigma X.1.val i =
         Sigma.sigma (Pi.X1 hε hle g₁.rank_pos).val i + Sigma.sigma rest.val i := by
       have hval : X.1.val = (Pi.X1 hε hle g₁.rank_pos).val + rest.val := by
         have h := congrArg Subtype.val hdecomp
-        simp only [AddSubmonoid.coe_add] at h
-        exact h
-      simp only [hval, Sigma.sigma, iterate_map_add, map_add]
+        simpa [AddSubmonoid.coe_add] using h
+      simp [hval, Sigma.sigma, iterate_map_add, map_add]
     have hXY_sigma :
         (∀ j, g₁.rank ≤ j → j ≤ g₂.rank →
           Sigma.sigma X.1.val j + (Gene.ofRank 1 ε).signature ≤

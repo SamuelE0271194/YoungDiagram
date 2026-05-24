@@ -31,9 +31,8 @@ private lemma sigma_snd_add_one_le_of_lt {X Y : Chromosome}
 private lemma snd_gap_le_of_dominates {n i : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1) :
     (Sigma.sigma Y.1 0).2 - (Sigma.sigma Y.1 i).2 ≤
       (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 i).2 := by
-  have hb0_eq_d0 : (Sigma.sigma X.1 0).2 = (Sigma.sigma Y.1 0).2 := sigma_zero_snd_eq X Y hXY
-  have hbi_le_di : (Sigma.sigma X.1 i).2 ≤ (Sigma.sigma Y.1 i).2 :=
-    (le_iff_dominates.mp hXY i).2
+  have := sigma_zero_snd_eq X Y hXY
+  have := (le_iff_dominates.mp hXY i).2
   linarith
 
 private lemma fst_lt_of_gap_chain {n i j : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1)
@@ -46,7 +45,7 @@ private lemma fst_lt_of_gap_chain {n i j : ℕ} (X Y : nPi n) (hXY : X.1 ≤ Y.1
     (hb0_bi : (Sigma.sigma X.1 0).2 - (Sigma.sigma X.1 j).2 =
       (Sigma.sigma X.1 1).1 - (Sigma.sigma X.1 i).1) :
     (Sigma.sigma X.1 i).1 < (Sigma.sigma Y.1 i).1 := by
-  have ha0_eq : (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 := sigma_zero_fst_eq X Y hXY
+  have := sigma_zero_fst_eq X Y hXY
   linarith
 
 private lemma snd_lt_of_gap_chain {n i j : ℕ} (X Y : nPi n)
