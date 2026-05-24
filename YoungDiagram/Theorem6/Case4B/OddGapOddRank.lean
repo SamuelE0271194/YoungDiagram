@@ -359,15 +359,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
             have hbm_eq_aj :
                 (sigma X.1.val g₁.rank).2 - (sigma X.1.val (g₁.rank + 1)).2 =
                 (sigma X.1.val j).1 - (sigma X.1.val (j + 1)).1 := by
-              have hLHS : (sigma X.1.val g₁.rank).2 -
-                  (sigma X.1.val (g₁.rank + 1)).2 =
-                  ∑ g ∈ X.1.val.support.filter (fun g =>
-                    g₁.rank < g.rank ∧
-                    g.type = Sigma.altType g.rank GeneType.Positive),
-                  (X.1.val g : ℚ) := by
-                rw [Sigma.sigma_snd_diff X.1.val g₁.rank X.1.2,
-                    Sigma.prime_iterate_sum_neg_eq X.1.val g₁.rank h_g1_rank_odd]
-                rfl
               have hRHS : (sigma X.1.val j).1 -
                   (sigma X.1.val (j + 1)).1 =
                   ∑ g ∈ X.1.val.support.filter (fun g =>
@@ -377,15 +368,7 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                 rw [Sigma.sigma_fst_diff X.1.val j X.1.2,
                     Sigma.prime_iterate_sum_pos_eq X.1.val j hjeven]
                 rfl
-              have hfilter_eq :
-                  X.1.val.support.filter (fun g =>
-                    g₁.rank < g.rank ∧
-                    g.type = Sigma.altType g.rank GeneType.Positive) =
-                  X.1.val.support.filter (fun g =>
-                    j < g.rank ∧
-                    g.type = Sigma.altType g.rank GeneType.Positive) := by
-                exact support_filter_tail_eq hg₂min hj1 hj2'
-              rw [hLHS, hRHS, hfilter_eq]
+              rw [hbm_sum_eq, hRHS, support_filter_tail_eq hg₂min hj1 hj2']
             linarith
         · have hj2' : j ≤ g₂.rank - 1 := by
             obtain ⟨a, ha⟩ := hg₂_even
