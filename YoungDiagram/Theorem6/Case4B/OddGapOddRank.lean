@@ -316,15 +316,6 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
             have hbm_eq_ag₂ :
                 (sigma X.1.val g₁.rank).2 - (sigma X.1.val (g₁.rank + 1)).2 =
                 (sigma X.1.val g₂.rank).1 - (sigma X.1.val (g₂.rank + 1)).1 := by
-              have hLHS : (sigma X.1.val g₁.rank).2 -
-                  (sigma X.1.val (g₁.rank + 1)).2 =
-                  ∑ g ∈ X.1.val.support.filter (fun g =>
-                    g₁.rank < g.rank ∧
-                    g.type = Sigma.altType g.rank GeneType.Positive),
-                  (X.1.val g : ℚ) := by
-                rw [Sigma.sigma_snd_diff X.1.val g₁.rank X.1.2,
-                    Sigma.prime_iterate_sum_neg_eq X.1.val g₁.rank h_g1_rank_odd]
-                rfl
               have hRHS : (sigma X.1.val g₂.rank).1 -
                   (sigma X.1.val (g₂.rank + 1)).1 =
                   ∑ g ∈ X.1.val.support.filter (fun g =>
@@ -343,24 +334,22 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
                     g.type = Sigma.altType g.rank GeneType.Positive) := by
                 ext g
                 simp only [Finset.mem_filter, Finsupp.mem_support_iff]
-                constructor
-                · rintro ⟨hg_supp, hg_rank, hg_type⟩
-                  have hg₂_le : g₂.rank ≤ g.rank :=
-                    hg₂min g (Nat.pos_of_ne_zero hg_supp) hg_rank
-                  rcases Nat.lt_or_eq_of_le hg₂_le with hlt₂ | heq₂
-                  · exact ⟨hg_supp, hlt₂, hg_type⟩
-                  · exfalso
-                    have halttype :
-                        Sigma.altType g.rank GeneType.Positive = GeneType.Negative := by
-                      rw [show g.rank = g₂.rank from by omega,
-                          Sigma.altType_even g₂.rank hg₂_even,
-                          GeneType.neg_positive]
-                    rw [halttype] at hg_type
-                    exact hXpn ⟨g₂, g, by omega, hg₂_pos, hg_type, hg₂pos,
-                      Nat.pos_of_ne_zero hg_supp⟩
-                · rintro ⟨hg_supp, _, hg_type⟩
-                  exact ⟨hg_supp, by omega, hg_type⟩
-              rw [hLHS, hRHS, hfilter_eq]
+                refine ⟨?_, fun ⟨hg_supp, _, hg_type⟩ => ⟨hg_supp, by omega, hg_type⟩⟩
+                rintro ⟨hg_supp, hg_rank, hg_type⟩
+                have hg₂_le : g₂.rank ≤ g.rank :=
+                  hg₂min g (Nat.pos_of_ne_zero hg_supp) hg_rank
+                rcases Nat.lt_or_eq_of_le hg₂_le with hlt₂ | heq₂
+                · exact ⟨hg_supp, hlt₂, hg_type⟩
+                · exfalso
+                  have halttype :
+                      Sigma.altType g.rank GeneType.Positive = GeneType.Negative := by
+                    rw [show g.rank = g₂.rank from by omega,
+                        Sigma.altType_even g₂.rank hg₂_even,
+                        GeneType.neg_positive]
+                  rw [halttype] at hg_type
+                  exact hXpn ⟨g₂, g, by omega, hg₂_pos, hg_type, hg₂pos,
+                    Nat.pos_of_ne_zero hg_supp⟩
+              rw [hbm_sum_eq, hRHS, hfilter_eq]
             linarith
           · have hj2' : j ≤ g₂.rank - 1 := by omega
             have hcj_le_c01 :
