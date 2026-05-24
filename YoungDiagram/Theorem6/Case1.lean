@@ -16,45 +16,29 @@ lemma exists_mutation_le_case1 (m : ℕ)
    0 < X.1.val g₂ := by
     by_contra hno_g₂
     push Not at hno_g₂
-    -- hno_g₂ : ∀ g : Gene, g.rank = 1 → g.type = .Positive → X.1.val g = 0
-    -- Since no rank-1 Positive gene exists in X, priming once does not decrease a.
+    -- No rank-matching Positive gene in X ⇒ priming once does not decrease a.
     have ha₁_eq_a₀ : (Sigma.sigma X.1 1).1 = (Sigma.sigma X.1 0).1 := by
       simp only [Sigma.sigma, Function.iterate_one, Function.iterate_zero, id]
       rw [signature_prime_fst, signature_fst]
       apply Finsupp.sum_congr
       intro g hg
       congr 1
-      -- Goal: (Chromosome.signature (primeGene g)).1 = (Gene.signature g).1
-      have hg_in_X : 0 < X.1.val g :=
-        Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
+      have hg_in_X : 0 < X.1.val g := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
       have hg_pol : g.type ≠ .NonPolarized :=
         IsPolarized_def'.mp (mem_Pi_iff.mp X.1.2) g hg
-      -- Every gene in X has type Int.negOnePow(g.rank-1)•.Negative.
-      have hg_neg : g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative := by
-        have h_not_pos : g.type ≠ Int.negOnePow (g.rank - 1) • GeneType.Positive :=
-          fun heq => by have := hno_g₂ g heq; omega
-        exact gene_type_eq_negOnePow_negative_of_ne_negOnePow_positive hg_pol h_not_pos
-      -- Gene.ofRankAlt g.rank .Negative = single g 1 (since g has the matching type).
+      have hg_neg : g.type = Int.negOnePow (g.rank - 1) • GeneType.Negative :=
+        gene_type_eq_negOnePow_negative_of_ne_negOnePow_positive hg_pol
+          (fun heq => by have := hno_g₂ g heq; omega)
       have hofRankAlt : Gene.ofRankAlt g.rank GeneType.Negative = Finsupp.single g 1 := by
-        rw [Gene.ofRankAlt_eq_gene g.rank_pos]
-        congr 1
-        exact Gene.ext rfl hg_neg.symm
-      -- signature_prime_ofRankAlt_negative: priming g_-(k) leaves the first component fixed.
+        rw [Gene.ofRankAlt_eq_gene g.rank_pos]; congr 1; exact Gene.ext rfl hg_neg.symm
       have hkey := signature_prime_ofRankAlt_negative g.rank_pos
       rw [hofRankAlt, prime_single, one_smul, ← primeGene_def] at hkey
-      -- hkey : signature (single g 1) - signature (primeGene g) = (0, 1)
       have hfst : (signature (Finsupp.single g 1)).1 = (signature (primeGene g)).1 := by
-        have h : (signature (Finsupp.single g 1)).1 - (signature (primeGene g)).1 = 0 :=
-          calc (signature (Finsupp.single g 1)).1 - (signature (primeGene g)).1
-              = (signature (Finsupp.single g 1) - signature (primeGene g)).1 := rfl
-            _ = (0, 1).1 := congr_arg Prod.fst hkey
-            _ = 0 := rfl
-        linarith
-      -- signature (single g 1) has first component = g.signature.1.
+        have := congr_arg Prod.fst hkey
+        simp at this; linarith
       have hsingle : (signature (Finsupp.single g 1)).1 = g.signature.1 := by
         rw [signature_fst, Finsupp.sum_single_index (by simp), Nat.cast_one, one_smul]
       linarith
-    -- a₀ = c₀ follows from equal ranks and componentwise dominance (X ≤ Y).
     have ha₀_eq_c₀ : (Sigma.sigma X.1 0).1 = (Sigma.sigma Y.1 0).1 := by
       simp only [Sigma.sigma, Function.iterate_zero, id]
       have hsig_le := (le_iff_dominates.mp hXY.le) 0
@@ -65,10 +49,8 @@ lemma exists_mutation_le_case1 (m : ℕ)
       have hYrank : (Y.1.val.rank : ℚ) = m + 2 := by exact_mod_cast Y.2
       obtain ⟨h1_le, h2_le⟩ := Prod.le_def.mp hsig_le
       linarith
-    -- c₁ ≤ c₀: sigma of Y is antitone.
     have hc₁_le_c₀ : (Sigma.sigma Y.1 1).1 ≤ (Sigma.sigma Y.1 0).1 :=
       (Prod.le_def.mp (Sigma.antitone Y.1 (Nat.zero_le 1))).1
-    -- a₁ = a₀ = c₀ ≥ c₁ > a₁: contradiction.
     linarith
   -- Choose g₂ of minimal rank among all g₊-genes in X (Step 2: "choose k minimal").
   have hg₂ : ∃ g₂ : Gene,
@@ -91,29 +73,24 @@ lemma exists_mutation_le_case1 (m : ℕ)
           exact (congr_arg Gene.type
             ((Finsupp.single_left_inj one_ne_zero).mp h)).symm⟩)⟩
   obtain ⟨g₂, hg₂type, hg₂pos, hg₂min⟩ := hg₂
-  -- Step 3: the mutation g₋(g₁.rank) + g₊(g₂.rank) → g₊(g₁.rank−1) + g₋(g₂.rank+1).
-  -- Hypotheses for Pi.Primitive.type3 (ε = Negative, m = g₁.rank, n = g₂.rank).
+  -- The type-3 mutation g₋(g₁.rank) + g₊(g₂.rank) → g₊(g₁.rank−1) + g₋(g₂.rank+1).
   have hε_neg : GeneType.Negative ≠ .NonPolarized := by decide
   have hle_ranks : g₁.rank ≤ g₂.rank :=
     hg₁min g₂ (Finsupp.mem_support_iff.mpr hg₂pos.ne')
-  -- g₁ is the gene inside Gene.ofRankAlt g₁.rank Negative.
   have hg₁_ofRankAlt : Gene.ofRankAlt g₁.rank GeneType.Negative = Finsupp.single g₁ 1 := by
     rw [Gene.ofRankAlt_eq_gene g₁.rank_pos]; congr 1; exact Gene.ext rfl hε₁.symm
-  -- Recover the type of g₂ from the ofRankAlt identity.
   have hg₂_type_eq : g₂.type = Int.negOnePow (g₂.rank - 1) • GeneType.Positive :=
     (congr_arg Gene.type ((Finsupp.single_left_inj one_ne_zero).mp
       ((Gene.ofRankAlt_eq_gene g₂.rank_pos).symm.trans hg₂type))).symm
-  -- g₁ ≠ g₂: their types are incompatible (Negative-family vs Positive-family).
+  -- g₁ ≠ g₂ since their types are incompatible (Negative-family vs Positive-family).
   have hg₁g₂_ne : g₁ ≠ g₂ := fun heq => by
-    rw [← heq] at hg₂_type_eq; rw [hε₁] at hg₂_type_eq
+    rw [← heq, hε₁] at hg₂_type_eq
     simp only [GeneType.negOnePow_smul, GeneType.neg_negative, GeneType.neg_positive]
       at hg₂_type_eq
     split_ifs at hg₂_type_eq
-  -- The primitive source chromosome equals single g₁ 1 + single g₂ 1.
   have hsrc_val : (Pi.X3 hε_neg hle_ranks g₁.rank_pos : Chromosome) =
       Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
     simp only [Pi.X3_eq, GeneType.neg_negative]; rw [hg₁_ofRankAlt, hg₂type]
-  -- src ≤ X.1.val pointwise (using hXg₁pos, hg₂pos, and g₁ ≠ g₂).
   have hsrc_le : ∀ g : Gene,
       (Pi.X3 hε_neg hle_ranks g₁.rank_pos : Chromosome) g ≤ X.1.val g := by
     intro g
@@ -123,17 +100,13 @@ lemma exists_mutation_le_case1 (m : ℕ)
     · rcases eq_or_ne g g₂ with rfl | hne₂
       · simp only [if_neg (Ne.symm hne₁), ↓reduceIte, zero_add]; exact hg₂pos
       · simp only [if_neg (Ne.symm hne₁), if_neg (Ne.symm hne₂), add_zero, Nat.zero_le]
-  -- rest = X.1 − src, still in Pi.
   let rest : Pi :=
     ⟨X.1.val - (Pi.X3 hε_neg hle_ranks g₁.rank_pos : Chromosome),
       Variety.sub_mem_Pi _ X.1.2⟩
-  -- X.1 decomposes as src + rest.
   have hdecomp : X.1 = Pi.X3 hε_neg hle_ranks g₁.rank_pos + rest :=
     Subtype.val_injective
       (Finsupp.ext fun g => (add_tsub_cancel_of_le (hsrc_le g)).symm)
-  -- Z is the result of the mutation.
   let Z : Pi := Pi.Y3 hε_neg hle_ranks g₁.rank_pos + rest
-  -- Construct the Pi-step.
   have hstep : Pi.Step X.1 Z :=
     hdecomp.symm ▸ Pi.Step.mk
       (Pi.X3 hε_neg hle_ranks g₁.rank_pos)
@@ -150,32 +123,25 @@ lemma exists_mutation_le_case1 (m : ℕ)
         if Even i then (0, 1) else (1, 0)
       else (0, 0) := by
     intro i
-    -- sigma is additive on Chromosomes
     have sigma_add : ∀ (A B : Chromosome),
         Sigma.sigma (A + B) i = Sigma.sigma A i + Sigma.sigma B i :=
       fun A B => by simp only [Sigma.sigma, iterate_map_add, map_add]
-    -- Z.val = Y3.val + rest.val (from the let definition and AddSubmonoid.coe_add)
     have hZ_split : Sigma.sigma Z.val i =
         Sigma.sigma (Pi.Y3 hε_neg hle_ranks g₁.rank_pos).val i +
         Sigma.sigma rest.val i := by
       change Sigma.sigma (Pi.Y3 hε_neg hle_ranks g₁.rank_pos + rest : Variety.Pi).val i = _
       simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
-    -- X.1.val = X3.val + rest.val (from hdecomp and AddSubmonoid.coe_add)
     have hX_split : Sigma.sigma X.1.val i =
         Sigma.sigma (Pi.X3 hε_neg hle_ranks g₁.rank_pos).val i +
         Sigma.sigma rest.val i := by
       have hval : X.1.val = (Pi.X3 hε_neg hle_ranks g₁.rank_pos).val + rest.val := by
         have h := congrArg Subtype.val hdecomp
-        simp only [AddSubmonoid.coe_add] at h
-        exact h
+        simpa [AddSubmonoid.coe_add] using h
       rw [hval, sigma_add]
     rw [hZ_split, hX_split, Sigma.mutation_type3_sigma_eq hε_neg hle_ranks g₁.rank_pos i]
     simp only [GeneType.neg_negative, signature_ofRank_one_negative,
       signature_ofRank_one_positive]
     abel
-    -- It remains to show Z ≤ Y.1.
-    --First show strict inequality (X,Y) on the appt indexes, then since Z is + 1 or 0,
-    -- have weak inequality (Z,Y)
   refine ⟨Z, hstep, ?_⟩
   -- Case split on the parity of k = g₂.rank.
   rcases Nat.even_or_odd g₂.rank with ⟨j, hk_even⟩ | ⟨j, hk_odd⟩

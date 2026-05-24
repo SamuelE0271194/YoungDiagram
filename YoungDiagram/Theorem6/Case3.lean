@@ -4,13 +4,7 @@ open Variety hiding prime prime_def
 open Chromosome
 
 private lemma sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
-  ext
-  · have hfst : p.1 - q.1 = δ.1 := congrArg Prod.fst h
-    have : p.1 = q.1 + δ.1 := by linarith
-    simpa using this
-  · have hsnd : p.2 - q.2 = δ.2 := congrArg Prod.snd h
-    have : p.2 = q.2 + δ.2 := by linarith
-    simpa using this
+  rw [← h]; abel
 
 private lemma sigma_fst_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)

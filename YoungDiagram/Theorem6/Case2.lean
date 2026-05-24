@@ -101,85 +101,58 @@ lemma exists_mutation_le_case2
       (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 := by
     intro i i_lb i_ub
     exact caseA2_strict_fst X Y hXY hg₂_min hb₀_eq_d₀ ha i_lb i_ub
-  exact ⟨Z, hstep, by
-    change Z.val ≤ Y.1.val
-    rw [le_iff_dominates]
-    intro i
-    change Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
-    have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
-      le_iff_dominates.mp hXY.le i
-    by_cases hin : 1 ≤ i ∧ i ≤ g₂.rank
-    · obtain ⟨hi1, hi2⟩ := hin
-      have hdiff := hsigma_diff_XZ i hi1 hi2
-      have hlt := hsigma_diff_XY i hi1 hi2
-      -- Extract component equations: Z.1 = X.1 + 1 and Z.2 = X.2
+  refine ⟨Z, hstep, ?_⟩
+  show Z.val ≤ Y.1.val
+  rw [le_iff_dominates]
+  intro i
+  show Sigma.sigma Z.val i ≤ Sigma.sigma Y.1.val i
+  have hXY_i : Sigma.sigma X.1.val i ≤ Sigma.sigma Y.1.val i :=
+    le_iff_dominates.mp hXY.le i
+  by_cases hin : 1 ≤ i ∧ i ≤ g₂.rank
+  · obtain ⟨hi1, hi2⟩ := hin
+    have hdiff := hsigma_diff_XZ i hi1 hi2
+    have hlt := hsigma_diff_XY i hi1 hi2
+    have heq := theorem6_sigma_eq_add_of_sub_eq hdiff
+    refine ⟨?_, ?_⟩
+    · -- integrality absorbs the +1 from the strict inequality at the first component
       have hfst : (Sigma.sigma Z.val i).1 = (Sigma.sigma X.1.val i).1 + 1 := by
-        have h : (Sigma.sigma Z.val i).1 - (Sigma.sigma X.1.val i).1 = 1 :=
-          calc (Sigma.sigma Z.val i).1 - (Sigma.sigma X.1.val i).1
-              = (Sigma.sigma Z.val i - Sigma.sigma X.val i).1 := rfl
-            _ = ((1 : ℚ), (0 : ℚ)).1 := congr_arg Prod.fst hdiff
-            _ = 1 := rfl
-        linarith
-      have hsnd : (Sigma.sigma Z.val i).2 = (Sigma.sigma X.1.val i).2 := by
-        have h : (Sigma.sigma Z.val i).2 - (Sigma.sigma X.1.val i).2 = 0 :=
-          calc (Sigma.sigma Z.val i).2 - (Sigma.sigma X.1.val i).2
-              = (Sigma.sigma Z.val i - Sigma.sigma X.val i).2 := rfl
-            _ = ((1 : ℚ), (0 : ℚ)).2 := congr_arg Prod.snd hdiff
-            _ = 0 := rfl
-        linarith
-      constructor
-      · -- (Z).1 = (X).1 + 1 ≤ (Y).1: (X).1 < (Y).1 strict, integrality absorbs the +1
-        rw [hfst]
-        suffices h : (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.1.val i).1 by
-          obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X.1.val i X.1.2
-          obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val i Y.1.2
-          rw [hnX, hnY] at h ⊢
-          simp only at h ⊢
-          exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h)
-        exact hlt
-      · -- (Z).2 = (X).2 ≤ (Y).2: no increment in second component
-        linarith [hsnd, hXY_i.2]
-    · push Not at hin
-      -- Outside [1, g₂.rank]: type1 mutation does not alter sigma at i
-      have hZ_eq : Sigma.sigma Z.val i = Sigma.sigma X.1.val i := by
-        -- Split Z = Y1 + rest and X.1 = X1 + rest, reducing to sigma Y1 i = sigma X1 i
-        have hZ_split : Sigma.sigma Z.val i =
-            Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i +
-            Sigma.sigma rest.val i := by
-          change Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1) + rest : Variety.Pi).val i =
-           _
-          simp only [AddSubmonoid.coe_add, Sigma.sigma, iterate_map_add, map_add]
-        have hX_split : Sigma.sigma X.1.val i =
-            Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i +
-            Sigma.sigma rest.val i := by
-          have hval : X.1.val = (Pi.X1 hε_pos hle_ranks (le_refl 1)).val + rest.val := by
-            have h := congrArg Subtype.val hdecomp
-            simp only [AddSubmonoid.coe_add] at h; exact h
-          simp only [hval, Sigma.sigma, iterate_map_add, map_add]
-        suffices h : Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i =
-                     Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i by
-          rw [hZ_split, hX_split, h]
-        -- push_neg gives hin : 1 ≤ i → g₂.rank < i; case split on whether 1 ≤ i
-        by_cases hi1 : 1 ≤ i
-        · -- i ≥ 1, so i > g₂.rank from hin
-          have hi_gt : g₂.rank < i := hin hi1
-          -- prime^[i] kills all genes in X1 (ranks 1, g₂.rank) and Y1 (rank g₂.rank+1)
-          have hX1_zero : Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i = 0 := by
-            simp only [Sigma.sigma, Pi.X1_eq, GeneType.neg_positive, iterate_map_add,
-                       prime_iterate_ofRank,
-                       show 1 - i = 0 from by omega,
-                       show g₂.rank - i = 0 from by omega,
-                       Gene.ofRank_zero, map_zero, add_zero]
-          have hY1_zero : Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i = 0 := by
-            simp only [Sigma.sigma, Pi.Y1_eq, GeneType.neg_positive, prime_iterate_ofRank,
-                       show (1 : ℕ) - 1 = 0 from rfl, Gene.ofRank_zero,
-                       show g₂.rank + 1 - i = 0 from by omega,
-                       map_zero, zero_add]
-          rw [hY1_zero, hX1_zero]
-        · -- i = 0: mutation_type1_signature_eq gives equal signatures at level 0
-          have hi : i = 0 := by omega
-          subst hi
-          simp only [Sigma.sigma, Function.iterate_zero, id, Pi.Y1_eq, Pi.X1_eq]
-          exact (mutation_type1_signature_eq hε_pos hle_ranks (le_refl 1)).symm
-      rw [hZ_eq]
-      exact hXY_i⟩
+        simpa using congrArg Prod.fst heq
+      rw [hfst]
+      exact theorem6_sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 i hlt
+    · have hsnd : (Sigma.sigma Z.val i).2 = (Sigma.sigma X.1.val i).2 := by
+        simpa using congrArg Prod.snd heq
+      linarith [hXY_i.2]
+  · push_neg at hin
+    -- Outside [1, g₂.rank]: type1 mutation does not alter sigma at i.
+    have hZ_eq : Sigma.sigma Z.val i = Sigma.sigma X.1.val i := by
+      have hZ_split : Sigma.sigma Z.val i =
+          Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i +
+          Sigma.sigma rest.val i := by
+        show Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1) + rest : Variety.Pi).val i = _
+        simp [Sigma.sigma, iterate_map_add, map_add]
+      have hX_split : Sigma.sigma X.1.val i =
+          Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i +
+          Sigma.sigma rest.val i := by
+        have hval : X.1.val = (Pi.X1 hε_pos hle_ranks (le_refl 1)).val + rest.val := by
+          simpa using congrArg Subtype.val hdecomp
+        simp [hval, Sigma.sigma, iterate_map_add, map_add]
+      suffices h : Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i =
+                   Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i by
+        rw [hZ_split, hX_split, h]
+      by_cases hi1 : 1 ≤ i
+      · -- i > g₂.rank, so prime^[i] kills both X1 and Y1
+        have hi_gt : g₂.rank < i := hin hi1
+        have hX1_zero : Sigma.sigma (Pi.X1 hε_pos hle_ranks (le_refl 1)).val i = 0 := by
+          simp [Sigma.sigma, Pi.X1_eq, GeneType.neg_positive, iterate_map_add,
+            prime_iterate_ofRank, show 1 - i = 0 from by omega,
+            show g₂.rank - i = 0 from by omega, Gene.ofRank_zero]
+        have hY1_zero : Sigma.sigma (Pi.Y1 hε_pos hle_ranks (le_refl 1)).val i = 0 := by
+          simp [Sigma.sigma, Pi.Y1_eq, GeneType.neg_positive, prime_iterate_ofRank,
+            Gene.ofRank_zero, show g₂.rank + 1 - i = 0 from by omega]
+        rw [hY1_zero, hX1_zero]
+      · -- i = 0: signatures at level 0 agree
+        obtain rfl : i = 0 := by omega
+        simp only [Sigma.sigma, Function.iterate_zero, id, Pi.Y1_eq, Pi.X1_eq]
+        exact (mutation_type1_signature_eq hε_pos hle_ranks (le_refl 1)).symm
+    rw [hZ_eq]
+    exact hXY_i

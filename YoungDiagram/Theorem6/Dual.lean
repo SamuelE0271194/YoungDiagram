@@ -28,12 +28,8 @@ noncomputable def dual (X : Pi) : Pi :=
 lemma dual_le_dual_iff {X Y : Pi} : dual X ≤ dual Y ↔ X ≤ Y :=
   Chromosome.dual_le_dual_iff
 
-lemma dual_lt_dual_iff {X Y : Pi} : dual X < dual Y ↔ X < Y := by
-  constructor
-  · intro h
-    exact ⟨dual_le_dual_iff.mp h.1, fun hYX => h.2 (dual_le_dual_iff.mpr hYX)⟩
-  · intro h
-    exact ⟨dual_le_dual_iff.mpr h.1, fun hYX => h.2 (dual_le_dual_iff.mp hYX)⟩
+lemma dual_lt_dual_iff {X Y : Pi} : dual X < dual Y ↔ X < Y :=
+  lt_iff_lt_of_le_iff_le' dual_le_dual_iff dual_le_dual_iff
 
 @[simp] lemma dual_X1 {ε : GeneType} (hε : ε ≠ .NonPolarized)
     {m n : ℕ} (hle : m ≤ n) (hm : 1 ≤ m) :
@@ -83,14 +79,11 @@ lemma Primitive.dual {X Y : Pi} (h : Primitive X Y) :
     Primitive (dual X) (dual Y) := by
   cases h with
   | type1 ε hε hle hm =>
-      rw [dual_X1 hε hle hm, dual_Y1 hε hle hm]
-      exact Primitive.type1 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
+      simpa using Primitive.type1 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
   | type2 ε hε hle hm =>
-      rw [dual_X2 hε hle hm, dual_Y2 hε hle hm]
-      exact Primitive.type2 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
+      simpa using Primitive.type2 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
   | type3 ε hε hle hm =>
-      rw [dual_X3 hε hle hm, dual_Y3 hε hle hm]
-      exact Primitive.type3 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
+      simpa using Primitive.type3 (-ε) (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm
 
 lemma Step.dual {X Y : Pi} (h : Step X Y) : Step (dual X) (dual Y) := by
   cases h with

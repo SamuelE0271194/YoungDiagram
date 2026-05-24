@@ -10,12 +10,8 @@ private lemma support_filter_tail_eq {X : Chromosome} {g₁ g₂ : Gene} {j : �
       X.support.filter (fun g => j < g.rank ∧ g.type = Sigma.altType g.rank τ) := by
   ext g
   simp only [Finset.mem_filter, Finsupp.mem_support_iff]
-  constructor
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, by have := hg₂min g (Nat.pos_of_ne_zero hg_supp) hg_rank; omega,
-      hg_type⟩
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, by omega, hg_type⟩
+  refine ⟨fun ⟨hs, hr, ht⟩ => ⟨hs, ?_, ht⟩, fun ⟨hs, hr, ht⟩ => ⟨hs, by omega, ht⟩⟩
+  have := hg₂min g (Nat.pos_of_ne_zero hs) hr; omega
 
 private lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Gene} {τ : GeneType}
     (hg₁_one : X g₁ = 1) (hg₁_altType : g₁.type = Sigma.altType g₁.rank τ) :
@@ -25,16 +21,13 @@ private lemma support_filter_rank_pred_altType_split {X : Chromosome} {g₁ : Ge
   ext g
   simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_singleton,
     Finsupp.mem_support_iff]
-  constructor
-  · rintro ⟨hsupp, hrank, htype⟩
-    by_cases heq : g = g₁
+  refine ⟨fun ⟨hsupp, hrank, htype⟩ => ?_, ?_⟩
+  · by_cases heq : g = g₁
     · exact Or.inl heq
-    · right
-      refine ⟨hsupp, ?_, htype⟩
-      rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with h | h
+    · refine Or.inr ⟨hsupp, ?_, htype⟩
+      rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank by omega) with h | h
       · exact h
-      · exfalso
-        exact heq (Gene.ext h.symm (by rw [← h, ← hg₁_altType] at htype; exact htype))
+      · exact absurd (Gene.ext h.symm (by rw [← h, ← hg₁_altType] at htype; exact htype)) heq
   · rintro (rfl | ⟨hsupp, hrank, htype⟩)
     · exact ⟨by rw [hg₁_one]; exact one_ne_zero, by have := g.rank_pos; omega, hg₁_altType⟩
     · exact ⟨hsupp, by have := g₁.rank_pos; omega, htype⟩
@@ -52,20 +45,15 @@ lemma support_filter_negative_eq_tail_of_even {X : Chromosome} {g₁ g₂ : Gene
       g.type = Sigma.altType g.rank GeneType.Negative) := by
   ext g
   simp only [Finset.mem_filter, Finsupp.mem_support_iff]
-  constructor
-  · rintro ⟨hg_supp, _, hg_type⟩
-    refine ⟨hg_supp, ?_, hg_type⟩
-    rcases eq_or_lt_of_le (hg₁min g (Finsupp.mem_support_iff.mpr hg_supp)) with h_eq | h_lt
-    · have halttype : Sigma.altType g.rank GeneType.Negative = GeneType.Positive := by
-        rw [show g.rank = g₁.rank from h_eq.symm, Sigma.altType_even g₁.rank heven,
-          GeneType.neg_negative]
-      rw [halttype] at hg_type
-      exact absurd hXpn (not_not.mpr
-        ⟨g, g₁, h_eq.symm, hg_type, hε_neg, Nat.pos_of_ne_zero hg_supp, hXg₁pos⟩)
-    · have := hg₂min g (Nat.pos_of_ne_zero hg_supp) h_lt
-      omega
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, g.rank_pos, hg_type⟩
+  refine ⟨fun ⟨hs, _, ht⟩ => ⟨hs, ?_, ht⟩, fun ⟨hs, _, ht⟩ => ⟨hs, g.rank_pos, ht⟩⟩
+  rcases eq_or_lt_of_le (hg₁min g (Finsupp.mem_support_iff.mpr hs)) with h_eq | h_lt
+  · have halttype : Sigma.altType g.rank GeneType.Negative = GeneType.Positive := by
+      rw [show g.rank = g₁.rank from h_eq.symm, Sigma.altType_even g₁.rank heven,
+        GeneType.neg_negative]
+    rw [halttype] at ht
+    exact absurd hXpn (not_not.mpr
+      ⟨g, g₁, h_eq.symm, ht, hε_neg, Nat.pos_of_ne_zero hs, hXg₁pos⟩)
+  · have := hg₂min g (Nat.pos_of_ne_zero hs) h_lt; omega
 
 lemma support_filter_negative_eq_tail_of_odd {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ}
     (hXpn : ¬∃ g h, g.rank = h.rank ∧ g.type = GeneType.Positive ∧
@@ -80,19 +68,14 @@ lemma support_filter_negative_eq_tail_of_odd {X : Chromosome} {g₁ g₂ : Gene}
       g.type = Sigma.altType g.rank GeneType.Negative) := by
   ext g
   simp only [Finset.mem_filter, Finsupp.mem_support_iff]
-  constructor
-  · rintro ⟨hg_supp, _, hg_type⟩
-    refine ⟨hg_supp, ?_, hg_type⟩
-    rcases eq_or_lt_of_le (hg₁min g (Finsupp.mem_support_iff.mpr hg_supp)) with h_eq | h_lt
-    · have halttype : Sigma.altType g.rank GeneType.Negative = GeneType.Negative := by
-        rw [show g.rank = g₁.rank from h_eq.symm, Sigma.altType_odd g₁.rank hodd]
-      rw [halttype] at hg_type
-      exact absurd hXpn (not_not.mpr
-        ⟨g₁, g, h_eq, hε_pos, hg_type, hXg₁pos, Nat.pos_of_ne_zero hg_supp⟩)
-    · have := hg₂min g (Nat.pos_of_ne_zero hg_supp) h_lt
-      omega
-  · rintro ⟨hg_supp, hg_rank, hg_type⟩
-    exact ⟨hg_supp, g.rank_pos, hg_type⟩
+  refine ⟨fun ⟨hs, _, ht⟩ => ⟨hs, ?_, ht⟩, fun ⟨hs, _, ht⟩ => ⟨hs, g.rank_pos, ht⟩⟩
+  rcases eq_or_lt_of_le (hg₁min g (Finsupp.mem_support_iff.mpr hs)) with h_eq | h_lt
+  · have halttype : Sigma.altType g.rank GeneType.Negative = GeneType.Negative := by
+      rw [show g.rank = g₁.rank from h_eq.symm, Sigma.altType_odd g₁.rank hodd]
+    rw [halttype] at ht
+    exact absurd hXpn (not_not.mpr
+      ⟨g₁, g, h_eq, hε_pos, ht, hXg₁pos, Nat.pos_of_ne_zero hs⟩)
+  · have := hg₂min g (Nat.pos_of_ne_zero hs) h_lt; omega
 
 private lemma type1_sigma_outside_range_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
     {g₁ g₂ : Gene} (hle : g₁.rank ≤ g₂.rank) (hpos : 0 < g₁.rank) :
@@ -132,9 +115,8 @@ private lemma fst_zero_gap_le_sub_one_of_fst_one_lt {n : ℕ} (X Y : nPi n)
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y.1.val 1 Y.1.2
   have hX1 : (Sigma.sigma X.1 1).1 = ↑nX.1 := congr_arg Prod.fst hnX
   have hY1 : (Sigma.sigma Y.1 1).1 = ↑nY.1 := congr_arg Prod.fst hnY
-  have hlt : (↑nX.1 : ℚ) < ↑nY.1 := by linarith
   have hle : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
-    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp hlt)
+    exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp (by linarith))
   linarith [sigma_zero_fst_eq X Y hXY]
 
 set_option linter.flexible false in
