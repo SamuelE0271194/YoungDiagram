@@ -522,11 +522,8 @@ lemma exists_mutation_le_case4a
                 | succ n ih =>
                   have h1 := Sigma.cond_15_7_drop Y.1.val (n + n + 2) Y.1.2
                   rw [if_pos ⟨n + 1, by omega⟩] at h1
-                  have h2 : (Sigma.drop Y.1.val (n + n + 2)).2 ≤
-                      (Sigma.drop Y.1.val (n + n + 1)).1 := by
-                    have h := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
-                    rw [if_neg (fun heven =>
-                      (Nat.even_add_one.mp heven) ⟨n, rfl⟩)] at h; exact h
+                  have h2 := Sigma.cond_15_7_drop Y.1.val (n + n + 1) Y.1.2
+                  rw [if_neg (fun he => (Nat.even_add_one.mp he) ⟨n, rfl⟩)] at h2
                   simp only [Sigma.drop_fst, Sigma.drop_snd] at h1 h2
                   rw [show n + 1 + (n + 1) + 1 = n + n + 3 from by omega,
                       show n + 1 + (n + 1) + 2 = n + n + 4 from by omega]
