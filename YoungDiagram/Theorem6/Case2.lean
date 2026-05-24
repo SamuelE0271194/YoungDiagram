@@ -82,17 +82,13 @@ lemma exists_mutation_le_case2
   have hsigma_diff_XZ : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
       (Sigma.sigma Z.val i) - (Sigma.sigma X.val i) = (1, 0) := by
     intro i i_lb i_ub
-    simp [Z, hdecomp, Sigma.sigma_linearity, Pi.Y1_eq, Pi.X1_eq]
-    simp [Sigma.sigma]
-    simp [prime_iterate_ofRank]
-    have : 1 - i = 0 := by omega
-    simp [this]
-    simp [signature_ofRank_positive (by omega : 1 ≤ g₂.rank + 1 - i),
-        show g₂.rank + 1 - i - 1 = g₂.rank - i from by omega]
+    simp [Z, hdecomp, Pi.Y1_eq, Pi.X1_eq, Sigma.sigma,
+      prime_iterate_ofRank, show 1 - i = 0 from by omega,
+      signature_ofRank_positive (by omega : 1 ≤ g₂.rank + 1 - i),
+      show g₂.rank + 1 - i - 1 = g₂.rank - i from by omega]
   have hsigma_diff_XY : ∀ i : ℕ, 1 ≤ i → i ≤ g₂.rank →
-      (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 := by
-    intro i i_lb i_ub
-    exact caseA2_strict_fst X Y hXY hg₂_min hb₀_eq_d₀ ha i_lb i_ub
+      (Sigma.sigma X.1.val i).1 < (Sigma.sigma Y.val i).1 :=
+    fun i => caseA2_strict_fst X Y hXY hg₂_min hb₀_eq_d₀ ha
   refine ⟨Z, hstep, ?_⟩
   change Z.val ≤ Y.1.val
   rw [le_iff_dominates]
