@@ -181,7 +181,7 @@ lemma exists_mutation_le_case4a
       le_iff_dominates.mp hXY.le i
     have hZ_split : Sigma.sigma Z.val i =
         Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos).val i + Sigma.sigma rest.val i := by
-      show Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos + rest : Variety.Pi).val i = _
+      change Sigma.sigma (Pi.Y1 hε hle g₁.rank_pos + rest : Variety.Pi).val i = _
       simp [Sigma.sigma, iterate_map_add, map_add]
     have hX_split : Sigma.sigma X.1.val i =
         Sigma.sigma (Pi.X1 hε hle g₁.rank_pos).val i + Sigma.sigma rest.val i := by
