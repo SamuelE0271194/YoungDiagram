@@ -552,9 +552,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                     have h := Sigma.sigma_snd_diff X.1.val (g₁.rank - 1) X.1.2
                     rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
                     rw [h, Sigma.prime_iterate_sum_neg_eq X.1.val (g₁.rank - 1)
-                            (show ¬Even (g₁.rank - 1) from by
+                            (fun h' => by
                               obtain ⟨r, hr⟩ := h_g1_rank_even
-                              intro h'
                               obtain ⟨s, hs⟩ := h'
                               omega)]
                     rfl
@@ -576,8 +575,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                         g.type = Sigma.altType g.rank GeneType.Positive) =
                       {g₁} ∪ X.1.val.support.filter (fun g =>
                         g₁.rank < g.rank ∧
-                        g.type = Sigma.altType g.rank GeneType.Positive) := by
-                    exact support_filter_rank_pred_altType_split hg₁_one hg₁_altType
+                        g.type = Sigma.altType g.rank GeneType.Positive) :=
+                    support_filter_rank_pred_altType_split hg₁_one hg₁_altType
                   have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
                       g₁.rank < g.rank ∧ g.type =
                       Sigma.altType g.rank GeneType.Positive)) := by
@@ -690,9 +689,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                     have h := Sigma.sigma_snd_diff X.1.val (g₁.rank - 1) X.1.2
                     rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
                     rw [h, Sigma.prime_iterate_sum_neg_eq X.1.val (g₁.rank - 1)
-                            (show ¬Even (g₁.rank - 1) from by
+                            (fun h' => by
                               obtain ⟨r, hr⟩ := h_g1_rank_even
-                              intro h'
                               obtain ⟨s, hs⟩ := h'
                               omega)]
                     rfl
@@ -714,8 +712,8 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
                         g.type = Sigma.altType g.rank GeneType.Positive) =
                       {g₁} ∪ X.1.val.support.filter (fun g =>
                         g₁.rank < g.rank ∧
-                        g.type = Sigma.altType g.rank GeneType.Positive) := by
-                    exact support_filter_rank_pred_altType_split hg₁_one hg₁_altType
+                        g.type = Sigma.altType g.rank GeneType.Positive) :=
+                    support_filter_rank_pred_altType_split hg₁_one hg₁_altType
                   have hdisjoint : Disjoint {g₁} (X.1.val.support.filter (fun g =>
                       g₁.rank < g.rank ∧ g.type =
                       Sigma.altType g.rank GeneType.Positive)) := by

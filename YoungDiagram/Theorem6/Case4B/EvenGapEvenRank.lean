@@ -749,8 +749,8 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 0 :=
           congr_arg Prod.snd hdelta
-        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
+        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith [hXYj.2]⟩
       · -- Interior: delta = `(1, 1)`.
@@ -765,10 +765,10 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 1 :=
           congr_arg Prod.snd hdelta
-        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
-        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
+        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
       · -- Right boundary: delta = `(0, 1)`.
@@ -782,7 +782,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 1 :=
           congr_arg Prod.snd hdelta
-        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith [hXYj.1],
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
