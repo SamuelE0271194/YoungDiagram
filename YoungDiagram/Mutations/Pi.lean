@@ -7,8 +7,10 @@ variable {ε : GeneType} {m n : ℕ}
 
 local notation "type1X" => Gene.ofRank m ε + Gene.ofRank n (- ε)
 local notation "type1Y" => Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε
+
 local notation "type2X" => Gene.ofRank m ε + Gene.ofRank n ε
 local notation "type2Y" => Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε
+
 local notation "type3X" => Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)
 local notation "type3Y" => Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε
 

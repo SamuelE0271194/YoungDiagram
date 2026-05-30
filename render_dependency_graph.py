@@ -2,7 +2,7 @@
 """Render Lean dependency TSV output as an image.
 
 This script is designed to work with the TSV emitted by
-`DeclDependencies.lean`, where each relevant line is one of:
+`DeclAudit/DeclDependencies.lean`, where each relevant line is one of:
 
     NODE<TAB>declaration_name<TAB>kind
     EDGE<TAB>source_declaration<TAB>target_declaration
@@ -21,10 +21,10 @@ Read TSV from stdin:
 
     .venv/bin/python render_dependency_graph.py -o graph.svg < graph.tsv
 
-Run `lake build DeclDependencies`, extract `#eval` TSV output, and render it:
+Run `lake build DeclAudit.DeclDependencies`, extract `#eval` TSV output, and render it:
 
     .venv/bin/python render_dependency_graph.py \
-        --build-target DeclDependencies \
+        --build-target DeclAudit.DeclDependencies \
         --output graph.svg
 
 Export Graphviz source instead of an image:
@@ -177,7 +177,7 @@ def read_tsv_lines_from_lake_build(build_target: str, project_root: str) -> list
     if not rows:
         raise RuntimeError(
             "No NODE/EDGE TSV lines were found in `lake build` output. "
-            "Please uncomment a `#eval` in `DeclDependencies.lean` first."
+            "Please uncomment a `#eval` in `DeclAudit/DeclDependencies.lean` first."
         )
     return rows
 

@@ -1,57 +1,9 @@
 import YoungDiagram
-import Lean
+import DeclAudit.Common
 
 open Lean Meta
 
-def kindOf : ConstantInfo → String
-  | .axiomInfo _  => "axiom"
-  | .defnInfo _   => "def"
-  | .thmInfo _    => "theorem"
-  | .opaqueInfo _ => "opaque"
-  | .quotInfo _   => "quot"
-  | .inductInfo _ => "inductive"
-  | .ctorInfo _   => "ctor"
-  | .recInfo _    => "recursor"
-
-def formatNames (names : Array Name) : String :=
-  "[" ++ String.intercalate ", " (names.map Name.toString).toList ++ "]"
-
-def pushName (names : Array Name) (name : Name) : Array Name :=
-  if names.contains name then names else names.push name
-
-def mergeNames (xs ys : Array Name) : Array Name :=
-  ys.foldl pushName xs
-
-def analysisDecls (modulePrefix : String) : MetaM (Array Name) := do
-  let env ← getEnv
-  let mut decls := #[]
-  for i in [:env.header.moduleNames.size] do
-    let moduleName := env.header.moduleNames[i]!
-    if moduleName.toString.startsWith modulePrefix then
-      let moduleData := env.header.moduleData[i]!
-      for j in [:moduleData.constNames.size] do
-        decls := decls.push moduleData.constNames[j]!
-  return decls.qsort Name.lt
-
-def projectDeclSet (modulePrefix : String) : MetaM (Std.HashSet Name) := do
-  let decls ← analysisDecls modulePrefix
-  return decls.foldl (fun acc name => acc.insert name) (Std.HashSet.emptyWithCapacity)
-
-def nameSetOf (names : Array Name) : Std.HashSet Name :=
-  names.foldl (fun acc name => acc.insert name) (Std.HashSet.emptyWithCapacity)
-
-def nodeKind (name : Name) : MetaM String := do
-  let env ← getEnv
-  match env.find? name with
-  | some info => return kindOf info
-  | none => return "unknown"
-
-def ensureProjectDecl
-    (modulePrefix : String)
-    (projectDecls : Std.HashSet Name)
-    (name : Name) : MetaM Unit := do
-  if !projectDecls.contains name then
-    throwError "{name} is not a declaration from modules matching prefix {modulePrefix}"
+namespace DeclAudit
 
 def collectProjectDirectDeps
     (projectDecls : Std.HashSet Name)
@@ -247,38 +199,16 @@ def dumpTransitiveInducedEdgesTsvForDecl (modulePrefix : String) (name : Name) :
       if nodeSet.contains dst then
         printGraphEdgeTsv src dst
 
+end DeclAudit
+
 -- 单个 declaration 的 direct 依赖：
--- #eval (dumpDirectDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
+-- #eval (DeclAudit.dumpDirectDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
 
 -- 单个 declaration 的 transitive 依赖闭包：
--- #eval (dumpTransitiveDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
+-- #eval (DeclAudit.dumpTransitiveDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
 
 -- 打印本项目全部 declaration 的 direct 依赖：
--- #eval (dumpAllDirectDeps "YoungDiagram").run'
+-- #eval (DeclAudit.dumpAllDirectDeps "YoungDiagram").run'
 
 -- 打印本项目全部 declaration 的 transitive 依赖：
--- #eval (dumpAllTransitiveDeps "YoungDiagram").run'
-
--- 适合做节点图的 TSV 输出，先输出全部节点，再输出 direct edges：
--- #eval (dumpDirectGraphTsv "YoungDiagram").run'
-
--- 如果你只想要 transitive closure 的图边：
--- #eval (dumpTransitiveGraphTsv "YoungDiagram").run'
-
--- 如果外部脚本会自己维护节点表，也可以只导出 edge list：
--- #eval (dumpDirectEdgesTsv "YoungDiagram").run'
-
--- 单个 declaration 的 direct graph TSV：
--- #eval (dumpDirectGraphTsvForDecl "YoungDiagram" `Pi.dual_le_dual_iff).run'
-
--- 单个 declaration 的 transitive graph TSV：
--- #eval (dumpTransitiveGraphTsvForDecl "YoungDiagram" `Pi.dual_le_dual_iff).run'
-
--- 单个 declaration 的 direct edge list：
--- #eval (dumpDirectEdgesTsvForDecl "YoungDiagram" `Pi.dual_le_dual_iff).run'
-
--- 单个 declaration 的完整局部子图（transitive closure 的 induced subgraph）：
-#eval (dumpTransitiveInducedGraphTsvForDecl "YoungDiagram" `Pi.dual_le_dual_iff).run'
-
--- 单个 declaration 的完整局部子图 edge list：
--- #eval (dumpTransitiveInducedEdgesTsvForDecl "YoungDiagram" `Pi.dual_le_dual_iff).run'
+-- #eval (DeclAudit.dumpAllTransitiveDeps "YoungDiagram").run'
