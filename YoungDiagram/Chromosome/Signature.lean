@@ -79,6 +79,13 @@ lemma signature_neg {X : Chromosome} :
     rw [map_add, Prod.swap_add, ← hY, neg_add, map_add, add_left_inj, neg_smul,
       map_nsmul, map_nsmul, Prod.smul_swap, neg_ofRank, signature_ofRank_swap]
 
+lemma signature_sum_ofRank_neg_eq_rank {k : ℕ} {ε : GeneType} :
+    (Gene.ofRank k ε).signature + (Gene.ofRank k (- ε)).signature = k := by
+  rw [signature_ofRank, signature_ofRank]
+  split_ifs with h
+  · rw [h, Nat.cast_zero, zero_add]
+  · exact Gene.signature_sum_neg_eq_rank (Nat.pos_of_ne_zero h)
+
 lemma signature_ofRank_positive {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 1) .Negative).signature + (1, 0) := by

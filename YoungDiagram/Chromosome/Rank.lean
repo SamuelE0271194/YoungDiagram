@@ -93,6 +93,21 @@ lemma rank_neg {X : Chromosome} : (- X).rank = X.rank := by
     rw [map_add, map_nsmul, neg_add, map_add, neg_smul, map_nsmul, neg_ofRank,
       rank_ofRank, rank_ofRank, ih]
 
+lemma signature_sum_neg_eq_rank {X : Chromosome} : X.signature + (- X).signature = X.rank := by
+  induction X using induction' with
+  | zero =>
+    rw [neg_zero, map_zero, map_zero, Nat.cast_zero, zero_add]
+  | ofRank_add _ _ _ ih =>
+    expose_names
+    rw [map_add, neg_add, map_add, map_nsmul, signature_neg,
+      map_nsmul, Prod.smul_swap, ← add_assoc, add_comm _ (-Y).signature,
+      ← add_assoc, ← add_assoc, add_comm (-Y).signature, add_comm, ← add_assoc,
+      ← add_assoc, ← smul_add, ← signature_ofRank_swap,
+      add_comm (Gene.ofRank k (-ε)).signature, signature_sum_ofRank_neg_eq_rank,
+      map_add, map_nsmul, Nat.cast_add, ← ih, rank_ofRank, nsmul_eq_mul, smul_eq_mul,
+      Nat.cast_mul, mul_comm]
+    ac_rfl
+
 lemma rank_one {X : Chromosome} (hrank : X.rank = 1) :
     ∃ ε : GeneType, X = Gene.ofRank 1 ε := by
   have hzero : X ≠ 0 := fun h ↦ by simp [h] at hrank

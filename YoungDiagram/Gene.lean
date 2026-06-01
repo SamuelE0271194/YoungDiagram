@@ -180,7 +180,7 @@ lemma signature_pos (g : Gene) : 0 < g.signature := by
       exact Rat.div_nonneg ((Rat.le_iff_sub_nonneg 1 _).1 <|
           Nat.one_le_cast.2 g.rank_pos) rfl
 
-lemma signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
+lemma signature_sum_neg_eq_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
     (⟨n, ε, hn⟩ : Gene).signature + (⟨n, - ε, hn⟩ : Gene).signature = n := by
   cases ε
   · rw [GeneType.neg_nonPolarized, signature_of_nonPolarized rfl,
