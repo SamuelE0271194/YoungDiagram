@@ -48,6 +48,20 @@ lemma sub_single_lt_sub_single {X Y : Chromosome} {g : Gene}
   · nth_rw 1 [← hY_eq, ← hX_eq]
     simpa only [iterate_map_add, map_add, add_le_add_iff_right] using hge k
 
+lemma neg_le_neg_iff {X Y : Chromosome} : - X ≤ - Y ↔ X ≤ Y := by
+  constructor <;> intro h k
+  · specialize h k
+    rw [← prime_iterate_neg, ← prime_iterate_neg, signature_neg, signature_neg] at h
+    exact Prod.swap_le_swap.1 h
+  · specialize h k
+    rw [← prime_iterate_neg, ← prime_iterate_neg, signature_neg, signature_neg]
+    exact Prod.swap_le_swap.1 h
+
+lemma neg_lt_neg_iff {X Y : Chromosome} : - X < - Y ↔ X < Y := by
+  constructor <;> intro h
+  · exact ⟨neg_le_neg_iff.1 h.1, fun hYX ↦ h.2 (neg_le_neg_iff.2 hYX)⟩
+  · exact ⟨neg_le_neg_iff.2 h.1, fun hYX ↦ h.2 (neg_le_neg_iff.1 hYX)⟩
+
 end order
 
 end Chromosome

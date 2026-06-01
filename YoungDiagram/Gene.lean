@@ -94,10 +94,27 @@ A gene is an isomorphism class of strings, defined by its rank (size) and type.
   rank_pos : 1 ≤ rank := by decide
 deriving DecidableEq, Repr
 
+namespace Gene
+
 instance : Finsupp.NonTorsionWeight ℕ Gene.rank :=
   Finsupp.nonTorsionWeight_of ℕ Gene.rank fun i ↦ Nat.ne_zero_of_lt i.rank_pos
 
-def Gene.signature (g : Gene) : ℚ × ℚ :=
+instance : Neg Gene where
+  neg g := ⟨g.rank, - g.type, g.rank_pos⟩
+
+@[simp] lemma neg_rank (g : Gene) : (- g).rank = g.rank := rfl
+
+@[simp] lemma neg_type (g : Gene) : (- g).type = -g.type := rfl
+
+instance : InvolutiveNeg Gene where
+  neg_neg _ := by
+    refine Gene.ext rfl ?_
+    rw [neg_type, neg_type, neg_neg]
+
+/-- The sign-dual operation as an equivalence on genes. -/
+abbrev negEquiv : Gene ≃ Gene := Equiv.neg Gene
+
+def signature (g : Gene) : ℚ × ℚ :=
   match g.type with
   | .NonPolarized => (g.rank / 2, g.rank / 2)
   | .Positive =>
@@ -107,31 +124,31 @@ def Gene.signature (g : Gene) : ℚ × ℚ :=
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2)
 
-lemma Gene.signature_of_nonPolarized {g : Gene} (hg : g.type = .NonPolarized) :
+lemma signature_of_nonPolarized {g : Gene} (hg : g.type = .NonPolarized) :
     g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
   unfold Gene.signature
   simp only [hg]
 
-lemma Gene.signature_of_positive {g : Gene} (hg : g.type = .Positive) :
+lemma signature_of_positive {g : Gene} (hg : g.type = .Positive) :
   g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) + 1) / 2, ((g.rank : ℚ) - 1) / 2) := by
   unfold Gene.signature
   simp only [hg]
 
-lemma Gene.signature_of_negative {g : Gene} (hg : g.type = .Negative) :
+lemma signature_of_negative {g : Gene} (hg : g.type = .Negative) :
   g.signature =
     if Even g.rank then ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2)
     else (((g.rank : ℚ) - 1) / 2, ((g.rank : ℚ) + 1) / 2) := by
   unfold Gene.signature
   simp only [hg]
 
-lemma Gene.signature_ofRank_even_half {g : Gene} (h : Even g.rank) :
+lemma signature_ofRank_even_half {g : Gene} (h : Even g.rank) :
     g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
   unfold Gene.signature
   split <;> first | rfl | exact if_pos h
 
-lemma Gene.signature_sum_eq_rank (g : Gene) :
+lemma signature_sum_eq_rank (g : Gene) :
     g.signature.1 + g.signature.2 = (g.rank : ℚ) := by
   match h : g.type with
   | .NonPolarized =>
@@ -143,7 +160,7 @@ lemma Gene.signature_sum_eq_rank (g : Gene) :
     rw [Gene.signature_of_negative h]
     split_ifs <;> ring
 
-lemma Gene.signature_pos (g : Gene) : 0 < g.signature := by
+lemma signature_pos (g : Gene) : 0 < g.signature := by
   match hg : g.type with
   | .NonPolarized =>
     rw [signature_of_nonPolarized hg]
@@ -163,7 +180,7 @@ lemma Gene.signature_pos (g : Gene) : 0 < g.signature := by
       exact Rat.div_nonneg ((Rat.le_iff_sub_nonneg 1 _).1 <|
           Nat.one_le_cast.2 g.rank_pos) rfl
 
-lemma Gene.signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
+lemma signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
     (⟨n, ε, hn⟩ : Gene).signature + (⟨n, - ε, hn⟩ : Gene).signature = n := by
   cases ε
   · rw [GeneType.neg_nonPolarized, signature_of_nonPolarized rfl,
@@ -179,6 +196,8 @@ lemma Gene.signature_sum_le_rank {n : ℕ} {ε : GeneType} (hn : 1 ≤ n) :
     · rw [← add_div, ← add_div, add_add_sub_cancel, sub_add_add_cancel,
         add_self_div_two]; rfl
 
-lemma Gene.neq_iff {g₁ g₂ : Gene} :
+lemma neq_iff {g₁ g₂ : Gene} :
     g₁ ≠ g₂ ↔ g₁.rank ≠ g₂.rank ∨ g₁.type ≠ g₂.type := by
   grind only [@Gene.ext_iff g₁ g₂]
+
+end Gene

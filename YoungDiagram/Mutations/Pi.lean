@@ -242,6 +242,10 @@ def X1 : Pi := by
 lemma X1_eq : X1 hε hle hm =
   Gene.ofRank m ε + Gene.ofRank n (- ε) := rfl
 
+@[simp] lemma neg_X1 : - (X1 hε hle hm) =
+    X1 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X1_eq, X1_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 def Y1 : Pi := by
   use type1Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
@@ -256,6 +260,10 @@ def Y1 : Pi := by
 
 lemma Y1_eq : Y1 hε hle hm =
   Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε := rfl
+
+@[simp] lemma neg_Y1 : - (Y1 hε hle hm) =
+    Y1 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y1_eq, Y1_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
 
 end type1
 
@@ -272,6 +280,10 @@ def X2 : Pi := by
 lemma X2_eq : X2 hε hle hm =
   Gene.ofRank m ε + Gene.ofRank n ε := rfl
 
+@[simp] lemma neg_X2 : - (X2 hε hle hm) =
+    X2 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X2_eq, X2_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 def Y2 : Pi := by
   use type2Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
@@ -284,6 +296,11 @@ def Y2 : Pi := by
 
 lemma Y2_eq : Y2 hε hle hm =
   Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε := rfl
+
+@[simp] lemma neg_Y2 : - (Y2 hε hle hm) =
+    Y2 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y2_eq, Y2_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 
 end type2
 
@@ -301,6 +318,10 @@ def X3 : Pi := by
 lemma X3_eq : X3 hε hle hm =
   Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε) := rfl
 
+@[simp] lemma neg_X3 : - (X3 hε hle hm) =
+    X3 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X3_eq, X3_eq, Chromosome.neg_add, neg_ofRankAlt, neg_ofRankAlt]
+
 def Y3 : Pi := by
   use type3Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
@@ -314,6 +335,10 @@ def Y3 : Pi := by
 
 lemma Y3_eq : Y3 hε hle hm =
   Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε := rfl
+
+@[simp] lemma neg_Y3 : - (Y3 hε hle hm) =
+    Y3 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y3_eq, Y3_eq, Chromosome.neg_add, neg_ofRankAlt, neg_ofRankAlt]
 
 end type3
 
@@ -332,7 +357,7 @@ inductive Step : Pi → Pi → Prop
   | mk (X Y Z : Pi) (h : Primitive X Y) :
       Step (X + Z) (Y + Z)
 
-lemma Primitive.isMutation {X Y : Pi} (h : Pi.Primitive X Y) :
+lemma Primitive.isMutation {X Y : Pi} (h : Primitive X Y) :
     IsMutation X Y := by
   cases h with
   | type1 ε hε hle hm =>
@@ -345,17 +370,36 @@ lemma Primitive.isMutation {X Y : Pi} (h : Pi.Primitive X Y) :
     exact ⟨mutation_type3_le hε hle hm,
       mutation_type3_ne hle hm, mutation_type3_signature_eq hε hle hm⟩
 
+lemma Primitive.neg {X Y : Pi} (h : Primitive X Y) :
+    Primitive (- X) (- Y) := by
+  cases h with
+  | type1 ε hε hle hm =>
+    rw [neg_X1, neg_Y1]; exact Primitive.type1 ..
+  | type2 ε hε hle hm =>
+    rw [neg_X2, neg_Y2]; exact Primitive.type2 ..
+  | type3 ε hε hle hm =>
+    rw [neg_X3, neg_Y3]; exact Primitive.type3 ..
+
 lemma Step.isMutation {X Y : Pi} (h : Pi.Step X Y) :
     IsMutation X Y := by
   cases h with
   | mk X Y Z h =>
     exact .add_right _ (Pi.Primitive.isMutation h)
 
-lemma Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
+lemma Step.neg {X Y : Pi} (h : Step X Y) : Step (- X) (- Y) := by
+  cases h with
+  | mk X Y Z hPrime =>
+    rw [neg_add, neg_add]; exact Step.mk (- X) (- Y) (- Z) hPrime.neg
+
+lemma Step.add_right (W : Variety.Pi) {A B : Variety.Pi}
     (h : Pi.Step A B) : Pi.Step (A + W) (B + W) := by
   cases h with
   | mk X Y Z hPrim =>
     rw [add_assoc, add_assoc]
     exact Pi.Step.mk X Y (Z + W) hPrim
+
+lemma Step.of_neg {X Y : Pi} (h : Step (-X) (-Y)) : Step X Y := by
+  rw [← neg_neg X, ← neg_neg Y]
+  exact h.neg
 
 end Pi

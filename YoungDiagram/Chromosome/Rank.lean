@@ -38,19 +38,27 @@ lemma maxRank_eq_zero {X : Chromosome} (h : X.maxRank = 0) : X = 0 := by
     h ▸ Finset.le_sup (Finsupp.mem_support_iff.2 hg)
   exact Nat.not_succ_le_zero 0 (this ▸ g.rank_pos : 1 ≤ 0)
 
+lemma maxRank_neg {X : Chromosome} : (- X).maxRank = X.maxRank := by
+  refine le_antisymm ?_ ?_
+  · refine Finset.sup_le fun b hb ↦ ?_
+    rw [← Gene.neg_rank]
+    exact Finset.le_sup <| neg_neg X ▸ mem_neg_support.1 hb
+  · refine Finset.sup_le fun b hb ↦ ?_
+    rw [← Gene.neg_rank]
+    exact Finset.le_sup <| mem_neg_support.1 hb
+
 lemma maxRank_prime_lt {X : Chromosome} (hX : X ≠ 0) :
     X.prime.maxRank < X.maxRank := by
-  induction X using Finsupp.induction with
+  induction X using induction' with
   | zero => exact False.elim (false_of_ne hX)
-  | single_add g n X hg hn h =>
+  | @ofRank_add n hn ε k X hk h =>
     by_cases hzero : X = 0
-    · rw [hzero, add_zero, ← Gene.ofRank_eq_gene_smul, map_nsmul, smul_maxRank hn,
-        smul_maxRank hn, maxRank_ofRank, prime_ofRank, maxRank_ofRank]
-      exact Nat.sub_one_lt_of_lt g.rank_pos
+    · rw [hzero, add_zero, map_nsmul, smul_maxRank hk, smul_maxRank hk,
+        prime_ofRank, maxRank_ofRank, maxRank_ofRank]
+      exact Nat.sub_one_lt_of_lt hn
     · rw [map_add, add_maxRank, Nat.max_lt]; constructor
-      · rw [← Gene.ofRank_eq_gene_smul, map_nsmul, smul_maxRank hn, prime_ofRank,
-          maxRank_ofRank, add_maxRank, smul_maxRank hn, maxRank_ofRank]
-        have := g.rank_pos; omega
+      · rw [map_nsmul, smul_maxRank hk, prime_ofRank, maxRank_ofRank,
+          add_maxRank, smul_maxRank hk, maxRank_ofRank]; omega
       · rw [add_maxRank]
         specialize h hzero; omega
 
@@ -77,6 +85,13 @@ lemma rank_ofRank {n : ℕ} {ε : GeneType} :
   split_ifs with hn
   · rw [hn, map_zero]
   · rw [rank_single, one_smul]
+
+lemma rank_neg {X : Chromosome} : (- X).rank = X.rank := by
+  induction X using induction' with
+  | zero => rw [neg_zero]
+  | ofRank_add _ _ _ ih =>
+    rw [map_add, map_nsmul, neg_add, map_add, neg_smul, map_nsmul, neg_ofRank,
+      rank_ofRank, rank_ofRank, ih]
 
 lemma rank_one {X : Chromosome} (hrank : X.rank = 1) :
     ∃ ε : GeneType, X = Gene.ofRank 1 ε := by
@@ -135,12 +150,12 @@ lemma maxRank_le_rank (X : Chromosome) : X.maxRank ≤ X.rank :=
 lemma rank_eq_maxRank_single {X : Chromosome}
     (h : X.rank = X.maxRank) (hpos : 0 < X.maxRank) :
     ∃ g : Gene, g.rank = X.maxRank ∧ X = Finsupp.single g 1 := by
-  induction X using Finsupp.induction with
+  induction X using induction' with
   | zero => simp only [maxRank_zero, lt_self_iff_false] at hpos
-  | single_add a b f ha hb hf =>
-    rw [add_maxRank, ← Gene.ofRank_eq_gene_smul, smul_maxRank hb, maxRank_ofRank,
+  | @ofRank_add a ha ε b f hb hf =>
+    rw [add_maxRank, smul_maxRank hb, maxRank_ofRank,
       map_add, map_nsmul, rank_ofRank] at *
-    by_cases hle : a.rank ≤ maxRank f
+    by_cases hle : a ≤ maxRank f
     · rw [Nat.max_eq_right hle] at *
       have := nonpos_iff_eq_zero.1 <| add_le_iff_nonpos_left.1 <| h ▸ maxRank_le_rank f
       rw [this, zero_add] at h
@@ -149,13 +164,13 @@ lemma rank_eq_maxRank_single {X : Chromosome}
       · rwa [h0, Gene.ofRank_zero, nsmul_zero, zero_add]
       · rwa [h0, zero_smul, zero_add]
     · rw [Nat.max_eq_left (Nat.le_of_not_ge hle)] at *
-      have := le_self_nsmul (Nat.zero_le a.rank) hb
+      have := le_self_nsmul (Nat.zero_le a) hb
       nth_rw 1 [← h, smul_eq_mul, smul_eq_mul, add_le_iff_nonpos_right,
         nonpos_iff_eq_zero, rank_zero_iff] at this
       rw [this, map_zero, add_zero, smul_eq_mul,
         mul_eq_right₀ (Nat.ne_zero_of_lt hpos)] at h
       rw [this, add_zero, h, one_nsmul]
-      exact ⟨a, rfl, Gene.ofRank_eq_gene⟩
+      refine ⟨⟨a, ε, ha⟩, rfl, (Gene.ofRank_eq_gene' (Nat.ne_zero_of_lt ha))⟩
 
 lemma prime_iterate_zero_of_maxRank_le {X : Chromosome} {k : ℕ} (h : X.maxRank ≤ k) :
     prime^[k] X = 0 :=

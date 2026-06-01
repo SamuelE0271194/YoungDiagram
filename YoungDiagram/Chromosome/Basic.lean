@@ -25,10 +25,6 @@ noncomputable abbrev Gene.ofRank (n : ℕ) (ε : GeneType) : Chromosome :=
 noncomputable abbrev Gene.ofRankAlt (n : ℕ) (ε : GeneType) : Chromosome :=
   ofRank n (Int.negOnePow (n - 1) • ε)
 
-lemma Gene.ofRank_is_gene {n : ℕ} (hn : n ≠ 0) (ε : GeneType) :
-    ofRank n ε = single ⟨n, ε, Nat.pos_of_ne_zero hn⟩ 1 := by
-  rw [Gene.ofRank, dif_neg hn]
-
 lemma Gene.ofRank_def {n : ℕ} {ε : GeneType} :
   ofRank n ε = if h : n = 0 then 0
     else single ⟨n, ε, Nat.pos_of_ne_zero h⟩ 1 := rfl
@@ -70,6 +66,10 @@ lemma Gene.ofRank_eq_gene_smul {g : Gene} {m : ℕ} :
     m • ofRank g.rank g.type = single g m := by
   rw [← smul_single_one, ofRank_eq_gene]
 
+lemma Gene.ofRank_eq_gene' {n : ℕ} (hn : n ≠ 0) {ε : GeneType} :
+    ofRank n ε = single ⟨n, ε, Nat.pos_of_ne_zero hn⟩ 1 := by
+  rw [Gene.ofRank, dif_neg hn]
+
 lemma Gene.ofRankAlt_eq_gene {n : ℕ} (hn : 1 ≤ n) {ε : GeneType} :
     ofRankAlt n ε = single ⟨n, Int.negOnePow (n - 1) • ε, hn⟩ 1 := by
   simp only [dif_neg (by omega : n ≠ 0)]
@@ -85,8 +85,86 @@ lemma Gene.ofRankAlt_shift_negOnePow_smul {n k : ℕ} {ε : GeneType} :
 
 namespace Chromosome
 
+@[elab_as_elim]
+lemma induction
+    {motive : Chromosome → Prop} (X : Chromosome)
+    (zero : motive 0)
+    (ofRank_add :
+      ∀ {k : ℕ} (hk : 1 ≤ k) (ε : GeneType) {n : ℕ} {Y : Chromosome},
+        ⟨k, ε, hk⟩ ∉ Y.support → n ≠ 0 →
+        motive Y → motive (n • Gene.ofRank k ε + Y)) :
+    motive X := Finsupp.induction X zero fun g n Y hg hn ih ↦ by
+  rw [← Gene.ofRank_eq_gene_smul]
+  exact ofRank_add g.rank_pos g.type hg hn ih
+
+@[elab_as_elim]
+lemma induction'
+    {motive : Chromosome → Prop} (X : Chromosome)
+    (zero : motive 0)
+    (ofRank_add :
+      ∀ {k : ℕ} (_ : 1 ≤ k) (ε : GeneType) {n : ℕ} {Y : Chromosome},
+        n ≠ 0 → motive Y →
+        motive (n • Gene.ofRank k ε + Y)) :
+    motive X :=
+  induction X zero (fun hk ε _ _ _ hn ih ↦ ofRank_add hk ε hn ih)
+
+-- subtraction here is tsub
 lemma sub_single_add_single_eq {X : Chromosome} {g : Gene} (hg : 0 < X g) :
     X - single g 1 + single g 1 = X :=
   sub_add_single_one_cancel (Nat.ne_zero_of_lt hg)
+
+-- remember neg below is not subtract
+noncomputable section Neg
+
+/-- The sign-dual additive equivalence on chromosomes. -/
+abbrev negEquiv : Chromosome ≃+ Chromosome :=
+  Finsupp.domCongr Gene.negEquiv
+
+instance : NegZeroClass Chromosome where
+  neg X := X.negEquiv
+  neg_zero := negEquiv.map_zero
+
+lemma neg_eq {X : Chromosome} : - X = X.negEquiv := rfl
+
+@[simp] lemma neg_apply (X : Chromosome) (g : Gene) :
+    (- X) g = X (- g) := by
+  rw [neg_eq, domCongr_apply, equivMapDomain_apply]
+  rfl
+
+instance : InvolutiveNeg Chromosome where
+  neg_neg _ := by
+    ext _; rw [neg_apply, neg_apply, neg_neg]
+
+@[simp] lemma neg_zero : - (0 : Chromosome) = 0 :=
+  negEquiv.map_zero
+
+@[simp] lemma neg_add {X Y : Chromosome} : - (X + Y) = - X + - Y :=
+  negEquiv.map_add X Y
+
+@[simp] lemma neg_smul {n : ℕ} {X : Chromosome} : - (n • X) = n • (- X) :=
+  ext (congrFun rfl)
+
+@[simp] lemma neg_single {g : Gene} {n : ℕ} :
+    - single g n = single (- g) n := by
+  rw [neg_eq, domCongr_apply, equivMapDomain_single]; rfl
+
+@[simp] lemma neg_ofRank {n : ℕ} {ε : GeneType} :
+    - (Gene.ofRank n ε) = Gene.ofRank n (-ε) := by
+  rw [Gene.ofRank_def, Gene.ofRank_def]
+  split_ifs with h
+  · exact neg_zero
+  · exact neg_single
+
+@[simp] lemma neg_ofRankAlt {n : ℕ} {ε : GeneType} :
+    - (Gene.ofRankAlt n ε) = Gene.ofRankAlt n (-ε) := by
+  rw [Gene.ofRankAlt_def, neg_ofRank, GeneType.neg_negOnePow_smul, sub_add_cancel,
+    Gene.ofRankAlt_def, GeneType.negOnePow_smul_neg, sub_add_cancel]
+
+lemma mem_neg_support {g : Gene} {X : Chromosome} : g ∈ X.support ↔ (- g) ∈ (- X).support := by
+  constructor <;> intro h
+  · rwa [mem_support_iff, neg_apply, neg_neg, ← mem_support_iff]
+  · rwa [mem_support_iff, neg_apply, neg_neg, ← mem_support_iff] at h
+
+end Neg
 
 end Chromosome

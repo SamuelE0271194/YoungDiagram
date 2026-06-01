@@ -49,22 +49,35 @@ lemma signature_ofRank {n : ℕ} {ε : GeneType} :
 
 lemma signature_ofRank_nonPolarized {n : ℕ} :
     (Gene.ofRank n .NonPolarized).signature =
+    ((n : ℚ) / 2, (n : ℚ) / 2) := by
+  rw [signature_ofRank]
+  split_ifs with h
+  · rw [h, Nat.cast_zero, zero_div]; rfl
+  · rw [Gene.signature_of_nonPolarized]; rfl
+
+lemma signature_ofRank_nonPolarized_eq_swap {n : ℕ} :
+    (Gene.ofRank n .NonPolarized).signature =
     (Gene.ofRank n .NonPolarized).signature.swap := by
-  simp only [signature_ofRank]
-  split_ifs
-  · rfl
-  · rw [Gene.signature_of_nonPolarized rfl]; rfl
+  rw [signature_ofRank_nonPolarized]; rfl
 
 lemma signature_ofRank_swap {n : ℕ} {ε : GeneType} :
     (Gene.ofRank n (- ε)).signature = (Gene.ofRank n ε).signature.swap := by
   cases ε
-  · exact signature_ofRank_nonPolarized
+  · exact signature_ofRank_nonPolarized_eq_swap
   all_goals
     simp only [GeneType.neg_positive, signature_ofRank]; split_ifs
     · rfl
     · first | rw [Gene.signature_of_negative rfl, Gene.signature_of_positive rfl] |
         rw [Gene.signature_of_positive rfl, Gene.signature_of_negative rfl]
       simp only; split_ifs <;> rfl
+
+lemma signature_neg {X : Chromosome} :
+    (- X).signature = X.signature.swap := by
+  induction X using induction' with
+  | zero => rw [neg_zero, map_zero]; rfl
+  | ofRank_add _ _ _ hY =>
+    rw [map_add, Prod.swap_add, ← hY, neg_add, map_add, add_left_inj, neg_smul,
+      map_nsmul, map_nsmul, Prod.smul_swap, neg_ofRank, signature_ofRank_swap]
 
 lemma signature_ofRank_positive {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRank k .Positive).signature =
@@ -130,7 +143,7 @@ lemma signature_ofRankAlt_general {k : ℕ} {ε : GeneType} (hk : 1 ≤ k)
 
 lemma signature_ofRankAlt_general' {k : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) :
     (Gene.ofRankAlt (k + 1) ε).signature =
-    (Gene.ofRankAlt k (-ε)).signature + (Gene.ofRank 1 ε).signature := by
+    (Gene.ofRankAlt k (- ε)).signature + (Gene.ofRank 1 ε).signature := by
   rw [signature_ofRankAlt_general (by omega) hε, Nat.add_sub_cancel]
 
 lemma signature_ofRank_eq {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε ≠ .NonPolarized) :
@@ -184,11 +197,11 @@ lemma signature_ofRank_eq₂ {k : ℕ} {ε : GeneType} (hk : 2 ≤ k) (hε : ε 
     rfl
 
 lemma signature_fst {X : Chromosome} :
-    (Chromosome.signature X).1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) :=
+    X.signature.1 = X.sum (fun g n ↦ (n : ℚ) • g.signature.1) :=
   map_sum (AddMonoidHom.fst ..) ..
 
 lemma signature_snd {X : Chromosome} :
-    (Chromosome.signature X).2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
+    X.signature.2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
   map_sum (AddMonoidHom.snd ..) ..
 
 end signature

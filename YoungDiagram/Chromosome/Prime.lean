@@ -46,6 +46,13 @@ lemma prime_ofRankAlt_positive {k : ℕ} : (Gene.ofRankAlt k GeneType.Positive).
 lemma prime_ofRankAlt_negative {k : ℕ} : (Gene.ofRankAlt k GeneType.Negative).prime =
   Gene.ofRankAlt (k - 1) GeneType.Positive := prime_ofRankAlt
 
+lemma prime_neg {X : Chromosome} : - X.prime = (- X).prime := by
+  induction X using induction' with
+  | zero => rw [map_zero, neg_zero, map_zero]
+  | ofRank_add _ _ _ hY =>
+    rw [neg_add, neg_smul, map_add, map_nsmul, map_add, neg_add, hY, add_left_inj,
+      map_nsmul, neg_ofRank, prime_ofRank, prime_ofRank, neg_smul, neg_ofRank]
+
 lemma signature_prime_ofRankAlt_positive {k : ℕ} (hk : 1 ≤ k) :
     (Gene.ofRankAlt k GeneType.Positive).signature -
     (Gene.ofRankAlt k GeneType.Positive).prime.signature = (1, 0) := by
@@ -71,6 +78,14 @@ lemma prime_iterate_ofRank {k n : ℕ} {ε : GeneType} :
     change prime^[w + 1 + 1] (Gene.ofRank n ε) = _
     rw [add_comm, Function.iterate_add_apply, Function.iterate_one, h2 rfl, prime_ofRank]
     ac_rfl
+
+lemma prime_iterate_neg {k : ℕ} {X : Chromosome} : - (prime^[k] X) = prime^[k] (- X) := by
+  induction X using induction' with
+  | zero => rw [neg_zero, iterate_map_zero, neg_zero]
+  | ofRank_add _ _ _ hY =>
+    rw [neg_add, iterate_map_add, iterate_map_add, neg_add, hY, add_left_inj, neg_smul,
+      iterate_map_nsmul, iterate_map_nsmul, neg_ofRank, prime_iterate_ofRank, neg_smul,
+      neg_ofRank, prime_iterate_ofRank]
 
 lemma prime_iterate_ofRankAlt {k n : ℕ} {ε : GeneType} :
     prime^[k] (Gene.ofRankAlt n ε) = Gene.ofRankAlt (n - k) ((k : ℤ).negOnePow • ε) := by
@@ -124,35 +139,36 @@ lemma signature_prime_snd₂ {X : Chromosome} :
     X.sum (fun g m ↦ (m : ℚ) • (primeGene g).prime.signature.2) :=
   (@signature_prime_iterate X 1) ▸ map_finsuppSum (AddMonoidHom.snd ..) ..
 
-lemma signature_ofRank_prime_le (g : Gene) :
-    signature (Gene.ofRank g.rank g.type).prime ≤ (signature (Gene.ofRank g.rank g.type)) ⊓
-      (signature (Gene.ofRank g.rank g.type)).swap := by
-  rw [signature_ofRank, prime_ofRank, signature_ofRank, dif_neg (Nat.ne_zero_of_lt g.rank_pos)]
-  split_ifs
+lemma signature_ofRank_prime_le {ε : GeneType} {n : ℕ} :
+    signature (Gene.ofRank n ε).prime ≤ (signature (Gene.ofRank n ε)) ⊓
+      (signature (Gene.ofRank n ε)).swap := by
+  rw [signature_ofRank, prime_ofRank, signature_ofRank]
+  split_ifs with h1 h2 h3
+  · rfl
   · refine le_inf ?_ (Prod.mk_le_swap.2 ?_) <;> exact (Gene.signature_pos _).le
-  · cases g.type
-    · simp [Gene.signature_of_nonPolarized, Nat.cast_sub g.rank_pos, Nat.cast_one]
-      linarith
-    · simp_rw [Gene.signature_of_positive, Nat.cast_sub g.rank_pos, Nat.cast_one,
-        Nat.even_sub_one g.rank_pos]
+  · omega
+  · have : 1 ≤ n := Nat.one_le_iff_ne_zero.2 h3
+    cases ε
+    · simp [Gene.signature_of_nonPolarized, Nat.cast_sub this]; linarith
+    · simp_rw [Gene.signature_of_positive, Nat.cast_sub this, Nat.cast_one,
+        Nat.even_sub_one this]
       split_ifs <;> (simp; linarith)
-    · simp_rw [Gene.signature_of_negative, Nat.cast_sub g.rank_pos, Nat.cast_one,
-        sub_add_cancel, Nat.even_sub_one g.rank_pos]
+    · simp_rw [Gene.signature_of_negative, Nat.cast_sub this, Nat.cast_one,
+        sub_add_cancel, Nat.even_sub_one this]
       split_ifs <;> (simp; linarith)
 
 lemma signature_prime_le (X : Chromosome) :
     (signature X.prime) ≤ (signature X) ⊓ (signature X).swap := by
-  induction X using Finsupp.induction with
+  induction X using induction with
   | zero => rfl
-  | single_add a _ _ _ _ hle =>
-    rw [map_add, map_add, map_add, ← Gene.ofRank_eq_gene_smul, map_nsmul,
-      map_nsmul, map_nsmul]
+  | ofRank_add _ _ _ _ ih =>
+    rw [map_add, map_add, map_add, map_nsmul, map_nsmul, map_nsmul]
     refine le_inf ?_ ?_
-    · refine add_le_add (nsmul_le_nsmul ?_ (signature_nonneg _) .refl) (hle.trans inf_le_left)
-      exact (signature_ofRank_prime_le a).trans inf_le_left
+    · refine add_le_add (nsmul_le_nsmul ?_ (signature_nonneg _) .refl) (ih.trans inf_le_left)
+      exact signature_ofRank_prime_le.trans inf_le_left
     · rw [Prod.swap_add, Prod.smul_swap]
-      refine add_le_add (nsmul_le_nsmul ?_ ?_ .refl) (hle.trans inf_le_right)
-      · exact (signature_ofRank_prime_le a).trans inf_le_right
+      refine add_le_add (nsmul_le_nsmul ?_ ?_ .refl) (ih.trans inf_le_right)
+      · exact signature_ofRank_prime_le.trans inf_le_right
       · exact (Prod.mk_le_swap.2 (signature_nonneg _))
 
 lemma prime_coeff {X : Chromosome} {g : Gene} :
