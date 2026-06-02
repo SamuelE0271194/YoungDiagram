@@ -143,7 +143,7 @@ lemma signature_of_negative {g : Gene} (hg : g.type = .Negative) :
   unfold Gene.signature
   simp only [hg]
 
-lemma signature_ofRank_even_half {g : Gene} (h : Even g.rank) :
+lemma signature_even_half {g : Gene} (h : Even g.rank) :
     g.signature = ((g.rank : ℚ) / 2, (g.rank : ℚ) / 2) := by
   unfold Gene.signature
   split <;> first | rfl | exact if_pos h
@@ -159,6 +159,23 @@ lemma signature_sum_eq_rank (g : Gene) :
   | .Negative =>
     rw [Gene.signature_of_negative h]
     split_ifs <;> ring
+
+lemma signature_ge (g : Gene) :
+    ((g.rank - 1 : ℚ) / 2, (g.rank - 1 : ℚ) / 2) ≤ g.signature := by
+  match h : g.type with
+  | .NonPolarized =>
+    rw [signature_of_nonPolarized h, Prod.mk_le_mk, and_self]
+    linarith
+  | .Positive =>
+    rw [Gene.signature_of_positive h, Prod.mk_le_mk]
+    split_ifs
+    · simp only [and_self]; linarith
+    · simp only [Std.le_refl, and_true]; linarith
+  | .Negative =>
+    rw [Gene.signature_of_negative h, Prod.mk_le_mk]
+    split_ifs
+    · simp only [and_self]; linarith
+    · simp only [Std.le_refl, true_and]; linarith
 
 lemma signature_pos (g : Gene) : 0 < g.signature := by
   match hg : g.type with

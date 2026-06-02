@@ -121,7 +121,7 @@ lemma signature_ofRank_even_half {k : ℕ} {ε : GeneType} (hk : Even k) :
   rw [signature_ofRank]
   split_ifs with h
   · rw [h, Nat.cast_zero, zero_div]; rfl
-  · rwa [Gene.signature_ofRank_even_half]
+  · rwa [Gene.signature_even_half]
 
 lemma signature_ofRank_even {k : ℕ} {ε : GeneType} (hk : Even k) :
     (Gene.ofRank k ε).signature = (Gene.ofRank k (- ε)).signature := by
@@ -186,6 +186,27 @@ lemma signature_ofRank_eq' {k : ℕ} {ε : GeneType} (hk : 1 ≤ k) (hε : ε �
       signature_ofRank_positive' hk, Prod.swap_add, add_right_inj]
     split_ifs <;> simp
 
+lemma signature_ofRank_sum_even {ε : GeneType} {m n : ℕ} (h : Even (m + n)) :
+    (Gene.ofRank m ε).signature + (Gene.ofRank n (- ε)).signature =
+    ((m + n : ℚ) / 2, (m + n : ℚ) / 2) := by
+  by_cases hm : Even m
+  · have hn := (Nat.even_add.1 h).1 hm
+    rw [signature_ofRank_even_half hm, signature_ofRank_even_half hn,
+      Prod.mk_add_mk, add_div]
+  · by_cases hε : ε = .NonPolarized
+    · rw [hε, signature_ofRank_nonPolarized, GeneType.neg_nonPolarized,
+        signature_ofRank_nonPolarized, Prod.mk_add_mk, add_div]
+    · have hn : ¬ Even n := (iff_false_right hm).1 (Nat.even_add.1 h).symm
+      obtain ⟨kn, h1⟩ := Odd.exists_bit1 <| Nat.not_even_iff_odd.1 hn
+      obtain ⟨km, h2⟩ := Odd.exists_bit1 <| Nat.not_even_iff_odd.1 hm
+      rw [h1, h2, signature_ofRank_eq (Nat.le_add_left ..) hε, signature_ofRank_eq
+        (Nat.le_add_left ..) (GeneType.neg_ne_nonPolarized_iff.1 hε),
+        Nat.add_sub_cancel, Nat.add_sub_cancel, signature_ofRank_even_half (even_two_mul km),
+        signature_ofRank_even_half (even_two_mul kn)]
+      match ε, hε with
+      | .Positive, _ => simp; ring_nf; tauto
+      | .Negative, _ => simp; ring_nf; tauto
+
 lemma signature_ofRank_positive₂ {k : ℕ} (hk : 2 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 2) .Positive).signature + (1, 1) := by
@@ -210,6 +231,13 @@ lemma signature_fst {X : Chromosome} :
 lemma signature_snd {X : Chromosome} :
     X.signature.2 = X.sum (fun g n ↦ (n : ℚ) • g.signature.2) :=
   map_sum (AddMonoidHom.snd ..) ..
+
+lemma signature_ofRank_ge {ε : GeneType} {k : ℕ} :
+    ((k - 1 : ℚ) / 2, (k - 1 : ℚ) / 2) ≤ (Gene.ofRank k ε).signature := by
+  rw [signature_ofRank]
+  split_ifs with h1
+  · rw [h1, Nat.cast_zero, zero_sub]; decide +kernel
+  · exact Gene.signature_ge ⟨k, ε, Nat.one_le_iff_ne_zero.2 h1⟩
 
 end signature
 
