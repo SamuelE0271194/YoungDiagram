@@ -488,7 +488,7 @@ lemma neg_count_eq_aux (hg : ∀ g ∈ X.support, g.rank = 1 → g.type = .Posit
   · have hpos : g.type = .Positive := hg g hg_supp hrank
     simp [primeGene_def, hrank, Gene.ofRank_zero, hpos]
   · have hne : g.rank - 1 ≠ 0 := by have := g.rank_pos; omega
-    rw [primeGene_def, Gene.ofRank_is_gene hne]
+    rw [primeGene_def, Gene.ofRank_eq_gene' hne]
     simp [Finsupp.sum_single_index]
 
 lemma rank_one_positive_of_prime_iterate_support (i : ℕ)

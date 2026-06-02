@@ -14,10 +14,10 @@ lemma cond_15_6_ofRank (k : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
       Prod.swap_neg, le_add_neg_iff_add_le]
     split_ifs
     · rw [← signature_ofRank_swap, neg_neg, signature_ofRank, signature_ofRank,
-        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, add_comm, Gene.signature_sum_le_rank]
+        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, add_comm, Gene.signature_sum_neg_eq_rank]
       rfl
     · rw [← signature_ofRank_swap, signature_ofRank, signature_ofRank,
-        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, Gene.signature_sum_le_rank]
+        dif_neg Nat.one_ne_zero, dif_neg Nat.one_ne_zero, Gene.signature_sum_neg_eq_rank]
       rfl
   · obtain (hk | hk) : k = 1 ∨ k = 0 := by omega
     all_goals subst hk

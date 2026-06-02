@@ -3,14 +3,22 @@ import YoungDiagram.Mutations.Basic
 
 open Chromosome
 
+variable {ε : GeneType} {m n : ℕ}
+
+local notation "type1X" => Gene.ofRank m ε + Gene.ofRank n (- ε)
+local notation "type1Y" => Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε
+
+local notation "type2X" => Gene.ofRank m ε + Gene.ofRank n ε
+local notation "type2Y" => Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε
+
+local notation "type3X" => Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)
+local notation "type3Y" => Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε
+
 section Aux
 
 section type1_isMutation
 
-lemma mutation_type1_ne {ε : GeneType}
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≠
-    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
+lemma mutation_type1_ne (h_le : m ≤ n) (hm : 1 ≤ m) : type1X ≠ type1Y := by
   intro h
   replace h := congr_arg (· ⟨m, ε, hm⟩) h
   have h_n : n ≠ 0 := by omega
@@ -19,8 +27,8 @@ lemma mutation_type1_ne {ε : GeneType}
     Finsupp.single_eq_same, Nat.add_eq_zero_iff, one_ne_zero, and_self] at h
   split_ifs at h <;> (simp [Finsupp.single_apply] at h; grind)
 
-lemma mutation_type1_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :
+lemma mutation_type1_iterate_signature_eq (hε : ε ≠ .NonPolarized)
+  (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :
     (prime^[i] (Gene.ofRank (m + k) ε + Gene.ofRank (n + k) (- ε))).signature =
     (prime^[i] (Gene.ofRank (m + k - 1) (- ε) + Gene.ofRank (n + k + 1) ε)).signature := by
   rw [iterate_map_add, iterate_map_add, prime_iterate_ofRank, prime_iterate_ofRank,
@@ -30,17 +38,12 @@ lemma mutation_type1_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
     show n + k + 1 - i - 1 = n + k - i by exact Nat.succ_sub_succ_eq_sub (n + k) i]
   ac_rfl
 
-lemma mutation_type1_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRank m ε + Gene.ofRank n (- ε)).signature =
-    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε).signature := by
+lemma mutation_type1_signature_eq (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) (hm : 1 ≤ m) :
+    signature type1X = signature type1Y := by
   have := mutation_type1_iterate_signature_eq hε h_le hm 0 0 le_rfl
   rwa [Function.iterate_zero_apply, Function.iterate_zero_apply, add_zero, add_zero] at this
 
-lemma mutation_type1_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) :
-    (Gene.ofRank m ε + Gene.ofRank n (- ε)) ≤
-    (Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε) := by
+lemma mutation_type1_le (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) : type1X ≤ type1Y := by
   intro k
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : n < k
@@ -64,10 +67,7 @@ end type1_isMutation
 
 section type2_isMutation
 
-lemma mutation_type2_ne {ε : GeneType}
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
-    (Gene.ofRank m ε + Gene.ofRank n ε) ≠
-    (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε) := by
+lemma mutation_type2_ne (h_le : m ≤ n) (hm : 1 < m) : type2X ≠ type2Y := by
   intro h
   replace h := congr_arg (· ⟨m, ε, le_of_lt hm⟩) h
   have h_n : n ≠ 0 := by omega
@@ -76,8 +76,8 @@ lemma mutation_type2_ne {ε : GeneType}
     Finsupp.single_eq_same, Nat.add_eq_zero_iff, OfNat.ofNat_ne_zero, and_self] at h
   split_ifs at h <;> (simp [Finsupp.single_apply] at h; grind)
 
-lemma mutation_type2_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) (i k : ℕ) (hi : i ≤ k) :
+lemma mutation_type2_iterate_signature_eq (hε : ε ≠ .NonPolarized)
+  (h_le : m ≤ n) (hm : 1 < m) (i k : ℕ) (hi : i ≤ k) :
     (prime^[i] (Gene.ofRank (m + k) ε + Gene.ofRank (n + k) ε)).signature =
     (prime^[i] (Gene.ofRank (m + k - 2) ε + Gene.ofRank (n + k + 2) ε)).signature := by
   rw [iterate_map_add, iterate_map_add, prime_iterate_ofRank, prime_iterate_ofRank,
@@ -87,17 +87,13 @@ lemma mutation_type2_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
     show n + k + 2 - i - 2 = n + k - i by omega]
   ac_rfl
 
-lemma mutation_type2_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
-    (Gene.ofRank m ε + Gene.ofRank n ε).signature =
-    (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε).signature := by
+lemma mutation_type2_signature_eq (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) (hm : 1 < m) :
+    signature type2X = signature type2Y := by
   have := mutation_type2_iterate_signature_eq hε h_le hm 0 0 le_rfl
   rwa [Function.iterate_zero_apply, Function.iterate_zero_apply, add_zero, add_zero] at this
 
-lemma mutation_type2_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 < m) :
-    (Gene.ofRank m ε + Gene.ofRank n ε) ≤
-    (Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε) := by
+lemma mutation_type2_le (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) (hm : 1 < m) :
+    type2X ≤ type2Y := by
   intro k
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : n < k
@@ -124,10 +120,7 @@ end type2_isMutation
 
 section type3_isMutation
 
-lemma mutation_type3_ne {ε : GeneType}
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)) ≠
-    (Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε) := by
+lemma mutation_type3_ne (h_le : m ≤ n) (hm : 1 ≤ m) : type3X ≠ type3Y := by
   dsimp [Gene.ofRankAlt, Gene.ofRank]
   split_ifs <;> try omega
   · expose_names
@@ -139,8 +132,8 @@ lemma mutation_type3_ne {ε : GeneType}
     simp [Multiset.cons_eq_cons] at this
     omega
 
-lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :
+lemma mutation_type3_iterate_signature_eq (hε : ε ≠ .NonPolarized)
+  (h_le : m ≤ n) (hm : 1 ≤ m) (i k : ℕ) (hi : i ≤ k) :
     (prime^[i] (Gene.ofRankAlt (m + k) (Int.negOnePow k • ε) +
       Gene.ofRankAlt (n + k) (Int.negOnePow k • - ε))).signature =
     (prime^[i] (Gene.ofRankAlt (m + k - 1) (Int.negOnePow k • - ε) +
@@ -185,17 +178,13 @@ lemma mutation_type3_iterate_signature_eq {ε : GeneType} (hε : ε ≠ .NonPola
       simpa [h1, h3, ← Int.even_coe_nat, Nat.le_add_right_of_le h_le,
         Int.even_sub, Int.even_add_one] using iff1
 
-lemma mutation_type3_signature_eq {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)).signature =
-    (Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε).signature := by
+lemma mutation_type3_signature_eq (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) (hm : 1 ≤ m) :
+    signature type3X = signature type3Y := by
   have := mutation_type3_iterate_signature_eq hε h_le hm 0 0 le_rfl
   rwa [Function.iterate_zero_apply, Function.iterate_zero_apply, add_zero, add_zero] at this
 
-lemma mutation_type3_le {ε : GeneType} (hε : ε ≠ .NonPolarized)
-  {m n : ℕ} (h_le : m ≤ n) (hm : 1 ≤ m) :
-    (Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)) ≤
-    (Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε) := by
+lemma mutation_type3_le (hε : ε ≠ .NonPolarized) (h_le : m ≤ n) (hm : 1 ≤ m) :
+    type3X ≤ type3Y := by
   intro k
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : n < k
@@ -237,14 +226,14 @@ open Variety
 
 namespace Pi
 
-variable {m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized)
+variable (hε : ε ≠ .NonPolarized)
 
 noncomputable section type1
 
 variable (hle : m ≤ n) (hm : 1 ≤ m)
 
 def X1 : Pi := by
-  use Gene.ofRank m ε + Gene.ofRank n (- ε)
+  use type1X
   rw [mem_Pi_iff, IsPolarized_iff_add]
   exact ⟨by rwa [IsPolarized_ofRank hm],
     by rwa [IsPolarized_ofRank (hm.trans hle),
@@ -253,8 +242,12 @@ def X1 : Pi := by
 lemma X1_eq : X1 hε hle hm =
   Gene.ofRank m ε + Gene.ofRank n (- ε) := rfl
 
+@[simp] lemma neg_X1 : - (X1 hε hle hm) =
+    X1 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X1_eq, X1_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 def Y1 : Pi := by
-  use Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε
+  use type1Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
   refine ⟨?_, by rwa [IsPolarized_ofRank (Nat.le_add_left 1 n)]⟩
   match m with
@@ -268,6 +261,10 @@ def Y1 : Pi := by
 lemma Y1_eq : Y1 hε hle hm =
   Gene.ofRank (m - 1) (- ε) + Gene.ofRank (n + 1) ε := rfl
 
+@[simp] lemma neg_Y1 : - (Y1 hε hle hm) =
+    Y1 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y1_eq, Y1_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 end type1
 
 noncomputable section type2
@@ -275,7 +272,7 @@ noncomputable section type2
 variable (hle : m ≤ n) (hm : 1 < m)
 
 def X2 : Pi := by
-  use Gene.ofRank m ε + Gene.ofRank n ε
+  use type2X
   rw [mem_Pi_iff, IsPolarized_iff_add]
   exact ⟨by rwa [IsPolarized_ofRank (le_of_lt hm)],
     by rwa [IsPolarized_ofRank ((le_of_lt hm).trans hle)]⟩
@@ -283,8 +280,12 @@ def X2 : Pi := by
 lemma X2_eq : X2 hε hle hm =
   Gene.ofRank m ε + Gene.ofRank n ε := rfl
 
+@[simp] lemma neg_X2 : - (X2 hε hle hm) =
+    X2 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X2_eq, X2_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
 def Y2 : Pi := by
-  use Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε
+  use type2Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
   refine ⟨?_, by rwa [IsPolarized_ofRank (Nat.le_add_left 1 (n + 1))]⟩
   match m with
@@ -296,6 +297,11 @@ def Y2 : Pi := by
 lemma Y2_eq : Y2 hε hle hm =
   Gene.ofRank (m - 2) ε + Gene.ofRank (n + 2) ε := rfl
 
+@[simp] lemma neg_Y2 : - (Y2 hε hle hm) =
+    Y2 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y2_eq, Y2_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+
+
 end type2
 
 noncomputable section type3
@@ -303,7 +309,7 @@ noncomputable section type3
 variable (hle : m ≤ n) (hm : 1 ≤ m)
 
 def X3 : Pi := by
-  use Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε)
+  use type3X
   rw [mem_Pi_iff, IsPolarized_iff_add]
   exact ⟨by rwa [IsPolarized_ofRankAlt hm], by
     rwa [IsPolarized_ofRankAlt (hm.trans hle),
@@ -312,8 +318,12 @@ def X3 : Pi := by
 lemma X3_eq : X3 hε hle hm =
   Gene.ofRankAlt m ε + Gene.ofRankAlt n (- ε) := rfl
 
+@[simp] lemma neg_X3 : - (X3 hε hle hm) =
+    X3 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, X3_eq, X3_eq, Chromosome.neg_add, neg_ofRankAlt, neg_ofRankAlt]
+
 def Y3 : Pi := by
-  use Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε
+  use type3Y
   rw [mem_Pi_iff, IsPolarized_iff_add]
   refine ⟨?_, by rwa [IsPolarized_ofRankAlt (by omega)]⟩
   match m with
@@ -325,6 +335,10 @@ def Y3 : Pi := by
 
 lemma Y3_eq : Y3 hε hle hm =
   Gene.ofRankAlt (m - 1) (- ε) + Gene.ofRankAlt (n + 1) ε := rfl
+
+@[simp] lemma neg_Y3 : - (Y3 hε hle hm) =
+    Y3 (GeneType.neg_ne_nonPolarized_iff.1 hε) hle hm := by
+  ext; rw [neg_val, Y3_eq, Y3_eq, Chromosome.neg_add, neg_ofRankAlt, neg_ofRankAlt]
 
 end type3
 
@@ -343,7 +357,7 @@ inductive Step : Pi → Pi → Prop
   | mk (X Y Z : Pi) (h : Primitive X Y) :
       Step (X + Z) (Y + Z)
 
-lemma Primitive.isMutation {X Y : Pi} (h : Pi.Primitive X Y) :
+lemma Primitive.isMutation {X Y : Pi} (h : Primitive X Y) :
     IsMutation X Y := by
   cases h with
   | type1 ε hε hle hm =>
@@ -356,28 +370,36 @@ lemma Primitive.isMutation {X Y : Pi} (h : Pi.Primitive X Y) :
     exact ⟨mutation_type3_le hε hle hm,
       mutation_type3_ne hle hm, mutation_type3_signature_eq hε hle hm⟩
 
+lemma Primitive.neg {X Y : Pi} (h : Primitive X Y) :
+    Primitive (- X) (- Y) := by
+  cases h with
+  | type1 ε hε hle hm =>
+    rw [neg_X1, neg_Y1]; exact Primitive.type1 ..
+  | type2 ε hε hle hm =>
+    rw [neg_X2, neg_Y2]; exact Primitive.type2 ..
+  | type3 ε hε hle hm =>
+    rw [neg_X3, neg_Y3]; exact Primitive.type3 ..
+
 lemma Step.isMutation {X Y : Pi} (h : Pi.Step X Y) :
     IsMutation X Y := by
   cases h with
   | mk X Y Z h =>
     exact .add_right _ (Pi.Primitive.isMutation h)
 
-lemma Step.add_right_pi (W : Variety.Pi) {A B : Variety.Pi}
+lemma Step.neg {X Y : Pi} (h : Step X Y) : Step (- X) (- Y) := by
+  cases h with
+  | mk X Y Z hPrime =>
+    rw [neg_add, neg_add]; exact Step.mk (- X) (- Y) (- Z) hPrime.neg
+
+lemma Step.add_right (W : Variety.Pi) {A B : Variety.Pi}
     (h : Pi.Step A B) : Pi.Step (A + W) (B + W) := by
   cases h with
   | mk X Y Z hPrim =>
     rw [add_assoc, add_assoc]
     exact Pi.Step.mk X Y (Z + W) hPrim
 
---lemma Primitive.le_of_lt {X Y Z : Pi} (hXY : X < Y) (hXZ : Primitive X Z) : Z ≤ Y := by
---  cases hXZ with
---  | type1 ε hε hle hm => sorry
---  | type2 ε hε hle hm => sorry
---  | type3 ε hε hle hm => sorry
-/- Proving this lemma should make things easier, but I'll comment it out for now.
-  I think proving this lemma would be quite challenging,
-  so I will prove them in the theorem when needed :
-  Not sure if this is true in general (I dont think so)
-  only in specfic cases -/
+lemma Step.of_neg {X Y : Pi} (h : Step (-X) (-Y)) : Step X Y := by
+  rw [← neg_neg X, ← neg_neg Y]
+  exact h.neg
 
 end Pi

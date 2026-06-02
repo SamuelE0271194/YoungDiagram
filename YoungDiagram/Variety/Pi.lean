@@ -55,6 +55,14 @@ lemma IsPolarized_iff_add {X Y : Chromosome} :
 lemma IsPolarized_iff_nsmul {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
   (n • X).IsPolarized ↔ X.IsPolarized := IsFiltered_iff_nsmul hn
 
+lemma IsPolarized_iff_neg_polarized {X : Chromosome} : X.IsPolarized ↔ (- X).IsPolarized := by
+  rw [IsPolarized_def', IsPolarized_def']
+  constructor <;> (intro h g hg; specialize h (- g))
+  · rw [GeneType.neg_ne_nonPolarized_iff, ← Gene.neg_type]
+    exact h (neg_neg X ▸ (mem_neg_support.1 hg))
+  · rw [GeneType.neg_ne_nonPolarized_iff, ← Gene.neg_type]
+    exact h (mem_neg_support.1 hg)
+
 lemma IsPolarized_sub {X : Chromosome} (Y : Chromosome) (hX : X.IsPolarized) :
   (X - Y).IsPolarized := IsFiltered_sub Y hX
 
@@ -259,3 +267,30 @@ lemma Pi_rank_one_eq_of_sig_eq {X Y : Chromosome}
   simp only [hXε, hYε, prime_ofRank, tsub_self, Gene.ofRank_zero]
 
 end rank_one
+
+noncomputable section neg
+
+namespace Pi
+
+open Variety
+
+instance : Neg Pi where
+  neg X := ⟨- X, IsPolarized_iff_neg_polarized.1 X.2⟩
+
+instance : InvolutiveNeg Pi where
+  neg_neg X := Subtype.val_injective (neg_neg X.1)
+
+lemma neg_val {X : Pi} : (- X).1 = - X.1 := rfl
+
+@[simp] lemma neg_add {X Y : Pi} : - (X + Y) = - X + - Y :=
+  Subtype.val_injective Chromosome.neg_add
+
+lemma neg_le_neg_iff {X Y : Pi} : - X ≤ - Y ↔ X ≤ Y :=
+  Chromosome.neg_le_neg_iff
+
+lemma neg_lt_neg_iff {X Y : Pi} : - X < - Y ↔ X < Y :=
+  Chromosome.neg_lt_neg_iff
+
+end Pi
+
+end neg

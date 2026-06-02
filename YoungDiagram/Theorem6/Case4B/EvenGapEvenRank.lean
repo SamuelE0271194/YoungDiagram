@@ -78,7 +78,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                 (fun g' _ hg'_pos =>
                   hg₁min g' (Finsupp.mem_support_iff.mpr hg'_pos.ne'))
                 (by omega) (by omega)
-            simpa [show g₁.rank - 1 - 1 = g₁.rank - 2 from by omega] using h
+            simpa [show g₁.rank - 1 - 1 = g₁.rank - 2 by omega] using h
           have hstrict :
               (sigma Y.1 0).1 - (sigma Y.1 1).1 <
               (sigma X.1 0).1 - (sigma X.1 1).1 :=
@@ -125,9 +125,8 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
           · have hci_le_c0 :
                 (sigma Y.1.val i).1 - (sigma Y.1.val (i + 1)).1 ≤
                 (sigma Y.1.val 0).1 - (sigma Y.1.val 1).1 := by
-              have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val i Y.1.2
-              simp only [if_pos hi_even] at h
-              exact h
+              simpa [if_pos hi_even] using
+                Sigma.cond_15_6_compare_k_to_0 Y.1.val i Y.1.2
             have hc0_le_a0 :
                 (sigma Y.1.val 0).1 - (sigma Y.1.val 1).1 ≤
                 (sigma X.1.val 0).1 - (sigma X.1.val 1).1 - 1 := by
@@ -169,12 +168,9 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                     ((g₁.rank : ℤ) - 1) • GeneType.Positive := by
                 have h1 : Int.negOnePow ((g₁.rank : ℤ) - 1) • GeneType.Positive =
                     GeneType.Negative := by
-                  have h := Sigma.altType_even g₁.rank h_g1_rank_even
-                    GeneType.Positive
-                  simp only [Sigma.altType, GeneType.neg_positive] at h
-                  exact h
-                rw [h1]
-                exact hε_neg
+                  simpa [Sigma.altType, GeneType.neg_positive] using
+                    Sigma.altType_even g₁.rank h_g1_rank_even GeneType.Positive
+                rw [h1]; exact hε_neg
               have hfilter_split :
                   X.1.val.support.filter (fun g =>
                     0 < g.rank ∧
@@ -185,21 +181,17 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                       ((g.rank : ℤ) - 1) • GeneType.Positive) := by
                 ext g
                 simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_singleton,
-                            Finsupp.mem_support_iff]
+                  Finsupp.mem_support_iff]
                 constructor
                 · rintro ⟨hsupp, _, htype⟩
                   by_cases heq : g = g₁
-                  · left
-                    exact heq
-                  · right
-                    refine ⟨hsupp, ?_, htype⟩
+                  · exact Or.inl heq
+                  · refine Or.inr ⟨hsupp, ?_, htype⟩
                     have hge := hg₁min g (Finsupp.mem_support_iff.mpr hsupp)
                     rcases Nat.lt_or_eq_of_le hge with h | h
                     · exact h
-                    · exfalso
-                      apply heq
-                      exact Gene.ext h.symm
-                        (by rw [← h, ← hg₁_posfam] at htype; exact htype)
+                    · exact absurd (Gene.ext h.symm
+                        (by rw [← h, ← hg₁_posfam] at htype; exact htype)) heq
                 · rintro (rfl | ⟨hsupp, hrank', htype⟩)
                   · exact ⟨by rw [hg₁_one]; exact one_ne_zero,
                             by omega, hg₁_posfam⟩
@@ -208,9 +200,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                   g₁.rank < g.rank ∧
                   g.type = Int.negOnePow
                     ((g.rank : ℤ) - 1) • GeneType.Positive)) := by
-                simp only [Finset.disjoint_left,
-                            Finset.mem_singleton,
-                            Finset.mem_filter]
+                simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_filter]
                 rintro g rfl ⟨_, hlt, _⟩
                 exact absurd hlt (lt_irrefl _)
               have hsum :
@@ -223,7 +213,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                     g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive),
                   (X.1.val g : ℚ) := by
                 rw [hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
-                    show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one]
+                    show (X.1.val g₁ : ℚ) = 1 by exact_mod_cast hg₁_one]
               linarith [hLHS, hRHS, hsum]
             have ham_eq_ai :
                 (sigma X.1.val g₁.rank).1 -
@@ -270,19 +260,15 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                 (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 := by
               have hi_pos : 1 ≤ i := by omega
               have hi_pred_even : Even (i - 1) := by
-                simp only [Nat.even_iff] at *
-                omega
+                simp only [Nat.even_iff] at *; omega
               have sigma_shift : ∀ k, sigma Y.1.val.prime k =
                   sigma Y.1.val (k + 1) := fun k => by
                 change signature (prime^[k] Y.1.val.prime) =
                     signature (prime^[k + 1] Y.1.val)
                 rw [Function.iterate_succ_apply]
-              have h := Sigma.cond_15_6_compare_k_to_0 Y.1.val.prime (i - 1)
-                (Variety.prime_mem_Pi Y.1.2)
-              simp only [if_pos hi_pred_even] at h
-              simp only [sigma_shift] at h
-              simp only [Nat.sub_add_cancel hi_pos] at h
-              exact h
+              simpa [if_pos hi_pred_even, sigma_shift, Nat.sub_add_cancel hi_pos] using
+                Sigma.cond_15_6_compare_k_to_0 Y.1.val.prime (i - 1)
+                  (Variety.prime_mem_Pi Y.1.2)
             have hc1_le_d0 :
                 (sigma Y.1.val 1).1 - (sigma Y.1.val 2).1 ≤
                 (sigma Y.1.val 0).2 - (sigma Y.1.val 1).2 :=
@@ -317,8 +303,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                     (by exact_mod_cast Nat.not_even_iff_odd.mp hi_even)
                 have h1 := Sigma.sigma_fst_diff X.1.val i X.1.2
                 have h2 := Sigma.prime_iterate_sum_eq X.1.val i GeneType.Positive
-                simp only [hkodd, GeneType.neg_one_smul,
-                            GeneType.neg_positive] at h2
+                simp only [hkodd, GeneType.neg_one_smul, GeneType.neg_positive] at h2
                 exact h1.trans h2
               have hfilter_eq :
                   X.1.val.support.filter (fun g =>
@@ -380,10 +365,8 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
               (sigma X.1 0).2 - (sigma X.1 (g₁.rank - 2)).2 =
               (sigma X.1 2).2 - (sigma X.1 g₁.rank).2 := by
             have h := Sigma.b0_eq_b2_negative g₁.rank hg₁_ge2 hg₁min
-              no_neg_gene_rank_g
-              (show g₁.rank - 2 ≤ g₁.rank - 1 from by omega)
-            simp only [show g₁.rank - 2 + 2 = g₁.rank from by omega] at h
-            exact h
+              no_neg_gene_rank_g (show g₁.rank - 2 ≤ g₁.rank - 1 by omega)
+            simpa [show g₁.rank - 2 + 2 = g₁.rank by omega] using h
           have hd0_di_rank1 :
               (sigma Y.1 0).2 - (sigma Y.1 (g₁.rank - 2)).2 ≤
               (sigma X.1 0).2 - (sigma X.1 (g₁.rank - 2)).2 :=
@@ -392,10 +375,10 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
               (sigma Y.1 2).2 - (sigma Y.1 g₁.rank).2 ≤
               (sigma Y.1 1).1 - (sigma Y.1 (g₁.rank - 1)).1 := by
             by_cases hrank2 : g₁.rank = 2
-            · simp only [hrank2, sub_self, le_refl]
-            · have h : g₁.rank - 1 ≥ 2 := by omega
-              have := Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2 h
-              rwa [show g₁.rank - 1 + 1 = g₁.rank from by omega] at this
+            · simp [hrank2]
+            · have := Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2
+                (show g₁.rank - 1 ≥ 2 by omega)
+              rwa [show g₁.rank - 1 + 1 = g₁.rank by omega] at this
           have hd2_di1_rank1 :
               (sigma Y.1 2).2 - (sigma Y.1 g₁.rank).2 ≤
               (sigma Y.1 0).2 - (sigma Y.1 (g₁.rank - 2)).2 :=
@@ -406,8 +389,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
             (sigma Y.1.val (g₁.rank - 1)).2 := by
           intro hgt
           have hge4 : g₁.rank ≥ 4 := by
-            obtain ⟨k, hk⟩ := h_g1_rank_even
-            omega
+            obtain ⟨k, hk⟩ := h_g1_rank_even; omega
           have hd2_gt_b2 : (sigma X.1 2).2 < (sigma Y.1 2).2 :=
             snd_two_lt_of_fst_one_lt_and_min_rank X Y hXY.le ha hg₁min hg₁_ge2
           have no_neg_gene_rank_g : ∀ g' ∈ X.1.val.support,
@@ -419,15 +401,14 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
               (sigma Y.1 2).2 - (sigma Y.1 (g₁.rank - 1)).2 ≤
               (sigma Y.1 1).1 - (sigma Y.1 (g₁.rank - 2)).1 := by
             have h := Sigma.b2_bi_2_le_a1_ai Y.1.val Y.1.2
-              (show g₁.rank - 2 ≥ 2 from by omega)
-            rwa [show g₁.rank - 2 + 1 = g₁.rank - 1 from by omega] at h
+              (show g₁.rank - 2 ≥ 2 by omega)
+            rwa [show g₁.rank - 2 + 1 = g₁.rank - 1 by omega] at h
           have hc1_ci_rank_m1 :
               (sigma Y.1 1).1 - (sigma Y.1 (g₁.rank - 2)).1 ≤
               (sigma Y.1 0).2 - (sigma Y.1 (g₁.rank - 3)).2 := by
             have h := Sigma.a1_ai_le_b0_bi_1 Y.1.val Y.1.2
-              (show g₁.rank - 2 ≥ 1 from by omega)
-            simp only [show g₁.rank - 2 - 1 = g₁.rank - 3 from by omega] at h
-            exact h
+              (show g₁.rank - 2 ≥ 1 by omega)
+            simpa [show g₁.rank - 2 - 1 = g₁.rank - 3 by omega] using h
           have hd0_di_rank_m1 :
               (sigma Y.1 0).2 - (sigma Y.1 (g₁.rank - 3)).2 ≤
               (sigma X.1 0).2 - (sigma X.1 (g₁.rank - 3)).2 :=
@@ -436,15 +417,13 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
               (sigma X.1 0).2 - (sigma X.1 (g₁.rank - 3)).2 =
               (sigma X.1 2).2 - (sigma X.1 (g₁.rank - 1)).2 := by
             have h := Sigma.b0_eq_b2_negative g₁.rank hg₁_ge2 hg₁min
-              no_neg_gene_rank_g
-              (show g₁.rank - 3 ≤ g₁.rank - 1 from by omega)
-            simp only [show g₁.rank - 3 + 2 = g₁.rank - 1 from by omega] at h
-            exact h
+              no_neg_gene_rank_g (show g₁.rank - 3 ≤ g₁.rank - 1 by omega)
+            simpa [show g₁.rank - 3 + 2 = g₁.rank - 1 by omega] using h
           linarith [hd2_c1_rank_m1, hc1_ci_rank_m1,
                     hd0_di_rank_m1, hb0_b2_rank_m1, hd2_gt_b2]
         have hg₂_even : Even g₂.rank := by
-          rw [show g₂.rank = g₁.rank + (g₂.rank - g₁.rank) from by omega]
-          exact Even.add h_g1_rank_even hparity
+          rw [show g₂.rank = g₁.rank + (g₂.rank - g₁.rank) by omega]
+          exact h_g1_rank_even.add hparity
         have hg₂_neg : g₂.type = .Negative := by
           rw [gene_type_eq_of_X_pos_not_opposite X hε hg₂pos hε₂, hε_neg]
         have hdi_sub_le_bi_sub : ∀ j, g₁.rank ≤ j → j ≤ g₂.rank →
@@ -509,7 +488,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                           have halttype :
                               Sigma.altType g.rank GeneType.Negative =
                               GeneType.Positive := by
-                            rw [show g.rank = g₂.rank from by omega,
+                            rw [show g.rank = g₂.rank by omega,
                                 Sigma.altType_even g₂.rank hg₂_even,
                                 GeneType.neg_negative]
                           rw [halttype] at hg_type
@@ -519,7 +498,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                         have halttype :
                             Sigma.altType g.rank GeneType.Negative =
                             GeneType.Positive := by
-                          rw [show g.rank = g₁.rank from by omega,
+                          rw [show g.rank = g₁.rank by omega,
                               Sigma.altType_even g₁.rank h_g1_rank_even,
                               GeneType.neg_negative]
                         rw [halttype] at hg_type
@@ -568,8 +547,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
             · have hjodd : Odd j := Nat.not_even_iff_odd.mp hjeven
               have hj2' : j ≤ g₂.rank - 1 := by
                 obtain ⟨a, ha⟩ := hg₂_even
-                obtain ⟨b, hb⟩ := hjodd
-                omega
+                obtain ⟨b, hb⟩ := hjodd; omega
               have hdj_le_c01 :
                   (sigma Y.1.val j).2 - (sigma Y.1.val (j + 1)).2 ≤
                   (sigma Y.1.val 0).1 - (sigma Y.1.val 1).1 := by
@@ -598,13 +576,11 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                 have h := x_side_equalities
                   (fun g' _ hg' =>
                     hg₁min g' (Finsupp.mem_support_iff.mpr hg'.ne'))
-                  (show g₁.rank - 1 < g₁.rank from by omega)
-                rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                  (show g₁.rank - 1 < g₁.rank by omega)
+                rw [show (g₁.rank - 1) + 1 = g₁.rank by omega] at h
                 have hodd : ¬Even (g₁.rank - 1) := by
                   obtain ⟨r, hr⟩ := h_g1_rank_even
-                  intro h'
-                  obtain ⟨s, hs⟩ := h'
-                  omega
+                  rintro ⟨s, hs⟩; omega
                 simp only [hodd, if_false] at h
                 linarith
               have hbm_sub1_eq_am :
@@ -619,12 +595,11 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                       g.type = Sigma.altType g.rank GeneType.Positive),
                     (X.1.val g : ℚ) := by
                   have h := Sigma.sigma_snd_diff X.1.val (g₁.rank - 1) X.1.2
-                  rw [show (g₁.rank - 1) + 1 = g₁.rank from by omega] at h
+                  rw [show (g₁.rank - 1) + 1 = g₁.rank by omega] at h
                   rw [h, Sigma.prime_iterate_sum_neg_eq X.1.val (g₁.rank - 1)
-                          (show ¬Even (g₁.rank - 1) from by
+                          (show ¬Even (g₁.rank - 1) by
                             obtain ⟨r, hr⟩ := h_g1_rank_even
-                            intro h'
-                            obtain ⟨s, hs⟩ := h'
+                            rintro ⟨s, hs⟩
                             omega)]
                   rfl
                 have hRHS : (sigma X.1.val g₁.rank).1 -
@@ -653,14 +628,12 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                   · rintro ⟨hsupp, hrank, htype⟩
                     by_cases heq : g = g₁
                     · exact Or.inl heq
-                    · right
-                      refine ⟨hsupp, ?_, htype⟩
-                      rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank from by omega) with
+                    · refine Or.inr ⟨hsupp, ?_, htype⟩
+                      rcases Nat.lt_or_eq_of_le (show g₁.rank ≤ g.rank by omega) with
                           hlt | hEq
                       · exact hlt
-                      · exfalso
-                        exact heq (Gene.ext hEq.symm
-                          (by rw [← hEq, ← hg₁_altType] at htype; exact htype))
+                      · exact absurd (Gene.ext hEq.symm
+                          (by rw [← hEq, ← hg₁_altType] at htype; exact htype)) heq
                   · rintro (rfl | ⟨hsupp, hrank, htype⟩)
                     · exact ⟨by rw [hg₁_one]; exact one_ne_zero,
                               by have := g.rank_pos; omega, hg₁_altType⟩
@@ -672,7 +645,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
                   rintro g rfl ⟨_, hlt, _⟩
                   exact absurd hlt (lt_irrefl _)
                 rw [hLHS, hfilter_split, Finset.sum_union hdisjoint, Finset.sum_singleton,
-                    show (X.1.val g₁ : ℚ) = 1 from by exact_mod_cast hg₁_one, hRHS]
+                    show (X.1.val g₁ : ℚ) = 1 by exact_mod_cast hg₁_one, hRHS]
                 ring
               have ham_eq_bj :
                   (sigma X.1.val g₁.rank).1 -
@@ -744,7 +717,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
       rw [hnX, hnY] at hXYj
       rcases (show j = g₁.rank - 1 ∨
                     (g₁.rank ≤ j ∧ j ≤ g₂.rank) ∨
-                    j = g₂.rank + 1 from by omega)
+                    j = g₂.rank + 1 by omega)
           with hjbd | ⟨hjl2, hjr2⟩ | hjbd2
       · -- Left boundary: delta = `(1, 0)`.
         rw [if_neg (by omega : ¬((j > g₁.rank - 1) ∧ (j < g₂.rank + 1))),
@@ -757,8 +730,8 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 0 :=
           congr_arg Prod.snd hdelta
-        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
+        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith [hXYj.2]⟩
       · -- Interior: delta = `(1, 1)`.
@@ -773,10 +746,10 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 1 :=
           congr_arg Prod.snd hdelta
-        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
-        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+        have ha1 : (↑nX.1 : ℚ) + 1 ≤ ↑nY.1 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp haj)
+        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith,
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
       · -- Right boundary: delta = `(0, 1)`.
@@ -790,7 +763,7 @@ lemma exists_mutation_le_case4b_evenGap_evenRank
         have hd2 : (sigma (Pi.Y2 hε hle hm).val j).2 -
                     (sigma (Pi.X2 hε hle hm).val j).2 = 1 :=
           congr_arg Prod.snd hdelta
-        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 :=
-          by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
+        have hb1 : (↑nX.2 : ℚ) + 1 ≤ ↑nY.2 := by
+          exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith [hXYj.1],
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
