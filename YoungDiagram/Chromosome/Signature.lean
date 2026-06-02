@@ -207,6 +207,28 @@ lemma signature_ofRank_sum_even {ε : GeneType} {m n : ℕ} (h : Even (m + n)) :
       | .Positive, _ => simp; ring_nf; tauto
       | .Negative, _ => simp; ring_nf; tauto
 
+lemma signature_ofRank_nonPolarized_succ_add {ε : GeneType} {m n : ℕ} (h : Even (m + n)) :
+    (Gene.ofRank (m + 1) .NonPolarized).signature + (Gene.ofRank n ε).signature =
+    (Gene.ofRank m ε).signature + (Gene.ofRank (n + 1) .NonPolarized).signature := by
+  rw [signature_ofRank_nonPolarized, signature_ofRank_nonPolarized]
+  by_cases hm : Even m
+  · have hn : Even n := (Nat.even_add.1 h).1 hm
+    rw [signature_ofRank_even_half hm, signature_ofRank_even_half hn,
+      Prod.mk_add_mk, Prod.mk_add_mk, Nat.cast_add, Nat.cast_add, add_div, add_div]
+    ring_nf
+  · have hn : ¬ Even n := (iff_false_right hm).1 (Nat.even_add.1 h).symm
+    obtain ⟨km, hkm⟩ := Odd.exists_bit1 <| Nat.not_even_iff_odd.1 hm
+    obtain ⟨kn, hkn⟩ := Odd.exists_bit1 <| Nat.not_even_iff_odd.1 hn
+    by_cases hε : ε = .NonPolarized
+    · rw [hε, signature_ofRank_nonPolarized, signature_ofRank_nonPolarized,
+        Prod.mk_add_mk, Prod.mk_add_mk, Nat.cast_add, Nat.cast_add]; ring_nf
+    · rw [hkm, hkn, signature_ofRank_eq (Nat.le_add_left ..) hε,
+        signature_ofRank_eq (Nat.le_add_left 1 (2 * km)) hε, Nat.add_sub_cancel,
+        Nat.add_sub_cancel, signature_ofRank_even_half (even_two_mul kn),
+        signature_ofRank_even_half (even_two_mul km), ← add_assoc,
+        add_comm _ (Gene.ofRank 1 ε).signature, add_comm _ (Gene.ofRank 1 ε).signature,
+        add_assoc, add_assoc, add_right_inj]; simp; ring
+
 lemma signature_ofRank_positive₂ {k : ℕ} (hk : 2 ≤ k) :
     (Gene.ofRank k .Positive).signature =
     (Gene.ofRank (k - 2) .Positive).signature + (1, 1) := by
@@ -238,6 +260,13 @@ lemma signature_ofRank_ge {ε : GeneType} {k : ℕ} :
   split_ifs with h1
   · rw [h1, Nat.cast_zero, zero_sub]; decide +kernel
   · exact Gene.signature_ge ⟨k, ε, Nat.one_le_iff_ne_zero.2 h1⟩
+
+lemma signature_ofRank_le {ε : GeneType} {k : ℕ} :
+    (Gene.ofRank k ε).signature ≤ ((k + 1 : ℚ) / 2, (k + 1 : ℚ) / 2) := by
+  rw [signature_ofRank]
+  split_ifs with h1
+  · rw [h1, Nat.cast_zero]; decide +kernel
+  · exact Gene.signature_le ⟨k, ε, Nat.one_le_iff_ne_zero.2 h1⟩
 
 end signature
 

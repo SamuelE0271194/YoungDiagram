@@ -177,6 +177,23 @@ lemma signature_ge (g : Gene) :
     · simp only [and_self]; linarith
     · simp only [Std.le_refl, true_and]; linarith
 
+lemma signature_le (g : Gene) :
+    g.signature ≤ ((g.rank + 1 : ℚ) / 2, (g.rank + 1 : ℚ) / 2) := by
+  match h : g.type with
+  | .NonPolarized =>
+    rw [signature_of_nonPolarized h, Prod.mk_le_mk, and_self]
+    linarith
+  | .Positive =>
+    rw [Gene.signature_of_positive h, Prod.mk_le_mk]
+    split_ifs
+    · simp only [and_self]; linarith
+    · simp only [Std.le_refl, true_and]; linarith
+  | .Negative =>
+    rw [Gene.signature_of_negative h, Prod.mk_le_mk]
+    split_ifs
+    · simp only [and_self]; linarith
+    · simp only [Std.le_refl, and_true]; linarith
+
 lemma signature_pos (g : Gene) : 0 < g.signature := by
   match hg : g.type with
   | .NonPolarized =>
