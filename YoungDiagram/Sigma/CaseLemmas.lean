@@ -302,7 +302,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
       (fun g' hg' =>
         have hle : k + 2 ≤ g'.rank := by
           have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-          simp only at this; omega
+          omega
         (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
       ?_ ?_ ?_ ?_ ?_
   · -- forward maps into X.val.support
@@ -314,7 +314,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
     rw [Finsupp.mem_support_iff] at hg' ⊢
     rw [prime_iterate_coeff]
     have hle : k ≤ g'.rank := by
-      have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+      have := hmin g' (Finsupp.mem_support_iff.mpr hg'); omega
     simp only [Nat.sub_add_cancel hle]
     exact hg'
   · -- forward then backward = id
@@ -323,7 +323,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
     intro g' hg'
     have hle : k ≤ g'.rank := by
       have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-      simp only at this; omega
+      omega
     exact Gene.ext (Nat.sub_add_cancel hle) rfl
   · -- coefficient preserved: (prime^[k] X) g = X.val ⟨g.rank + k, g.type, _⟩
     intro g _; rw [prime_iterate_coeff]
@@ -425,7 +425,7 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
           (fun g' hg' =>
             have hle : k + 1 ≤ g'.rank := by
               have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-              simp only at this; omega
+              omega
             (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
           ?_ ?_ ?_ ?_ ?_
       · intro g hg
@@ -435,14 +435,14 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
         rw [Finsupp.mem_support_iff] at hg' ⊢
         rw [prime_iterate_coeff]
         have hle : k ≤ g'.rank := by
-          have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+          have := hmin g' (Finsupp.mem_support_iff.mpr hg'); omega
         simp only [Nat.sub_add_cancel hle]
         exact hg'
       · intro g _; exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
       · intro g' hg'
         have hle : k ≤ g'.rank := by
           have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-          simp only at this; omega
+          omega
         exact Gene.ext (Nat.sub_add_cancel hle) rfl
       · intro g _; rw [prime_iterate_coeff]
     rw [show b (Chromosome.prime^[k] X) 0 = b Y 0 from rfl,

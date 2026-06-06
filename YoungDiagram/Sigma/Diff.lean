@@ -233,7 +233,9 @@ lemma prime_iterate_sum_pos_eq (hk : Even k) :
       k < g.rank ∧ g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive),
     (X g : ℚ) := by
   have hkeven : Int.negOnePow (↑k : ℤ) = 1 := Int.negOnePow_even _ (by exact_mod_cast hk)
-  simpa [altType, hkeven] using prime_iterate_sum_eq X k GeneType.Positive
+  convert prime_iterate_sum_eq X k .Positive using 1
+  · simp [altType]; rfl
+  · simp [altType, hkeven]
 
 lemma prime_iterate_sum_neg_eq (hk : ¬Even k) :
     (prime^[k] X).sum (fun g m ↦
@@ -244,7 +246,8 @@ lemma prime_iterate_sum_neg_eq (hk : ¬Even k) :
     (X g : ℚ) := by
   have hkodd : Int.negOnePow (↑k : ℤ) = -1 :=
     Int.negOnePow_odd _ (by exact_mod_cast Nat.not_even_iff_odd.mp hk)
-  simpa [altType, hkodd, GeneType.neg_one_smul, GeneType.neg_negative] using
-    prime_iterate_sum_eq X k GeneType.Negative
+  convert prime_iterate_sum_eq X k .Negative using 1
+  · simp [altType]; rfl
+  · simp [altType, hkodd]
 
 end Sigma

@@ -18,7 +18,7 @@ lemma le_maxRank {X : Chromosome} : ∀ g ∈ X.support, g.rank ≤ X.maxRank :=
 
 lemma add_maxRank {X Y : Chromosome} :
     (X + Y).maxRank = X.maxRank ⊔ Y.maxRank := by
-  rw [maxRank_def, support_add_eq', Finset.sup_union, maxRank_def, maxRank_def]
+  rw [maxRank_def, support_add_eq_union, Finset.sup_union, maxRank_def, maxRank_def]
 
 lemma smul_maxRank {X : Chromosome} {n : ℕ} (hn : n ≠ 0) :
     (n • X).maxRank = X.maxRank := by
@@ -29,7 +29,7 @@ lemma maxRank_ofRank {n : ℕ} {ε : GeneType} :
   rw [maxRank_def, Gene.ofRank_def]
   split_ifs with hn
   · rw [hn, support_zero, Finset.sup_empty, Nat.bot_eq_zero]
-  · rw [support_single_ne_zero _ Nat.one_ne_zero, Finset.sup_singleton]
+  · rw [support_single _ Nat.one_ne_zero, Finset.sup_singleton]
 
 lemma maxRank_eq_zero {X : Chromosome} (h : X.maxRank = 0) : X = 0 := by
   ext g

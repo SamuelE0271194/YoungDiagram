@@ -33,7 +33,7 @@ lemma parity_decomposition (X : Chromosome) : X = X.oddPart + X.evenPart := by
   conv =>
     enter [2, 2, 1, a]
     rw [← Nat.not_odd_iff_even]
-  rw [filter_pos_add_filter_neg]
+  rw [filter_add_filter_not]
 
 lemma evenPart_single {g : Gene} : evenPart (single g 1) =
     if Even g.rank then single g 1 else 0 := by

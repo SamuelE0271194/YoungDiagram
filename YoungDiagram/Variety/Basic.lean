@@ -43,7 +43,7 @@ lemma IsFiltered_zero : IsFiltered p 0 := by
 
 lemma IsFiltered_single {g : Gene} {n : ℕ} (hn : n ≠ 0) :
     IsFiltered p (single g n) ↔ p g := by
-  rw [IsFiltered_def', support_single_ne_zero _ hn]
+  rw [IsFiltered_def', support_single _ hn]
   exact List.forall_mem_singleton
 
 lemma IsFiltered_filter {q : Gene → Prop} [DecidablePred q]

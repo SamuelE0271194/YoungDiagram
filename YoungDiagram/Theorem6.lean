@@ -39,14 +39,16 @@ private lemma exists_mutation_le_fifteen_ten {m : ℕ}
     have hb_ne : (sigma X 1).2 ≠ (sigma Y 1).2 := fun hb_eq ↦ hsig_ne (Prod.ext ha_eq hb_eq)
     have hb_lt : (sigma X 1).2 < (sigma Y 1).2 :=
       lt_of_le_of_ne (le_iff_dominates.mp hXY.le 1).2 hb_ne
-    let Xd : nPi (m + 2) :=
-      ⟨- X.1, by rw [Pi.neg_val, rank_neg, X.2]⟩
-    let Yd : nPi (m + 2) :=
-      ⟨- Y.1, by rw [Pi.neg_val, rank_neg, Y.2]⟩
+    set Xd : nPi (m + 2) :=
+      ⟨- X.1, by rw [Pi.neg_val, rank_neg, X.2]⟩ with Xd_def
+    set Yd : nPi (m + 2) :=
+      ⟨- Y.1, by rw [Pi.neg_val, rank_neg, Y.2]⟩ with Yd_def
     have hcommond : ¬∃ g : Gene, 0 < Xd.1.1 g ∧ 0 < Yd.1.1 g := by
       refine fun ⟨g, hgX, hgY⟩ ↦ hcommon ⟨- g, ?_, ?_⟩
-      · simpa [Xd] using hgX
-      · simpa [Yd] using hgY
+      · rw [← neg_apply]
+        convert hgX; rfl
+      · rw [← neg_apply]
+        convert hgY; rfl
     have hsigeqd : ¬∃ k : ℕ, 0 < k ∧ prime^[k] Yd ≠ 0 ∧
         sigma Xd k = sigma Yd k := by
       refine fun ⟨k, hkpos, hYd_ne, hsig⟩ ↦ hsigeq ⟨k, hkpos, ?_, ?_⟩
@@ -64,14 +66,14 @@ private lemma exists_mutation_le_fifteen_ten {m : ℕ}
       · simp only [Gene.neg_rank, hrank]
       · rw [Gene.neg_type, hhneg]; rfl
       · rw [Gene.neg_type, hgpos]; rfl
-      · simpa only [neg_apply] using hhX
-      · simpa only [neg_apply] using hgX
+      · rw [← neg_apply]; convert hhX; rfl
+      · rw [← neg_apply]; convert hgX; rfl
     have had : (sigma Xd 1).1 < (sigma Yd 1).1 := by
       change (prime^[1] (- X)).signature.1 <
         (prime^[1] (- Y)).signature.1
-      rw [← @prime_iterate_neg 1 X, ← @prime_iterate_neg 1 Y,
-        signature_neg, signature_neg]
-      simpa only [Function.iterate_one, Prod.fst_swap] using hb_lt
+      rwa [← @prime_iterate_neg 1 X, ← @prime_iterate_neg 1 Y,
+        signature_neg, signature_neg, Function.iterate_one,
+        Prod.fst_swap, Prod.fst_swap]
     obtain ⟨W, hstepW, hWY⟩ := exists_mutation_le_fifteen_ten_caseA m ih Xd Yd
       (Pi.neg_lt_neg_iff.2 hXY) hcommond hsigeqd hXpnd had
     let Z : Pi := - W

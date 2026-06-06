@@ -58,9 +58,11 @@ lemma exists_mutation_le_case2
     intro g
     rw [hsrc_val, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
     rcases eq_or_ne g g₁ with rfl | hne₁
-    · simpa [if_neg (Ne.symm hg₁g₂_ne)] using hXg₁pos
+    · rw [if_pos rfl, if_neg (hg₁g₂_ne.symm), add_zero]
+      exact Nat.one_le_of_lt hXg₁pos
     · rcases eq_or_ne g g₂ with rfl | hne₂
-      · simpa [if_neg (Ne.symm hne₁)] using hg₂_pos
+      · rw [if_pos rfl, if_neg hne₁.symm, zero_add]
+        exact Nat.one_le_of_lt hg₂_pos
       · simp [if_neg (Ne.symm hne₁), if_neg (Ne.symm hne₂)]
   -- rest = X.1 − src, still in Pi.
   let rest : Pi :=

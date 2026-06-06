@@ -27,7 +27,8 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ φ idx),
         (congrArg Label Label.prime_iterate_zero).symm |>.mpr hU
     · change Step 0 ⟨prime^[k] X, prime_mem_Pi_iterate hX⟩ ⟨U, _⟩
       convert hMu
-      exact Label.prime_iterate_zero.symm
+      · exact Label.prime_iterate_zero.symm
+      · rfl
   | 1 => sorry
   | 2 => sorry
   | 3 => sorry

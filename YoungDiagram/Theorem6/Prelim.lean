@@ -127,7 +127,8 @@ lemma exists_mutation_le_shared_gene (m : ℕ)
       mem_Pi_iff.mpr (IsPolarized_iff_add.mpr
         ⟨mem_Pi_iff.mp Z'.2, mem_Pi_iff.mp hg1_Pi⟩)⟩, ?_, ?_⟩
   · convert Pi.Step.add_right ⟨Finsupp.single g 1, hg1_Pi⟩ hmut' using 1
-    exact Subtype.ext (sub_single_add_single_eq hgX).symm
+    · exact Subtype.ext (sub_single_add_single_eq hgX).symm
+    · rfl
   · change Z'.val + Finsupp.single g 1 ≤ Y.1.val
     rw [← sub_single_add_single_eq hgY, le_iff_dominates]
     intro k
