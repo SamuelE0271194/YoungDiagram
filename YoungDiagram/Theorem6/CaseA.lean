@@ -123,7 +123,7 @@ lemma exists_mutation_le_fifteen_ten_caseA (m : ℕ)
               have hX_ne : prime^[g₁.rank - 1] X.1.val ≠ 0 := by
                 rw [hX_eq_g₁ hzero, ← Gene.ofRank_eq_gene, prime_iterate_ofRank,
                     show g₁.rank - (g₁.rank - 1) = 1 from by omega]
-                simp [Gene.ofRank_is_gene]
+                simp [Gene.ofRank_eq_gene']
               have hle := (le_iff_dominates.mp hXY.le) (g₁.rank - 1)
               simp only [hY_zero, map_zero] at hle
               obtain ⟨n, hn⟩ := Sigma.sigma_isNat X.1.val (g₁.rank - 1) X.1.2

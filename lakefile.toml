@@ -8,6 +8,7 @@ pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
+weak.linter.style.header = false
 
 [[require]]
 name = "mathlib"
@@ -24,3 +25,4 @@ git = "https://github.com/leanprover/doc-gen4"
 rev = "main"
 [[lean_lib]]
 name = "YoungDiagram"
+roots = ["YoungDiagram", "DeclAudit"]

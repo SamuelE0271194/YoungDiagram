@@ -34,6 +34,8 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X1 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type1 ε hε le1 le2)
+        · nth_rw 1 [X_def, AddSubmonoid.coe_add]
+        · nth_rw 1 [Z_def, AddSubmonoid.coe_add]
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y1_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
@@ -56,6 +58,8 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X2 hε le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type2 ε hε le1 le2)
+        · nth_rw 1 [X_def, AddSubmonoid.coe_add]
+        · nth_rw 1 [Z_def, AddSubmonoid.coe_add]
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y2_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]
@@ -63,7 +67,7 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       · intro i hi
         rw [X_def, Z_def, iterate_map_add, iterate_map_add (x := ζ.1),
           map_add, map_add, add_left_inj, ζ_def]
-        exact mutation_type2_iterate_signature_eq hε hle hm i k hi
+        exact mutation_type2_iterate_signature_eq hle hm i k hi
     | @type3 ε hε m n hle hm =>
       have le1 := Nat.add_le_add_right hle k
       have le2 : 1 ≤ m + k := Nat.le_add_right_of_le hm
@@ -82,6 +86,8 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ Pi),
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
       · convert Pi.Step.mk (Pi.X3 eq1 le1 le2) ζ ⟨lift^[k] γ + (X.below k), mem1⟩
           (Pi.Primitive.type3 (Int.negOnePow k • ε) eq1 le1 le2)
+        · nth_rw 1 [X_def, AddSubmonoid.coe_add]
+        · nth_rw 1 [Z_def, AddSubmonoid.coe_add]
       · rw [Z_def, iterate_map_add, iterate_map_add, prime_lift_leftInverse_iterate k,
           prime_below le_rfl, add_zero, ζ_def, Pi.Y3_eq, iterate_map_add,
           prime_iterate_ofRank, prime_iterate_ofRank, U_def, add_left_inj]

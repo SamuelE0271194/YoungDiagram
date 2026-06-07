@@ -72,13 +72,7 @@ lemma gene_type_eq_positive_of_odd_of_ne_negOnePow_negative {g : Gene} (hodd : O
   simpa [GeneType.negOnePow_smul, GeneType.neg_positive, h_even] using hfamily
 
 lemma theorem6_sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
-  ext
-  · have hfst : p.1 - q.1 = δ.1 := congrArg Prod.fst h
-    have : p.1 = q.1 + δ.1 := by linarith
-    simpa using this
-  · have hsnd : p.2 - q.2 = δ.2 := congrArg Prod.snd h
-    have : p.2 = q.2 + δ.2 := by linarith
-    simpa using this
+  rw [← h]; abel
 
 lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -87,9 +81,8 @@ lemma theorem6_sigma_fst_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  have h' : (nX.1 : ℚ) < nY.1 := by simpa using h
-  change (nX.1 : ℚ) + 1 ≤ nY.1
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
+  simp only at h ⊢
+  exact_mod_cast Nat.add_one_le_iff.mpr (by exact_mod_cast h)
 
 lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
     (hX : X ∈ Variety.Pi) (hY : Y ∈ Variety.Pi) (i : ℕ)
@@ -98,9 +91,8 @@ lemma theorem6_sigma_snd_add_one_le_of_lt {X Y : Chromosome}
   obtain ⟨nX, hnX⟩ := Sigma.sigma_isNat X i hX
   obtain ⟨nY, hnY⟩ := Sigma.sigma_isNat Y i hY
   rw [hnX, hnY] at h ⊢
-  have h' : (nX.2 : ℚ) < nY.2 := by simpa using h
-  change (nX.2 : ℚ) + 1 ≤ nY.2
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h')
+  simp only at h ⊢
+  exact_mod_cast Nat.add_one_le_iff.mpr (by exact_mod_cast h)
 
 /-! ## Case 1: X and Y share a gene -/
 
@@ -134,8 +126,9 @@ lemma exists_mutation_le_shared_gene (m : ℕ)
   refine ⟨⟨Z'.val + Finsupp.single g 1,
       mem_Pi_iff.mpr (IsPolarized_iff_add.mpr
         ⟨mem_Pi_iff.mp Z'.2, mem_Pi_iff.mp hg1_Pi⟩)⟩, ?_, ?_⟩
-  · convert Pi.Step.add_right_pi ⟨Finsupp.single g 1, hg1_Pi⟩ hmut' using 1
-    exact Subtype.ext (sub_single_add_single_eq hgX).symm
+  · convert Pi.Step.add_right ⟨Finsupp.single g 1, hg1_Pi⟩ hmut' using 1
+    · exact Subtype.ext (sub_single_add_single_eq hgX).symm
+    · rfl
   · change Z'.val + Finsupp.single g 1 ≤ Y.1.val
     rw [← sub_single_add_single_eq hgY, le_iff_dominates]
     intro k
@@ -180,7 +173,7 @@ lemma exists_mutation_le_disjoint_sigma_eq (m : ℕ)
     change Yk.val.Dominates Xk.val ∧ ¬Xk.val.Dominates Yk.val
     refine ⟨le_iff_dominates.mp hle_k, fun hcontra => ?_⟩
     have hXkYk_eq : Xk.val = Yk.val :=
-      pi_chromosome_antisymm Xk.2 Yk.2 hle_k (le_iff_dominates.mpr hcontra)
+      Subtype.val_inj.2 (le_antisymm hle_k hcontra)
     obtain ⟨g', hg'⟩ : ∃ g', 0 < Yk.val g' := by
       obtain ⟨g', hg'mem⟩ := Finsupp.support_nonempty_iff.mpr hYkne
       exact ⟨g', Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg'mem)⟩
@@ -320,7 +313,8 @@ private lemma prod_lt_or_lt_of_le_ne {p q : ℚ × ℚ} (hle : p ≤ q) (hne : p
 
 private lemma cast_add_one_le_of_lt {m n : ℕ} (h : (m : ℚ) < n) :
     (m : ℚ) + 1 ≤ n := by
-  exact_mod_cast Nat.add_one_le_iff.mpr (Nat.cast_lt.mp h)
+  have : m < n := by exact_mod_cast h
+  exact_mod_cast this
 
 private lemma signature_type1_eq_before {ε : GeneType} (hε : ε ≠ .NonPolarized)
     {r j : ℕ} (hr : 1 ≤ r) (hj : j < r) :

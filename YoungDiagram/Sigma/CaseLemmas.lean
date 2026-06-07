@@ -302,7 +302,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
       (fun g' hg' =>
         have hle : k + 2 ≤ g'.rank := by
           have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-          simp only at this; omega
+          omega
         (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
       ?_ ?_ ?_ ?_ ?_
   · -- forward maps into X.val.support
@@ -314,7 +314,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
     rw [Finsupp.mem_support_iff] at hg' ⊢
     rw [prime_iterate_coeff]
     have hle : k ≤ g'.rank := by
-      have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+      have := hmin g' (Finsupp.mem_support_iff.mpr hg'); omega
     simp only [Nat.sub_add_cancel hle]
     exact hg'
   · -- forward then backward = id
@@ -323,7 +323,7 @@ lemma bk_minus_bk2 {X : Variety.Pi} (k m : ℕ)
     intro g' hg'
     have hle : k ≤ g'.rank := by
       have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-      simp only at this; omega
+      omega
     exact Gene.ext (Nat.sub_add_cancel hle) rfl
   · -- coefficient preserved: (prime^[k] X) g = X.val ⟨g.rank + k, g.type, _⟩
     intro g _; rw [prime_iterate_coeff]
@@ -425,7 +425,7 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
           (fun g' hg' =>
             have hle : k + 1 ≤ g'.rank := by
               have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-              simp only at this; omega
+              omega
             (⟨g'.rank - k, g'.type, by omega⟩ : Gene))
           ?_ ?_ ?_ ?_ ?_
       · intro g hg
@@ -435,14 +435,14 @@ lemma bk_minus_bk2_min_neg {X : Variety.Pi} (k m : ℕ)
         rw [Finsupp.mem_support_iff] at hg' ⊢
         rw [prime_iterate_coeff]
         have hle : k ≤ g'.rank := by
-          have := hmin g' (Finsupp.mem_support_iff.mpr hg'); simp only at this; omega
+          have := hmin g' (Finsupp.mem_support_iff.mpr hg'); omega
         simp only [Nat.sub_add_cancel hle]
         exact hg'
       · intro g _; exact Gene.ext (Nat.add_sub_cancel g.rank k) rfl
       · intro g' hg'
         have hle : k ≤ g'.rank := by
           have := hmin g' (Finsupp.mem_support_iff.mpr (Finsupp.mem_support_iff.mp hg'))
-          simp only at this; omega
+          omega
         exact Gene.ext (Nat.sub_add_cancel hle) rfl
       · intro g _; rw [prime_iterate_coeff]
     rw [show b (Chromosome.prime^[k] X) 0 = b Y 0 from rfl,
@@ -488,7 +488,7 @@ lemma neg_count_eq_aux (hg : ∀ g ∈ X.support, g.rank = 1 → g.type = .Posit
   · have hpos : g.type = .Positive := hg g hg_supp hrank
     simp [primeGene_def, hrank, Gene.ofRank_zero, hpos]
   · have hne : g.rank - 1 ≠ 0 := by have := g.rank_pos; omega
-    rw [primeGene_def, Gene.ofRank_is_gene hne]
+    rw [primeGene_def, Gene.ofRank_eq_gene' hne]
     simp [Finsupp.sum_single_index]
 
 lemma rank_one_positive_of_prime_iterate_support (i : ℕ)
@@ -548,16 +548,6 @@ lemma neg_gene_of_b0_gt_a1 (hX : X ∈ Variety.Pi)
     · simp [hneg]
   linarith
 
-lemma signature_ofRank_add_two (r : ℕ) {ε : GeneType} (hε : ε ≠ .NonPolarized) :
-    signature (Gene.ofRank (r + 2) ε) = signature (Gene.ofRank r ε) + (1, 1) :=
-  signature_ofRank_eq₂ (k := r + 2) (by omega) hε
-
-lemma signature_ofRank_add_two_sub_self (r : ℕ) {ε : GeneType}
-    (hε : ε ≠ .NonPolarized) :
-    signature (Gene.ofRank (r + 2) ε) - signature (Gene.ofRank r ε) = (1, 1) := by
-  rw [signature_ofRank_add_two r hε]
-  simp
-
 lemma sigma_type2_left_eq {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
     (hle : m ≤ n) (hm : 1 < m) :
     ∀ i, i ≤ m - 2 → sigma (Pi.X2 hε hle hm) i = sigma (Pi.Y2 hε hle hm) i := by
@@ -565,8 +555,8 @@ lemma sigma_type2_left_eq {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarize
   simp only [Pi.X2_eq, Pi.Y2_eq, sigma, iterate_map_add, prime_iterate_ofRank, map_add]
   rw [show m - i = m - 2 - i + 2 from by omega,
       show n + 2 - i = n - i + 2 from by omega,
-      signature_ofRank_add_two (m - 2 - i) hε,
-      signature_ofRank_add_two (n - i) hε]
+      signature_ofRank_eq₂' (m - 2 - i),
+      signature_ofRank_eq₂' (n - i)]
   abel
 
 lemma sigma_type2_right_eq {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
@@ -587,7 +577,7 @@ lemma sigma_type2_left_boundary {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPo
   have hm1 : m - (m - 1) = 1 := by omega
   have hm0 : m - 2 - (m - 1) = 0 := by omega
   have hnrank : n + 2 - (m - 1) = n - (m - 1) + 2 := by omega
-  rw [hnrank, signature_ofRank_add_two (n - (m - 1)) hε]
+  rw [hnrank, signature_ofRank_eq₂' (n - (m - 1))]
   simp only [hm1, hm0, Gene.ofRank_zero, map_zero, zero_add]
   rcases ε with _ | _ | _
   · exact absurd rfl hε
@@ -603,7 +593,7 @@ lemma sigma_type2_mid {m n : ℕ} (ε : GeneType) (hε : ε ≠ .NonPolarized)
   have hmX : m - i = 0 := by omega
   have hmY : m - 2 - i = 0 := by omega
   have hnrank : n + 2 - i = n - i + 2 := by omega
-  rw [hnrank, signature_ofRank_add_two (n - i) hε]
+  rw [hnrank, signature_ofRank_eq₂' (n - i)]
   simp only [hmX, hmY, Gene.ofRank_zero, map_zero, zero_add]
   simp
 

@@ -69,7 +69,7 @@ lemma rank_decomposition (X : Chromosome) (k : ℕ) :
   conv =>
     enter [2, 2, 1, a]
     rw [lt_iff_not_ge]
-  rw [filter_pos_add_filter_neg]
+  rw [filter_add_filter_not]
 
 lemma prime_iterate_eq_prime_iterate_above (X : Chromosome) (k : ℕ) :
     prime^[k] X = prime^[k] (X.above k) := by

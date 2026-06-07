@@ -1,5 +1,4 @@
 import YoungDiagram.Theorem6.CaseA
-import YoungDiagram.Theorem6.Dual
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
@@ -35,50 +34,52 @@ private lemma exists_mutation_le_fifteen_ten {m : ℕ}
         | succ k => simp only [Function.iterate_succ_apply, hXprime_zero,
             iterate_map_zero, map_zero, hYprime]
       exact (ne_of_lt hXY) <| Subtype.val_injective
-        <| Subtype.val_injective <| eq_of_sigma_eq X.1.2 Y.1.2 hsig_all
+        <| Subtype.val_injective <| sigmaUnique_Pi X.1.2 Y.1.2 hsig_all
     have hsig_ne : sigma X 1 ≠ sigma Y 1 := fun hsig ↦ hsigeq ⟨1, Nat.one_pos, hYprime_ne, hsig⟩
     have hb_ne : (sigma X 1).2 ≠ (sigma Y 1).2 := fun hb_eq ↦ hsig_ne (Prod.ext ha_eq hb_eq)
     have hb_lt : (sigma X 1).2 < (sigma Y 1).2 :=
       lt_of_le_of_ne (le_iff_dominates.mp hXY.le 1).2 hb_ne
-    let Xd : nPi (m + 2) :=
-      ⟨Pi.dual X.1, by simpa [Pi.dual] using X.2⟩
-    let Yd : nPi (m + 2) :=
-      ⟨Pi.dual Y.1, by simpa [Pi.dual] using Y.2⟩
+    set Xd : nPi (m + 2) :=
+      ⟨- X.1, by rw [Pi.neg_val, rank_neg, X.2]⟩ with Xd_def
+    set Yd : nPi (m + 2) :=
+      ⟨- Y.1, by rw [Pi.neg_val, rank_neg, Y.2]⟩ with Yd_def
     have hcommond : ¬∃ g : Gene, 0 < Xd.1.1 g ∧ 0 < Yd.1.1 g := by
-      refine fun ⟨g, hgX, hgY⟩ ↦ hcommon ⟨g.dual, ?_, ?_⟩
-      · simpa [Xd, Pi.dual] using hgX
-      · simpa [Yd, Pi.dual] using hgY
+      refine fun ⟨g, hgX, hgY⟩ ↦ hcommon ⟨- g, ?_, ?_⟩
+      · rw [← neg_apply]
+        convert hgX; rfl
+      · rw [← neg_apply]
+        convert hgY; rfl
     have hsigeqd : ¬∃ k : ℕ, 0 < k ∧ prime^[k] Yd ≠ 0 ∧
         sigma Xd k = sigma Yd k := by
       refine fun ⟨k, hkpos, hYd_ne, hsig⟩ ↦ hsigeq ⟨k, hkpos, ?_, ?_⟩
       · refine fun hYzero ↦ hYd_ne ?_
-        rw [Pi.dual_val, ← dual_prime_iterate, hYzero, dual_zero]
-      · have hsig_swap : (prime^[k] (dual X)).signature.swap =
-          (prime^[k] (dual Y)).signature.swap := congrArg Prod.swap hsig
-        rwa [← dual_prime_iterate X k, ← dual_prime_iterate Y k,
-          signature_dual, signature_dual, Prod.swap_swap, Prod.swap_swap] at hsig_swap
+        rw [Pi.neg_val, ← prime_iterate_neg, hYzero, neg_zero]
+      · have hsig_swap : (prime^[k] (- X)).signature.swap =
+          (prime^[k] (- Y)).signature.swap := congrArg Prod.swap hsig
+        rwa [← @prime_iterate_neg k X, ← @prime_iterate_neg k Y,
+          signature_neg, signature_neg, Prod.swap_swap, Prod.swap_swap] at hsig_swap
     have hXpnd : ¬∃ (g h : Gene), g.rank = h.rank ∧
         g.type = .Positive ∧ h.type = .Negative ∧
         0 < Xd.1.1 g ∧ 0 < Xd.1.1 h := by
       refine fun ⟨g, h, hrank, hgpos, hhneg, hgX, hhX⟩ ↦
-        hXpn ⟨h.dual, g.dual, ?_, ?_, ?_, ?_, ?_⟩
-      · simp only [Gene.dual_rank, hrank]
-      · simp only [Gene.dual, hhneg, GeneType.neg_negative]
-      · simp only [Gene.dual, hgpos, GeneType.neg_positive]
-      · simpa only [Pi.dual, dual_apply] using hhX
-      · simpa only [Pi.dual, dual_apply] using hgX
+        hXpn ⟨- h, - g, ?_, ?_, ?_, ?_, ?_⟩
+      · simp only [Gene.neg_rank, hrank]
+      · rw [Gene.neg_type, hhneg]; rfl
+      · rw [Gene.neg_type, hgpos]; rfl
+      · rw [← neg_apply]; convert hhX; rfl
+      · rw [← neg_apply]; convert hgX; rfl
     have had : (sigma Xd 1).1 < (sigma Yd 1).1 := by
-      change (prime^[1] (dual X)).signature.1 <
-        (prime^[1] (dual Y)).signature.1
-      rw [← dual_prime_iterate X 1, ← dual_prime_iterate Y 1,
-        signature_dual, signature_dual]
-      simpa only [Function.iterate_one, Prod.fst_swap] using hb_lt
+      change (prime^[1] (- X)).signature.1 <
+        (prime^[1] (- Y)).signature.1
+      rwa [← @prime_iterate_neg 1 X, ← @prime_iterate_neg 1 Y,
+        signature_neg, signature_neg, Function.iterate_one,
+        Prod.fst_swap, Prod.fst_swap]
     obtain ⟨W, hstepW, hWY⟩ := exists_mutation_le_fifteen_ten_caseA m ih Xd Yd
-      (Pi.dual_lt_dual_iff.2 hXY) hcommond hsigeqd hXpnd had
-    let Z : Pi := Pi.dual W
+      (Pi.neg_lt_neg_iff.2 hXY) hcommond hsigeqd hXpnd had
+    let Z : Pi := - W
     refine ⟨Z, ?_, ?_⟩
-    · exact Pi.Step.of_dual (by simpa only [Pi.dual_dual, Z] using hstepW)
-    · simpa only [Pi.dual_dual] using (Pi.dual_le_dual_iff (Y := Pi.dual Y)).2 hWY
+    · exact Pi.Step.of_neg (by simpa only [neg_neg, Z] using hstepW)
+    · simpa only [neg_neg] using (Pi.neg_le_neg_iff (Y := - Y)).2 hWY
 
 private lemma exists_mutation_le_rank_zero {X Y : nPi 0} (hXY : X < Y) :
     ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1 :=
