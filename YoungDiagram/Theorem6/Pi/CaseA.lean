@@ -1,11 +1,13 @@
-import YoungDiagram.Theorem6.Case1
-import YoungDiagram.Theorem6.Case2
-import YoungDiagram.Theorem6.Case3
-import YoungDiagram.Theorem6.Case4A
-import YoungDiagram.Theorem6.Case4B
+import YoungDiagram.Theorem6.Pi.Case1
+import YoungDiagram.Theorem6.Pi.Case2
+import YoungDiagram.Theorem6.Pi.Case3
+import YoungDiagram.Theorem6.Pi.Case4A
+import YoungDiagram.Theorem6.Pi.Case4B
 
 open Variety hiding prime prime_def
 open Chromosome
+
+namespace Pi
 
 /-!
 Case A of §15.10.
@@ -226,3 +228,5 @@ lemma exists_mutation_le_fifteen_ten_caseA (m : ℕ)
             hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂
         · exact exists_mutation_le_case4b X Y hXY hXpn ha hε₁ hXg₁ hXg₁pos
             hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂
+
+end Pi

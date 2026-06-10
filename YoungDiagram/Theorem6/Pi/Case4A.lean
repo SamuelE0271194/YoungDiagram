@@ -1,7 +1,9 @@
-import YoungDiagram.Theorem6.Prelim
+import YoungDiagram.Theorem6.Pi.Prelim
 
 open Variety hiding prime prime_def
 open Chromosome
+
+namespace Pi
 
 private lemma support_filter_tail_eq {X : Chromosome} {g₁ g₂ : Gene} {j : ℕ} {τ : GeneType}
     (hg₂min : ∀ g', 0 < X g' → g₁.rank < g'.rank → g₂.rank ≤ g'.rank)
@@ -600,3 +602,5 @@ lemma exists_mutation_le_case4a
       exact hXY_sigma.1 i hi1 hi2
     · rw [hZ_split, hXY_sigma.2 i hin, ← hX_split]; exact hXY_i
   exact ⟨Z, hstep, hZ_le⟩
+
+end Pi

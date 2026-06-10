@@ -1,10 +1,12 @@
-import YoungDiagram.Theorem6.Case4B.EvenGapEvenRank
-import YoungDiagram.Theorem6.Case4B.EvenGapOddRank
-import YoungDiagram.Theorem6.Case4B.OddGapEvenRank
-import YoungDiagram.Theorem6.Case4B.OddGapOddRank
+import YoungDiagram.Theorem6.Pi.Case4B.EvenGapEvenRank
+import YoungDiagram.Theorem6.Pi.Case4B.EvenGapOddRank
+import YoungDiagram.Theorem6.Pi.Case4B.OddGapEvenRank
+import YoungDiagram.Theorem6.Pi.Case4B.OddGapOddRank
 
 open Variety hiding prime prime_def
 open Chromosome
+
+namespace Pi
 
 /-! Dispatcher for Case 4b of §15.10. -/
 
@@ -39,3 +41,5 @@ lemma exists_mutation_le_case4b
         hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
     · exact exists_mutation_le_case4b_oddGap_oddRank X Y hXY hXpn ha hε₁
         hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
+
+end Pi

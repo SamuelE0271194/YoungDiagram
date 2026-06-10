@@ -1,7 +1,9 @@
-import YoungDiagram.Theorem6.CaseA
+import YoungDiagram.Theorem6.Pi.CaseA
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
+
+namespace Pi
 
 /-! ## (15.10): X has no positive-negative gene pair of equal rank -/
 /-- Dispatcher for Cases A and B of §15.10.
@@ -45,9 +47,9 @@ private lemma exists_mutation_le_fifteen_ten {m : ℕ}
       ⟨- Y.1, by rw [Pi.neg_val, rank_neg, Y.2]⟩ with Yd_def
     have hcommond : ¬∃ g : Gene, 0 < Xd.1.1 g ∧ 0 < Yd.1.1 g := by
       refine fun ⟨g, hgX, hgY⟩ ↦ hcommon ⟨- g, ?_, ?_⟩
-      · rw [← neg_apply]
+      · rw [← Chromosome.neg_apply]
         convert hgX; rfl
-      · rw [← neg_apply]
+      · rw [← Chromosome.neg_apply]
         convert hgY; rfl
     have hsigeqd : ¬∃ k : ℕ, 0 < k ∧ prime^[k] Yd ≠ 0 ∧
         sigma Xd k = sigma Yd k := by
@@ -66,8 +68,8 @@ private lemma exists_mutation_le_fifteen_ten {m : ℕ}
       · simp only [Gene.neg_rank, hrank]
       · rw [Gene.neg_type, hhneg]; rfl
       · rw [Gene.neg_type, hgpos]; rfl
-      · rw [← neg_apply]; convert hhX; rfl
-      · rw [← neg_apply]; convert hgX; rfl
+      · rw [← Chromosome.neg_apply]; convert hhX; rfl
+      · rw [← Chromosome.neg_apply]; convert hgX; rfl
     have had : (sigma Xd 1).1 < (sigma Yd 1).1 := by
       change (prime^[1] (- X)).signature.1 <
         (prime^[1] (- Y)).signature.1
@@ -116,3 +118,5 @@ theorem exists_mutation_le {n : ℕ} : ∀ (X Y : nPi n), X < Y →
             g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h
         · exact exists_mutation_le_disjoint_pair X Y hXY hcommon hsigeq hXpn
         · exact exists_mutation_le_fifteen_ten ih X Y hXY hcommon hsigeq hXpn
+
+end Pi

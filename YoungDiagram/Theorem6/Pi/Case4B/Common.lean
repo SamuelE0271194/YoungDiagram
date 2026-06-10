@@ -1,7 +1,9 @@
-import YoungDiagram.Theorem6.Prelim
+import YoungDiagram.Theorem6.Pi.Prelim
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
+
+namespace Pi
 
 lemma gene_type_eq_of_X_pos_not_opposite {n : ℕ} (X : nPi n) {g₁ g₂ : Gene}
     (hε₁ : g₁.type ≠ .NonPolarized) (hg₂pos : 0 < X.1.val g₂)
@@ -302,3 +304,5 @@ lemma snd_lt_of_gap_chain {n i j : ℕ} (X Y : nPi n)
       (sigma X.1 2).2 - (sigma X.1 i).2) :
     (sigma X.1 i).2 < (sigma Y.1 i).2 := by
   linarith
+
+end Pi

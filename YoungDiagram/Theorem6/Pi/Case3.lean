@@ -1,7 +1,9 @@
-import YoungDiagram.Theorem6.Prelim
+import YoungDiagram.Theorem6.Pi.Prelim
 
 open Variety hiding prime prime_def
 open Chromosome
+
+namespace Pi
 
 private lemma sigma_eq_add_of_sub_eq {p q δ : ℚ × ℚ} (h : p - q = δ) : p = q + δ := by
   rw [← h]; abel
@@ -414,3 +416,5 @@ lemma exists_mutation_le_case3
             rw [hZX_eq]
             exact ⟨sigma_fst_add_one_le_of_lt X.1.2 Y.1.2 (g₁.rank + 1) ha_lt_c_rank1,
               by simpa using hXY_i.2⟩
+
+end Pi

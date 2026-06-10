@@ -1,8 +1,10 @@
-import YoungDiagram.Theorem6.Case4A
-import YoungDiagram.Theorem6.Case4B.Common
+import YoungDiagram.Theorem6.Pi.Case4A
+import YoungDiagram.Theorem6.Pi.Case4B.Common
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
+
+namespace Pi
 
 /-! Case 4b, odd rank-gap and odd lower rank. -/
 
@@ -457,3 +459,5 @@ lemma exists_mutation_le_case4b_oddGap_oddRank
         refine ⟨?_, ?_⟩
         · simp only [Prod.fst_add, add_assoc]; linarith
         · simp; linarith [hXYj.2]
+
+end Pi

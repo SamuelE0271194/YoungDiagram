@@ -6,6 +6,8 @@ open Chromosome
 
 abbrev nPi (n : ℕ) := {X : Pi // X.1.rank = n}
 
+namespace Pi
+
 lemma ofRankAlt_eq_single_of_type_eq_altType {g : Gene} {ε : GeneType}
     (h : g.type = Sigma.altType g.rank ε) :
     Gene.ofRankAlt g.rank ε = Finsupp.single g 1 := by
@@ -716,3 +718,5 @@ lemma caseA2_strict_fst
       (Sigma.sigma Y.1.val (i - 1)).2 :=
     (le_iff_dominates.mp hXY.le (i - 1)).2
   linarith
+
+end Pi

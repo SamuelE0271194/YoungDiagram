@@ -1,7 +1,9 @@
-import YoungDiagram.Theorem6.Prelim
+import YoungDiagram.Theorem6.Pi.Prelim
 
 open Variety hiding prime prime_def
 open Chromosome
+
+namespace Pi
 
 lemma exists_mutation_le_case2
     {n : ℕ} (X Y : nPi n) (hXY : X.1 < Y.1)
@@ -146,3 +148,5 @@ lemma exists_mutation_le_case2
         exact (mutation_type1_signature_eq hε_pos hle_ranks (le_refl 1)).symm
     rw [hZ_eq]
     exact hXY_i
+
+end Pi

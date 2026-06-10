@@ -1,8 +1,10 @@
-import YoungDiagram.Theorem6.Case4A
-import YoungDiagram.Theorem6.Case4B.Common
+import YoungDiagram.Theorem6.Pi.Case4A
+import YoungDiagram.Theorem6.Pi.Case4B.Common
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
+
+namespace Pi
 
 /-! Case 4b, odd rank-gap and even lower rank. -/
 
@@ -813,3 +815,5 @@ lemma exists_mutation_le_case4b_oddGap_evenRank
           by exact_mod_cast Nat.succ_le_iff.mpr (Nat.cast_lt.mp hbj)
         exact ⟨by simp only [Prod.fst_add, hnX, hnY]; linarith [hXYj.1],
                 by simp only [Prod.snd_add, hnX, hnY]; linarith⟩
+
+end Pi
