@@ -1,17 +1,18 @@
 import YoungDiagram.Variety
 
-open Chromosome
+open Chromosome Pointwise
 
-variable {ε : GeneType} {m n : ℕ}
+variable {ε ε' : GeneType} {m n : ℕ}
 
--- Φ = (Π, Λ): g ranks odd, g^ε ranks even.
+-- Φ = (Π, 2 • Λ): g ranks odd, g^ε ranks even. Equation (8.10):
+-- g^ε(m) + g^{ε'}(n) → g^ε(m-2) + g^{ε'}(n+2) with 1 < m ≤ n, m = 2m'+2, n = 2n'+2.
 
-local notation "type8X" =>
+local notation "type10X" =>
   Gene.ofRank (2 * m + 2) ε +
-  Gene.ofRank (2 * n + 2) ε
-local notation "type8Y" =>
+  Gene.ofRank (2 * n + 2) ε'
+local notation "type10Y" =>
   Gene.ofRank (2 * m) ε +
-  Gene.ofRank (2 * n + 4) ε
+  Gene.ofRank (2 * n + 4) ε'
 
 variable (h_le : m ≤ n)
 
@@ -19,13 +20,13 @@ include h_le
 
 section Aux
 
-namespace MixPiLambda
+namespace MixPi2Lambda
 
-section type8_isMutation
+section type10_isMutation
 
-lemma mutation_type8_ne : type8X ≠ type8Y := by
+lemma mutation_type10_ne : type10X ≠ type10Y := by
   intro h
-  replace h := congr_arg (· ⟨2 * n + 4, ε, by omega⟩) h
+  replace h := congr_arg (· ⟨2 * n + 4, ε', by omega⟩) h
   have h_m : 2 * m + 2 ≠ 0 := by omega
   have h_n : 2 * n + 2 ≠ 0 := by omega
   have h_n' : 2 * n + 4 ≠ 0 := by omega
@@ -37,33 +38,34 @@ lemma mutation_type8_ne : type8X ≠ type8Y := by
     simp at h
     omega
   · rw [dif_neg hm0, Finsupp.single_apply] at h
-    simp only [Gene.mk.injEq, and_true] at h
+    simp only [Gene.mk.injEq] at h
     split_ifs at h <;> omega
 
-lemma mutation_type8_iterate_signature_eq (i k : ℕ) (hi : i ≤ k) :
+lemma mutation_type10_iterate_signature_eq (i k : ℕ) (hi : i ≤ k) :
     (prime^[i] (Gene.ofRank (2 * m + 2 + k) ε +
-      Gene.ofRank (2 * n + 2 + k) ε)).signature =
+      Gene.ofRank (2 * n + 2 + k) ε')).signature =
     (prime^[i] (Gene.ofRank (2 * m + k) ε +
-      Gene.ofRank (2 * n + 4 + k) ε)).signature := by
+      Gene.ofRank (2 * n + 4 + k) ε')).signature := by
   have eq1 : 2 * m + 2 + k - i = 2 * m + k - i + 2 := by omega
   have eq2 : 2 * n + 4 + k - i = 2 * n + 2 + k - i + 2 := by omega
   rw [iterate_map_add, iterate_map_add, prime_iterate_ofRank, prime_iterate_ofRank,
     prime_iterate_ofRank, prime_iterate_ofRank, map_add, map_add, eq1, eq2,
-    signature_ofRank_add_two_add]
+    signature_ofRank_eq₂', signature_ofRank_eq₂']
+  ac_rfl
 
-lemma mutation_type8_signature_eq :
-    signature type8X = signature type8Y := by
-  have := mutation_type8_iterate_signature_eq (ε := ε) h_le 0 0 le_rfl
+lemma mutation_type10_signature_eq :
+    signature type10X = signature type10Y := by
+  have := mutation_type10_iterate_signature_eq (ε := ε) (ε' := ε') h_le 0 0 le_rfl
   rwa [Function.iterate_zero_apply, Function.iterate_zero_apply, add_zero, add_zero] at this
 
-lemma mutation_type8_le : type8X ≤ type8Y := by
+lemma mutation_type10_le : type10X ≤ type10Y := by
   intro k
   simp only [iterate_map_add, map_add, prime_iterate_ofRank]
   by_cases hk1 : 2 * n + 2 < k
   · have eq1 : 2 * m + 2 - k = 0 := by omega
     have eq2 : 2 * m - k = 0 := by omega
-    rw [eq1, eq2, Nat.sub_eq_zero_of_le hk1.le, Gene.ofRank_zero, map_zero,
-      add_zero, zero_add]
+    have eq3 : 2 * n + 2 - k = 0 := by omega
+    rw [eq1, eq2, eq3, Gene.ofRank_zero, map_zero, zero_add, zero_add]
     exact signature_nonneg _
   by_cases hk2 : 2 * m < k
   · have eq1 : 2 * n + 4 - k - 2 = 2 * n + 2 - k := by omega
@@ -80,11 +82,15 @@ lemma mutation_type8_le : type8X ≤ type8Y := by
       · rw [signature_ofRank_one_negative]; decide
   · have eq1 : 2 * m + 2 - k = 2 * m - k + 2 := by omega
     have eq2 : 2 * n + 4 - k = 2 * n + 2 - k + 2 := by omega
-    rw [eq1, eq2, signature_ofRank_add_two_add]
+    rw [eq1, eq2, signature_ofRank_eq₂', signature_ofRank_eq₂']
+    rw [show (Gene.ofRank (2 * m - k) ε).signature + (1, 1) +
+        (Gene.ofRank (2 * n + 2 - k) ε').signature =
+        (Gene.ofRank (2 * m - k) ε).signature +
+        ((Gene.ofRank (2 * n + 2 - k) ε').signature + (1, 1)) from by ac_rfl]
 
-end type8_isMutation
+end type10_isMutation
 
-end MixPiLambda
+end MixPi2Lambda
 
 end Aux
 
@@ -92,17 +98,15 @@ section MixDefs
 
 open Variety
 
-namespace MixPiLambda
+namespace MixPi2Lambda
 
-variable (hε : ε ≠ .NonPolarized)
+variable (hε : ε ≠ .NonPolarized) (hε' : ε' ≠ .NonPolarized)
 
-include h_le
+section type10
 
-section type8
-
-noncomputable def X8 : Mix (Pi, Lambda) := by
+noncomputable def X10 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) ε, ?_⟩
+  refine ⟨Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) ε', ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -113,46 +117,52 @@ noncomputable def X8 : Mix (Pi, Lambda) := by
   rw [mem_Pi_iff_add, mem_Pi_iff, mem_Pi_iff,
     IsPolarized_ofRank (k := 2 * m + 2) (by omega),
     IsPolarized_ofRank (k := 2 * n + 2) (by omega)]
-  exact ⟨hε, hε⟩
+  exact ⟨hε, hε'⟩
 
-lemma X8_eq : (X8 h_le hε).1 =
-  Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) ε := rfl
+lemma X10_eq : (X10 h_le hε hε').1 =
+  Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) ε' := rfl
 
-@[simp] lemma neg_X8 :
-    - (X8 h_le hε) = X8 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
+@[simp] lemma neg_X10 :
+    - (X10 h_le hε hε') =
+      X10 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε)
+        (GeneType.neg_ne_nonPolarized_iff.1 hε') := by
   apply Subtype.ext
-  rw [Mix.Pi_Lambda_neg_val, X8_eq, X8_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+  rw [Mix.Pi_2Lambda_neg_val, X10_eq, X10_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
 
-noncomputable def Y8 : Mix (Pi, Lambda) := by
+noncomputable def Y10 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m) ε + Gene.ofRank (2 * n + 4) ε, ?_⟩
-  rw [mem_Mix_iff, map_add, map_add, evenPart_ofRank, if_pos (by grind),
-    oddPart_ofRank, if_pos (by grind), evenPart_ofRank, if_pos (by grind),
-    oddPart_ofRank, if_pos (by grind), add_zero]
+  have _ := hε'
+  refine ⟨Gene.ofRank (2 * m) ε + Gene.ofRank (2 * n + 4) ε', ?_⟩
+  rw [mem_Mix_iff, map_add, map_add,
+    evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind),
+    evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind),
+    add_zero]
   match m with
   | 0 =>
     rw [Nat.mul_zero, Gene.ofRank_zero, zero_add]
     refine ⟨?_, zero_mem _⟩
     rw [mem_Pi_iff, IsPolarized_ofRank (k := 2 * n + 4) (by omega)]
-    exact hε
+    exact hε'
   | m + 1 =>
     refine ⟨?_, zero_mem _⟩
     rw [mem_Pi_iff_add, mem_Pi_iff, mem_Pi_iff,
       IsPolarized_ofRank (k := 2 * (m + 1)) (by omega),
       IsPolarized_ofRank (k := 2 * n + 4) (by omega)]
-    exact ⟨hε, hε⟩
+    exact ⟨hε, hε'⟩
 
-lemma Y8_eq : (Y8 h_le hε).1 =
-  Gene.ofRank (2 * m) ε + Gene.ofRank (2 * n + 4) ε := rfl
+lemma Y10_eq : (Y10 h_le hε hε').1 =
+  Gene.ofRank (2 * m) ε + Gene.ofRank (2 * n + 4) ε' := rfl
 
-@[simp] lemma neg_Y8 :
-    - (Y8 h_le hε) = Y8 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
+@[simp] lemma neg_Y10 :
+    - (Y10 h_le hε hε') =
+      Y10 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε)
+        (GeneType.neg_ne_nonPolarized_iff.1 hε') := by
   apply Subtype.ext
-  rw [Mix.Pi_Lambda_neg_val, Y8_eq, Y8_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
+  rw [Mix.Pi_2Lambda_neg_val, Y10_eq, Y10_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
 
-end type8
+end type10
 
-end MixPiLambda
+end MixPi2Lambda
 
 end MixDefs
