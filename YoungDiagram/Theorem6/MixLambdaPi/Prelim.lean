@@ -1,4 +1,5 @@
 import YoungDiagram.Lifting.MixLambdaPi
+import YoungDiagram.Sigma
 
 open Variety hiding prime prime_def
 open Chromosome
