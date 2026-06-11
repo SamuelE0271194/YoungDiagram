@@ -6,7 +6,7 @@ open Chromosome Sigma
 namespace MixPiLambda
 
 /-- Rank-0 elements of `Mix (Pi, Lambda)` are all zero, so `X < Y` is absurd. -/
-private lemma exists_mutation_le_rank_zero {X Y : nMixPiLambda 0} (hXY : X < Y) :
+lemma exists_mutation_le_rank_zero {X Y : nMixPiLambda 0} (hXY : X < Y) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
   absurd ((rank_zero X.2).trans (rank_zero Y.2).symm) (ne_of_lt hXY)
 
@@ -28,7 +28,7 @@ private lemma rank_one_eq_of_mem {X : Chromosome}
 
 /-- Rank-1 case: `X < Y` is impossible because every rank-1 element of
 `Mix (Pi, Lambda)` equals the unique non-polarized rank-1 chromosome. -/
-private lemma exists_mutation_le_rank_one {X Y : nMixPiLambda 1} (hXY : X < Y) :
+lemma exists_mutation_le_rank_one {X Y : nMixPiLambda 1} (hXY : X < Y) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
   absurd ((rank_one_eq_of_mem X.1.2 X.2).trans (rank_one_eq_of_mem Y.1.2 Y.2).symm)
     (ne_of_lt hXY)
@@ -37,7 +37,7 @@ private lemma exists_mutation_le_rank_one {X Y : nMixPiLambda 1} (hXY : X < Y) :
 
 /-- Remove a shared gene from both X and Y, apply IH, then reattach.
 Mirrors `MixLambdaPi.exists_mutation_le_shared_gene`. -/
-private lemma exists_mutation_le_shared_gene (m : ℕ)
+lemma exists_mutation_le_shared_gene (m : ℕ)
     (ih : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
       ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1)
     (X Y : nMixPiLambda (m + 2))
@@ -392,7 +392,7 @@ private lemma half_le_sigma_diff_at_r {X Y : Chromosome}
     rw [← hXeq, ← hYeq]
     linarith
 
-private lemma exists_mutation_le_disjoint_pair {m : ℕ}
+lemma exists_mutation_le_disjoint_pair {m : ℕ}
     (X Y : nMixPiLambda (m + 2))
     (hXY : X.1 < Y.1)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)

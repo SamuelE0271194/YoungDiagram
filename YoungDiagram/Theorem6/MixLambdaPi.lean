@@ -382,7 +382,7 @@ private lemma half_le_sigma_diff_at_r {X Y : Chromosome}
     rw [← hXeq, ← hYeq]
     linarith
 
-private lemma exists_mutation_le_disjoint_pair {m : ℕ}
+lemma exists_mutation_le_disjoint_pair {m : ℕ}
     (X Y : nMixLambdaPi (m + 2))
     (hXY : X.1 < Y.1)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
