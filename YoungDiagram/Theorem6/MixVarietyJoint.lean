@@ -381,4 +381,103 @@ lemma exists_mutation_le_disjoint_sigma_eq_PL (m : ℕ)
   · exact exists_mutation_le_disjoint_sigma_eq_PL_odd m ihLP X Y hXY hcommon
       k hkpos hkeven hYkne hk
 
+/-! ## Joint induction theorem -/
+
+/--
+Joint induction theorem combining `MixLambdaPi.exists_mutation_le` and
+`MixPiLambda.exists_mutation_le`.
+
+This lets the two `Mix` varieties feed each other's inductive hypotheses
+through `Nat.strongRecOn`: the Case-2 sub-case for `Mix (Lambda, Pi)` at
+odd `k` needs the IH for `Mix (Pi, Lambda)` at smaller rank, and vice versa.
+
+Case 4 (§15.10 of Djoković) is still left as `sorry` in both branches.
+-/
+private lemma exists_mutation_le_joint_LP_aux (n : ℕ)
+    (ih : ∀ m, m < n →
+      (∀ X Y : nMixLambdaPi m, X.1 < Y.1 →
+        ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∧
+      (∀ X Y : nMixPiLambda m, X.1 < Y.1 →
+        ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1))
+    (X Y : nMixLambdaPi n) (hXY : X.1 < Y.1) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  match n, X, Y, hXY with
+  | 0, X, Y, hXY => exact MixLambdaPi.exists_mutation_le_rank_zero hXY
+  | 1, X, Y, hXY => exact MixLambdaPi.exists_mutation_le_rank_one hXY
+  | m + 2, X, Y, hXY =>
+    have ihLP : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
+        ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+      fun k hk => (ih k hk).1
+    have ihPL : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
+        ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
+      fun k hk => (ih k hk).2
+    by_cases hcommon : ∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g
+    · exact MixLambdaPi.exists_mutation_le_shared_gene m ihLP X Y hXY hcommon
+    · by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+          Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k
+      · exact exists_mutation_le_disjoint_sigma_eq_LP m ihLP ihPL X Y hXY
+          hcommon hsigeq
+      · by_cases hXpn : ∃ (g h : Gene), g.rank = h.rank ∧
+            g.type = .Positive ∧ h.type = .Negative ∧
+            0 < X.1.1 g ∧ 0 < X.1.1 h
+        · exact MixLambdaPi.exists_mutation_le_disjoint_pair X Y hXY hcommon
+            hsigeq hXpn
+        · sorry  -- Case 4 (§15.10)
+
+private lemma exists_mutation_le_joint_PL_aux (n : ℕ)
+    (ih : ∀ m, m < n →
+      (∀ X Y : nMixLambdaPi m, X.1 < Y.1 →
+        ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∧
+      (∀ X Y : nMixPiLambda m, X.1 < Y.1 →
+        ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1))
+    (X Y : nMixPiLambda n) (hXY : X.1 < Y.1) :
+    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  match n, X, Y, hXY with
+  | 0, X, Y, hXY => exact MixPiLambda.exists_mutation_le_rank_zero hXY
+  | 1, X, Y, hXY => exact MixPiLambda.exists_mutation_le_rank_one hXY
+  | m + 2, X, Y, hXY =>
+    have ihLP : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
+        ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+      fun k hk => (ih k hk).1
+    have ihPL : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
+        ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
+      fun k hk => (ih k hk).2
+    by_cases hcommon : ∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g
+    · exact MixPiLambda.exists_mutation_le_shared_gene m ihPL X Y hXY hcommon
+    · by_cases hsigeq : ∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+          Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k
+      · exact exists_mutation_le_disjoint_sigma_eq_PL m ihLP ihPL X Y hXY
+          hcommon hsigeq
+      · by_cases hXpn : ∃ (g h : Gene), g.rank = h.rank ∧
+            g.type = .Positive ∧ h.type = .Negative ∧
+            0 < X.1.1 g ∧ 0 < X.1.1 h
+        · exact MixPiLambda.exists_mutation_le_disjoint_pair X Y hXY hcommon
+            hsigeq hXpn
+        · sorry  -- Case 4 (§15.10)
+
+theorem exists_mutation_le_joint (n : ℕ) :
+    (∀ X Y : nMixLambdaPi n, X.1 < Y.1 →
+      ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∧
+    (∀ X Y : nMixPiLambda n, X.1 < Y.1 →
+      ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1) :=
+  Nat.strongRecOn n fun n ih =>
+    ⟨exists_mutation_le_joint_LP_aux n ih,
+     exists_mutation_le_joint_PL_aux n ih⟩
+
+/-! ## Corollaries -/
+
+/-- `MixLambdaPi.exists_mutation_le` extracted from the joint induction.
+This version proves Case 2 (the disjoint-supports / sigma-agreement
+sub-case) by relying on `MixPiLambda` at smaller rank for the odd-k branch. -/
+theorem _root_.MixLambdaPi.exists_mutation_le_joint {n : ℕ}
+    (X Y : nMixLambdaPi n) (hXY : X.1 < Y.1) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+  (MixVarietyJoint.exists_mutation_le_joint n).1 X Y hXY
+
+/-- `MixPiLambda.exists_mutation_le` extracted from the joint induction. -/
+theorem _root_.MixPiLambda.exists_mutation_le_joint {n : ℕ}
+    (X Y : nMixPiLambda n) (hXY : X.1 < Y.1) :
+    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
+  (MixVarietyJoint.exists_mutation_le_joint n).2 X Y hXY
+
 end MixVarietyJoint
