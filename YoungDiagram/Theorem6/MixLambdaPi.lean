@@ -6,7 +6,7 @@ open Chromosome
 namespace MixLambdaPi
 
 /-- Rank-0 elements of `Mix (Lambda, Pi)` are all zero, so `X < Y` is absurd. -/
-private lemma exists_mutation_le_rank_zero {X Y : nMixLambdaPi 0} (hXY : X < Y) :
+lemma exists_mutation_le_rank_zero {X Y : nMixLambdaPi 0} (hXY : X < Y) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
   absurd ((rank_zero X.2).trans (rank_zero Y.2).symm) (ne_of_lt hXY)
 
@@ -22,7 +22,7 @@ private lemma mem_Pi_of_mem_Mix_LambdaPi_rank_one
 
 /-- Rank-1 case: `X < Y` is impossible because rank-1 signatures (in `Pi`)
 are pairwise incomparable. -/
-private lemma exists_mutation_le_rank_one {X Y : nMixLambdaPi 1} (hXY : X < Y) :
+lemma exists_mutation_le_rank_one {X Y : nMixLambdaPi 1} (hXY : X < Y) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
   have hXPi : X.1.1 ∈ Pi := mem_Pi_of_mem_Mix_LambdaPi_rank_one X.1.2 X.2
   have hYPi : Y.1.1 ∈ Pi := mem_Pi_of_mem_Mix_LambdaPi_rank_one Y.1.2 Y.2
@@ -40,7 +40,7 @@ private lemma exists_mutation_le_rank_one {X Y : nMixLambdaPi 1} (hXY : X < Y) :
 
 /-- Remove a shared gene from both X and Y, apply IH, then reattach.
 Mirrors `Pi.exists_mutation_le_shared_gene`. -/
-private lemma exists_mutation_le_shared_gene (m : ℕ)
+lemma exists_mutation_le_shared_gene (m : ℕ)
     (ih : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
       ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
     (X Y : nMixLambdaPi (m + 2))
