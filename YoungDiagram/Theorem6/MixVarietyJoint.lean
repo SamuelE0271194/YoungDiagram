@@ -72,7 +72,8 @@ lemma exists_mutation_le_disjoint_sigma_eq_LP_even (m : ℕ)
   have hlt_k : Xk < Yk := by
     change Yk.1.Dominates Xk.1 ∧ ¬Xk.1.Dominates Yk.1
     refine ⟨le_iff_dominates.mp hle_k, fun hcontra => ?_⟩
-    have hXkYk_eq : Xk.1 = Yk.1 := le_antisymm hle_k hcontra
+    have hXkYk_eq : Xk.1 = Yk.1 :=
+      Subtype.val_inj.2 (le_antisymm hle_k hcontra)
     obtain ⟨g', hg'⟩ : ∃ g', 0 < Yk.1 g' := by
       obtain ⟨g', hg'mem⟩ := Finsupp.support_nonempty_iff.mpr hYkne
       exact ⟨g', Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg'mem)⟩
@@ -149,7 +150,8 @@ lemma exists_mutation_le_disjoint_sigma_eq_PL_even (m : ℕ)
   have hlt_k : Xk < Yk := by
     change Yk.1.Dominates Xk.1 ∧ ¬Xk.1.Dominates Yk.1
     refine ⟨le_iff_dominates.mp hle_k, fun hcontra => ?_⟩
-    have hXkYk_eq : Xk.1 = Yk.1 := le_antisymm hle_k hcontra
+    have hXkYk_eq : Xk.1 = Yk.1 :=
+      Subtype.val_inj.2 (le_antisymm hle_k hcontra)
     obtain ⟨g', hg'⟩ : ∃ g', 0 < Yk.1 g' := by
       obtain ⟨g', hg'mem⟩ := Finsupp.support_nonempty_iff.mpr hYkne
       exact ⟨g', Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg'mem)⟩
