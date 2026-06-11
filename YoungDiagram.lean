@@ -6,3 +6,7 @@ import YoungDiagram.Mutations
 import YoungDiagram.Lifting
 import YoungDiagram.Sigma
 import YoungDiagram.Theorem6.Pi
+import YoungDiagram.Theorem6.MixLambdaPi
+import YoungDiagram.Theorem6.MixPiLambda
+import YoungDiagram.Theorem6.Mix2LambdaPi
+import YoungDiagram.Theorem6.MixPi2Lambda
