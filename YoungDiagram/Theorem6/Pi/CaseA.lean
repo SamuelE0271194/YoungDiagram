@@ -12,9 +12,8 @@ namespace Pi
 /-!
 Case A of §15.10.
 
-The remaining `sorry`s in this file are inherited from the unfinished Case 4b
-subcases of the original dispatcher, not from the final Case B branch. The final
-Case B branch is proved in `Theorem6.lean` by applying sign-duality to this lemma.
+The final Case B branch is obtained from this lemma by sign-duality (see the
+dispatcher in `Pi.lean`). This file is fully proved.
 -/
 
 -- Case A contains several large linear-arithmetic window checks inherited from §15.10.
