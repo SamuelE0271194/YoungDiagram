@@ -1,5 +1,6 @@
 import YoungDiagram.Theorem6.MixLambdaPi
 import YoungDiagram.Theorem6.MixPiLambda
+import YoungDiagram.Theorem6.MixCase4
 
 /-!
 # Joint induction for `MixLambdaPi.exists_mutation_le` and
@@ -391,7 +392,9 @@ This lets the two `Mix` varieties feed each other's inductive hypotheses
 through `Nat.strongRecOn`: the Case-2 sub-case for `Mix (Lambda, Pi)` at
 odd `k` needs the IH for `Mix (Pi, Lambda)` at smaller rank, and vice versa.
 
-Case 4 (§15.10 of Djoković) is still left as `sorry` in both branches.
+Cases 1-3 are fully proved. Case 4 (§15.10 of Djoković) is reduced (in
+`MixCase4.lean`) to its "Case A" core via sign-duality; only the two Case-A
+cores `exists_mutation_le_fifteen_ten_{LP,PL}_caseA` remain `sorry`.
 -/
 private lemma exists_mutation_le_joint_LP_aux (n : ℕ)
     (ih : ∀ m, m < n →
@@ -422,7 +425,8 @@ private lemma exists_mutation_le_joint_LP_aux (n : ℕ)
             0 < X.1.1 g ∧ 0 < X.1.1 h
         · exact MixLambdaPi.exists_mutation_le_disjoint_pair X Y hXY hcommon
             hsigeq hXpn
-        · sorry  -- Case 4 (§15.10)
+        · exact exists_mutation_le_fifteen_ten_LP m ihLP ihPL X Y hXY
+            hcommon hsigeq hXpn
 
 private lemma exists_mutation_le_joint_PL_aux (n : ℕ)
     (ih : ∀ m, m < n →
@@ -453,7 +457,8 @@ private lemma exists_mutation_le_joint_PL_aux (n : ℕ)
             0 < X.1.1 g ∧ 0 < X.1.1 h
         · exact MixPiLambda.exists_mutation_le_disjoint_pair X Y hXY hcommon
             hsigeq hXpn
-        · sorry  -- Case 4 (§15.10)
+        · exact exists_mutation_le_fifteen_ten_PL m ihLP ihPL X Y hXY
+            hcommon hsigeq hXpn
 
 theorem exists_mutation_le_joint (n : ℕ) :
     (∀ X Y : nMixLambdaPi n, X.1 < Y.1 →
