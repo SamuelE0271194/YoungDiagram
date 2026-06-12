@@ -684,6 +684,147 @@
 
 % ================================================================
 
+\section{Primitive mutations on $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$}
+
+In $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$ (label $1$) the odd part is polarized
+(it lies in $\mathrm{Pi}$, so polarized genes have odd rank) and the even part is
+nonpolarized (it lies in $\mathrm{Lambda}$, so nonpolarized genes have even rank).
+The \S15.10 analysis for this variety uses five primitive mutation types, indexed
+type 4 through type 8.  Each is parameterized by a polarized sign
+$\varepsilon \ne \mathrm{NP}$ and naturals $m \le n$; we write $(r,\tau)$ for the
+gene of rank $r$ and type $\tau$, and $\mathrm{NP}$ for the nonpolarized type.
+Every type sends a source of total rank $2m+2n+4$ to a target of the same rank,
+so each is signature-preserving.
+
+\begin{definition}[Mixed primitive mutations of type 4]
+  \label{def:MixLambdaPi.X4Y4}
+  \lean{MixLambdaPi.X4, MixLambdaPi.Y4}
+  \leanok
+  \uses{def:Variety.Mix}
+  $X_4 = (2m+2,\mathrm{NP}) + (2n+2,\mathrm{NP})$ and
+  $Y_4 = (2m+1,\varepsilon) + (2n+3,-\varepsilon)$.
+\end{definition}
+
+\begin{definition}[Mixed primitive mutations of type 5]
+  \label{def:MixLambdaPi.X5Y5}
+  \lean{MixLambdaPi.X5, MixLambdaPi.Y5}
+  \leanok
+  \uses{def:Variety.Mix}
+  $X_5 = (2m+2,\mathrm{NP}) + (2n+3,\varepsilon)$ and
+  $Y_5 = (2m+1,\varepsilon) + (2n+4,\mathrm{NP})$.
+\end{definition}
+
+\begin{definition}[Mixed primitive mutations of type 6]
+  \label{def:MixLambdaPi.X6Y6}
+  \lean{MixLambdaPi.X6, MixLambdaPi.Y6}
+  \leanok
+  \uses{def:Variety.Mix}
+  $X_6 = (2m+1,\varepsilon) + (2n+2,\mathrm{NP})$ and
+  $Y_6 = (2m,\mathrm{NP}) + (2n+3,\varepsilon)$.
+\end{definition}
+
+\begin{definition}[Mixed primitive mutations of type 7]
+  \label{def:MixLambdaPi.X7Y7}
+  \lean{MixLambdaPi.X7, MixLambdaPi.Y7}
+  \leanok
+  \uses{def:Variety.Mix}
+  $X_7 = (2m+1,\varepsilon) + (2n+1,-\varepsilon)$ and
+  $Y_7 = (2m,\mathrm{NP}) + (2n+2,\mathrm{NP})$.  This is the primitive used in the
+  disjoint-pair sub-case (Case 3).
+\end{definition}
+
+\begin{definition}[Mixed primitive mutations of type 8]
+  \label{def:MixLambdaPi.X8Y8}
+  \lean{MixLambdaPi.X8, MixLambdaPi.Y8}
+  \leanok
+  \uses{def:Variety.Mix}
+  $X_8 = (2m+3,\varepsilon) + (2n+3,\varepsilon)$ and
+  $Y_8 = (2m+1,\varepsilon) + (2n+5,\varepsilon)$.
+\end{definition}
+
+\begin{definition}[Mixed primitive and step relations]
+  \label{def:MixLambdaPi.Primitive}
+  \lean{MixLambdaPi.Primitive, MixLambdaPi.Step}
+  \leanok
+  \uses{def:MixLambdaPi.X4Y4, def:MixLambdaPi.X5Y5, def:MixLambdaPi.X6Y6,
+    def:MixLambdaPi.X7Y7, def:MixLambdaPi.X8Y8}
+  A \emph{primitive mutation} on $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$ is one of
+  the five types above; a \emph{step} is a primitive mutation plus an arbitrary
+  common summand.  The variety $\mathrm{Mix}(\mathrm{Pi},\mathrm{Lambda})$ (label $2$)
+  carries the mirror-image relations (\texttt{MixPiLambda.Primitive},
+  \texttt{MixPiLambda.Step}).
+\end{definition}
+
+\begin{lemma}[Mixed primitives are signature-preserving mutations]
+  \label{lem:MixLambdaPi.Primitive.isMutation}
+  \lean{MixLambdaPi.Primitive.isMutation}
+  \leanok
+  \uses{def:MixLambdaPi.Primitive, def:IsMutation}
+  Each of type 4--8 satisfies $X \ne Y$, $\mathrm{sig}(X^{(k)}) = \mathrm{sig}(Y^{(k)})$
+  for all $k$, and $Y \le X$ (dominance).
+\end{lemma}
+
+\section{The \S15.10 case for the mixed varieties (labels 1, 2)}
+
+The two mixed varieties $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$ and
+$\mathrm{Mix}(\mathrm{Pi},\mathrm{Lambda})$ satisfy Theorem 6 by a joint strong
+induction (the disjoint, sigma-agreement sub-case at odd level passes between the
+two varieties).  Cases 1--3 are established; the remaining sub-case is the \S15.10
+analysis below.  As for $\mathrm{Pi}$, it factors into a ``Case A'' core and its
+sign-dual ``Case B''.
+
+\begin{proposition}[\S15.10 Case A core for $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$]
+  \label{prop:MixLambdaPi.fifteen_ten_caseA}
+  \lean{MixVarietyJoint.exists_mutation_le_fifteen_ten_LP_caseA}
+  \leanfile{YoungDiagram/Theorem6/MixCase4.lean}
+  \uses{def:MixLambdaPi.Primitive, def:Sigma.sigma}
+  Let $X, Y \in \mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$ have equal rank $m+2$
+  with $X < Y$ in the dominance order ($Y$ dominates $X$), and suppose
+  \begin{enumerate}
+    \item (disjoint supports) no gene is positive in both $X$ and $Y$;
+    \item (no sigma agreement) there is no $k \ge 1$ with $X^{(k)\prime} \ne 0$ and
+      $\sigma_X(k) = \sigma_Y(k)$;
+    \item (no polarized pair) $X$ contains no positive/negative gene pair of equal
+      rank;
+    \item (Case A inequality) $a_X(1) < a_Y(1)$.
+  \end{enumerate}
+  Then there is a step from $X$ to some $Z \le Y$ in
+  $\mathrm{Mix}(\mathrm{Lambda},\mathrm{Pi})$.  This is the formalization target for
+  the label-1 \S15.10 sub-case; the mirror statement
+  (\texttt{exists\_mutation\_le\_fifteen\_ten\_PL\_caseA}) is the label-2 target.
+\end{proposition}
+
+\begin{lemma}[\S15.10 reduces to Case A by sign-duality]
+  \label{lem:MixVariety.fifteen_ten_reduction}
+  \lean{MixVarietyJoint.exists_mutation_le_fifteen_ten_LP,
+    MixVarietyJoint.exists_mutation_le_fifteen_ten_PL}
+  \leanok
+  \uses{prop:MixLambdaPi.fifteen_ten_caseA, lem:MixLambdaPi.Primitive.isMutation}
+  Without the Case A inequality, the full \S15.10 sub-case follows from
+  \ref{prop:MixLambdaPi.fifteen_ten_caseA}: if $a_X(1) < a_Y(1)$ apply Case A
+  directly; otherwise $a_X(1) = a_Y(1)$ and one applies Case A to the negated pair
+  $(-X, -Y)$ (which stays in the same variety, swaps the sigma components, and turns
+  the equality into the strict Case A inequality), then transports the resulting
+  step back through $\mathrm{Step}$ under negation
+  (\texttt{MixLambdaPi.Step.of\_neg}).  Both mixed varieties are handled this way,
+  closing Case 4 in the joint induction modulo the two Case A cores.
+\end{lemma}
+
+\begin{remark}[Intended decomposition of the Case A core]
+  By analogy with $\mathrm{Pi}$, whose Case A core splits into a single rank-shift
+  analysis (type 1) and a double rank-shift analysis (type 2, with four parity
+  sub-cases), the mixed Case A core is expected to dispatch on the minimal gene's
+  rank parity and type: type 8 plays the role of the same-sign double shift, while
+  types 4--7 realize the polarized$\leftrightarrow$nonpolarized single-shift moves.
+  Unlike $\mathrm{Pi}$, signatures here are half-integers (the even/$\mathrm{Lambda}$
+  part contributes equal components, the odd/$\mathrm{Pi}$ part contributes integers),
+  so the window inequalities are stated with increments of $1/2$ rather than $1$; the
+  pattern is already used in the disjoint-pair sub-case
+  (\texttt{half\_le\_sigma\_diff\_at\_r}).  This decomposition is not yet formalized.
+\end{remark}
+
+% ================================================================
+
 \chapter{Lifting Theorem}
 
 \begin{lemma}[Mutation lifting]
