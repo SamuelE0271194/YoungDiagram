@@ -466,16 +466,18 @@ theorem exists_mutation_le_joint (n : ℕ) :
 
 /-! ## Corollaries -/
 
-/-- `MixLambdaPi.exists_mutation_le` extracted from the joint induction.
-This version proves Case 2 (the disjoint-supports / sigma-agreement
-sub-case) by relying on `MixPiLambda` at smaller rank for the odd-k branch. -/
-theorem _root_.MixLambdaPi.exists_mutation_le_joint {n : ℕ}
+/-- Theorem 6 of [Djoković 1982] for `Mix (Lambda, Pi)` (Label 1), extracted
+from the joint induction. Case 1 (shared gene), Case 2 (disjoint supports /
+sigma agreement, via the `Mix (Pi, Lambda)` IH at smaller rank for the odd-k
+branch) and Case 3 (disjoint pair) are proved; only Case 4 (§15.10) remains. -/
+theorem _root_.MixLambdaPi.exists_mutation_le {n : ℕ}
     (X Y : nMixLambdaPi n) (hXY : X.1 < Y.1) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
   (MixVarietyJoint.exists_mutation_le_joint n).1 X Y hXY
 
-/-- `MixPiLambda.exists_mutation_le` extracted from the joint induction. -/
-theorem _root_.MixPiLambda.exists_mutation_le_joint {n : ℕ}
+/-- Theorem 6 of [Djoković 1982] for `Mix (Pi, Lambda)` (Label 2), extracted
+from the joint induction. Cases 1-3 are proved; only Case 4 (§15.10) remains. -/
+theorem _root_.MixPiLambda.exists_mutation_le {n : ℕ}
     (X Y : nMixPiLambda n) (hXY : X.1 < Y.1) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
   (MixVarietyJoint.exists_mutation_le_joint n).2 X Y hXY
