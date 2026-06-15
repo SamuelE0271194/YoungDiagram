@@ -2,6 +2,7 @@ import YoungDiagram.Theorem6.MixLambdaPi.Case1
 import YoungDiagram.Theorem6.MixLambdaPi.Case3
 import YoungDiagram.Theorem6.MixLambdaPi.Drops
 import YoungDiagram.Theorem6.MixLambdaPi.SigmaWindow
+import YoungDiagram.Theorem6.MixLambdaPi.Propagation
 
 /-!
 # §16 Case A core for `Mix (Lambda, Pi)` (label 1).
@@ -73,8 +74,9 @@ lemma exists_mutation_le_caseA_branchA_case1_propagate {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1) ∧
     (∀ j, 2 * m' + 2 ≤ j → j < 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) := by
   refine ⟨?_, ?_⟩
-  · -- Goal 1 (hprop_even): the §16 drop-chain telescoping. HARD CORE, still open.
-    sorry
+  · -- Goal 1 (hprop_even): the §16 drop-chain telescoping (proved in Propagation.lean).
+    exact branchA_case1_hprop_even X Y hXY ha m' n' hmn gm gk hgm_rank hgm_np hgk_rank hgk_np
+      hXgm hXgk hne hmin h2nd ha_m
   · -- Goal 2 (hYwin): Y is nonzero on the window since X has gene gk of rank
     -- 2n'+2 > j, so prime^[j] X ≠ 0, and Y dominates X.
     intro j _ hj2
