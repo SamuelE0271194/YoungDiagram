@@ -69,7 +69,7 @@ private lemma signature_eq_components_of_mem_Lambda {W : Chromosome} (hW : W ∈
 
 /-- For `X ∈ Mix (Lambda, Pi)`, `prime^[j] X` at *odd* `j` lies in `Mix (Pi, Lambda)`,
 so its signature has equal components. -/
-private lemma signature_prime_iterate_odd_eq_components
+lemma signature_prime_iterate_odd_eq_components
     {X : Chromosome} (hX : X ∈ Mix (Lambda, Pi)) {j : ℕ} (hj : Odd j) :
     (signature (Chromosome.prime^[j] X)).1 = (signature (Chromosome.prime^[j] X)).2 := by
   have hmem : Chromosome.prime^[j] X ∈ Mix (Pi, Lambda) := by
@@ -262,7 +262,7 @@ private lemma X_eq_X7_add_rest_mix {X : Chromosome} {gpos gneg : Gene}
 
 /-- Helper: for `X ∈ Mix (Lambda, Pi)` at odd r, 2 * signature(prime^[r] X).1 is a natural
 number. This relies on the fact that 2 * (sig.1 + sig.2) = 2 * rank ∈ ℕ and sig.1 = sig.2. -/
-private lemma two_signature_fst_isNat_of_odd_iterate
+lemma two_signature_fst_isNat_of_odd_iterate
     {X : Chromosome} (hX : X ∈ Mix (Lambda, Pi)) {r : ℕ} (hodd : Odd r) :
     ∃ n : ℕ, 2 * (signature (Chromosome.prime^[r] X)).1 = n := by
   set Z := Chromosome.prime^[r] X with hZ_def
@@ -278,7 +278,7 @@ private lemma two_signature_fst_isNat_of_odd_iterate
 /-- Sigma columns at level r (r odd) have equal components for elements of
 `Mix (Lambda, Pi)`. Combined with strict inequality, the difference is at least 1/2 in
 each component. -/
-private lemma half_le_sigma_diff_at_r {X Y : Chromosome}
+lemma half_le_sigma_diff_at_r {X Y : Chromosome}
     (hX : X ∈ Mix (Lambda, Pi)) (hY : Y ∈ Mix (Lambda, Pi))
     {r : ℕ} (hodd : Odd r)
     (hle : signature (Chromosome.prime^[r] X) ≤ signature (Chromosome.prime^[r] Y))

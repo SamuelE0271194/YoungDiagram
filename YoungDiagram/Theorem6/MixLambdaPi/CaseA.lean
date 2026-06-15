@@ -45,6 +45,35 @@ lemma exists_mutation_le_caseA_branchA (m : ℕ)
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
   sorry
 
+/-- **Branch A, Case 1** of §16: the two minimal-rank genes of `X` are both
+nonpolarized, `g(m) = g(2m'+2)` and `g(k) = g(2n'+2)` with `m' ≤ n'` (the
+diagonal `m' = n'` is the `2g(m)` reduction `R2`).  After the charge switch
+fixing `a_m < c_m` (hypothesis `ha_m`), the mutation is
+`g(m) + g(k) → g⁻(m-1) + g⁺(k+1)` (primitive `type4` with `ε = Negative`).
+
+The §16 argument: from `a_m < c_m` and the drop inequalities
+`cond_15_6/7_Mix_Lambda_Pi`, propagate `a_j < c_j` for `m ≤ j ≤ k`; combined with
+`half_le_sigma_diff_at_r` at odd levels, this gives `Z ≤ Y` over the type4 window
+(`sigma_type4_eq_before/_eq_after/_mid`).  Template:
+`MixLambdaPi.exists_mutation_le_disjoint_pair` in `Case3.lean`. -/
+lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
+    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm gk : Gene)
+    (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
+    (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
+    (ha_m : (Sigma.sigma X.1.1 (2 * m' + 2)).1 < (Sigma.sigma Y.1.1 (2 * m' + 2)).1) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  sorry
+
 /-- **Branch B** of §16 Case A: the minimal-rank gene `g₁` of `X` is polarized
 (`g₁ = g^±(m)`, so `m` is odd).  Paper Cases 3–5. -/
 lemma exists_mutation_le_caseA_branchB (m : ℕ)
