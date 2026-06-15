@@ -65,13 +65,33 @@ lemma exists_mutation_le_caseA_branchA_case1_propagate {N : ℕ}
     (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
     (hXgm : 0 < X.1.1 gm)
     (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hne : gm ≠ gk)
     (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
     (ha_m : (Sigma.sigma X.1.1 (2 * m' + 2)).1 < (Sigma.sigma Y.1.1 (2 * m' + 2)).1) :
     (∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1) ∧
-    (∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) := by
-  sorry
+    (∀ j, 2 * m' + 2 ≤ j → j < 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) := by
+  refine ⟨?_, ?_⟩
+  · -- Goal 1 (hprop_even): the §16 drop-chain telescoping. HARD CORE, still open.
+    sorry
+  · -- Goal 2 (hYwin): Y is nonzero on the window since X has gene gk of rank
+    -- 2n'+2 > j, so prime^[j] X ≠ 0, and Y dominates X.
+    intro j _ hj2
+    have hXgk0 : 0 < X.1.1 gk :=
+      lt_of_lt_of_le hXgk (by rw [Finsupp.tsub_apply]; exact Nat.sub_le _ _)
+    have hgk_supp : gk ∈ X.1.1.support :=
+      Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hXgk0)
+    have hXj : Chromosome.prime^[j] X.1.1 ≠ 0 := by
+      intro hzero
+      have hle := (prime_iterate_eq_zero_rank_le).mpr hzero gk hgk_supp
+      rw [hgk_rank] at hle
+      omega
+    intro hYzero
+    have hsig_le : signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := le_iff_dominates.mp hXY.le j
+    rw [hYzero, map_zero] at hsig_le
+    exact hXj (signature_eq_zero (le_antisymm hsig_le (signature_nonneg _)))
 
 /-- **Assembly** of §16 Branch A Case 1, given the propagation outputs
 (`hprop_even`, `hYwin`).  Builds the `type4` step `g(m)+g(k) → g⁻(m-1)+g⁺(k+1)`
@@ -94,7 +114,7 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
     (hne : gm ≠ gk)
     (hprop_even : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
-    (hYwin : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
+    (hYwin : ∀ j, 2 * m' + 2 ≤ j → j < 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
   push Not at hsigeq
   have hε : GeneType.Negative ≠ .NonPolarized := by decide
@@ -182,7 +202,8 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
         have hne' : signature (Chromosome.prime^[j] X.1.1) ≠
             signature (Chromosome.prime^[j] Y.1.1) := by
           intro h_eq
-          exact hsigeq j (by omega) (hYwin j (by omega) (by omega))
+          exact hsigeq j (by omega)
+            (hYwin j (by omega) (by rcases hodd_j with ⟨t, rfl⟩; omega))
             (by simpa [Sigma.sigma] using h_eq)
         rw [add_comm]
         exact half_le_sigma_diff_at_r X.1.2 Y.1.2 hodd_j hXYj hne'
