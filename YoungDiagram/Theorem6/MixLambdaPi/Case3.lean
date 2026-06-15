@@ -243,7 +243,7 @@ private lemma one_le_signature_fst_of_contains_positive_mix {X : Chromosome}
         rw [iterate_map_add, map_add]
         exact le_add_of_nonneg_right (signature_nonneg _).1
 
-private lemma X_eq_X7_add_rest_mix {X : Chromosome} {gpos gneg : Gene}
+lemma X_eq_X7_add_rest_mix {X : Chromosome} {gpos gneg : Gene}
     (hXgpos : 0 < X gpos) (hXgneg : 0 < X gneg) (hne : gpos ≠ gneg) :
     Finsupp.single gpos 1 + Finsupp.single gneg 1 +
       (X - Finsupp.single gpos 1 - Finsupp.single gneg 1) = X := by

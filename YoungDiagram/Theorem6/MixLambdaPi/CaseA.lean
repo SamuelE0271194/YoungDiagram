@@ -45,18 +45,15 @@ lemma exists_mutation_le_caseA_branchA (m : ℕ)
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
   sorry
 
-/-- **Branch A, Case 1** of §16: the two minimal-rank genes of `X` are both
-nonpolarized, `g(m) = g(2m'+2)` and `g(k) = g(2n'+2)` with `m' ≤ n'` (the
-diagonal `m' = n'` is the `2g(m)` reduction `R2`).  After the charge switch
-fixing `a_m < c_m` (hypothesis `ha_m`), the mutation is
-`g(m) + g(k) → g⁻(m-1) + g⁺(k+1)` (primitive `type4` with `ε = Negative`).
-
-The §16 argument: from `a_m < c_m` and the drop inequalities
-`cond_15_6/7_Mix_Lambda_Pi`, propagate `a_j < c_j` for `m ≤ j ≤ k`; combined with
-`half_le_sigma_diff_at_r` at odd levels, this gives `Z ≤ Y` over the type4 window
-(`sigma_type4_eq_before/_eq_after/_mid`).  Template:
-`MixLambdaPi.exists_mutation_le_disjoint_pair` in `Case3.lean`. -/
-lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
+/-- **Propagation core** of §16 Branch A Case 1.  From the strict start
+`a_X(2m'+2) < a_Y(2m'+2)` (`ha_m`), the level-1 gap `ha`, and the fact that `X` has
+no gene of rank strictly between `2m'+2` and `2n'+2` (`h2nd`, giving `X` a constant
+sigma drop on the window), the §16 inequality chain
+`c_i - c_{i+2} ≤ s_i - s_{i+1} ≤ s_0 - s_1 ≤ r_0 - r_1 - 1 = r_i - r_{i+1} = a_i - a_{i+2}`
+propagates the strict *integer* inequality `a_X(j) + 1 ≤ a_Y(j)` to every even level
+`j` in `[2m'+2, 2n'+2]`; and `Y` is nonzero throughout the window.  This is the hard,
+reusable core; the assembly below consumes its two conclusions. -/
+lemma exists_mutation_le_caseA_branchA_case1_propagate {N : ℕ}
     (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
     (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
@@ -71,8 +68,124 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
     (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
     (ha_m : (Sigma.sigma X.1.1 (2 * m' + 2)).1 < (Sigma.sigma Y.1.1 (2 * m' + 2)).1) :
-    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+    (∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1) ∧
+    (∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) := by
   sorry
+
+/-- **Assembly** of §16 Branch A Case 1, given the propagation outputs
+(`hprop_even`, `hYwin`).  Builds the `type4` step `g(m)+g(k) → g⁻(m-1)+g⁺(k+1)`
+(ε = `.Negative`) and proves `Z ≤ Y` over the window via
+`sigma_type4_eq_before/_eq_after/_mid`: outside the window the source/target
+signatures agree (reduce to `hXY`); inside, the even-level difference `(1,0)` is
+absorbed by `hprop_even` and the odd-level difference `(1/2,1/2)` by
+`half_le_sigma_diff_at_r` (its `≠` hypothesis from `hsigeq` + `hYwin`).  Template:
+`MixLambdaPi.exists_mutation_le_disjoint_pair` in `Case3.lean`. -/
+lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm gk : Gene)
+    (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
+    (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hne : gm ≠ gk)
+    (hprop_even : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
+    (hYwin : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  push Not at hsigeq
+  have hε : GeneType.Negative ≠ .NonPolarized := by decide
+  let Y4' : Mix (Lambda, Pi) := Y4 hmn hε
+  let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
+  have rest_mem : restval ∈ Mix (Lambda, Pi) :=
+    sub_mem_Mix_Lambda_Pi _ (sub_mem_Mix_Lambda_Pi _ X.1.2)
+  let rest_M : Mix (Lambda, Pi) := ⟨restval, rest_mem⟩
+  have hgm_eq : Gene.ofRank (2 * m' + 2) .NonPolarized = (Finsupp.single gm 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gm)
+    rw [hgm_rank, hgm_np] at h
+    exact h
+  have hgk_eq : Gene.ofRank (2 * n' + 2) .NonPolarized = (Finsupp.single gk 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gk)
+    rw [hgk_rank, hgk_np] at h
+    exact h
+  have hX4_val : (X4 hmn).1 = Finsupp.single gm 1 + Finsupp.single gk 1 := by
+    rw [X4_eq, hgm_eq, hgk_eq]
+  have hXgk' : 0 < X.1.1 gk := by
+    have hval : (X.1.1 - Finsupp.single gm 1 : Chromosome) gk = X.1.1 gk := by
+      rw [Finsupp.tsub_apply, Finsupp.single_apply, if_neg hne, Nat.sub_zero]
+    rwa [hval] at hXgk
+  have hX_eq : (X4 hmn).1 + restval = X.1.1 := by
+    rw [hX4_val]
+    exact X_eq_X7_add_rest_mix hXgm hXgk' hne
+  let Z : Mix (Lambda, Pi) := ⟨Y4'.1 + restval, add_mem Y4'.2 rest_mem⟩
+  refine ⟨Z, (Subtype.ext hX_eq : (X4 hmn : Mix (Lambda, Pi)) + rest_M = X.1) ▸
+    MixLambdaPi.Step.mk (X4 hmn) Y4' rest_M
+      (MixLambdaPi.Primitive.type4 GeneType.Negative hε hmn), ?_⟩
+  change Y4'.1 + restval ≤ Y.1.1
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp : signature (Chromosome.prime^[j] X.1.1) =
+      signature (Chromosome.prime^[j] (X4 hmn).1) + signature (Chromosome.prime^[j] restval) := by
+    rw [← hX_eq, iterate_map_add, map_add]
+  have hXYj : signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) :=
+    le_iff_dominates.mp hXY.le j
+  by_cases hj : j ≤ 2 * m' + 1
+  · have hY4X4 : signature (Chromosome.prime^[j] Y4'.1) =
+        signature (Chromosome.prime^[j] (X4 hmn).1) :=
+      (sigma_type4_eq_before hmn hε (hj := hj)).symm
+    rw [hY4X4, ← hdecomp]
+    exact hXYj
+  · have h_not_before : 2 * m' + 1 < j := by omega
+    by_cases hj_after : 2 * n' + 3 ≤ j
+    · have hY4X4 : signature (Chromosome.prime^[j] Y4'.1) =
+          signature (Chromosome.prime^[j] (X4 hmn).1) :=
+        (sigma_type4_eq_after hmn hε (hj := hj_after)).symm
+      rw [hY4X4, ← hdecomp]
+      exact hXYj
+    · have h_mid : j < 2 * n' + 3 := by omega
+      have hmid := sigma_type4_mid hmn hε h_not_before h_mid
+      have hY4_eq : signature (Chromosome.prime^[j] Y4'.1) =
+          signature (Chromosome.prime^[j] (X4 hmn).1) +
+            (if Even (2 * n' + 2 - j) then signature (Gene.ofRank 1 (-GeneType.Negative))
+             else ((1 : ℚ) / 2, (1 : ℚ) / 2)) :=
+        sub_eq_iff_eq_add'.mp hmid
+      rw [hY4_eq, add_right_comm, ← hdecomp]
+      by_cases hpar : Even (2 * n' + 2 - j)
+      · rw [if_pos hpar]
+        have h_even_j : Even j := by
+          have hp : (2 * n' + 2 - j) % 2 = 0 := Nat.even_iff.mp hpar
+          rw [Nat.even_iff]; omega
+        have h_sig_pos : signature (Gene.ofRank 1 (-GeneType.Negative)) = ((1 : ℚ), (0 : ℚ)) := by
+          rw [GeneType.neg_negative, signature_ofRank_one_positive]
+        rw [h_sig_pos]
+        have h_sigXj : (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).1 := by
+          have h_sigma := hprop_even j (by omega) (by omega) h_even_j
+          simpa [Sigma.sigma] using h_sigma
+        refine ⟨?_, ?_⟩
+        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).1
+          exact h_sigXj
+        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).2
+          rw [add_zero]; exact hXYj.2
+      · rw [if_neg hpar]
+        have hodd_j : Odd j := by
+          have hp : (2 * n' + 2 - j) % 2 = 1 :=
+            Nat.odd_iff.mp (Nat.not_even_iff_odd.mp hpar)
+          rw [Nat.odd_iff]; omega
+        have hne' : signature (Chromosome.prime^[j] X.1.1) ≠
+            signature (Chromosome.prime^[j] Y.1.1) := by
+          intro h_eq
+          exact hsigeq j (by omega) (hYwin j (by omega) (by omega))
+            (by simpa [Sigma.sigma] using h_eq)
+        rw [add_comm]
+        exact half_le_sigma_diff_at_r X.1.2 Y.1.2 hodd_j hXYj hne'
 
 /-- **Branch B** of §16 Case A: the minimal-rank gene `g₁` of `X` is polarized
 (`g₁ = g^±(m)`, so `m` is odd).  Paper Cases 3–5. -/
