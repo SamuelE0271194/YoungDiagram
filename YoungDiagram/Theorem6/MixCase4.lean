@@ -1,5 +1,7 @@
 import YoungDiagram.Theorem6.MixLambdaPi
 import YoungDiagram.Theorem6.MixPiLambda
+import YoungDiagram.Theorem6.MixLambdaPi.CaseA
+import YoungDiagram.Theorem6.MixPiLambda.CaseA
 
 /-!
 # Case 4 (§15.10) for `Mix (Lambda, Pi)`.
@@ -12,8 +14,11 @@ This file factors the Case-4 obligation for `Mix (Lambda, Pi)` into:
   the `<` branch and to its sign-dual (Case B) on the `¬<` branch.
 
 This mirrors `Pi.exists_mutation_le_fifteen_ten` in `YoungDiagram/Theorem6/Pi.lean`.
-The Case-B branch is fully proved via the negation lemmas; only the Case-A core
-remains `sorry`.
+The Case-B branch is fully proved via the negation lemmas; the Case-A core is
+delegated to `MixLambdaPi.exists_mutation_le_caseA` / `MixPiLambda.exists_mutation_le_caseA`
+(files `MixLambdaPi/CaseA.lean`, `MixPiLambda/CaseA.lean`), which dispatch on the
+minimal-rank gene's polarization (§16 Branch A / Branch B); the two branch leaves
+per variety are the remaining `sorry`s.
 -/
 
 open Variety hiding prime prime_def
@@ -35,8 +40,8 @@ lemma exists_mutation_le_fifteen_ten_LP_caseA (m : ℕ)
     (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1) :
-    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+  MixLambdaPi.exists_mutation_le_caseA m X Y hXY hcommon hsigeq hXpn ha
 
 /-- Case 4 (§15.10) for `Mix (Lambda, Pi)`. Dispatches to Case A on the branch
 `(sigma X 1).1 < (sigma Y 1).1`; on the other branch builds the sign-dual and
@@ -156,8 +161,8 @@ lemma exists_mutation_le_fifteen_ten_PL_caseA (m : ℕ)
     (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1) :
-    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 :=
+  MixPiLambda.exists_mutation_le_caseA m X Y hXY hcommon hsigeq hXpn ha
 
 /-- Case 4 (§15.10) for `Mix (Pi, Lambda)`. Dispatches to Case A on the branch
 `(sigma X 1).1 < (sigma Y 1).1`; on the other branch builds the sign-dual and
