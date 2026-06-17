@@ -7,6 +7,25 @@ open Chromosome Variety
 
 variable {ε : GeneType} {m n : ℕ}
 
+/--
+The composition of two mutations between elements of the variety `Pi` is again a
+mutation.
+
+Unlike the general statement on `Chromosome`s, no antisymmetry hypothesis is
+needed here: `Pi` is sigma-unique (`sigmaUnique_Pi`), so its dominance order is
+antisymmetric and the side condition is discharged automatically.
+-/
+lemma IsMutation.trans {X Y Z : Variety.Pi}
+    (h1 : IsMutation X Y) (h2 : IsMutation Y Z) : IsMutation X Z where
+  le := le_trans h1.le h2.le
+  ne := by
+    intro hXZ
+    refine h1.ne (sigmaUnique_Pi X.2 Y.2 fun k => le_antisymm ?_ ?_)
+    · exact le_iff_dominates.mp h1.le k
+    · have hYX : (Y : Chromosome) ≤ X := by rw [hXZ]; exact h2.le
+      exact le_iff_dominates.mp hYX k
+  signature_eq := h1.signature_eq.trans h2.signature_eq
+
 namespace Pi
 
 variable (hε : ε ≠ .NonPolarized)

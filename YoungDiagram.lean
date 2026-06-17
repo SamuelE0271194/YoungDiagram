@@ -6,3 +6,4 @@ import YoungDiagram.Mutations
 import YoungDiagram.Lifting
 import YoungDiagram.Sigma
 import YoungDiagram.Theorem6
+import YoungDiagram.Theorem6.decomp_pi
