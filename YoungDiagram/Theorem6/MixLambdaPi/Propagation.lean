@@ -194,7 +194,7 @@ private lemma sig_fst_eq_comp_of_even {Z : Chromosome}
 /-- Even-level integrality: at even level, the first signature component of a
 `Mix (Lambda, Pi)` element is an integer (Pi part integral; even part has even
 ranks so `r/2 ∈ ℤ`). -/
-private lemma sig_fst_isInt_even {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi))
+lemma sig_fst_isInt_even {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi))
     {i : ℕ} (hi : Even i) : ∃ z : ℤ, (Sigma.sigma Z i).1 = (z : ℚ) := by
   have hW : Chromosome.prime^[i] Z ∈ Mix (Lambda, Pi) := by
     have := prime_mem_Mix_Lambda_Pi_iterate hZ i

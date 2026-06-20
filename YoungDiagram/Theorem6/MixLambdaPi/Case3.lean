@@ -177,7 +177,7 @@ private lemma Y_no_gene_of_rank_mix {X Y : Chromosome}
     omega
 
 /-- After iterating `prime` past `r-1` levels, the result is zero. -/
-private lemma prime_iterate_no_gene_of_rank_mix {Y : Chromosome} {r : ℕ}
+lemma prime_iterate_no_gene_of_rank_mix {Y : Chromosome} {r : ℕ}
     (hY_no_gene : ∀ g : Gene, g.rank = r → Y g = 0)
     (j : ℕ) (hj : j ≤ r - 1) (h : Gene) (hh : h.rank = r - j) :
     (Chromosome.prime^[j] Y) h = 0 := by
@@ -203,7 +203,7 @@ private lemma prime_iterate_no_gene_of_rank_mix {Y : Chromosome} {r : ℕ}
         intro heq
         exact hrk (congrArg Gene.rank heq)
 
-private lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
+lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
     (hY_no_gene : ∀ g : Gene, g.rank = r → Y g = 0)
     (hYr_minus_one : Chromosome.prime^[r - 1] Y ≠ 0) :
     Chromosome.prime^[r] Y ≠ 0 := by
