@@ -226,37 +226,24 @@ lemma sig_fst_isInt_even {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi))
   rw [hsig, hn, heven_int]
   push_cast; ring
 
-/-- §16 drop-chain telescoping.  Under the Branch-A-Case-1 structure (`gm` minimal
-nonpolarized of rank `2m'+2`, `gk` the second of rank `2n'+2`, no genes strictly
-between), `a_X` is strictly below `a_Y` by a full unit at every even level of the
-window. -/
-lemma branchA_case1_hprop_even {N : ℕ}
+/-- **Generalized §16 drop-chain telescoping** (gk-free).  Given only the minimal
+nonpolarized gene `gm` of rank `2m'+2` with multiplicity one (`hgm1`), `X` minimal-rank
+`≥ 2m'+2` (`hmin`), and `X - gm` rank `≥ 2n'+2` (`h2nd`), the §16 chain propagates the
+strict start `a_X(m) < a_Y(m)` to a full-unit gap at every even level of `[2m'+2, 2n'+2]`.
+The proof never inspects the second gene, so it is reused (via sign-duality) for the
+`b`-component in Case 2 with a polarized second gene. -/
+lemma branchA_hprop_even_gen {N : ℕ}
     (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
     (m' n' : ℕ) (hmn : m' ≤ n')
-    (gm gk : Gene)
+    (gm : Gene)
     (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
-    (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
-    (hXgm : 0 < X.1.1 gm)
-    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
-    (hne : gm ≠ gk)
+    (hgm1 : X.1.1 gm = 1)
     (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
     (ha_m : (Sigma.sigma X.1.1 (2 * m' + 2)).1 < (Sigma.sigma Y.1.1 (2 * m' + 2)).1) :
     ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
-  -- mult(gm) = 1
-  have hgm1 : X.1.1 gm = 1 := by
-    by_contra h
-    have h2 : 2 ≤ X.1.1 gm := by omega
-    have hgmW : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gm := by
-      rw [Finsupp.tsub_apply, Finsupp.single_eq_same]; omega
-    have hgm_supp : gm ∈ (X.1.1 - Finsupp.single gm 1).support :=
-      Finsupp.mem_support_iff.mpr (by exact Nat.pos_iff_ne_zero.mp hgmW)
-    have hge := h2nd gm hgm_supp
-    rw [hgm_rank] at hge
-    have hnm : n' = m' := by omega
-    exact hne (Gene.ext (by rw [hgm_rank, hgk_rank, hnm]) (by rw [hgm_np, hgk_np]))
   -- f := c - a is non-decreasing along even 2-steps over the window
   have hstep : ∀ i, 2 * m' + 2 ≤ i → i + 2 ≤ 2 * n' + 2 → Even i →
       (Sigma.sigma Y.1.1 i).1 - (Sigma.sigma X.1.1 i).1 ≤
@@ -300,5 +287,35 @@ lemma branchA_case1_hprop_even {N : ℕ}
   have hlt' : zX < zY := by exact_mod_cast hlt
   have : (zX : ℚ) + 1 ≤ (zY : ℚ) := by exact_mod_cast Int.add_one_le_iff.mpr hlt'
   linarith
+
+/-- §16 drop-chain telescoping for Branch A Case 1 (`gk` nonpolarized of rank `2n'+2`).
+Derives `mult(gm)=1` from disjointness of the two genes, then defers to `gen`. -/
+lemma branchA_case1_hprop_even {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm gk : Gene)
+    (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
+    (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hne : gm ≠ gk)
+    (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
+    (ha_m : (Sigma.sigma X.1.1 (2 * m' + 2)).1 < (Sigma.sigma Y.1.1 (2 * m' + 2)).1) :
+    ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
+  have hgm1 : X.1.1 gm = 1 := by
+    by_contra h
+    have h2 : 2 ≤ X.1.1 gm := by omega
+    have hgmW : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gm := by
+      rw [Finsupp.tsub_apply, Finsupp.single_eq_same]; omega
+    have hgm_supp : gm ∈ (X.1.1 - Finsupp.single gm 1).support :=
+      Finsupp.mem_support_iff.mpr (by exact Nat.pos_iff_ne_zero.mp hgmW)
+    have hge := h2nd gm hgm_supp
+    rw [hgm_rank] at hge
+    have hnm : n' = m' := by omega
+    exact hne (Gene.ext (by rw [hgm_rank, hgk_rank, hnm]) (by rw [hgm_np, hgk_np]))
+  exact branchA_hprop_even_gen X Y hXY ha m' n' hmn gm hgm_rank hgm_np hgm1 hmin h2nd ha_m
 
 end MixLambdaPi

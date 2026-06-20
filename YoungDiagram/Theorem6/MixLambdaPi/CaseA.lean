@@ -480,6 +480,192 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
         rw [add_comm]
         exact half_le_sigma_diff_at_r X.1.2 Y.1.2 hodd_j hXYj hne'
 
+/-- **Assembly** of §16 Branch A Case 2 (`g₂ = g⁺(k)`), given the `b`-propagation
+outputs.  Builds the `type5` step `g(m)+g⁺(k) → g⁺(m-1)+g(k+1)` (ε = `.Positive`) and
+proves `Z ≤ Y` over the window `2m'+1 < j < 2n'+4` via `sigma_type5_eq_before/_eq_after/_mid`:
+outside the window source/target agree; inside, the even-level difference `(0,1)` is
+absorbed by `hprop_even` (on the `b`-component) and the odd-level `(1/2,1/2)` by
+`half_le_sigma_diff_at_r`.  Mirror of `exists_mutation_le_caseA_branchA_case1`. -/
+lemma exists_mutation_le_caseA_branchA_case2_assembly {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm gk : Gene)
+    (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgk_rank : gk.rank = 2 * n' + 3) (hgk_pos : gk.type = .Positive)
+    (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hne : gm ≠ gk)
+    (hprop_even : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
+        (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2)
+    (hYwin : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  push_neg at hsigeq
+  have hε : GeneType.Positive ≠ .NonPolarized := by decide
+  let Y5' : Mix (Lambda, Pi) := Y5 hmn hε
+  let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
+  have rest_mem : restval ∈ Mix (Lambda, Pi) :=
+    sub_mem_Mix_Lambda_Pi _ (sub_mem_Mix_Lambda_Pi _ X.1.2)
+  let rest_M : Mix (Lambda, Pi) := ⟨restval, rest_mem⟩
+  have hgm_eq : Gene.ofRank (2 * m' + 2) .NonPolarized = (Finsupp.single gm 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gm); rw [hgm_rank, hgm_np] at h; exact h
+  have hgk_eq : Gene.ofRank (2 * n' + 3) .Positive = (Finsupp.single gk 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gk); rw [hgk_rank, hgk_pos] at h; exact h
+  have hX5_val : (X5 hmn hε).1 = Finsupp.single gm 1 + Finsupp.single gk 1 := by
+    rw [X5_eq, hgm_eq, hgk_eq]
+  have hXgk' : 0 < X.1.1 gk := by
+    have hval : (X.1.1 - Finsupp.single gm 1 : Chromosome) gk = X.1.1 gk := by
+      rw [Finsupp.tsub_apply, Finsupp.single_apply, if_neg hne, Nat.sub_zero]
+    rwa [hval] at hXgk
+  have hX_eq : (X5 hmn hε).1 + restval = X.1.1 := by
+    rw [hX5_val]; exact X_eq_X7_add_rest_mix hXgm hXgk' hne
+  let Z : Mix (Lambda, Pi) := ⟨Y5'.1 + restval, add_mem Y5'.2 rest_mem⟩
+  refine ⟨Z, (Subtype.ext hX_eq : (X5 hmn hε : Mix (Lambda, Pi)) + rest_M = X.1) ▸
+    MixLambdaPi.Step.mk (X5 hmn hε) Y5' rest_M
+      (MixLambdaPi.Primitive.type5 GeneType.Positive hε hmn), ?_⟩
+  change Y5'.1 + restval ≤ Y.1.1
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp : signature (Chromosome.prime^[j] X.1.1) =
+      signature (Chromosome.prime^[j] (X5 hmn hε).1) +
+        signature (Chromosome.prime^[j] restval) := by
+    rw [← hX_eq, iterate_map_add, map_add]
+  have hXYj : signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := le_iff_dominates.mp hXY.le j
+  by_cases hj : j ≤ 2 * m' + 1
+  · have h54 : signature (Chromosome.prime^[j] Y5'.1) =
+        signature (Chromosome.prime^[j] (X5 hmn hε).1) :=
+      (sigma_type5_eq_before hmn hε (hj := hj)).symm
+    rw [h54, ← hdecomp]; exact hXYj
+  · have h_not_before : 2 * m' + 1 < j := by omega
+    by_cases hj_after : 2 * n' + 4 ≤ j
+    · have h54 : signature (Chromosome.prime^[j] Y5'.1) =
+          signature (Chromosome.prime^[j] (X5 hmn hε).1) :=
+        (sigma_type5_eq_after hmn hε (hj := hj_after)).symm
+      rw [h54, ← hdecomp]; exact hXYj
+    · have h_mid : j < 2 * n' + 4 := by omega
+      have hmid := sigma_type5_mid hmn hε h_not_before h_mid
+      have hY5_eq : signature (Chromosome.prime^[j] Y5'.1) =
+          signature (Chromosome.prime^[j] (X5 hmn hε).1) +
+            (if Even (2 * n' + 3 - j) then ((1 : ℚ) / 2, (1 : ℚ) / 2)
+             else signature (Gene.ofRank 1 (-GeneType.Positive))) :=
+        sub_eq_iff_eq_add'.mp hmid
+      rw [hY5_eq, add_right_comm, ← hdecomp]
+      by_cases hpar : Even (2 * n' + 3 - j)
+      · rw [if_pos hpar]
+        have hodd_j : Odd j := by
+          have hp : (2 * n' + 3 - j) % 2 = 0 := Nat.even_iff.mp hpar
+          rw [Nat.odd_iff]; omega
+        have hne' : signature (Chromosome.prime^[j] X.1.1) ≠
+            signature (Chromosome.prime^[j] Y.1.1) := by
+          intro h_eq
+          exact hsigeq j (by omega) (hYwin j (by omega) (by omega))
+            (by simpa [Sigma.sigma] using h_eq)
+        rw [add_comm]
+        exact half_le_sigma_diff_at_r X.1.2 Y.1.2 hodd_j hXYj hne'
+      · rw [if_neg hpar]
+        have h_even_j : Even j := by
+          have hp : (2 * n' + 3 - j) % 2 = 1 :=
+            Nat.odd_iff.mp (Nat.not_even_iff_odd.mp hpar)
+          rw [Nat.even_iff]; omega
+        have h_sig_neg : signature (Gene.ofRank 1 (-GeneType.Positive)) = ((0 : ℚ), (1 : ℚ)) := by
+          rw [GeneType.neg_positive, signature_ofRank_one_negative]
+        rw [h_sig_neg]
+        have h_sigXj : (signature (Chromosome.prime^[j] X.1.1)).2 + 1 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).2 := by
+          have hjle : j ≤ 2 * n' + 2 := by rcases h_even_j with ⟨t, rfl⟩; omega
+          have h_sigma := hprop_even j (by omega) hjle h_even_j
+          simpa [Sigma.sigma] using h_sigma
+        refine ⟨?_, ?_⟩
+        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 0 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).1
+          rw [add_zero]; exact hXYj.1
+        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 1 ≤
+            (signature (Chromosome.prime^[j] Y.1.1)).2
+          exact h_sigXj
+
+/-- **b-propagation core for §16 Branch A Case 2.**  The `b`-component analogue of
+`branchA_case1_hprop_even`, obtained by applying the gk-free `branchA_hprop_even_gen`
+to `(-X, -Y)` (where `a_{-X} = b_X`) and transporting back.  Propagates `b_m < d_m`
+to a full-unit `b`-gap at every even level of `[2m'+2, 2n'+2]`. -/
+lemma branchA_case2_bprop {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm : Gene) (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgm1 : X.1.1 gm = 1)
+    (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
+    (hb_m : (Sigma.sigma X.1.1 (2 * m' + 2)).2 < (Sigma.sigma Y.1.1 (2 * m' + 2)).2) :
+    ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 2 → Even j →
+        (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2 := by
+  have hg₁neg : (-gm : Gene) = gm := Gene.ext (Gene.neg_rank gm) (by rw [Gene.neg_type, hgm_np]; rfl)
+  set Xd : nMixLambdaPi N := ⟨- X.1, by rw [Mix.Lambda_Pi_neg_val, rank_neg, X.2]⟩ with Xd_def
+  set Yd : nMixLambdaPi N := ⟨- Y.1, by rw [Mix.Lambda_Pi_neg_val, rank_neg, Y.2]⟩ with Yd_def
+  have hXdYd : Xd.1 < Yd.1 := by change (- X.1) < (- Y.1); exact Chromosome.neg_lt_neg_iff.2 hXY
+  have had : (Sigma.sigma Xd.1.1 1).1 < (Sigma.sigma Yd.1.1 1).1 := by
+    change (signature (Chromosome.prime^[1] (- X.1.1))).1 <
+      (signature (Chromosome.prime^[1] (- Y.1.1))).1
+    rw [← @prime_iterate_neg 1 X.1.1, ← @prime_iterate_neg 1 Y.1.1,
+      signature_neg, signature_neg, Prod.fst_swap, Prod.fst_swap]
+    have hXsym : (signature (Chromosome.prime^[1] X.1.1)).1 =
+        (signature (Chromosome.prime^[1] X.1.1)).2 :=
+      signature_prime_iterate_odd_eq_components X.1.2 (by decide)
+    have hYsym : (signature (Chromosome.prime^[1] Y.1.1)).1 =
+        (signature (Chromosome.prime^[1] Y.1.1)).2 :=
+      signature_prime_iterate_odd_eq_components Y.1.2 (by decide)
+    rw [← hXsym, ← hYsym]; exact ha
+  have hgm1_d : Xd.1.1 gm = 1 := by
+    change (- X.1.1) gm = 1; rw [Chromosome.neg_apply, hg₁neg]; exact hgm1
+  have hmin_d : ∀ g ∈ Xd.1.1.support, 2 * m' + 2 ≤ g.rank := by
+    intro g hg
+    rw [Finsupp.mem_support_iff] at hg
+    have hng : X.1.1 (-g) ≠ 0 := by
+      change (- X.1.1) g ≠ 0 at hg; rwa [Chromosome.neg_apply] at hg
+    have h := hmin (-g) (Finsupp.mem_support_iff.mpr hng); rwa [Gene.neg_rank] at h
+  have hsingle_neg : ∀ g, (Finsupp.single gm 1 : Chromosome) g =
+      (Finsupp.single gm 1 : Chromosome) (-g) := by
+    intro g
+    have hiff : (gm = g) ↔ (gm = -g) := by
+      constructor
+      · rintro rfl; exact hg₁neg.symm
+      · intro h
+        have h2 : -gm = g := by rw [h, neg_neg]
+        rw [← hg₁neg]; exact h2
+    rw [Finsupp.single_apply, Finsupp.single_apply]
+    by_cases h : gm = g
+    · rw [if_pos h, if_pos (hiff.mp h)]
+    · rw [if_neg h, if_neg (fun hc => h (hiff.mpr hc))]
+  have hval : ∀ g, (Xd.1.1 - Finsupp.single gm 1 : Chromosome) g
+      = (X.1.1 - Finsupp.single gm 1 : Chromosome) (-g) := by
+    intro g; rw [Finsupp.tsub_apply, Finsupp.tsub_apply, hsingle_neg g]; congr 1
+  have h2nd_d : ∀ g ∈ (Xd.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank := by
+    intro g hg
+    rw [Finsupp.mem_support_iff, hval g] at hg
+    have h := h2nd (-g) (Finsupp.mem_support_iff.mpr hg); rwa [Gene.neg_rank] at h
+  have ha_m_d : (Sigma.sigma Xd.1.1 (2 * m' + 2)).1 <
+      (Sigma.sigma Yd.1.1 (2 * m' + 2)).1 := by
+    change (signature (Chromosome.prime^[2 * m' + 2] (- X.1.1))).1 <
+      (signature (Chromosome.prime^[2 * m' + 2] (- Y.1.1))).1
+    rw [← @prime_iterate_neg (2 * m' + 2) X.1.1, ← @prime_iterate_neg (2 * m' + 2) Y.1.1,
+      signature_neg, signature_neg, Prod.fst_swap, Prod.fst_swap]
+    exact hb_m
+  have hgen := branchA_hprop_even_gen Xd Yd hXdYd had m' n' hmn gm hgm_rank hgm_np
+    hgm1_d hmin_d h2nd_d ha_m_d
+  intro j hj1 hj2 hej
+  have hg := hgen j hj1 hj2 hej
+  have hconvX : (Sigma.sigma Xd.1.1 j).1 = (Sigma.sigma X.1.1 j).2 := by
+    change (signature (Chromosome.prime^[j] (- X.1.1))).1 =
+      (signature (Chromosome.prime^[j] X.1.1)).2
+    rw [← @prime_iterate_neg j X.1.1, signature_neg, Prod.fst_swap]
+  have hconvY : (Sigma.sigma Yd.1.1 j).1 = (Sigma.sigma Y.1.1 j).2 := by
+    change (signature (Chromosome.prime^[j] (- Y.1.1))).1 =
+      (signature (Chromosome.prime^[j] Y.1.1)).2
+    rw [← @prime_iterate_neg j Y.1.1, signature_neg, Prod.fst_swap]
+  rw [hconvX, hconvY] at hg; exact hg
+
 /-- **Branch A Case 1 driver.** Chains the propagation core and the type4 assembly:
 given the minimal nonpolarized gene `gm` (rank `2m'+2`, multiplicity one), a second
 nonpolarized gene `gk` (rank `2n'+2`, with `m' < n'`) of minimal rank in `X - gm`, and
