@@ -666,6 +666,106 @@ lemma branchA_case2_bprop {N : ℕ}
     rw [← @prime_iterate_neg j Y.1.1, signature_neg, Prod.fst_swap]
   rw [hconvX, hconvY] at hg; exact hg
 
+/-- **Top-boundary nonvanishing for §16 Branch A Case 2.**  `prime^[2n'+3] Y ≠ 0`.
+If it vanished, `prime^[2n'+2] Y` would consist only of rank-1 genes, all polarized
+(in `Mix (Lambda, Pi)`), and none positive — a positive one would be `g⁺(1)`, which by
+`prime_iterate_coeff` traces to `Y gk` (zero by disjointness).  So its first signature
+component is `0`, contradicting `a_X(2n'+2) ≥ 1` (the `g⁺(k)` residue) dominated by `Y`. -/
+lemma branchA_case2_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
+    (n' : ℕ) (gk : Gene) (hgk_rank : gk.rank = 2 * n' + 3)
+    (hgk_pos : gk.type = .Positive) (hXgk : 0 < X.1.1 gk) :
+    Chromosome.prime^[2 * n' + 3] Y.1.1 ≠ 0 := by
+  push_neg at hcommon
+  intro hYzero
+  have haX : 1 ≤ (signature (Chromosome.prime^[2 * n' + 2] X.1.1)).1 := by
+    have := one_le_signature_fst_of_contains_positive_mix X.1.2 hgk_pos hXgk
+    rwa [hgk_rank, show 2 * n' + 3 - 1 = 2 * n' + 2 from by omega] at this
+  have haY : 1 ≤ (signature (Chromosome.prime^[2 * n' + 2] Y.1.1)).1 :=
+    le_trans haX (le_iff_dominates.mp hXY.le (2 * n' + 2)).1
+  set W := Chromosome.prime^[2 * n' + 2] Y.1.1 with hWdef
+  have hWprime : Chromosome.prime W = 0 := by
+    rw [hWdef, ← Function.iterate_succ_apply' Chromosome.prime (2 * n' + 2) Y.1.1]
+    exact hYzero
+  have hWmem : W ∈ Mix (Lambda, Pi) := by
+    have heven : Even (2 * n' + 2) := ⟨n' + 1, by ring⟩
+    have h := prime_mem_Mix_Lambda_Pi_iterate Y.1.2 (2 * n' + 2)
+    rwa [if_pos heven] at h
+  have hWgenes : ∀ h ∈ W.support, h.signature.1 = 0 := by
+    intro h hh
+    have hr1 : h.rank = 1 := rank_one_of_prime_eq_zero hWprime hh
+    have hpol : h.type ≠ .NonPolarized := by
+      have hod : 0 < W.oddPart h := by
+        rw [oddPart_eq, Finsupp.filter_apply, if_pos (by rw [hr1]; exact ⟨0, rfl⟩)]
+        exact Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+      exact IsPolarized_def'.mp (mem_Pi_iff.mp hWmem.2) h
+        (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hod))
+    have hnpos : h.type ≠ .Positive := by
+      intro hpos
+      have hWh : W h = Y.1.1 ⟨h.rank + (2 * n' + 2), h.type,
+          Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * n' + 2) Y.1.1 h
+      have hge : (⟨h.rank + (2 * n' + 2), h.type, Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = gk :=
+        Gene.ext (by show h.rank + (2 * n' + 2) = gk.rank; omega)
+          (by show h.type = gk.type; rw [hpos, hgk_pos])
+      rw [hge] at hWh
+      have hYgk : Y.1.1 gk = 0 := Nat.le_zero.mp (hcommon gk hXgk)
+      rw [hYgk] at hWh
+      exact (Finsupp.mem_support_iff.mp hh) hWh
+    have hneg : h.type = .Negative := by
+      cases ht : h.type with
+      | NonPolarized => exact absurd ht hpol
+      | Positive => exact absurd ht hnpos
+      | Negative => rfl
+    rw [Gene.signature_of_negative hneg, if_neg (by rw [hr1]; decide)]
+    simp [hr1]
+  have hW0 : (signature W).1 = 0 := by
+    rw [signature_fst, Finsupp.sum]
+    apply Finset.sum_eq_zero
+    intro h hh
+    rw [hWgenes h hh, smul_zero]
+  rw [hW0] at haY
+  linarith
+
+/-- **Branch A Case 2 driver** (`g₂ = g⁺(k)`).  Chains the `b`-propagation core, the
+window nonvanishing (`gk` residue below the top, boundary above), and the type5 assembly. -/
+lemma branchA_case2_full {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
+    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
+      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (m' n' : ℕ) (hmn : m' ≤ n')
+    (gm gk : Gene) (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    (hgk_rank : gk.rank = 2 * n' + 3) (hgk_pos : gk.type = .Positive)
+    (hgm1 : X.1.1 gm = 1) (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 3 ≤ g.rank)
+    (hb_m : (Sigma.sigma X.1.1 (2 * m' + 2)).2 < (Sigma.sigma Y.1.1 (2 * m' + 2)).2) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hne : gm ≠ gk := by intro h; rw [h, hgk_rank] at hgm_rank; omega
+  have hXgk' : 0 < X.1.1 gk := by
+    have hval : (X.1.1 - Finsupp.single gm 1 : Chromosome) gk = X.1.1 gk := by
+      rw [Finsupp.tsub_apply, Finsupp.single_apply, if_neg hne, Nat.sub_zero]
+    rwa [hval] at hXgk
+  have hprop := branchA_case2_bprop X Y hXY ha m' n' hmn gm hgm_rank hgm_np hgm1 hmin
+    (fun g hg => le_trans (by omega) (h2nd g hg)) hb_m
+  have hYwin : ∀ j, 2 * m' + 2 ≤ j → j ≤ 2 * n' + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0 := by
+    intro j _ hj2
+    by_cases hjtop : j = 2 * n' + 3
+    · subst hjtop
+      exact branchA_case2_Ynonzero_top X Y hXY hcommon n' gk hgk_rank hgk_pos hXgk'
+    · intro hYzero
+      have hXj : Chromosome.prime^[j] X.1.1 ≠ 0 := by
+        intro hXzero
+        have hle := prime_iterate_eq_zero_rank_le.mpr hXzero gk
+          (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hXgk'))
+        rw [hgk_rank] at hle; omega
+      have hsig_le := le_iff_dominates.mp hXY.le j
+      rw [hYzero, map_zero] at hsig_le
+      exact hXj (signature_eq_zero (le_antisymm hsig_le (signature_nonneg _)))
+  exact exists_mutation_le_caseA_branchA_case2_assembly X Y hXY hsigeq m' n' hmn gm gk
+    hgm_rank hgm_np hgk_rank hgk_pos hXgm hXgk hne hprop hYwin
+
 /-- **Branch A Case 1 driver.** Chains the propagation core and the type4 assembly:
 given the minimal nonpolarized gene `gm` (rank `2m'+2`, multiplicity one), a second
 nonpolarized gene `gk` (rank `2n'+2`, with `m' < n'`) of minimal rank in `X - gm`, and
