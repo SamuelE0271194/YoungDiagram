@@ -28,7 +28,7 @@ private lemma rank_drop_step {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi)) (i :
   · rw [if_neg hi] at h6 h7; linarith
 
 /-- Telescoped: the rank-drop at level `i` is at most the rank-drop at level `0`. -/
-private lemma rank_drop_le {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi)) (i : ℕ) :
+lemma rank_drop_le {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi)) (i : ℕ) :
     (Sigma.sigma Z i).1 + (Sigma.sigma Z i).2 -
         ((Sigma.sigma Z (i + 1)).1 + (Sigma.sigma Z (i + 1)).2) ≤
       (Sigma.sigma Z 0).1 + (Sigma.sigma Z 0).2 -
@@ -77,7 +77,7 @@ private lemma X_sub_add {N : ℕ} (X : nMixLambdaPi N) (gm : Gene) (hgm1 : X.1.1
   · subst hg; rw [if_pos rfl]; omega
   · rw [if_neg hg]; omega
 
-private lemma cells {Z : Chromosome} :
+lemma cells {Z : Chromosome} :
     (Z.rank : ℚ) - (Z.prime.rank : ℚ) = Z.sum (fun _ m => (m : ℚ)) := by
   rw [rank_def, rank_of_prime, Finsupp.sum, Finsupp.sum, Finsupp.sum]
   push_cast
@@ -88,7 +88,7 @@ private lemma cells {Z : Chromosome} :
   push_cast [smul_eq_mul, Nat.cast_sub h1]
   ring
 
-private lemma twostep {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 ≤ g.rank) :
+lemma twostep {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 ≤ g.rank) :
     (Sigma.sigma W i).1 - (Sigma.sigma W (i + 2)).1 = (W.sum fun _ m => (m : ℚ)) := by
   induction W using Finsupp.induction with
   | zero => simp [Sigma.sigma]
@@ -121,6 +121,43 @@ private lemma twostep {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 
         ((Sigma.sigma (Finsupp.single g n) (i + 2)).1 + (Sigma.sigma f (i + 2)).1) =
         ((Sigma.sigma (Finsupp.single g n) i).1 - (Sigma.sigma (Finsupp.single g n) (i + 2)).1) +
         ((Sigma.sigma f i).1 - (Sigma.sigma f (i + 2)).1) by ring]
+    rw [hsingle, ih hf]
+
+/-- `b`-component analogue of `twostep`: the 2-step drop of the second sigma component
+equals the gene count, when all genes survive both steps. -/
+lemma twostep_snd {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 ≤ g.rank) :
+    (Sigma.sigma W i).2 - (Sigma.sigma W (i + 2)).2 = (W.sum fun _ m => (m : ℚ)) := by
+  induction W using Finsupp.induction with
+  | zero => simp [Sigma.sigma]
+  | single_add g n f hg hn ih =>
+    have hgr : i + 2 ≤ g.rank := hW g (by simp [hg, hn])
+    have hf : ∀ g' ∈ f.support, i + 2 ≤ g'.rank := by
+      intro g' hg'
+      apply hW
+      simp only [Finsupp.mem_support_iff, Finsupp.add_apply]
+      have hz : (Finsupp.single g n) g' = 0 := by
+        rw [Finsupp.single_apply, if_neg]
+        rintro rfl; exact hg hg'
+      rw [hz, zero_add]; exact Finsupp.mem_support_iff.mp hg'
+    have he : (Finsupp.single g n : Chromosome) = n • Gene.ofRank g.rank g.type := by
+      rw [Gene.ofRank_eq_gene]; simp
+    have e1 : Chromosome.prime^[i] (Finsupp.single g n) =
+        n • Gene.ofRank (g.rank - i) g.type := by rw [he, iterate_map_nsmul, prime_iterate_ofRank]
+    have e2 : Chromosome.prime^[i + 2] (Finsupp.single g n) =
+        n • Gene.ofRank (g.rank - (i + 2)) g.type := by
+      rw [he, iterate_map_nsmul, prime_iterate_ofRank]
+    have hsingle : (Sigma.sigma (Finsupp.single g n) i).2 -
+        (Sigma.sigma (Finsupp.single g n) (i + 2)).2 = (n : ℚ) := by
+      simp only [Sigma.sigma, e1, e2, map_nsmul]
+      rw [show g.rank - i = (g.rank - (i + 2)) + 2 by omega, signature_ofRank_eq₂']
+      simp only [Prod.smul_snd, smul_eq_mul, Prod.snd_add]
+      ring
+    rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
+    rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.snd_add, Prod.snd_add]
+    rw [show (Sigma.sigma (Finsupp.single g n) i).2 + (Sigma.sigma f i).2 -
+        ((Sigma.sigma (Finsupp.single g n) (i + 2)).2 + (Sigma.sigma f (i + 2)).2) =
+        ((Sigma.sigma (Finsupp.single g n) i).2 - (Sigma.sigma (Finsupp.single g n) (i + 2)).2) +
+        ((Sigma.sigma f i).2 - (Sigma.sigma f (i + 2)).2) by ring]
     rw [hsingle, ih hf]
 
 private lemma shift {N : ℕ} (X : nMixLambdaPi N) (gm : Gene) {m' : ℕ}

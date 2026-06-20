@@ -9,7 +9,7 @@ namespace MixLambdaPi
 
 /-- For `X ∈ Mix (Lambda, Pi)` with `0 < X g` and `g.type = .Positive`, the gene `g`
 has odd rank (and so does the symmetric situation for `.Negative`). -/
-private lemma rank_odd_of_polarized {X : Chromosome} (hX : X ∈ Mix (Lambda, Pi))
+lemma rank_odd_of_polarized {X : Chromosome} (hX : X ∈ Mix (Lambda, Pi))
     {g : Gene} (hpol : g.type ≠ .NonPolarized) (hgX : 0 < X g) :
     Odd g.rank := by
   by_contra hnot
