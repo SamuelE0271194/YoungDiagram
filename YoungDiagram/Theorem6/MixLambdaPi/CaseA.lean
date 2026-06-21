@@ -1231,46 +1231,4 @@ lemma exists_mutation_le_caseA_branchA (m : ℕ)
   · exact branchA_mult_one m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁ hg₁min hg₁NP m' hm'
       (by omega)
 
-/-- **Branch B** of §16 Case A: the minimal-rank gene `g₁` of `X` is polarized
-(`g₁ = g^±(m)`, so `m` is odd).  Paper Cases 3–5. -/
-lemma exists_mutation_le_caseA_branchB (m : ℕ)
-    (X Y : nMixLambdaPi (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
-      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
-      g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁)
-    (hg₁min : ∀ g ∈ X.1.1.support, g₁.rank ≤ g.rank)
-    (hg₁pol : g₁.type ≠ .NonPolarized) :
-    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
-
-/-- §16 Case A core for `Mix (Lambda, Pi)`: extract the minimal-rank gene of `X`
-and dispatch on its polarization. -/
-lemma exists_mutation_le_caseA (m : ℕ)
-    (X Y : nMixLambdaPi (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
-      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
-      g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1) :
-    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  have hXne : X.1.1 ≠ 0 := by
-    intro h
-    have hr0 : X.1.1.rank = 0 := rank_zero_iff.mpr h
-    have hr : X.1.1.rank = m + 2 := X.2
-    omega
-  obtain ⟨g₁, hg₁mem, hg₁min⟩ := Finset.exists_min_image X.1.1.support Gene.rank
-    (Finsupp.support_nonempty_iff.mpr hXne)
-  rw [Finsupp.mem_support_iff] at hg₁mem
-  have hXg₁ : 0 < X.1.1 g₁ := Nat.pos_of_ne_zero hg₁mem
-  by_cases hpol : g₁.type = .NonPolarized
-  · exact exists_mutation_le_caseA_branchA m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁
-      hg₁min hpol
-  · exact exists_mutation_le_caseA_branchB m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁
-      hg₁min hpol
-
 end MixLambdaPi

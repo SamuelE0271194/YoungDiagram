@@ -38,7 +38,7 @@ lemma rank_drop_le {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi)) (i : ℕ) :
   | succ k ih => exact le_trans (rank_drop_step hZ k) ih
 
 /-- KEY_Y: the §16 bound on `Y`'s `a`-component 2-step drop by `r_0 - r_1 - 1`. -/
-private lemma KEY_Y {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+lemma KEY_Y {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1) {i : ℕ} (hi : Even i) :
     (Sigma.sigma Y.1.1 i).1 - (Sigma.sigma Y.1.1 (i + 2)).1 ≤
       (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -

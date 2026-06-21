@@ -12,4 +12,5 @@ import YoungDiagram.Theorem6.Mix2LambdaPi
 import YoungDiagram.Theorem6.MixPi2Lambda
 import YoungDiagram.Theorem6.MixLambdaPi.SigmaWindow
 import YoungDiagram.Theorem6.MixLambdaPi.Drops
+import YoungDiagram.Theorem6.MixLambdaPi.CaseB
 import YoungDiagram.Theorem6.MixVarietyJoint

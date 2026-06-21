@@ -1,6 +1,6 @@
 import YoungDiagram.Theorem6.MixLambdaPi
 import YoungDiagram.Theorem6.MixPiLambda
-import YoungDiagram.Theorem6.MixLambdaPi.CaseA
+import YoungDiagram.Theorem6.MixLambdaPi.CaseB
 import YoungDiagram.Theorem6.MixPiLambda.CaseA
 
 /-!
