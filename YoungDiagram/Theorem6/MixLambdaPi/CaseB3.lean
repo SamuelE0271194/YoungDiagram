@@ -277,6 +277,123 @@ lemma branchB_case3_assembly_type7 {N : ℕ}
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
 
+/-- **Assembly** of §16 Branch B Case 3, `g₂ = g⁺(k)` (type8).  Builds
+`g⁺(m) + g⁺(k) → g⁺(m-2) + g⁺(k+2)` (with `gm.rank = 2p+3 = m`, `gk.rank = 2q+3 = k`)
+and proves `Z ≤ Y` over `2p+1 < j < 2q+5`.  The window difference is:
+* `j = 2p+2` (`= m-1`): `(0,1)`, absorbed by `hbanchor`;
+* `2p+3 ≤ j ≤ 2q+3` (`= [m, k]`): `(1,1)` — even `j` by `haeven`+`hbeven`, odd `j` by
+  the supplied `hoddabsorb` (i.e. `odd_interior_absorb` + the rank-parity);
+* `j = 2q+4` (`= k+1`): `(1,0)`, absorbed by `haeven`. -/
+lemma branchB_case3_assembly_type8 {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (p q : ℕ) (h_le : p ≤ q)
+    (gm gk : Gene)
+    (hgm_rank : gm.rank = 2 * p + 3) (hgm_pos : gm.type = .Positive)
+    (hgk_rank : gk.rank = 2 * q + 3) (hgk_pos : gk.type = .Positive)
+    (hXgm : 0 < X.1.1 gm)
+    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (hne : gm ≠ gk)
+    (hbanchor : (Sigma.sigma X.1.1 (2 * p + 2)).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * p + 2)).2)
+    (haeven : ∀ j, Even j → 2 * p + 3 ≤ j → j ≤ 2 * q + 4 →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
+    (hbeven : ∀ j, Even j → 2 * p + 3 ≤ j → j ≤ 2 * q + 3 →
+        (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2)
+    (hoddabsorb : ∀ j, Odd j → 2 * p + 3 ≤ j → j ≤ 2 * q + 3 →
+        ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+          signature (Chromosome.prime^[j] Y.1.1)) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hε : GeneType.Positive ≠ .NonPolarized := by decide
+  let Y8' : Mix (Lambda, Pi) := Y8 h_le hε
+  let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
+  have rest_mem : restval ∈ Mix (Lambda, Pi) :=
+    sub_mem_Mix_Lambda_Pi _ (sub_mem_Mix_Lambda_Pi _ X.1.2)
+  let rest_M : Mix (Lambda, Pi) := ⟨restval, rest_mem⟩
+  have hgm_eq : Gene.ofRank (2 * p + 3) .Positive = (Finsupp.single gm 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gm); rw [hgm_rank, hgm_pos] at h; exact h
+  have hgk_eq : Gene.ofRank (2 * q + 3) .Positive = (Finsupp.single gk 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gk); rw [hgk_rank, hgk_pos] at h; exact h
+  have hX8_val : (X8 h_le hε).1 = Finsupp.single gm 1 + Finsupp.single gk 1 := by
+    rw [X8_eq, hgm_eq, hgk_eq]
+  have hXgk' : 0 < X.1.1 gk := by
+    have hval : (X.1.1 - Finsupp.single gm 1 : Chromosome) gk = X.1.1 gk := by
+      rw [Finsupp.tsub_apply, Finsupp.single_apply, if_neg hne, Nat.sub_zero]
+    rwa [hval] at hXgk
+  have hX_eq : (X8 h_le hε).1 + restval = X.1.1 := by
+    rw [hX8_val]; exact X_eq_X7_add_rest_mix hXgm hXgk' hne
+  let Z : Mix (Lambda, Pi) := ⟨Y8'.1 + restval, add_mem Y8'.2 rest_mem⟩
+  refine ⟨Z, (Subtype.ext hX_eq : (X8 h_le hε : Mix (Lambda, Pi)) + rest_M = X.1) ▸
+    MixLambdaPi.Step.mk (X8 h_le hε) Y8' rest_M
+      (MixLambdaPi.Primitive.type8 GeneType.Positive hε h_le), ?_⟩
+  change Y8'.1 + restval ≤ Y.1.1
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp : signature (Chromosome.prime^[j] X.1.1) =
+      signature (Chromosome.prime^[j] (X8 h_le hε).1) +
+        signature (Chromosome.prime^[j] restval) := by
+    rw [← hX_eq, iterate_map_add, map_add]
+  have hXYj : signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := le_iff_dominates.mp hXY.le j
+  by_cases hj : j ≤ 2 * p + 1
+  · have h88 : signature (Chromosome.prime^[j] Y8'.1) =
+        signature (Chromosome.prime^[j] (X8 h_le hε).1) :=
+      (sigma_type8_eq_before h_le hε (hj := hj)).symm
+    rw [h88, ← hdecomp]; exact hXYj
+  · by_cases hj_after : 2 * q + 5 ≤ j
+    · have h88 : signature (Chromosome.prime^[j] Y8'.1) =
+          signature (Chromosome.prime^[j] (X8 h_le hε).1) :=
+        (sigma_type8_eq_after h_le hε (hj := hj_after)).symm
+      rw [h88, ← hdecomp]; exact hXYj
+    · have hj1 : 2 * p + 1 < j := by omega
+      have hj2 : j < 2 * q + 5 := by omega
+      have hmid := sigma_type8_mid h_le hε hj1 hj2
+      have hY8_eq : signature (Chromosome.prime^[j] Y8'.1) =
+          signature (Chromosome.prime^[j] (X8 h_le hε).1) +
+            ((if j ≤ 2 * q + 3 then (1, 1) else signature (Gene.ofRank 1 GeneType.Positive)) +
+             (if 2 * p + 3 ≤ j then 0 else -signature (Gene.ofRank 1 GeneType.Positive))) :=
+        sub_eq_iff_eq_add'.mp hmid
+      rw [hY8_eq, add_right_comm, ← hdecomp]
+      rw [signature_ofRank_one_positive]
+      by_cases hbot : 2 * p + 3 ≤ j
+      · rw [if_pos hbot, add_zero]
+        by_cases htop : j ≤ 2 * q + 3
+        · rw [if_pos htop]
+          -- deep interior `(1,1)`: even by `haeven`+`hbeven`, odd by `hoddabsorb`
+          by_cases hpar : Even j
+          · refine ⟨?_, ?_⟩
+            · simp only [Prod.fst_add]
+              have := haeven j hpar hbot (by omega)
+              simpa [Sigma.sigma] using this
+            · simp only [Prod.snd_add]
+              have := hbeven j hpar hbot htop
+              simpa [Sigma.sigma] using this
+          · have hodd : Odd j := Nat.not_even_iff_odd.mp hpar
+            have hab := hoddabsorb j hodd hbot htop
+            rw [add_comm]
+            simpa [Sigma.sigma] using hab
+        · -- top boundary `j = 2q+4`: difference `(1,0)`
+          rw [if_neg htop]
+          have hjeq : j = 2 * q + 4 := by omega
+          have hjeven : Even j := ⟨q + 2, by omega⟩
+          refine ⟨?_, ?_⟩
+          · simp only [Prod.fst_add]
+            have := haeven j hjeven hbot (by omega)
+            simpa [Sigma.sigma] using this
+          · simp only [Prod.snd_add, add_zero]; exact hXYj.2
+      · -- bottom boundary `j = 2p+2`: difference `(0,1)`
+        rw [if_neg hbot]
+        have htop : j ≤ 2 * q + 3 := by omega
+        rw [if_pos htop,
+          show ((1:ℚ),(1:ℚ)) + (-((1:ℚ),(0:ℚ))) = ((0:ℚ),(1:ℚ)) from by norm_num]
+        have hjeq : j = 2 * p + 2 := by omega
+        refine ⟨?_, ?_⟩
+        · simp only [Prod.fst_add]; rw [add_zero]; exact hXYj.1
+        · simp only [Prod.snd_add]
+          rw [hjeq]
+          have hb := hbanchor
+          rw [Sigma.sigma, Sigma.sigma] at hb
+          linarith [hb]
+
 /-- §16 Branch B, **Case 3** (`g₁ = g⁺(m)`, `m = 2m'+1 ≥ 3`).  Dispatch:
 `2g₁` diagonal (type8) or second gene `g₂` by charge (type6/type7/type8).
 
