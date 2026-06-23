@@ -26,6 +26,51 @@ open Chromosome
 
 namespace MixLambdaPi
 
+/-- **Odd-interior `(1,1)` absorption.**  At an odd level `r`, `Mix (Lambda, Pi)` has
+`a = b`, so `2·a = rank(prime^[r] ·)`.  If `σX(r) ≤ σY(r)` strictly (componentwise `≤`
+and `≠`) and the two ranks have the **same parity**, then the gap is a full `(1,1)`
+(not just the `(1/2,1/2)` of `half_le_sigma_diff_at_r`): strictness gives
+`rank_X < rank_Y`, and equal parity upgrades this to `rank_Y ≥ rank_X + 2`, i.e.
+`a_Y ≥ a_X + 1` (and `b` likewise).  This is the structural core of §16 Case 3 type8. -/
+lemma odd_interior_absorb {X Y : Chromosome}
+    (hX : X ∈ Mix (Lambda, Pi)) (hY : Y ∈ Mix (Lambda, Pi))
+    {r : ℕ} (hodd : Odd r)
+    (hle : signature (Chromosome.prime^[r] X) ≤ signature (Chromosome.prime^[r] Y))
+    (hne : signature (Chromosome.prime^[r] X) ≠ signature (Chromosome.prime^[r] Y))
+    (hpar : (Chromosome.prime^[r] X).rank % 2 = (Chromosome.prime^[r] Y).rank % 2) :
+    ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[r] X) ≤
+      signature (Chromosome.prime^[r] Y) := by
+  have hXeq := signature_prime_iterate_odd_eq_components hX hodd
+  have hYeq := signature_prime_iterate_odd_eq_components hY hodd
+  set sX := signature (Chromosome.prime^[r] X) with hsX
+  set sY := signature (Chromosome.prime^[r] Y) with hsY
+  -- `2 * sX.1 = rank_X`, `2 * sY.1 = rank_Y`
+  have hrX : 2 * sX.1 = ((Chromosome.prime^[r] X).rank : ℚ) := by
+    have h := @signature_sum_eq_rank (Chromosome.prime^[r] X)
+    rw [← hsX] at h; rw [show 2 * sX.1 = sX.1 + sX.2 from by rw [hXeq]; ring]; exact h
+  have hrY : 2 * sY.1 = ((Chromosome.prime^[r] Y).rank : ℚ) := by
+    have h := @signature_sum_eq_rank (Chromosome.prime^[r] Y)
+    rw [← hsY] at h; rw [show 2 * sY.1 = sY.1 + sY.2 from by rw [hYeq]; ring]; exact h
+  -- strictness in the first component
+  have h_ne : sX.1 ≠ sY.1 := by
+    intro heq; apply hne; ext
+    · exact heq
+    · rw [← hXeq, ← hYeq]; exact heq
+  have h_lt : sX.1 < sY.1 := lt_of_le_of_ne hle.1 h_ne
+  -- ranks: strict + equal parity ⇒ gap ≥ 2
+  set rX := (Chromosome.prime^[r] X).rank with hrXdef
+  set rY := (Chromosome.prime^[r] Y).rank with hrYdef
+  have hrlt : rX < rY := by
+    have : (rX : ℚ) < (rY : ℚ) := by rw [← hrX, ← hrY]; linarith
+    exact_mod_cast this
+  have hrge : rX + 2 ≤ rY := by omega
+  have hge : sX.1 + 1 ≤ sY.1 := by
+    have : (rX : ℚ) + 2 ≤ (rY : ℚ) := by exact_mod_cast hrge
+    rw [← hrX, ← hrY] at this; linarith
+  refine ⟨?_, ?_⟩
+  · simp only [Prod.fst_add]; linarith
+  · simp only [Prod.snd_add]; rw [← hXeq, ← hYeq]; linarith
+
 /-- **Assembly** of §16 Branch B Case 3, `g₂ = g(k)` nonpolarized (type6, general
 bottom `m'`).  Builds `g⁺(m) + g(k) → g(m-1) + g⁺(k+1)` and proves `Z ≤ Y` over the
 window `2m' < j < 2n'+3`: even-level difference `(1,0)` absorbed by `hprop_even`,
