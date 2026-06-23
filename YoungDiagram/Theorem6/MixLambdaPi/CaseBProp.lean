@@ -249,6 +249,56 @@ lemma Ywin_below {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1) (gk : Gene)
   rw [hYzero, map_zero] at hsig
   exact hXj (signature_eq_zero (le_antisymm hsig (signature_nonneg _)))
 
+/-- **General §16 Case 3 b-propagation.**  `b_X(j) + 1 ≤ b_Y(j)` for even `j ∈ [2, k]`,
+where all non-negative (positive/NP) genes of `X` have rank `≥ k`.  Sign-dual of
+`branchB_case5_aprop_gen` applied to `(-X, -Y)` (the `a`-propagation of the duals is
+the `b`-propagation of the originals). -/
+lemma branchB_case3_bprop_gen {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (k : ℕ) (hk : ∀ g ∈ X.1.1.support, g.type ≠ .Negative → k ≤ g.rank) :
+    ∀ j, 2 ≤ j → j ≤ k → Even j →
+        (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2 := by
+  set Xd : nMixLambdaPi N := ⟨- X.1, by rw [Mix.Lambda_Pi_neg_val, rank_neg, X.2]⟩ with Xd_def
+  set Yd : nMixLambdaPi N := ⟨- Y.1, by rw [Mix.Lambda_Pi_neg_val, rank_neg, Y.2]⟩ with Yd_def
+  have hXdYd : Xd.1 < Yd.1 := by change (- X.1) < (- Y.1); exact Chromosome.neg_lt_neg_iff.2 hXY
+  have had : (Sigma.sigma Xd.1.1 1).1 < (Sigma.sigma Yd.1.1 1).1 := by
+    change (signature (Chromosome.prime^[1] (- X.1.1))).1 <
+      (signature (Chromosome.prime^[1] (- Y.1.1))).1
+    rw [← @prime_iterate_neg 1 X.1.1, ← @prime_iterate_neg 1 Y.1.1,
+      signature_neg, signature_neg, Prod.fst_swap, Prod.fst_swap]
+    have hXsym : (signature (Chromosome.prime^[1] X.1.1)).1 =
+        (signature (Chromosome.prime^[1] X.1.1)).2 :=
+      signature_prime_iterate_odd_eq_components X.1.2 (by decide)
+    have hYsym : (signature (Chromosome.prime^[1] Y.1.1)).1 =
+        (signature (Chromosome.prime^[1] Y.1.1)).2 :=
+      signature_prime_iterate_odd_eq_components Y.1.2 (by decide)
+    rw [← hXsym, ← hYsym]; exact ha
+  have hk_d : ∀ g ∈ Xd.1.1.support, g.type ≠ .Positive → k ≤ g.rank := by
+    intro g hg hgnp
+    rw [Finsupp.mem_support_iff] at hg
+    have hng : X.1.1 (-g) ≠ 0 := by
+      change (- X.1.1) g ≠ 0 at hg; rwa [Chromosome.neg_apply] at hg
+    have hngneg : (-g : Gene).type ≠ .Negative := by
+      rw [Gene.neg_type]
+      cases hgt : g.type with
+      | Positive => exact absurd hgt hgnp
+      | Negative => decide
+      | NonPolarized => decide
+    have h := hk (-g) (Finsupp.mem_support_iff.mpr hng) hngneg
+    rwa [Gene.neg_rank] at h
+  have hgen := branchB_case5_aprop_gen Xd Yd hXdYd had k hk_d
+  intro j hj1 hj2 hej
+  have hg := hgen j hj1 hj2 hej
+  have hconvX : (Sigma.sigma Xd.1.1 j).1 = (Sigma.sigma X.1.1 j).2 := by
+    change (signature (Chromosome.prime^[j] (- X.1.1))).1 =
+      (signature (Chromosome.prime^[j] X.1.1)).2
+    rw [← @prime_iterate_neg j X.1.1, signature_neg, Prod.fst_swap]
+  have hconvY : (Sigma.sigma Yd.1.1 j).1 = (Sigma.sigma Y.1.1 j).2 := by
+    change (signature (Chromosome.prime^[j] (- Y.1.1))).1 =
+      (signature (Chromosome.prime^[j] Y.1.1)).2
+    rw [← @prime_iterate_neg j Y.1.1, signature_neg, Prod.fst_swap]
+  rw [hconvX, hconvY] at hg; exact hg
+
 /-- Top-boundary nonvanishing for §16 Branch B Case 5/Case 3 type7 (`gk = g⁻(2n'+1)`):
 `prime^[2n'+1] Y ≠ 0`.  b-mirror of `branchA_case2_Ynonzero_top`. -/
 lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
