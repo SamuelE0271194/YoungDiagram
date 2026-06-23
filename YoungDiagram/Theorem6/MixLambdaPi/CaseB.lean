@@ -1,5 +1,6 @@
 import YoungDiagram.Theorem6.MixLambdaPi.CaseA
 import YoungDiagram.Theorem6.MixLambdaPi.CaseBProp
+import YoungDiagram.Theorem6.MixLambdaPi.CaseB3
 
 /-!
 # §16 Case A core, Branch B for `Mix (Lambda, Pi)` (label 1).
@@ -346,77 +347,6 @@ lemma branchB_case5_assembly_type7 {N : ℕ}
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
 
-/-- Top-boundary nonvanishing for §16 Branch B Case 5 type7 (`gk = g⁻(2n'+1)`):
-`prime^[2n'+1] Y ≠ 0`.  b-mirror of `branchA_case2_Ynonzero_top`. -/
-lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (n' : ℕ) (gk : Gene) (hgk_rank : gk.rank = 2 * n' + 1)
-    (hgk_neg : gk.type = .Negative) (hXgk : 0 < X.1.1 gk) :
-    Chromosome.prime^[2 * n' + 1] Y.1.1 ≠ 0 := by
-  push_neg at hcommon
-  intro hYzero
-  have hbX : 1 ≤ (signature (Chromosome.prime^[2 * n'] X.1.1)).2 := by
-    have hgk_single : Gene.ofRank gk.rank gk.type = (Finsupp.single gk 1 : Chromosome) :=
-      Gene.ofRank_eq_gene
-    have hprime : Chromosome.prime^[2 * n'] (Finsupp.single gk 1 : Chromosome) =
-        Gene.ofRank 1 .Negative := by
-      rw [← hgk_single, prime_iterate_ofRank, hgk_rank, hgk_neg,
-        show 2 * n' + 1 - 2 * n' = 1 from by omega]
-    have hXeq : X.1.1 = Finsupp.single gk 1 + (X.1.1 - Finsupp.single gk 1) := by
-      rw [add_comm, sub_single_add_single_eq hXgk]
-    calc (1 : ℚ) = (signature (Gene.ofRank 1 .Negative : Chromosome)).2 := by
-          rw [signature_ofRank_one_negative]
-      _ = (signature (Chromosome.prime^[2 * n'] (Finsupp.single gk 1 : Chromosome))).2 := by
-          rw [hprime]
-      _ ≤ (signature (Chromosome.prime^[2 * n'] X.1.1)).2 := by
-          conv_rhs => rw [hXeq]
-          rw [iterate_map_add, map_add]
-          exact le_add_of_nonneg_right (signature_nonneg _).2
-  have hbY : 1 ≤ (signature (Chromosome.prime^[2 * n'] Y.1.1)).2 :=
-    le_trans hbX (le_iff_dominates.mp hXY.le (2 * n')).2
-  set W := Chromosome.prime^[2 * n'] Y.1.1 with hWdef
-  have hWprime : Chromosome.prime W = 0 := by
-    rw [hWdef, ← Function.iterate_succ_apply' Chromosome.prime (2 * n') Y.1.1]
-    exact hYzero
-  have hWmem : W ∈ Mix (Lambda, Pi) := by
-    have heven : Even (2 * n') := ⟨n', by ring⟩
-    have h := prime_mem_Mix_Lambda_Pi_iterate Y.1.2 (2 * n')
-    rwa [if_pos heven] at h
-  have hWgenes : ∀ h ∈ W.support, h.signature.2 = 0 := by
-    intro h hh
-    have hr1 : h.rank = 1 := rank_one_of_prime_eq_zero hWprime hh
-    have hpol : h.type ≠ .NonPolarized := by
-      have hod : 0 < W.oddPart h := by
-        rw [oddPart_eq, Finsupp.filter_apply, if_pos (by rw [hr1]; exact ⟨0, rfl⟩)]
-        exact Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
-      exact IsPolarized_def'.mp (mem_Pi_iff.mp hWmem.2) h
-        (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hod))
-    have hnneg : h.type ≠ .Negative := by
-      intro hneg
-      have hWh : W h = Y.1.1 ⟨h.rank + 2 * n', h.type,
-          Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * n') Y.1.1 h
-      have hge : (⟨h.rank + 2 * n', h.type, Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = gk :=
-        Gene.ext (by show h.rank + 2 * n' = gk.rank; rw [hgk_rank]; omega)
-          (by show h.type = gk.type; rw [hneg, hgk_neg])
-      rw [hge] at hWh
-      have hYgk : Y.1.1 gk = 0 := Nat.le_zero.mp (hcommon gk hXgk)
-      rw [hYgk] at hWh
-      exact (Finsupp.mem_support_iff.mp hh) hWh
-    have hpos : h.type = .Positive := by
-      cases ht : h.type with
-      | NonPolarized => exact absurd ht hpol
-      | Negative => exact absurd ht hnneg
-      | Positive => rfl
-    rw [Gene.signature_of_positive hpos, if_neg (by rw [hr1]; decide)]
-    simp [hr1]
-  have hW0 : (signature W).2 = 0 := by
-    rw [signature_snd, Finsupp.sum]
-    apply Finset.sum_eq_zero
-    intro h hh
-    rw [hWgenes h hh, smul_zero]
-  rw [hW0] at hbY
-  linarith
-
 /-- §16 Branch B, **Case 5** (`g₁ = g⁺(1)`).  `X` contains a negative or nonpolarized
 gene `g₂` of minimal rank `k`; the mutation is `g⁺(1)+g(k) → g⁺(k+1)` (type6, bottom
 `0`) or `g⁺(1)+g⁻(k) → g(k+1)` (type7, bottom `0`). -/
@@ -479,25 +409,6 @@ lemma branchB_case5 (m : ℕ)
         exact branchB_case5_Ynonzero_top X Y hXY hcommon n' g₂ hn' hch hXg₂'
     exact branchB_case5_assembly_type7 X Y hXY hsigeq n' g₁ g₂ hm1 hg₁pos hn' hch
       hXg₁ hXg₂ hne hprop hYwin
-
-/-- §16 Branch B, **Case 3** (`g₁ = g⁺(m)`, `m = 2m'+1 ≥ 3`).  Either `X ⊇ 2g₁`
-(`2g⁺(m) → g⁺(m-2)+g⁺(m+2)`, type8 diagonal) or a second gene `g₂` of minimal rank `k`
-gives `g⁺(m)+g₂ → …` by type6 (`g₂` nonpolarized), type7 (`g₂ = g⁻(k)`), or type8
-(`g₂ = g⁺(k)`). -/
-lemma branchB_case3 (m : ℕ)
-    (X Y : nMixLambdaPi (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
-      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
-      g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁)
-    (hg₁min : ∀ g ∈ X.1.1.support, g₁.rank ≤ g.rank)
-    (hg₁pos : g₁.type = .Positive)
-    (m' : ℕ) (hm' : g₁.rank = 2 * m' + 1) (hmpos : 0 < m') :
-    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
 
 /-- §16 Branch B, positive charge (`g₁ = g⁺(m)`).  Dispatch on `m = 1` vs `m ≥ 3`. -/
 lemma branchB_pos (m : ℕ)

@@ -249,6 +249,77 @@ lemma Ywin_below {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1) (gk : Gene)
   rw [hYzero, map_zero] at hsig
   exact hXj (signature_eq_zero (le_antisymm hsig (signature_nonneg _)))
 
+/-- Top-boundary nonvanishing for §16 Branch B Case 5/Case 3 type7 (`gk = g⁻(2n'+1)`):
+`prime^[2n'+1] Y ≠ 0`.  b-mirror of `branchA_case2_Ynonzero_top`. -/
+lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
+    (n' : ℕ) (gk : Gene) (hgk_rank : gk.rank = 2 * n' + 1)
+    (hgk_neg : gk.type = .Negative) (hXgk : 0 < X.1.1 gk) :
+    Chromosome.prime^[2 * n' + 1] Y.1.1 ≠ 0 := by
+  push_neg at hcommon
+  intro hYzero
+  have hbX : 1 ≤ (signature (Chromosome.prime^[2 * n'] X.1.1)).2 := by
+    have hgk_single : Gene.ofRank gk.rank gk.type = (Finsupp.single gk 1 : Chromosome) :=
+      Gene.ofRank_eq_gene
+    have hprime : Chromosome.prime^[2 * n'] (Finsupp.single gk 1 : Chromosome) =
+        Gene.ofRank 1 .Negative := by
+      rw [← hgk_single, prime_iterate_ofRank, hgk_rank, hgk_neg,
+        show 2 * n' + 1 - 2 * n' = 1 from by omega]
+    have hXeq : X.1.1 = Finsupp.single gk 1 + (X.1.1 - Finsupp.single gk 1) := by
+      rw [add_comm, sub_single_add_single_eq hXgk]
+    calc (1 : ℚ) = (signature (Gene.ofRank 1 .Negative : Chromosome)).2 := by
+          rw [signature_ofRank_one_negative]
+      _ = (signature (Chromosome.prime^[2 * n'] (Finsupp.single gk 1 : Chromosome))).2 := by
+          rw [hprime]
+      _ ≤ (signature (Chromosome.prime^[2 * n'] X.1.1)).2 := by
+          conv_rhs => rw [hXeq]
+          rw [iterate_map_add, map_add]
+          exact le_add_of_nonneg_right (signature_nonneg _).2
+  have hbY : 1 ≤ (signature (Chromosome.prime^[2 * n'] Y.1.1)).2 :=
+    le_trans hbX (le_iff_dominates.mp hXY.le (2 * n')).2
+  set W := Chromosome.prime^[2 * n'] Y.1.1 with hWdef
+  have hWprime : Chromosome.prime W = 0 := by
+    rw [hWdef, ← Function.iterate_succ_apply' Chromosome.prime (2 * n') Y.1.1]
+    exact hYzero
+  have hWmem : W ∈ Mix (Lambda, Pi) := by
+    have heven : Even (2 * n') := ⟨n', by ring⟩
+    have h := prime_mem_Mix_Lambda_Pi_iterate Y.1.2 (2 * n')
+    rwa [if_pos heven] at h
+  have hWgenes : ∀ h ∈ W.support, h.signature.2 = 0 := by
+    intro h hh
+    have hr1 : h.rank = 1 := rank_one_of_prime_eq_zero hWprime hh
+    have hpol : h.type ≠ .NonPolarized := by
+      have hod : 0 < W.oddPart h := by
+        rw [oddPart_eq, Finsupp.filter_apply, if_pos (by rw [hr1]; exact ⟨0, rfl⟩)]
+        exact Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+      exact IsPolarized_def'.mp (mem_Pi_iff.mp hWmem.2) h
+        (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hod))
+    have hnneg : h.type ≠ .Negative := by
+      intro hneg
+      have hWh : W h = Y.1.1 ⟨h.rank + 2 * n', h.type,
+          Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * n') Y.1.1 h
+      have hge : (⟨h.rank + 2 * n', h.type, Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = gk :=
+        Gene.ext (by show h.rank + 2 * n' = gk.rank; rw [hgk_rank]; omega)
+          (by show h.type = gk.type; rw [hneg, hgk_neg])
+      rw [hge] at hWh
+      have hYgk : Y.1.1 gk = 0 := Nat.le_zero.mp (hcommon gk hXgk)
+      rw [hYgk] at hWh
+      exact (Finsupp.mem_support_iff.mp hh) hWh
+    have hpos : h.type = .Positive := by
+      cases ht : h.type with
+      | NonPolarized => exact absurd ht hpol
+      | Negative => exact absurd ht hnneg
+      | Positive => rfl
+    rw [Gene.signature_of_positive hpos, if_neg (by rw [hr1]; decide)]
+    simp [hr1]
+  have hW0 : (signature W).2 = 0 := by
+    rw [signature_snd, Finsupp.sum]
+    apply Finset.sum_eq_zero
+    intro h hh
+    rw [hWgenes h hh, smul_zero]
+  rw [hW0] at hbY
+  linarith
+
 end MixLambdaPi
 
 
