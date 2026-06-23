@@ -417,6 +417,99 @@ lemma branchB_case3_assembly_type8 {N : ℕ}
           rw [Sigma.sigma, Sigma.sigma] at hb
           linarith [hb]
 
+/-- **Assembly** of §16 Branch B Case 3, diagonal `X ⊇ 2g₁` (type8, `p = q`).  Builds
+`2g⁺(m) → g⁺(m-2) + g⁺(m+2)` (`g₁.rank = 2p+3 = m`) and proves `Z ≤ Y` over the 3-level
+window `2p+1 < j < 2p+5`: `j=2p+2` `(0,1)` by `hbanchor`; `j=2p+3` (`= m`, odd) `(1,1)` by
+`hoddabsorb`; `j=2p+4` `(1,0)` by `haeven`.  Same window proof as `branchB_case3_assembly_type8`
+but with the `2g₁` decomposition. -/
+lemma branchB_case3_assembly_type8_double {N : ℕ}
+    (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+    (p : ℕ) (g₁ : Gene)
+    (hg₁rank : g₁.rank = 2 * p + 3) (hg₁pos : g₁.type = .Positive)
+    (hXg₁2 : 2 ≤ X.1.1 g₁)
+    (hbanchor : (Sigma.sigma X.1.1 (2 * p + 2)).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * p + 2)).2)
+    (haeven : ∀ j, Even j → 2 * p + 3 ≤ j → j ≤ 2 * p + 4 →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
+    (hoddabsorb : ∀ j, Odd j → 2 * p + 3 ≤ j → j ≤ 2 * p + 3 →
+        ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+          signature (Chromosome.prime^[j] Y.1.1)) :
+    ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hε : GeneType.Positive ≠ .NonPolarized := by decide
+  let Y8' : Mix (Lambda, Pi) := Y8 (le_refl p) hε
+  let restval : Chromosome := X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₁ 1
+  have rest_mem : restval ∈ Mix (Lambda, Pi) :=
+    sub_mem_Mix_Lambda_Pi _ (sub_mem_Mix_Lambda_Pi _ X.1.2)
+  let rest_M : Mix (Lambda, Pi) := ⟨restval, rest_mem⟩
+  have hg₁_eq : Gene.ofRank (2 * p + 3) .Positive = (Finsupp.single g₁ 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := g₁); rw [hg₁rank, hg₁pos] at h; exact h
+  have hX8_val : (X8 (le_refl p) hε).1 = Finsupp.single g₁ 1 + Finsupp.single g₁ 1 := by
+    rw [X8_eq, hg₁_eq]
+  have hX_eq : (X8 (le_refl p) hε).1 + restval = X.1.1 := by
+    rw [hX8_val]; exact X_eq_double_add_rest hXg₁2
+  let Z : Mix (Lambda, Pi) := ⟨Y8'.1 + restval, add_mem Y8'.2 rest_mem⟩
+  refine ⟨Z, (Subtype.ext hX_eq : (X8 (le_refl p) hε : Mix (Lambda, Pi)) + rest_M = X.1) ▸
+    MixLambdaPi.Step.mk (X8 (le_refl p) hε) Y8' rest_M
+      (MixLambdaPi.Primitive.type8 GeneType.Positive hε (le_refl p)), ?_⟩
+  change Y8'.1 + restval ≤ Y.1.1
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp : signature (Chromosome.prime^[j] X.1.1) =
+      signature (Chromosome.prime^[j] (X8 (le_refl p) hε).1) +
+        signature (Chromosome.prime^[j] restval) := by
+    rw [← hX_eq, iterate_map_add, map_add]
+  have hXYj : signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := le_iff_dominates.mp hXY.le j
+  by_cases hj : j ≤ 2 * p + 1
+  · have h88 : signature (Chromosome.prime^[j] Y8'.1) =
+        signature (Chromosome.prime^[j] (X8 (le_refl p) hε).1) :=
+      (sigma_type8_eq_before (le_refl p) hε (hj := hj)).symm
+    rw [h88, ← hdecomp]; exact hXYj
+  · by_cases hj_after : 2 * p + 5 ≤ j
+    · have h88 : signature (Chromosome.prime^[j] Y8'.1) =
+          signature (Chromosome.prime^[j] (X8 (le_refl p) hε).1) :=
+        (sigma_type8_eq_after (le_refl p) hε (hj := hj_after)).symm
+      rw [h88, ← hdecomp]; exact hXYj
+    · have hj1 : 2 * p + 1 < j := by omega
+      have hj2 : j < 2 * p + 5 := by omega
+      have hmid := sigma_type8_mid (le_refl p) hε hj1 hj2
+      have hY8_eq : signature (Chromosome.prime^[j] Y8'.1) =
+          signature (Chromosome.prime^[j] (X8 (le_refl p) hε).1) +
+            ((if j ≤ 2 * p + 3 then (1, 1) else signature (Gene.ofRank 1 GeneType.Positive)) +
+             (if 2 * p + 3 ≤ j then 0 else -signature (Gene.ofRank 1 GeneType.Positive))) :=
+        sub_eq_iff_eq_add'.mp hmid
+      rw [hY8_eq, add_right_comm, ← hdecomp]
+      rw [signature_ofRank_one_positive]
+      by_cases hbot : 2 * p + 3 ≤ j
+      · rw [if_pos hbot, add_zero]
+        by_cases htop : j ≤ 2 * p + 3
+        · rw [if_pos htop]
+          have hjeq : j = 2 * p + 3 := by omega
+          have hodd : Odd j := by rw [hjeq]; exact ⟨p + 1, by ring⟩
+          have hab := hoddabsorb j hodd hbot htop
+          rw [add_comm]
+          simpa [Sigma.sigma] using hab
+        · rw [if_neg htop]
+          have hjeq : j = 2 * p + 4 := by omega
+          have hjeven : Even j := ⟨p + 2, by omega⟩
+          refine ⟨?_, ?_⟩
+          · simp only [Prod.fst_add]
+            have := haeven j hjeven hbot (by omega)
+            simpa [Sigma.sigma] using this
+          · simp only [Prod.snd_add, add_zero]; exact hXYj.2
+      · rw [if_neg hbot]
+        have htop : j ≤ 2 * p + 3 := by omega
+        rw [if_pos htop,
+          show ((1:ℚ),(1:ℚ)) + (-((1:ℚ),(0:ℚ))) = ((0:ℚ),(1:ℚ)) from by norm_num]
+        have hjeq : j = 2 * p + 2 := by omega
+        refine ⟨?_, ?_⟩
+        · simp only [Prod.fst_add]; rw [add_zero]; exact hXYj.1
+        · simp only [Prod.snd_add]
+          rw [hjeq]
+          have hb := hbanchor
+          rw [Sigma.sigma, Sigma.sigma] at hb
+          linarith [hb]
+
 /-- §16 Branch B, **Case 3** (`g₁ = g⁺(m)`, `m = 2m'+1 ≥ 3`).  Dispatch:
 `2g₁` diagonal (type8) or second gene `g₂` by charge (type6/type7/type8).
 
@@ -438,9 +531,93 @@ lemma branchB_case3 (m : ℕ)
     (m' : ℕ) (hm' : g₁.rank = 2 * m' + 1) (hmpos : 0 < m') :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
   by_cases hmult : 2 ≤ X.1.1 g₁
-  · -- `X ⊇ 2g₁`: type8 diagonal `2g⁺(m) → g⁺(m-2) + g⁺(m+2)`.  Needs deep-interior
-    -- `(1,1)` absorption (odd-level integer gap).
-    sorry
+  · -- `X ⊇ 2g₁`: type8 diagonal `2g⁺(m) → g⁺(m-2) + g⁺(m+2)`.
+    -- no non-positive gene at rank `2m'+1` (a `g⁻` clashes with `g₁` via `hXpn`)
+    have hk1 : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * m' + 2 ≤ g.rank := by
+      intro g hg hgnp
+      have hge := hg₁min g hg; rw [hm'] at hge
+      rcases Nat.lt_or_ge g.rank (2 * m' + 2) with hlt | hge2
+      · exfalso
+        have hgr : g.rank = 2 * m' + 1 := by omega
+        have hgpos2 : 0 < X.1.1 g := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
+        have hgneg : g.type = .Negative := by
+          cases hgt : g.type with
+          | Positive => exact absurd hgt hgnp
+          | Negative => rfl
+          | NonPolarized =>
+            exfalso
+            have hev := rank_even_of_nonpolarized_mem X.1.2 hgt hgpos2
+            rw [hgr] at hev; exact (Nat.not_even_iff_odd.mpr ⟨m', by ring⟩) hev
+        exact hXpn ⟨g₁, g, by rw [hgr, hm'], hg₁pos, hgneg, hXg₁, hgpos2⟩
+      · exact hge2
+    have hpropa := branchB_case5_aprop_gen X Y hXY ha (2 * m' + 2) hk1
+    have hba := branchB_case3_bprop_gen X Y hXY ha (2 * m' + 1)
+      (fun g hg _ => by have := hg₁min g hg; omega)
+    have hbanchor0 : (Sigma.sigma X.1.1 (2 * m')).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m')).2 :=
+      hba (2 * m') (by omega) (by omega) ⟨m', by ring⟩
+    -- inline single-level alive comparison at `2m'`: `#Xalive = |X|`, `#Yalive ≤ |Y| < |X|`
+    have hYcells : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
+        ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) = Y.1.1.sum (fun _ m => (m : ℚ)) := by
+      have h0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+      have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+          ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+      rw [h0, h1, Function.iterate_one]; exact cells
+    have hXcells : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) = X.1.1.sum (fun _ m => (m : ℚ)) := by
+      have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+      have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+          ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+      rw [h0, h1, Function.iterate_one]; exact cells
+    have hXsym : (Sigma.sigma X.1.1 1).1 = (Sigma.sigma X.1.1 1).2 :=
+      signature_prime_iterate_odd_eq_components X.1.2 (by decide)
+    have hYsym : (Sigma.sigma Y.1.1 1).1 = (Sigma.sigma Y.1.1 1).2 :=
+      signature_prime_iterate_odd_eq_components Y.1.2 (by decide)
+    have hsX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+    have hsY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+    have hrk0 : (X.1.1.rank : ℚ) = (Y.1.1.rank : ℚ) := by rw [X.2, Y.2]
+    have hYltX : Y.1.1.sum (fun _ m => (m : ℚ)) < X.1.1.sum (fun _ m => (m : ℚ)) := by
+      rw [← hYcells, ← hXcells]; linarith [hsX0, hsY0, hrk0, ha, hXsym, hYsym]
+    have hXdrop : (Sigma.sigma X.1.1 (2 * m')).1 + (Sigma.sigma X.1.1 (2 * m')).2 -
+        ((Sigma.sigma X.1.1 (2 * m' + 1)).1 + (Sigma.sigma X.1.1 (2 * m' + 1)).2) =
+        X.1.1.sum (fun _ m => (m : ℚ)) := by
+      have hr0 : (Sigma.sigma X.1.1 (2 * m')).1 + (Sigma.sigma X.1.1 (2 * m')).2 =
+          ((Chromosome.prime^[2 * m'] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+      have hr1 : (Sigma.sigma X.1.1 (2 * m' + 1)).1 + (Sigma.sigma X.1.1 (2 * m' + 1)).2 =
+          ((Chromosome.prime^[2 * m' + 1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+      rw [hr0, hr1, Function.iterate_succ_apply' Chromosome.prime (2 * m') X.1.1, cells,
+        prime_iterate_sum_eq,
+        Finset.filter_true_of_mem (fun g hg => by have := hg₁min g hg; omega), Finsupp.sum]
+    have hYdrop : (Sigma.sigma Y.1.1 (2 * m')).1 + (Sigma.sigma Y.1.1 (2 * m')).2 -
+        ((Sigma.sigma Y.1.1 (2 * m' + 1)).1 + (Sigma.sigma Y.1.1 (2 * m' + 1)).2) ≤
+        Y.1.1.sum (fun _ m => (m : ℚ)) := by
+      have := rank_drop_le Y.1.2 (2 * m'); rw [← hYcells]; exact this
+    have hp3 : 2 * (m' - 1) + 3 = 2 * m' + 1 := by omega
+    have hp2 : 2 * (m' - 1) + 2 = 2 * m' := by omega
+    have hp4 : 2 * (m' - 1) + 4 = 2 * m' + 2 := by omega
+    refine branchB_case3_assembly_type8_double X Y hXY (m' - 1) g₁
+      (by rw [hp3]; exact hm') hg₁pos hmult (by rw [hp2]; exact hbanchor0) ?_ ?_
+    · intro j hje hj1 hj2
+      rw [hp3] at hj1; rw [hp4] at hj2
+      exact hpropa j (by omega) hj2 hje
+    · intro j hjo hj1 hj2
+      rw [hp3] at hj1; rw [hp3] at hj2
+      have hjeq : j = 2 * m' + 1 := by omega
+      have heven1 : Even (j - 1) := by rcases hjo with ⟨t, rfl⟩; exact ⟨t, by omega⟩
+      have hj1eq : j - 1 = 2 * m' := by omega
+      have ha1 : (Sigma.sigma X.1.1 (j - 1)).1 + 1 ≤ (Sigma.sigma Y.1.1 (j - 1)).1 := by
+        rw [hj1eq]; exact hpropa (2 * m') (by omega) (by omega) ⟨m', by ring⟩
+      have hb1 : (Sigma.sigma X.1.1 (j - 1)).2 + 1 ≤ (Sigma.sigma Y.1.1 (j - 1)).2 := by
+        rw [hj1eq]; exact hbanchor0
+      have hal1 : ((Sigma.sigma Y.1.1 (j - 1)).1 + (Sigma.sigma Y.1.1 (j - 1)).2) -
+          ((Sigma.sigma Y.1.1 j).1 + (Sigma.sigma Y.1.1 j).2) ≤
+          ((Sigma.sigma X.1.1 (j - 1)).1 + (Sigma.sigma X.1.1 (j - 1)).2) -
+          ((Sigma.sigma X.1.1 j).1 + (Sigma.sigma X.1.1 j).2) := by
+        rw [hj1eq, hjeq]; linarith [hXdrop, hYdrop, hYltX]
+      exact odd_interior_absorb_neighbor X.1.2 Y.1.2 hjo ha1 hb1 hal1
   · -- second gene `g₂` of minimal rank
     obtain ⟨g0, hg0mem, hg0np⟩ := branchB_case5_exists_negNP X Y hXY ha
     have hg0ne : g0 ≠ g₁ := fun h => hg0np (h ▸ hg₁pos)
@@ -495,8 +672,82 @@ lemma branchB_case3 (m : ℕ)
       exact branchB_case3_assembly_type7 X Y hXY hsigeq m' n' hmn g₁ g₂ hm1 hg₁pos hn' hch
         hXg₁ hXg₂ hne hprop hYwin
     | Positive =>
-      -- `g₂ = g⁺(k)`: type8 `g⁺(m) + g⁺(k) → g⁺(m-2) + g⁺(k+2)`.  Needs deep-interior
-      -- `(1,1)` absorption (odd-level integer gap).
-      sorry
+      -- `g₂ = g⁺(k)`: type8 `g⁺(m) + g⁺(k) → g⁺(m-2) + g⁺(k+2)`.
+      have hodd : Odd g₂.rank := rank_odd_of_polarized X.1.2 (by rw [hch]; decide) hXg₂'
+      obtain ⟨n', hn'⟩ : ∃ n', g₂.rank = 2 * n' + 1 := by obtain ⟨t, ht⟩ := hodd; exact ⟨t, by omega⟩
+      have hmltn : m' < n' := by
+        have hge := hg₁min g₂ hg₂supp
+        have hne' : g₂.rank ≠ g₁.rank := fun h => hne (Gene.ext h.symm (by rw [hg₁pos, hch]))
+        omega
+      have hg₁mult : X.1.1 g₁ = 1 := by have := not_le.mp hmult; omega
+      -- no non-positive gene at rank `≤ 2n'+1` (a `g⁻(2n'+1)` would clash with `g₂` via `hXpn`)
+      have hk1 : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * n' + 2 ≤ g.rank := by
+        intro g hg hgnp
+        have hge := hkprop g hg hgnp; rw [hn'] at hge
+        rcases Nat.lt_or_ge g.rank (2 * n' + 2) with hlt | hge2
+        · exfalso
+          have hgr : g.rank = 2 * n' + 1 := by omega
+          have hgpos2 : 0 < X.1.1 g := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
+          have hgneg : g.type = .Negative := by
+            cases hgt : g.type with
+            | Positive => exact absurd hgt hgnp
+            | Negative => rfl
+            | NonPolarized =>
+              exfalso
+              have hev := rank_even_of_nonpolarized_mem X.1.2 hgt hgpos2
+              rw [hgr] at hev; exact (Nat.not_even_iff_odd.mpr ⟨n', by ring⟩) hev
+          exact hXpn ⟨g₂, g, by rw [hgr, hn'], hch, hgneg, hXg₂', hgpos2⟩
+        · exact hge2
+      -- propagations
+      have hpropa := branchB_case5_aprop_gen X Y hXY ha (2 * n' + 2) hk1
+      have htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1 : Chromosome).support, 2 * n' + 1 ≤ g.rank := by
+        intro g hg
+        have hgne : g ≠ g₁ := by
+          rintro rfl
+          rw [Finsupp.mem_support_iff, Finsupp.tsub_apply, Finsupp.single_apply, if_pos rfl,
+            hg₁mult] at hg
+          simp at hg
+        have hgX : g ∈ X.1.1.support := by
+          rw [Finsupp.mem_support_iff] at hg ⊢
+          rwa [Finsupp.tsub_apply, Finsupp.single_apply, if_neg (Ne.symm hgne), Nat.sub_zero] at hg
+        have := hk2 g hgX hgne; rwa [hn'] at this
+      have hba := branchB_case3_bprop_gen X Y hXY ha (2 * m' + 1)
+        (fun g hg _ => by have := hg₁min g hg; omega)
+      have hbanchor0 : (Sigma.sigma X.1.1 (2 * m')).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m')).2 :=
+        hba (2 * m') (by omega) (by omega) ⟨m', by ring⟩
+      have hdeep := branchB_case3_deep_bprop X Y hXY ha m' g₁ hm1 hg₁mult (2 * n' + 1) htail hbanchor0
+      have hhal := branchB_case3_halive X Y hXY ha m' g₁ hm1 hg₁mult (2 * n' + 1) htail
+      -- index bridge: p = m'-1, q = n'-1
+      have hp3 : 2 * (m' - 1) + 3 = 2 * m' + 1 := by omega
+      have hp2 : 2 * (m' - 1) + 2 = 2 * m' := by omega
+      have hq3 : 2 * (n' - 1) + 3 = 2 * n' + 1 := by omega
+      have hq4 : 2 * (n' - 1) + 4 = 2 * n' + 2 := by omega
+      refine branchB_case3_assembly_type8 X Y hXY (m' - 1) (n' - 1) (by omega) g₁ g₂
+        (by rw [hp3]; exact hm1) hg₁pos (by rw [hq3]; exact hn') hch hXg₁ hXg₂ hne
+        (by rw [hp2]; exact hbanchor0) ?_ ?_ ?_
+      · -- haeven: even j ∈ [2p+3, 2q+4]
+        intro j hje hj1 hj2
+        rw [hp3] at hj1; rw [hq4] at hj2
+        exact hpropa j (by omega) hj2 hje
+      · -- hbeven: even j ∈ [2p+3, 2q+3]
+        intro j hje hj1 hj2
+        rw [hp3] at hj1; rw [hq3] at hj2
+        obtain ⟨t, ht⟩ : ∃ t, j = 2 * m' + 2 * t := by obtain ⟨r, hr⟩ := hje; exact ⟨r - m', by omega⟩
+        rw [ht]; exact hdeep t (by omega)
+      · -- hoddabsorb: odd j ∈ [2p+3, 2q+3]
+        intro j hjo hj1 hj2
+        rw [hp3] at hj1; rw [hq3] at hj2
+        have hjm1 : 1 ≤ j := by omega
+        have heven1 : Even (j - 1) := by rcases hjo with ⟨t, rfl⟩; exact ⟨t, by omega⟩
+        have ha1 := hpropa (j - 1) (by omega) (by omega) heven1
+        have hb1 : ∀ t, j - 1 = 2 * m' + 2 * t → (Sigma.sigma X.1.1 (j - 1)).2 + 1 ≤
+            (Sigma.sigma Y.1.1 (j - 1)).2 := fun t ht => by rw [ht]; exact hdeep t (by omega)
+        obtain ⟨t, ht⟩ : ∃ t, j - 1 = 2 * m' + 2 * t := by
+          obtain ⟨r, hr⟩ := heven1; exact ⟨r - m', by omega⟩
+        have hbev1 := hb1 t ht
+        have hal1 := hhal (j - 1) (by omega)
+        have hjeq : j - 1 + 1 = j := by omega
+        rw [hjeq] at hal1
+        exact odd_interior_absorb_neighbor X.1.2 Y.1.2 hjo ha1 hbev1 hal1
 
 end MixLambdaPi
