@@ -26,6 +26,29 @@ open Chromosome
 
 namespace MixLambdaPi
 
+/-- **Odd-interior `(1,1)` absorption (parity-free).**  At odd `j`, `Mix (Lambda, Pi)` has
+`a = b`, so `rank = 2a`.  Given the even-neighbor gaps `a_X(j-1)+1 ≤ a_Y(j-1)` and
+`b_X(j-1)+1 ≤ b_Y(j-1)` (so the rank gap at `j-1` is `≥ 2`) and the alive-count comparison
+`X`'s rank-drop `≥ Y`'s rank-drop at `j-1`, the rank gap at `j` is also `≥ 2`, which **halves**
+to `a_Y(j) - a_X(j) ≥ 1` (no parity/integrality needed).  This is the structural core of §16
+Case 3 type8 — it shows the dreaded "rank parity" is unnecessary. -/
+lemma odd_interior_absorb_neighbor {X Y : Chromosome}
+    (hX : X ∈ Mix (Lambda, Pi)) (hY : Y ∈ Mix (Lambda, Pi)) {j : ℕ} (hodd : Odd j)
+    (haeven : (Sigma.sigma X (j - 1)).1 + 1 ≤ (Sigma.sigma Y (j - 1)).1)
+    (hbeven : (Sigma.sigma X (j - 1)).2 + 1 ≤ (Sigma.sigma Y (j - 1)).2)
+    (halive : ((Sigma.sigma Y (j - 1)).1 + (Sigma.sigma Y (j - 1)).2) -
+        ((Sigma.sigma Y j).1 + (Sigma.sigma Y j).2) ≤
+        ((Sigma.sigma X (j - 1)).1 + (Sigma.sigma X (j - 1)).2) -
+        ((Sigma.sigma X j).1 + (Sigma.sigma X j).2)) :
+    ((1 : ℚ), (1 : ℚ)) + Sigma.sigma X j ≤ Sigma.sigma Y j := by
+  have hXsym : (Sigma.sigma X j).1 = (Sigma.sigma X j).2 :=
+    signature_prime_iterate_odd_eq_components hX hodd
+  have hYsym : (Sigma.sigma Y j).1 = (Sigma.sigma Y j).2 :=
+    signature_prime_iterate_odd_eq_components hY hodd
+  constructor
+  · simp only [Prod.fst_add]; linarith [haeven, hbeven, halive, hXsym, hYsym]
+  · simp only [Prod.snd_add]; linarith [haeven, hbeven, halive, hXsym, hYsym]
+
 /-- **Odd-interior `(1,1)` absorption.**  At an odd level `r`, `Mix (Lambda, Pi)` has
 `a = b`, so `2·a = rank(prime^[r] ·)`.  If `σX(r) ≤ σY(r)` strictly (componentwise `≤`
 and `≠`) and the two ranks have the **same parity**, then the gap is a full `(1,1)`
