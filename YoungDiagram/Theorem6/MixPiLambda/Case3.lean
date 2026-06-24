@@ -216,7 +216,7 @@ private lemma prime_iterate_no_gene_of_rank_mix {Y : Chromosome} {r : ℕ}
         intro heq
         exact hrk (congrArg Gene.rank heq)
 
-private lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
+lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
     (hY_no_gene : ∀ g : Gene, g.rank = r → Y g = 0)
     (hYr_minus_one : Chromosome.prime^[r - 1] Y ≠ 0) :
     Chromosome.prime^[r] Y ≠ 0 := by
@@ -256,7 +256,7 @@ private lemma one_le_signature_fst_of_contains_positive_mix {X : Chromosome}
         rw [iterate_map_add, map_add]
         exact le_add_of_nonneg_right (signature_nonneg _).1
 
-private lemma X_eq_X7_add_rest_mix {X : Chromosome} {gpos gneg : Gene}
+lemma X_eq_X7_add_rest_mix {X : Chromosome} {gpos gneg : Gene}
     (hXgpos : 0 < X gpos) (hXgneg : 0 < X gneg) (hne : gpos ≠ gneg) :
     Finsupp.single gpos 1 + Finsupp.single gneg 1 +
       (X - Finsupp.single gpos 1 - Finsupp.single gneg 1) = X := by
@@ -291,7 +291,7 @@ private lemma two_signature_fst_isNat_of_even_iterate
 /-- Sigma columns at level r (r even) have equal components for elements of
 `Mix (Pi, Lambda)`. Combined with strict inequality, the difference is at least 1/2 in
 each component. -/
-private lemma half_le_sigma_diff_at_r {X Y : Chromosome}
+lemma half_le_sigma_diff_at_r {X Y : Chromosome}
     (hX : X ∈ Mix (Pi, Lambda)) (hY : Y ∈ Mix (Pi, Lambda))
     {r : ℕ} (heven : Even r)
     (hle : signature (Chromosome.prime^[r] X) ≤ signature (Chromosome.prime^[r] Y))
