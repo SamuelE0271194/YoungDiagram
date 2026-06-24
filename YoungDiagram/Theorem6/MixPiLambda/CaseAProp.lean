@@ -270,10 +270,11 @@ lemma branchA_R2 {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).2 := rfl
       rw [h1, h2] at hint; linarith
 
-/-- **Propagation core** of §16 Branch A Case 1 for `Mix (Pi, Lambda)` (odd-anchored). -/
+/-- **Propagation core** of §16 Branch A Case 1 for `Mix (Pi, Lambda)` (odd-anchored).
+Takes the self-dual total-rank gap `hgap_nat`. -/
 lemma exists_mutation_le_caseA_branchA_case1_propagate {N : ℕ}
     (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (hgap_nat : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
     (m' n' : ℕ) (hmn : m' ≤ n')
     (gm gk : Gene)
     (hgm_rank : gm.rank = 2 * m' + 1) (hgm_np : gm.type = .NonPolarized)
@@ -288,7 +289,7 @@ lemma exists_mutation_le_caseA_branchA_case1_propagate {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1) ∧
     (∀ j, 2 * m' + 1 ≤ j → j < 2 * n' + 1 → Chromosome.prime^[j] Y.1.1 ≠ 0) := by
   refine ⟨?_, ?_⟩
-  · exact branchA_case1_hprop_odd X Y hXY ha m' n' hmn gm gk hgm_rank hgm_np hgk_rank hgk_np
+  · exact branchA_case1_hprop_odd X Y hgap_nat m' n' hmn gm gk hgm_rank hgm_np hgk_rank hgk_np
       hXgm hXgk hne hmin h2nd ha_m
   · intro j _ hj2
     have hXgk0 : 0 < X.1.1 gk :=
@@ -418,8 +419,8 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
 asymmetry of `Mix (Pi, Lambda)` is sidestepped because `branchA_hprop_odd_gen` now takes
 the *total* rank gap `r_1 < s_1` (self-dual under negation), supplied by `rank_gap_one`. -/
 lemma branchA_case2_bprop {N : ℕ}
-    (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (X Y : nMixPiLambda N)
+    (hgap_nat : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
     (m' n' : ℕ) (hmn : m' ≤ n')
     (gm : Gene) (hgm_rank : gm.rank = 2 * m' + 1) (hgm_np : gm.type = .NonPolarized)
     (hgm1 : X.1.1 gm = 1)
@@ -437,7 +438,7 @@ lemma branchA_case2_bprop {N : ℕ}
     have e2 : Chromosome.prime^[1] Yd.1.1 = - (Chromosome.prime^[1] Y.1.1) := by
       change Chromosome.prime^[1] (- Y.1.1) = _; rw [prime_iterate_neg]
     rw [e1, e2, rank_neg, rank_neg]
-    exact rank_gap_one X Y hXY ha
+    exact hgap_nat
   have hgm1_d : Xd.1.1 gm = 1 := by
     change (- X.1.1) gm = 1; rw [Chromosome.neg_apply, hg₁neg]; exact hgm1
   have hmin_d : ∀ g ∈ Xd.1.1.support, 2 * m' + 1 ≤ g.rank := by
@@ -505,7 +506,7 @@ lemma exists_mutation_le_caseA_branchA_case2_assembly {N : ℕ}
     (hne : gm ≠ gk)
     (hprop_odd : ∀ j, 2 * m' + 1 ≤ j → j ≤ 2 * n' + 1 → Odd j →
         (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2)
-    (hYwin : ∀ j, 2 * m' + 1 ≤ j → j ≤ 2 * n' + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
+    (hYwin : ∀ j, 2 * m' + 1 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
   push_neg at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
@@ -567,7 +568,7 @@ lemma exists_mutation_le_caseA_branchA_case2_assembly {N : ℕ}
         have hne' : signature (Chromosome.prime^[j] X.1.1) ≠
             signature (Chromosome.prime^[j] Y.1.1) := by
           intro h_eq
-          exact hsigeq j (by omega) (hYwin j (by omega) (by omega))
+          exact hsigeq j (by omega) (hYwin j (by omega) (by obtain ⟨t, ht⟩ := heven_j; omega))
             (by simpa [Sigma.sigma] using h_eq)
         rw [add_comm]
         exact half_le_sigma_diff_at_r X.1.2 Y.1.2 heven_j hXYj hne'

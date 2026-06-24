@@ -330,10 +330,12 @@ lemma branchA_hprop_odd_gen {N : ℕ}
   have : (zX : ℚ) + 1 ≤ (zY : ℚ) := by exact_mod_cast Int.add_one_le_iff.mpr hlt'
   linarith
 
-/-- §16 drop-chain telescoping for Branch A Case 1 (`gk` nonpolarized of rank `2n'+1`). -/
+/-- §16 drop-chain telescoping for Branch A Case 1 (`gk` nonpolarized of rank `2n'+1`).
+Takes the self-dual total-rank gap `hgap_nat`, so the same lemma drives the direct
+`a`-propagation and (via sign-duality) the `b`-version. -/
 lemma branchA_case1_hprop_odd {N : ℕ}
-    (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (X Y : nMixPiLambda N)
+    (hgap_nat : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
     (m' n' : ℕ) (hmn : m' ≤ n')
     (gm gk : Gene)
     (hgm_rank : gm.rank = 2 * m' + 1) (hgm_np : gm.type = .NonPolarized)
@@ -357,7 +359,7 @@ lemma branchA_case1_hprop_odd {N : ℕ}
     rw [hgm_rank] at hge
     have hnm : n' = m' := by omega
     exact hne (Gene.ext (by rw [hgm_rank, hgk_rank, hnm]) (by rw [hgm_np, hgk_np]))
-  exact branchA_hprop_odd_gen X Y (rank_gap_one X Y hXY ha) m' n' hmn gm hgm_rank hgm_np hgm1
+  exact branchA_hprop_odd_gen X Y hgap_nat m' n' hmn gm hgm_rank hgm_np hgm1
     hmin h2nd ha_m
 
 end MixPiLambda

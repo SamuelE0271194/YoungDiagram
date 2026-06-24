@@ -12,7 +12,7 @@ has even rank.
 
 (Mirrors `MixLambdaPi.rank_odd_of_polarized`, with parity reversed because polarized
 genes live in the even part for `Mix (Pi, Lambda)`.) -/
-private lemma rank_even_of_polarized {X : Chromosome} (hX : X ∈ Mix (Pi, Lambda))
+lemma rank_even_of_polarized {X : Chromosome} (hX : X ∈ Mix (Pi, Lambda))
     {g : Gene} (hpol : g.type ≠ .NonPolarized) (hgX : 0 < X g) :
     Even g.rank := by
   by_contra hnot
@@ -231,7 +231,7 @@ lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
 
 /-- For `X ∈ Mix (Pi, Lambda)`, if `X` contains a positive gene of rank `r`,
 then `signature (prime^[r-1] X) .1 ≥ 1`. -/
-private lemma one_le_signature_fst_of_contains_positive_mix {X : Chromosome}
+lemma one_le_signature_fst_of_contains_positive_mix {X : Chromosome}
     (hX : X ∈ Mix (Pi, Lambda)) {gpos : Gene}
     (hgpos : gpos.type = .Positive) (hXgpos : 0 < X gpos) :
     1 ≤ (signature (Chromosome.prime^[gpos.rank - 1] X)).1 := by
