@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.MixPiLambda.CaseAProp
+import YoungDiagram.Theorem6.MixPiLambda.CaseA2Prop
 
 /-!
 # §16 Case A Branch A: Case 2 bottom-chain + boundary for `Mix (Pi, Lambda)`.
@@ -465,7 +466,102 @@ lemma branchA_case2_g3 (m : ℕ)
     (hg₂min : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, g₂.rank ≤ g.rank)
     (hb1 : (Sigma.sigma X.1.1 1).2 = (Sigma.sigma Y.1.1 1).2) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  clear hb1 hXg₁
+  -- Extract the minimal-rank negative/nonpolarized gene `g₃` of `X - g₁ - g₂`.
+  set Xr : Chromosome := X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₂ 1 with hXr
+  have hSne : (Xr.support.filter (fun g => g.type ≠ .Positive)).Nonempty := by
+    obtain ⟨g₃, hg₃mem, hg₃np⟩ :=
+      branchA_g3_exists X Y hXY ha g₁ g₂ hg₁NP hg₁rank hmult1 hg₁min hg₂pos
+    exact ⟨g₃, Finset.mem_filter.mpr ⟨hg₃mem, hg₃np⟩⟩
+  obtain ⟨g₃, hg₃S, hg₃min_S⟩ :=
+    Finset.exists_min_image (Xr.support.filter (fun g => g.type ≠ .Positive)) Gene.rank hSne
+  have hg₃mem : g₃ ∈ Xr.support := (Finset.mem_filter.mp hg₃S).1
+  have hg₃nepos : g₃.type ≠ .Positive := (Finset.mem_filter.mp hg₃S).2
+  have hXrg₃ : 0 < Xr g₃ := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg₃mem)
+  have hg₃ne₂ : g₃ ≠ g₂ := fun h => hg₃nepos (h ▸ hg₂pos)
+  have hne : g₂ ≠ g₃ := fun h => hg₃nepos (h ▸ hg₂pos)
+  have hg₃ne₁ : g₃ ≠ g₁ := by
+    rintro rfl
+    apply absurd hXrg₃
+    rw [hXr, Finsupp.tsub_apply, Finsupp.tsub_apply, Finsupp.single_apply, if_pos rfl, hmult1]
+    simp
+  have hXrg₃eq : Xr g₃ = X.1.1 g₃ := by
+    simp only [hXr, Finsupp.tsub_apply, Finsupp.single_apply]
+    rw [if_neg (Ne.symm hg₃ne₁), if_neg (Ne.symm hg₃ne₂)]
+    omega
+  have hXg₃pos : 0 < X.1.1 g₃ := hXrg₃eq ▸ hXrg₃
+  have hXg₂pos : 0 < X.1.1 g₂ :=
+    lt_of_lt_of_le hXg₂ (by rw [Finsupp.tsub_apply]; exact Nat.sub_le _ _)
+  have hXg₃sub : 0 < (X.1.1 - Finsupp.single g₂ 1 : Chromosome) g₃ := by
+    rw [Finsupp.tsub_apply, Finsupp.single_apply, if_neg (Ne.symm hg₃ne₂), Nat.sub_zero]
+    exact hXg₃pos
+  -- `g₃` lies above `g₂`: `2n'+3 ≤ rank g₃` (a `g⁻(2n'+2)` would clash with `g₂` via `hXpn`).
+  have hg₃X1 : g₃ ∈ (X.1.1 - Finsupp.single g₁ 1).support := by
+    rw [Finsupp.mem_support_iff, Finsupp.tsub_apply, Finsupp.single_apply,
+      if_neg (Ne.symm hg₃ne₁), Nat.sub_zero]
+    omega
+  have hge : 2 * n' + 2 ≤ g₃.rank := hg₂rank ▸ hg₂min g₃ hg₃X1
+  have hgt : 2 * n' + 3 ≤ g₃.rank := by
+    rcases lt_or_ge (2 * n' + 2) g₃.rank with h | h
+    · omega
+    · exfalso
+      have heq : g₃.rank = 2 * n' + 2 := le_antisymm h hge
+      have hg₃neg : g₃.type = .Negative := by
+        cases ht : g₃.type with
+        | Positive => exact absurd ht hg₃nepos
+        | Negative => rfl
+        | NonPolarized =>
+          exfalso
+          have hodd := rank_odd_of_nonpolarized_mem X.1.2 ht hXg₃pos
+          rw [heq] at hodd
+          exact (Nat.not_odd_iff_even.mpr ⟨n' + 1, by ring⟩) hodd
+      exact hXpn ⟨g₂, g₃, by rw [hg₂rank, heq], hg₂pos, hg₃neg, hXg₂pos, hXg₃pos⟩
+  -- Parity of `X`'s polarized genes, and the survival threshold for the propagation.
+  have hpar : ∀ g ∈ X.1.1.support,
+      (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank) := by
+    intro g hg
+    have hgpos : 0 < X.1.1 g := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg)
+    exact ⟨fun hp => rank_even_of_polarized X.1.2 (by rw [hp]; decide) hgpos,
+           fun hn => rank_even_of_polarized X.1.2 (by rw [hn]; decide) hgpos⟩
+  have hsurv : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → (g.rank ≤ 1 ∨ g₃.rank ≤ g.rank) := by
+    intro g hg hgnp
+    by_cases hgg₁ : g = g₁
+    · left; rw [hgg₁]; omega
+    · right
+      have hgg₂ : g ≠ g₂ := fun h => hgnp (h ▸ hg₂pos)
+      have hgXr : g ∈ Xr.support := by
+        rw [Finsupp.mem_support_iff, hXr, Finsupp.tsub_apply, Finsupp.tsub_apply,
+          Finsupp.single_apply, if_neg (Ne.symm hgg₁), Finsupp.single_apply,
+          if_neg (Ne.symm hgg₂), Nat.sub_zero, Nat.sub_zero]
+        exact Finsupp.mem_support_iff.mp hg
+      exact hg₃min_S g (Finset.mem_filter.mpr ⟨hgXr, hgnp⟩)
+  have hprop := branchA_g3_aprop X Y hXY ha g₁ hg₁NP hg₁rank hmult1 hg₁min hpar g₃.rank hsurv
+  -- Dispatch on the parity of `t = rank g₃`.
+  cases hg₃type : g₃.type with
+  | Positive => exact absurd hg₃type hg₃nepos
+  | NonPolarized =>
+    have hodd : Odd g₃.rank := rank_odd_of_nonpolarized_mem X.1.2 hg₃type hXg₃pos
+    obtain ⟨nn, hnn⟩ : ∃ nn, g₃.rank = 2 * nn + 3 := by
+      rcases hodd with ⟨k, hk⟩; exact ⟨k - 1, by omega⟩
+    have hmn : n' ≤ nn := by omega
+    exact branchA_g3_assembly_type6 X Y hXY hsigeq n' nn hmn g₂ g₃ hg₂rank hg₂pos hnn hg₃type
+      hXg₂pos hXg₃sub hne
+      (fun j _ hj hoj => hprop j hoj (by rw [hnn]; exact hj))
+      (fun j _ hj => Ywin_below_pl X Y hXY g₃ hXg₃pos (by rw [hnn]; omega))
+  | Negative =>
+    have heven : Even g₃.rank :=
+      rank_even_of_polarized X.1.2 (by rw [hg₃type]; decide) hXg₃pos
+    obtain ⟨nn, hnn⟩ : ∃ nn, g₃.rank = 2 * nn + 2 := by
+      rcases heven with ⟨k, hk⟩; exact ⟨k - 1, by omega⟩
+    have hmn : n' ≤ nn := by omega
+    exact branchA_g3_assembly_type7 X Y hXY hsigeq n' nn hmn g₂ g₃ hg₂rank hg₂pos hnn hg₃type
+      hXg₂pos hXg₃sub hne
+      (fun j _ hj hoj => hprop j hoj (by rw [hnn]; omega))
+      (fun j _ hj => by
+        rcases lt_or_eq_of_le hj with hlt | heq
+        · exact Ywin_below_pl X Y hXY g₃ hXg₃pos (by rw [hnn]; omega)
+        · subst heq
+          exact branchA_g3_Ynonzero_top X Y hXY hcommon nn g₃ hnn hg₃type hXg₃pos)
 
 /-- Branch A Case 2: the second gene `g₂` is polarized (§16 Case 2).  Dispatches on
 `g₂`'s charge (`g⁺` direct / `g⁻` sign-dual) and, at `m'=0` (`m=1`), on `b₁` vs `d₁`. -/

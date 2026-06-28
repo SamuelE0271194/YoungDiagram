@@ -287,7 +287,7 @@ lemma branchA_g3_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (hpar : ∀ g ∈ X.1.1.support,
       (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank))
     (T : ℕ) (hsurv : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → (g.rank ≤ 1 ∨ T ≤ g.rank)) :
-    ∀ j, Odd j → j < T → (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
+    ∀ j, Odd j → j ≤ T → (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
   -- level-0 a-components agree
   have ha0 : (Sigma.sigma X.1.1 0).1 = (Sigma.sigma Y.1.1 0).1 := by
     have hXr : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by

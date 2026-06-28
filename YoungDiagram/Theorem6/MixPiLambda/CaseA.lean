@@ -9,8 +9,8 @@ are swapped (nonpolarized genes sit at odd rank), and level `1` is the asymmetri
 (integer) level, so the global Case A hypothesis `a_X(1) < a_Y(1)` already fixes the
 deficient charge.
 
-* **Branch A** (`g₁` nonpolarized): paper Cases 1–2 — fully wired in `CaseA2.lean`
-  (only the §16 `m=1`/`b₁=d₁` `g₃` leaf `branchA_case2_g3` remains a `sorry`);
+* **Branch A** (`g₁` nonpolarized): paper Cases 1–2 — fully proved in `CaseA2.lean`
+  (including the §16 `m=1`/`b₁=d₁` `g₃` leaf `branchA_case2_g3`, via `CaseA2Prop.lean`);
 * **Branch B** (`g₁` polarized): paper Cases 3–5 — current target (`g₁` polarized sits at
   even rank for this variety, so the §16 sub-case structure differs from `Mix (Lambda, Pi)`:
   Case 4 (`m=2`) is active and Case 5 (`m=1`) is vacuous).
