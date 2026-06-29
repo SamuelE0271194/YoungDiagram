@@ -347,4 +347,83 @@ lemma branchA_g3_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
   have : (zX : ℚ) + 1 ≤ zY := by exact_mod_cast (by omega : zX + 1 ≤ zY)
   linarith
 
+/-- **§16 Case 4 gap = 0**: when `X` has no rank-`1` gene, every gene (rank ≥ 2) has
+`a`-drop`(0,1)` = `b`-drop`(1,2)`, so `a_X(0) - a_X(1) - (b_X(1) - b_X(2)) = 0`. -/
+lemma xgap_zero_pl {X : Chromosome}
+    (hmin2 : ∀ g ∈ X.support, 2 ≤ g.rank)
+    (hpar : ∀ g ∈ X.support,
+      (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank)) :
+    (signature X).1 - (signature (Chromosome.prime^[1] X)).1 -
+      ((signature (Chromosome.prime^[1] X)).2 - (signature (Chromosome.prime^[2] X)).2) =
+      0 := by
+  have h0 : signature X = signature (Chromosome.prime^[0] X) := rfl
+  rw [h0, sig_iterate_fst_sum X 0, sig_iterate_fst_sum X 1,
+    sig_iterate_snd_sum X 1, sig_iterate_snd_sum X 2]
+  simp only [Finsupp.sum]
+  rw [← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib]
+  apply Finset.sum_eq_zero
+  intro g hg
+  have hrank2 : 2 ≤ g.rank := hmin2 g hg
+  have hgp := hpar g hg
+  have hxs := pergene_xshift_pl g.rank hrank2 g.type hgp.1 hgp.2
+  simp only [Nat.sub_zero]
+  rw [← smul_sub, ← smul_sub, ← smul_sub, hxs, sub_self, smul_zero]
+
+/-- **§16 Case 4 a-propagation** (`Mix (Pi, Lambda)`).  With `X` having minimal gene rank
+`≥ 2` (no rank-`1` gene) and every nonpositive gene of rank `≥ k`, the strict integer start
+`a_X(1) < a_Y(1)` propagates to `a_X(j) + 1 ≤ a_Y(j)` for every odd `j ≤ k`.  Single-step
+bound (mirror of LP `branchB_case5_aprop_gen`): X's a-drop `a_X(j-1)-a_X(j) = b_X(1)-b_X(2)
+= a_X(0)-a_X(1)` (gap = 0) strictly exceeds Y's a-drop (antitone, bounded by `a_Y(0)-a_Y(1)`). -/
+lemma branchB_case4_aprop_gen {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (hmin2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank)
+    (hpar : ∀ g ∈ X.1.1.support,
+      (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank))
+    (k : ℕ) (hk : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → k ≤ g.rank) :
+    ∀ j, 1 ≤ j → j ≤ k → Odd j →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
+  have ha0 : (Sigma.sigma X.1.1 0).1 = (Sigma.sigma Y.1.1 0).1 := by
+    have hXr : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+    have hYr : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+    have h1 : (Sigma.sigma X.1.1 0).1 ≤ (Sigma.sigma Y.1.1 0).1 :=
+      (le_iff_dominates.mp hXY.le 0).1
+    have h2 : (Sigma.sigma X.1.1 0).2 ≤ (Sigma.sigma Y.1.1 0).2 :=
+      (le_iff_dominates.mp hXY.le 0).2
+    linarith
+  have hgap0 : (Sigma.sigma X.1.1 0).1 - (Sigma.sigma X.1.1 1).1 -
+      ((Sigma.sigma X.1.1 1).2 - (Sigma.sigma X.1.1 2).2) = 0 := xgap_zero_pl hmin2 hpar
+  intro j hj1 hjk hoj
+  by_cases hj1eq : j = 1
+  · subst hj1eq
+    obtain ⟨zX, hzX⟩ := sig_fst_isInt_odd X.1.2 (by decide : Odd 1)
+    obtain ⟨zY, hzY⟩ := sig_fst_isInt_odd Y.1.2 (by decide : Odd 1)
+    rw [hzX, hzY] at ha ⊢
+    have hz : zX < zY := by exact_mod_cast ha
+    have : (zX : ℚ) + 1 ≤ zY := by exact_mod_cast (by omega : zX + 1 ≤ zY)
+    linarith
+  · have hj3 : 3 ≤ j := by rcases hoj with ⟨r, rfl⟩; omega
+    have hjm1_even : Even (j - 1) := by rcases hoj with ⟨r, rfl⟩; exact ⟨r, by omega⟩
+    have hsurv' : ∀ g ∈ X.1.1.support, g.type ≠ .Positive →
+        (g.rank ≤ 1 ∨ (j - 1) + 1 ≤ g.rank) :=
+      fun g hg hgnp => Or.inr (by have := hk g hg hgnp; omega)
+    have hxd := xdrop_eq_pl hjm1_even (by omega) hpar hsurv'
+    rw [show (j - 1) + 1 = j from by omega] at hxd
+    have hxd' : (Sigma.sigma X.1.1 (j - 1)).1 - (Sigma.sigma X.1.1 j).1 =
+        (Sigma.sigma X.1.1 1).2 - (Sigma.sigma X.1.1 2).2 := hxd
+    obtain ⟨t, ht⟩ : ∃ t, j - 1 = 2 * t := by rcases hjm1_even with ⟨r, hr⟩; exact ⟨r, by omega⟩
+    have hYanti := adrop_even_le Y.1.2 t
+    rw [show 2 * t = j - 1 from ht.symm, show j - 1 + 1 = j from by omega] at hYanti
+    have hD : (Sigma.sigma X.1.1 (j - 1)).1 ≤ (Sigma.sigma Y.1.1 (j - 1)).1 :=
+      (le_iff_dominates.mp hXY.le (j - 1)).1
+    have hlt : (Sigma.sigma X.1.1 j).1 < (Sigma.sigma Y.1.1 j).1 := by
+      linarith [ha0, hgap0, hYanti, hxd', hD, ha]
+    obtain ⟨zX, hzX⟩ := sig_fst_isInt_odd X.1.2 hoj
+    obtain ⟨zY, hzY⟩ := sig_fst_isInt_odd Y.1.2 hoj
+    rw [hzX, hzY] at hlt ⊢
+    have hz : zX < zY := by exact_mod_cast hlt
+    have : (zX : ℚ) + 1 ≤ zY := by exact_mod_cast (by omega : zX + 1 ≤ zY)
+    linarith
+
 end MixPiLambda

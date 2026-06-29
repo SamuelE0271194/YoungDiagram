@@ -79,7 +79,7 @@ contains only even-rank genes and the odd part is `Lambda`).
 
 (Mirrors `MixLambdaPi.signature_prime_iterate_odd_eq_components`; the parity is reversed
 because for `Mix (Pi, Lambda)` the polarized rank is even rather than odd.) -/
-private lemma signature_prime_iterate_even_eq_components
+lemma signature_prime_iterate_even_eq_components
     {X : Chromosome} (hX : X ∈ Mix (Pi, Lambda)) {j : ℕ} (hj : Even j) :
     (signature (Chromosome.prime^[j] X)).1 = (signature (Chromosome.prime^[j] X)).2 := by
   have hmem : Chromosome.prime^[j] X ∈ Mix (Pi, Lambda) := by
