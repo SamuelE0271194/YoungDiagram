@@ -41,7 +41,7 @@ lemma mutation_type17_ne : type17X ≠ type17Y := by
   split_ifs at h <;> omega
 
 omit h_le in
-private lemma mutation_type17_sig_eq_aux (p d : ℕ) :
+lemma mutation_type17_sig_eq_aux (p d : ℕ) :
     (Gene.ofRank (2 * p + 3 + d) ε).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 3 + d) (- ε)).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 3 + d) (- ε)).signature =

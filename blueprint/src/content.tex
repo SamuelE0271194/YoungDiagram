@@ -890,6 +890,132 @@ sign-dual ``Case B''.
   split already fixes the charge).
 \end{remark}
 
+\section{The \S17 case for the mixed varieties (labels 3, 4)}
+
+This note records the proof blueprint for the two remaining mixed varieties
+$\mathrm{Mix}(2\Lambda,\Pi)$ and $\mathrm{Mix}(\Pi,2\Lambda)$, corresponding to
+Lean files
+\texttt{YoungDiagram/Theorem6/Mix2LambdaPi/Case34.lean} and
+\texttt{YoungDiagram/Theorem6/MixPi2Lambda/Case34.lean}.  The paper treats both
+labels simultaneously; the Lean development currently proves the label-3
+direction first and then mirrors it to label 4.
+
+\begin{remark}[Reduced \S17 hypotheses]
+  After removing common genes and applying the lifting reduction, the proof may
+  assume disjoint support and the strict rank-growth condition
+  \[
+    Y^{(i)} \ne 0,\ i\ge 1 \quad\Longrightarrow\quad
+    r_i < s_i,
+  \]
+  where $\sigma(X^{(i)})=(a_i,b_i)$, $\sigma(Y^{(i)})=(c_i,d_i)$,
+  $r_i=a_i+b_i$, and $s_i=c_i+d_i$.  If $X$ contains a double nonpolarized gene
+  $2g(m)$, the first \S17 branch mutates it as
+  \[
+    2g(m)\longrightarrow g^\epsilon(m+1)+g^{-\epsilon}(m-1),
+  \]
+  choosing $\epsilon$ from the strict component at level $m$.  Thus the remaining
+  core assumes that $X$ is polarized.  In Lean this reduction is the
+  nonpolarized branch preceding the private theorem
+  \texttt{exists\_mutation\_le\_polarized\_remaining}.
+\end{remark}
+
+\begin{remark}[Equal-rank positive-negative pair block]
+  Let $m$ be minimal such that $X$ contains $g^+(m)+g^-(m)$.  Since $Y^{(m)}$ is
+  nonzero and the relevant parity makes $r_m,s_m$ even, \S17 obtains
+  $s_m-r_m\ge 2$.
+
+  The formal branch splits by multiplicities at this minimal rank.
+  \begin{itemize}
+    \item If $X$ contains $2g^+(m)+2g^-(m)$, use the type-13 style diagonal
+      mutation
+      \[
+        2g^+(m)+2g^-(m)\longrightarrow 2g(m-1)+2g(m+1).
+      \]
+    \item If $X$ contains $2g^\epsilon(m)+g^{-\epsilon}(m)$ but not
+      $2g^{-\epsilon}(m)$, switch signs if necessary and first handle
+      $2g^+(m)+g^-(m)$.  When $Y^{(m+1)}\ne0$, choose the component
+      $\epsilon_1$ for which
+      \[
+        r^{\epsilon_1}(X^{(m+1)})<r^{\epsilon_1}(Y^{(m+1)}),
+      \]
+      and use
+      \[
+        2g^+(m)+g^-(m)\longrightarrow 2g(m-1)+g^{\epsilon_1}(m+2).
+      \]
+      In Lean this is the type-16 branch.  The important implementation point is
+      that the component choice must match the outgoing polarized gene
+      $g^{\epsilon_1}(m+2)$; the remaining ``wrong component'' goals in
+      \texttt{Case34.lean} should be solved by a component-choice or minimality
+      lemma, not by forcing the already-built one-sided helper.
+    \item If $Y^{(m+1)}=0$, disjointness and dominance imply
+      $Y\supset 2g(m+1)$ and hence $b_{m-1}=1<d_{m-1}$ in the positive-double
+      normalization.  The mutation is
+      \[
+        2g^+(m)+g^-(m)\longrightarrow g^+(m-2)+2g(m+1),
+      \]
+      the type-17 branch.  The Lean helpers
+      \texttt{exists\_mutation\_le\_type17\_diagonal\_positive} and
+      \texttt{exists\_mutation\_le\_type17\_diagonal\_negative} encode the two
+      sign orientations.  The boundary $m=1$ must be handled separately because
+      the formal source $g^\epsilon(m-2)$ would have rank zero.
+    \item If only $g^+(m)+g^-(m)$ is present, with neither double multiplicity,
+      \S17 first uses a strict gap at level $m-1$.  If the same component is
+      strict at level $m+1$, use
+      \[
+        g^+(m)+g^-(m)\longrightarrow g^+(m-2)+g^-(m+2)
+      \]
+      or its sign-swapped counterpart.  If the forward component is equal, the
+      drop inequalities transfer strictness to the other component.  If both
+      components at $m+1$ are equal, then $Y^{(m+1)}=0$, so
+      $Y\supset2g(m+1)$; choose a maximal-rank remaining gene
+      $g^\epsilon(k)$ in $X-g^+(m)-g^-(m)$ and use
+      \[
+        g^\epsilon(k)+g^+(m)+g^-(m)
+        \longrightarrow g^\epsilon(k-2)+2g(m+1).
+      \]
+      For $m=1$ the paper gives a separate minimal-rank argument for the
+      remaining gene, producing either the four-gene-to-$2g(k+1)$ mutation or
+      the three-gene-to-$g^+(k+2)$ mutation.
+  \end{itemize}
+\end{remark}
+
+\begin{remark}[No equal-rank pair block]
+  Once all equal-rank pairs have been eliminated, let $m$ be the minimum rank of
+  a gene in $X$ and, after sign switch, assume $X\supset g^+(m)$ and
+  $X\not\supset g^-(m)$.  The paper then splits into four cases.
+  \begin{itemize}
+    \item \textbf{$m\ge3$.}  Drop inequalities give
+      $a_{m+1}<c_{m+1}$ and $b_{m-1}<d_{m-1}$.  If $X\supset2g^+(m)$, use
+      $2g^+(m)\to g^+(m-2)+g^+(m+2)$.  Otherwise take the minimum-rank gene
+      $g^\epsilon(k)$ in $X-g^+(m)$ and use
+      $g^+(m)+g^\epsilon(k)\to g^+(m-2)+g^\epsilon(k+2)$, with the inequalities
+      propagated along the window from $m$ to $k$.
+    \item \textbf{$m=2$.}  First obtain $a_3<c_3$.  If $b_1<d_1$, reduce to the
+      preceding pattern.  If $b_1=d_1$, then $a_1<c_1$ and a minimal negative
+      gene $g^-(k)$ with $k\ge4$ exists.  If $a_{k+1}<c_{k+1}$ use
+      $g^+(2)+g^-(k)\to g^+(k+2)$; otherwise the inequalities force
+      $X\supset2g^-(k)$ and one uses
+      $g^+(2)+2g^-(k)\to2g(k+1)$.
+    \item \textbf{$m=1$ and $X\supset2g^+(1)$.}  Minimality gives a negative
+      gene $g^-(k)$, $k\ge3$.  If $a_{k+1}<c_{k+1}$ use
+      $2g^+(1)+g^-(k)\to g^+(k+2)$; otherwise force
+      $X\supset2g^-(k)$ and use
+      $2g^+(1)+2g^-(k)\to2g(k+1)$.
+    \item \textbf{$m=1$ and $X\not\supset2g^+(1)$.}  The gap
+      $s_1-r_1\ge2$ implies that $X$ has at least three genes.  Write
+      $X=g^+(1)+g^\epsilon(k)+g^{\epsilon_1}(t)+X_1$ with $3\le k\le t$ and no
+      gene of $X_1$ below $t$.  Mutate
+      \[
+        g^\epsilon(k)+g^{\epsilon_1}(t)
+        \longrightarrow
+        g^\epsilon(k-2)+g^{\epsilon_1}(t+2),
+      \]
+      closing by the strict gaps at $k-1$ and the propagated window
+      inequalities; the subcase $k=t$ uses the same-sign rank difference
+      comparison at levels $k-1$ and $k+1$.
+  \end{itemize}
+\end{remark}
+
 % ================================================================
 
 \chapter{Lifting Theorem}

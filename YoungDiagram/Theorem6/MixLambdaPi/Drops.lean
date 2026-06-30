@@ -30,7 +30,7 @@ open Variety
 /-! ### The Lambda (NonPolarized) part: equal components and drop antitonicity -/
 
 /-- For `W ∈ Lambda`, the `k`-th sigma column has equal components. -/
-private lemma lambda_sigma_eq_components {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
+lemma lambda_sigma_eq_components {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
     (Sigma.sigma W k).1 = (Sigma.sigma W k).2 := by
   have hmem : Chromosome.prime^[k] W ∈ Lambda := prime_mem_Lambda_iterate hW
   -- reuse the support-based proof from Case3 inlined here for publicness.
@@ -80,7 +80,7 @@ private lemma single_nonPolarized_sigma_convex {g : Gene} (hg : g.type = .NonPol
 /-- For `W ∈ Lambda`, the sigma column is convex: the drop from level `k+1` is at most
 the drop from level `k`, componentwise.  Equivalently
 `σ(W)_{k+1} - σ(W)_{k+2} ≤ σ(W)_k - σ(W)_{k+1}`. -/
-private lemma lambda_sigma_convex {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
+lemma lambda_sigma_convex {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
     Sigma.sigma W (k + 1) - Sigma.sigma W (k + 2) ≤
       Sigma.sigma W k - Sigma.sigma W (k + 1) := by
   induction W using Finsupp.induction with
@@ -106,7 +106,7 @@ private lemma lambda_sigma_convex {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ)
 /-- The even-part (Lambda) drop inequality, in the exact scalar shape used by
 `cond_15_6`/`cond_15_7`.  Because the Lambda part has equal sigma components, the same
 inequality holds with the roles of `a` and `b` swapped on either side. -/
-private lemma lambda_drop_ineq {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
+lemma lambda_drop_ineq {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
     (Sigma.sigma W (k + 1)).2 - (Sigma.sigma W (k + 2)).2 ≤
       (Sigma.sigma W k).1 - (Sigma.sigma W (k + 1)).1 := by
   have hconv := lambda_sigma_convex hW k
@@ -119,7 +119,7 @@ private lemma lambda_drop_ineq {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
   exact hle2
 
 /-- The swapped form (with `a`/`b` roles exchanged): identical content, by symmetry. -/
-private lemma lambda_drop_ineq' {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
+lemma lambda_drop_ineq' {W : Chromosome} (hW : W ∈ Lambda) (k : ℕ) :
     (Sigma.sigma W (k + 1)).1 - (Sigma.sigma W (k + 2)).1 ≤
       (Sigma.sigma W k).2 - (Sigma.sigma W (k + 1)).2 := by
   have hconv := lambda_sigma_convex hW k

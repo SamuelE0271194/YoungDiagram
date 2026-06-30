@@ -60,7 +60,7 @@ private lemma signature_shift_two (k : ℕ) (ε : GeneType) :
     · simp only [Prod.snd_add]; push_cast; ring
 
 omit h_le in
-private lemma mutation_type17_sig_eq_aux (p d : ℕ) :
+lemma mutation_type17_sig_eq_aux (p d : ℕ) :
     (Gene.ofRank (2 * p + 2 + d) ε).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 2 + d) (- ε)).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 2 + d) (- ε)).signature =

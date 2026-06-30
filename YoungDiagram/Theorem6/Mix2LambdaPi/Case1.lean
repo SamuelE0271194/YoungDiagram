@@ -5,10 +5,41 @@ open Chromosome Sigma Pointwise
 
 namespace Mix2LambdaPi
 
+/-! ## Rank-zero and rank-one cases -/
+
+/-- Rank-0 elements of `Mix (2 • Lambda, Pi)` are all zero, so `X < Y` is absurd. -/
+lemma exists_mutation_le_rank_zero {X Y : nMix2LambdaPi 0} (hXY : X < Y) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+  absurd ((rank_zero X.2).trans (rank_zero Y.2).symm) (ne_of_lt hXY)
+
+/-- A rank-one element of `Mix (2 • Lambda, Pi)` lies in `Pi`. -/
+private lemma mem_Pi_of_mem_Mix_2Lambda_Pi_rank_one
+    {X : Chromosome} (hX : X ∈ Mix (2 • Lambda, Pi)) (hr : X.rank = 1) : X ∈ Pi := by
+  obtain ⟨ε, hε⟩ := rank_one hr
+  have hodd : X.oddPart = X := by rw [hε, oddPart_ofRank]; simp
+  rw [← hodd]
+  exact (mem_Mix_iff.mp hX).2
+
+/-- Rank-1 signatures are pairwise incomparable, so `X < Y` is impossible. -/
+lemma exists_mutation_le_rank_one {X Y : nMix2LambdaPi 1} (hXY : X < Y) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hXPi : X.1.1 ∈ Pi := mem_Pi_of_mem_Mix_2Lambda_Pi_rank_one X.1.2 X.2
+  have hYPi : Y.1.1 ∈ Pi := mem_Pi_of_mem_Mix_2Lambda_Pi_rank_one Y.1.2 Y.2
+  have hsig_le : signature X.1.1 ≤ signature Y.1.1 := hXY.le 0
+  have hXsum : (signature X.1.1).1 + (signature X.1.1).2 = 1 := by
+    rcases rank_one_pi_sig hXPi X.2 with h | h <;> simp only [h, zero_add, add_zero]
+  have hYsum : (signature Y.1.1).1 + (signature Y.1.1).2 = 1 := by
+    rcases rank_one_pi_sig hYPi Y.2 with h | h <;> simp only [h, zero_add, add_zero]
+  have hsig_eq : signature X.1.1 = signature Y.1.1 := by
+    obtain ⟨h1_le, h2_le⟩ := Prod.le_def.1 hsig_le
+    exact Prod.ext (h1_le.antisymm (by linarith [h2_le]))
+      (h2_le.antisymm (by linarith [h1_le]))
+  exact absurd (Pi_rank_one_eq_of_sig_eq hXPi hYPi X.2 Y.2 hsig_eq) (ne_of_lt hXY)
+
 /-! ## Case 1: X and Y share a gene -/
 
 /-- Arithmetic: `single g 2 = 2 • single g 1`, viewed as chromosome. -/
-private lemma single_two_eq_two_smul (g : Gene) :
+lemma single_two_eq_two_smul (g : Gene) :
     (Finsupp.single g 2 : Chromosome) = 2 • (Finsupp.single g 1 : Chromosome) := by
   ext g'
   simp only [Finsupp.smul_apply, Finsupp.single_apply, smul_eq_mul]
@@ -91,7 +122,7 @@ private lemma odd_rank_gene_polarized {X : Chromosome} (hX : X ∈ Mix (2 • La
 
 /-- For odd-rank shared gene case: subtracting `single g 1` keeps us in
 `Mix (2 • Lambda, Pi)`. -/
-private lemma sub_single_one_mem_Mix_2Lambda_Pi {X : Chromosome}
+lemma sub_single_one_mem_Mix_2Lambda_Pi {X : Chromosome}
     (hX : X ∈ Mix (2 • Lambda, Pi)) {g : Gene} (hodd : Odd g.rank) :
     X - (Finsupp.single g 1 : Chromosome) ∈ Mix (2 • Lambda, Pi) := by
   refine ⟨?_, ?_⟩
@@ -105,7 +136,7 @@ private lemma sub_single_one_mem_Mix_2Lambda_Pi {X : Chromosome}
 
 /-- For even-rank shared gene case: subtracting `single g 2` keeps us in
 `Mix (2 • Lambda, Pi)`. -/
-private lemma sub_single_two_mem_Mix_2Lambda_Pi {X : Chromosome}
+lemma sub_single_two_mem_Mix_2Lambda_Pi {X : Chromosome}
     (hX : X ∈ Mix (2 • Lambda, Pi)) {g : Gene} (hev : Even g.rank) :
     X - (Finsupp.single g 2 : Chromosome) ∈ Mix (2 • Lambda, Pi) := by
   refine ⟨?_, ?_⟩
@@ -135,7 +166,7 @@ private lemma sub_single_two_mem_Mix_2Lambda_Pi {X : Chromosome}
     rw [h]; exact hX.2
 
 /-- When `2 ≤ X g`, we have `X = (X - single g 2) + single g 2`. -/
-private lemma sub_single_two_add_single_two_eq {X : Chromosome} {g : Gene}
+lemma sub_single_two_add_single_two_eq {X : Chromosome} {g : Gene}
     (hg : 2 ≤ X g) :
     (X - Finsupp.single g 2) + Finsupp.single g 2 = X := by
   ext g'
