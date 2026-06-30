@@ -183,7 +183,7 @@ lemma branchA_g3_assembly_type6 {N : ℕ}
     (hXg₂ : 0 < X.1.1 g₂)
     (hXg₃ : 0 < (X.1.1 - Finsupp.single g₂ 1 : Chromosome) g₃)
     (hne : g₂ ≠ g₃)
-    (hprop_odd : ∀ j, 2 * n' + 1 ≤ j → j ≤ 2 * nn + 3 → Odd j →
+    (hprop_odd : ∀ j, 2 * n' + 1 < j → j ≤ 2 * nn + 3 → Odd j →
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 2 * n' + 1 ≤ j → j < 2 * nn + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
@@ -283,7 +283,7 @@ lemma branchA_g3_assembly_type7 {N : ℕ}
     (hXg₂ : 0 < X.1.1 g₂)
     (hXg₃ : 0 < (X.1.1 - Finsupp.single g₂ 1 : Chromosome) g₃)
     (hne : g₂ ≠ g₃)
-    (hprop_odd : ∀ j, 2 * n' + 1 ≤ j → j ≤ 2 * nn + 1 → Odd j →
+    (hprop_odd : ∀ j, 2 * n' + 1 < j → j ≤ 2 * nn + 1 → Odd j →
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 2 * n' + 1 ≤ j → j ≤ 2 * nn + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by

@@ -1,5 +1,5 @@
 import YoungDiagram.Theorem6.MixPiLambda.CaseA2
-import YoungDiagram.Theorem6.MixPiLambda.CaseB3
+import YoungDiagram.Theorem6.MixPiLambda.CaseB4
 
 /-!
 # §16 Case A core for `Mix (Pi, Lambda)` (label 2).
@@ -12,9 +12,10 @@ deficient charge.
 
 * **Branch A** (`g₁` nonpolarized): paper Cases 1–2 — fully proved in `CaseA2.lean`
   (including the §16 `m=1`/`b₁=d₁` `g₃` leaf `branchA_case2_g3`, via `CaseA2Prop.lean`);
-* **Branch B** (`g₁` polarized): paper Cases 3–5 — in `CaseB.lean`/`CaseB3.lean`.  For this
-  variety `g₁` polarized sits at even rank, so Case 4 (`m=2`) is active and Case 5 (`m=1`) is
-  vacuous; Case 3 is `m ≥ 4`.  (`branchB_neg` and the type8 sub-cases of Case 3 are pending.)
+* **Branch B** (`g₁` polarized): paper Cases 3–5 — in `CaseB.lean`/`CaseB3.lean`/`CaseB4.lean`.
+  For this variety `g₁` polarized sits at even rank, so Case 4 (`m=2`) is active and Case 5
+  (`m=1`) is vacuous; Case 3 is `m ≥ 4`.  The `g⁻` charge (`branchB_neg`) sign-duals to a
+  `b`-deficient `g⁺` problem closed by the total-gap dispatch `branchB_pos_bdef` (`CaseB4`).
 -/
 
 open Variety hiding prime prime_def

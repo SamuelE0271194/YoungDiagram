@@ -63,7 +63,7 @@ lemma branchB_case3 (m : ℕ)
         (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg))
         (by rw [Finsupp.tsub_apply]; exact Nat.sub_le _ _)
       exact hmin' g (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hgpos))
-    have hhal := branchB_case3_halive X Y hXY ha g₁ (by omega) (2 * m' + 2) htail2
+    have hhal := branchB_case3_halive X Y hXY hgap g₁ (by omega) (2 * m' + 2) htail2
     refine branchB_case3_assembly_type8_double X Y hXY m' g₁ hm' hg₁pos hmult hbanchor ?_ ?_
     · intro j hjo hj1 hj2
       exact hpropa j (by omega) hj2 hjo
@@ -169,8 +169,8 @@ lemma branchB_case3 (m : ℕ)
           rw [Finsupp.mem_support_iff] at hg ⊢
           rwa [Finsupp.tsub_apply, Finsupp.single_apply, if_neg (Ne.symm hgne), Nat.sub_zero] at hg
         have := hk2 g hgX hgne; rwa [hq] at this
-      have hdeep := branchB_case3_deep_bprop X Y hXY hgap m' g₁ hm' hg₁mult1 (2 * q + 2) htail hbanchor
-      have hhal := branchB_case3_halive X Y hXY ha g₁ (by omega) (2 * q + 2) htail
+      have hdeep := branchB_case3_deep_bprop X Y hXY hgap m' g₁ hg₁mult1.ge (2 * q + 2) htail hbanchor
+      have hhal := branchB_case3_halive X Y hXY hgap g₁ (by omega) (2 * q + 2) htail
       refine branchB_case3_assembly_type8 X Y hXY m' q (by omega) g₁ g₂
         hm' hg₁pos hq hch hXg₁ hXg₂ hne hbanchor ?_ ?_ ?_
       · -- haodd: odd j ∈ [2m'+3, 2q+3]
@@ -215,96 +215,7 @@ lemma branchB_pos (m : ℕ)
   · exact branchB_case4 m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁ hg₁min hg₁pos m' hm' hm0
   · exact branchB_case3 m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁ hg₁min hg₁pos m' hm' hmpos
 
-/-- §16 Branch B, negative charge (`g₁ = g⁻(m)`).  For `Mix (Pi, Lambda)` the sign-dual to
-`branchB_pos` on `(-X, -Y)` requires `b_X(1) < b_Y(1)` (= `a_{-X}(1) < a_{-Y}(1)`), which the
-level-1-asymmetric Case A hypothesis `a_X(1) < a_Y(1)` does not supply directly.  Pending. -/
-lemma branchB_neg (m : ℕ)
-    (X Y : nMixPiLambda (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
-      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
-      g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁)
-    (hg₁min : ∀ g ∈ X.1.1.support, g₁.rank ≤ g.rank)
-    (hg₁neg : g₁.type = .Negative) :
-    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  by_cases hbd : (Sigma.sigma X.1.1 1).2 < (Sigma.sigma Y.1.1 1).2
-  · -- main case: `b₁ < d₁`, so the negated problem has the level-1 `a`-deficiency it needs.
-    have hg₁pos' : (-g₁ : Gene).type = .Positive := by rw [Gene.neg_type, hg₁neg]; rfl
-    set Xd : nMixPiLambda (m + 2) :=
-      ⟨- X.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, X.2]⟩ with Xd_def
-    set Yd : nMixPiLambda (m + 2) :=
-      ⟨- Y.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, Y.2]⟩ with Yd_def
-    have hXdYd : Xd.1 < Yd.1 := by change (- X.1) < (- Y.1); exact Chromosome.neg_lt_neg_iff.2 hXY
-    have hcommond : ¬∃ g : Gene, 0 < Xd.1.1 g ∧ 0 < Yd.1.1 g := by
-      refine fun ⟨g, hgX, hgY⟩ ↦ hcommon ⟨- g, ?_, ?_⟩
-      · rw [← Chromosome.neg_apply]; convert hgX using 2; rfl
-      · rw [← Chromosome.neg_apply]; convert hgY using 2; rfl
-    have hsigeqd : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Yd.1.1 ≠ 0 ∧
-        Sigma.sigma Xd.1.1 k = Sigma.sigma Yd.1.1 k := by
-      refine fun ⟨k, hkpos, hYd_ne, hsig⟩ ↦ hsigeq ⟨k, hkpos, ?_, ?_⟩
-      · refine fun hYzero ↦ hYd_ne ?_
-        change Chromosome.prime^[k] (- Y.1.1) = 0
-        rw [← prime_iterate_neg, hYzero, _root_.neg_zero]
-      · have hsig_swap : (signature (Chromosome.prime^[k] (- X.1.1))).swap =
-          (signature (Chromosome.prime^[k] (- Y.1.1))).swap := congrArg Prod.swap hsig
-        rwa [← @prime_iterate_neg k X.1.1, ← @prime_iterate_neg k Y.1.1,
-          signature_neg, signature_neg, Prod.swap_swap, Prod.swap_swap] at hsig_swap
-    have hXpnd : ¬∃ (g h : Gene), g.rank = h.rank ∧
-        g.type = .Positive ∧ h.type = .Negative ∧ 0 < Xd.1.1 g ∧ 0 < Xd.1.1 h := by
-      refine fun ⟨g, h, hrank, hgpos, hhneg, hgX, hhX⟩ ↦ hXpn ⟨- h, - g, ?_, ?_, ?_, ?_, ?_⟩
-      · simp only [Gene.neg_rank, hrank]
-      · rw [Gene.neg_type, hhneg]; rfl
-      · rw [Gene.neg_type, hgpos]; rfl
-      · rw [← Chromosome.neg_apply]; convert hhX using 2; rfl
-      · rw [← Chromosome.neg_apply]; convert hgX using 2; rfl
-    have had : (Sigma.sigma Xd.1.1 1).1 < (Sigma.sigma Yd.1.1 1).1 := by
-      change (signature (Chromosome.prime^[1] (- X.1.1))).1 <
-        (signature (Chromosome.prime^[1] (- Y.1.1))).1
-      rw [← @prime_iterate_neg 1 X.1.1, ← @prime_iterate_neg 1 Y.1.1,
-        signature_neg, signature_neg, Prod.fst_swap, Prod.fst_swap]
-      exact hbd
-    have hXg₁d : 0 < Xd.1.1 (-g₁) := by
-      change 0 < (- X.1.1) (-g₁); rw [Chromosome.neg_apply, neg_neg]; exact hXg₁
-    have hg₁mind : ∀ g ∈ Xd.1.1.support, (-g₁ : Gene).rank ≤ g.rank := by
-      intro g hg
-      rw [Finsupp.mem_support_iff] at hg
-      have hng : X.1.1 (-g) ≠ 0 := by
-        change (- X.1.1) g ≠ 0 at hg; rwa [Chromosome.neg_apply] at hg
-      have h := hg₁min (-g) (Finsupp.mem_support_iff.mpr hng)
-      rw [Gene.neg_rank] at h ⊢; exact h
-    obtain ⟨W, hstepW, hWY⟩ := branchB_pos m Xd Yd hXdYd hcommond hsigeqd hXpnd had
-      (-g₁) hXg₁d hg₁mind hg₁pos'
-    refine ⟨- W, ?_, ?_⟩
-    · exact MixPiLambda.Step.of_neg (by simpa only [neg_neg] using hstepW)
-    · change (- W).1 ≤ Y.1.1
-      rw [Mix.Pi_Lambda_neg_val]
-      have hWY' : W.1 ≤ (- Y.1).1 := hWY
-      rw [Mix.Pi_Lambda_neg_val] at hWY'
-      simpa only [neg_neg] using Chromosome.neg_le_neg_iff.2 hWY'
-  · -- edge case `b₁ = d₁` (with `a₁ < c₁`): the negated problem lacks its level-1
-    -- `a`-deficiency.  Analogue of the Branch A `g₃` sub-case; pending.
-    sorry
-
-/-- **Branch B** of §16 Case A for `Mix (Pi, Lambda)`: the minimal-rank gene `g₁` is
-polarized.  Dispatch on its charge. -/
-lemma exists_mutation_le_caseA_branchB (m : ℕ)
-    (X Y : nMixPiLambda (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
-      Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
-      g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁)
-    (hg₁min : ∀ g ∈ X.1.1.support, g₁.rank ≤ g.rank)
-    (hg₁pol : g₁.type ≠ .NonPolarized) :
-    ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  cases hch : g₁.type with
-  | NonPolarized => exact absurd hch hg₁pol
-  | Positive => exact branchB_pos m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁ hg₁min hch
-  | Negative => exact branchB_neg m X Y hXY hcommon hsigeq hXpn ha g₁ hXg₁ hg₁min hch
+-- `branchB_neg` and the Branch B dispatcher live in `CaseB4` (they need the b-deficient
+-- dispatch `branchB_pos_bdef` for the `b₁ = d₁` edge case).
 
 end MixPiLambda

@@ -67,7 +67,8 @@ lemma prime_iterate_sum_eq (Z : Chromosome) (i : ℕ) :
 drop `≥ |X-g₁|`.  `|Y| < |X|` comes from the self-dual rank gap (`ha` + dominance), not
 level-1 symmetry. -/
 lemma branchB_case3_halive {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
-    (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
+    (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
     (g₁ : Gene) (hg₁mult : 1 ≤ X.1.1 g₁)
     (k : ℕ) (htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank) :
     ∀ i, i + 1 ≤ k →
@@ -101,15 +102,13 @@ lemma branchB_case3_halive {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
         ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
     rw [h0, h1, Function.iterate_one]; exact cells
   have hrk0 : (X.1.1.rank : ℚ) = (Y.1.1.rank : ℚ) := by rw [X.2, Y.2]
-  have hb1 : (Sigma.sigma X.1.1 1).2 ≤ (Sigma.sigma Y.1.1 1).2 :=
-    (le_iff_dominates.mp hXY.le 1).2
   have hsX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
     have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
   have hsY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
     have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
   have hYleX' : Y.1.1.sum (fun _ m => (m : ℚ)) ≤ X'.sum (fun _ m => (m : ℚ)) := by
     have hlt : Y.1.1.sum (fun _ m => (m : ℚ)) < X.1.1.sum (fun _ m => (m : ℚ)) := by
-      rw [← hYcells, ← hXcells]; linarith [hsX0, hsY0, hrk0, ha, hb1]
+      rw [← hYcells, ← hXcells]; linarith [hsX0, hsY0, hrk0, hgap]
     rw [hcellsX] at hlt
     have hYn : ∃ n : ℕ, Y.1.1.sum (fun _ m => (m : ℚ)) = (n : ℚ) :=
       ⟨Y.1.1.sum (fun _ m => m), by rw [Finsupp.sum, Finsupp.sum]; push_cast; ring⟩
@@ -247,7 +246,7 @@ is from the self-dual rank gap. -/
 lemma branchB_case3_deep_bprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
-    (m' : ℕ) (g₁ : Gene) (hg₁rank : g₁.rank = 2 * m' + 2) (hg₁mult : X.1.1 g₁ = 1)
+    (m' : ℕ) (g₁ : Gene) (hg₁mult : 1 ≤ X.1.1 g₁)
     (k : ℕ) (htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank)
     (hbanchor : (Sigma.sigma X.1.1 (2 * m' + 1)).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m' + 1)).2) :
     ∀ t, 2 * m' + 1 + 2 * t ≤ k →
@@ -570,6 +569,48 @@ private lemma adrop_two_step_odd_le_pl {Y : Chromosome} (hY : Y ∈ Mix (Pi, Lam
   have hb2 := bdrop_even_le_pl hY u
   linarith [c7e, c6o, c6, ha2, hb2]
 
+/-- `a`-component 2-step drop from level 1 equals `|W|`, provided every gene has rank `≥ 2`
+and every rank-`2` gene is positive (so each gene contributes exactly `1` to the `a`-drop;
+a negative rank-`2` gene would contribute `0`). -/
+lemma a13_drop_eq_cells {W : Chromosome}
+    (hW : ∀ g ∈ W.support, 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive)) :
+    (Sigma.sigma W 1).1 - (Sigma.sigma W 3).1 = W.sum (fun _ m => (m : ℚ)) := by
+  induction W using Finsupp.induction with
+  | zero => simp [Sigma.sigma]
+  | single_add g n f hg hn ih =>
+    have hgr : 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive) := hW g (by simp [hg, hn])
+    have hf : ∀ g' ∈ f.support, 2 ≤ g'.rank ∧ (g'.rank = 2 → g'.type = .Positive) := by
+      intro g' hg'
+      apply hW
+      simp only [Finsupp.mem_support_iff, Finsupp.add_apply]
+      have hz : (Finsupp.single g n) g' = 0 := by
+        rw [Finsupp.single_apply, if_neg]; rintro rfl; exact hg hg'
+      rw [hz, zero_add]; exact Finsupp.mem_support_iff.mp hg'
+    have he : (Finsupp.single g n : Chromosome) = n • Gene.ofRank g.rank g.type := by
+      rw [Gene.ofRank_eq_gene]; simp
+    have e1 : Chromosome.prime^[1] (Finsupp.single g n) =
+        n • Gene.ofRank (g.rank - 1) g.type := by rw [he, iterate_map_nsmul, prime_iterate_ofRank]
+    have e3 : Chromosome.prime^[3] (Finsupp.single g n) =
+        n • Gene.ofRank (g.rank - 3) g.type := by rw [he, iterate_map_nsmul, prime_iterate_ofRank]
+    have hsingle : (Sigma.sigma (Finsupp.single g n) 1).1 -
+        (Sigma.sigma (Finsupp.single g n) 3).1 = (n : ℚ) := by
+      simp only [Sigma.sigma, e1, e3, map_nsmul]
+      rcases Nat.lt_or_ge g.rank 3 with hlt | hge
+      · have hr2 : g.rank = 2 := by omega
+        have hpos : g.type = .Positive := hgr.2 hr2
+        rw [hr2, hpos, show (2 - 1 : ℕ) = 1 from rfl, show (2 - 3 : ℕ) = 0 from rfl,
+          signature_ofRank_one_positive, signature_ofRank_zero]
+        simp
+      · rw [show g.rank - 1 = (g.rank - 3) + 2 from by omega, signature_ofRank_eq₂']
+        simp only [Prod.smul_fst, smul_eq_mul, Prod.fst_add]; ring
+    rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
+    rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.fst_add, Prod.fst_add]
+    rw [show (Sigma.sigma (Finsupp.single g n) 1).1 + (Sigma.sigma f 1).1 -
+        ((Sigma.sigma (Finsupp.single g n) 3).1 + (Sigma.sigma f 3).1) =
+        ((Sigma.sigma (Finsupp.single g n) 1).1 - (Sigma.sigma (Finsupp.single g n) 3).1) +
+        ((Sigma.sigma f 1).1 - (Sigma.sigma f 3).1) by ring]
+    rw [hsingle, ih hf]
+
 /-- **`a`-anchor from the total gap** (`Mix (Pi, Lambda)`): `a_X(2m'+1) + 1 ≤ a_Y(2m'+1)`.
 `a`-mirror of `branchB_case3_banchor_pl`. -/
 lemma branchB_a_anchor_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
@@ -627,7 +668,7 @@ upward to every odd level `2m'+1+2t ≤ k`. -/
 lemma branchB_deep_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
-    (m' : ℕ) (g₁ : Gene) (hg₁rank : g₁.rank = 2 * m' + 2) (hg₁mult : X.1.1 g₁ = 1)
+    (m' : ℕ) (g₁ : Gene) (hg₁mult : X.1.1 g₁ = 1)
     (k : ℕ) (htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank)
     (hanchor : (Sigma.sigma X.1.1 (2 * m' + 1)).1 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m' + 1)).1) :
     ∀ t, 2 * m' + 1 + 2 * t ≤ k →
@@ -708,5 +749,153 @@ lemma branchB_deep_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     have e2 : 2 * m' + 1 + 2 * (s + 1) = 2 * m' + 1 + 2 * s + 2 := by ring
     rw [e2]
     linarith [hih, hYd, hXd, hcellsYlt]
+
+/-- **§16 Case 4 `a`-anchor at level 3** (`Mix (Pi, Lambda)`): with `g₁ = g⁺(2)` the unique
+minimal gene (mult 1) and every other gene of rank `≥ 3`, the total gap forces
+`a_X(3) + 1 ≤ a_Y(3)`.  This is the `c₁-c₃` chain: `X`'s `a`-2-step drop `a_X(1)-a_X(3) = |X|`
+(the boundary gene `g⁺(2)` contributes `1`), `Y`'s is `≤ |Y| < |X|`. -/
+lemma branchB_case4_a3_anchor {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+    (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
+    (hX2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive)) :
+    (Sigma.sigma X.1.1 3).1 + 1 ≤ (Sigma.sigma Y.1.1 3).1 := by
+  have hXtw : (Sigma.sigma X.1.1 1).1 - (Sigma.sigma X.1.1 3).1 =
+      X.1.1.sum (fun _ m => (m : ℚ)) := a13_drop_eq_cells hX2
+  -- Y a-2-step drop ≤ |Y|, and |Y| < |X|
+  have hYcells : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
+      ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) = Y.1.1.sum (fun _ m => (m : ℚ)) := by
+    have h0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+    have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+    rw [h0, h1, Function.iterate_one]; exact cells
+  have hYtw : (Sigma.sigma Y.1.1 1).1 - (Sigma.sigma Y.1.1 3).1 ≤
+      Y.1.1.sum (fun _ m => (m : ℚ)) := by
+    have h := adrop_two_step_odd_le_pl Y.1.2 0
+    simp only [Nat.mul_zero, Nat.zero_add] at h
+    rw [← hYcells]; linarith
+  have hXcells : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+      ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) = X.1.1.sum (fun _ m => (m : ℚ)) := by
+    have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+    have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+    rw [h0, h1, Function.iterate_one]; exact cells
+  have hrk0 : (X.1.1.rank : ℚ) = (Y.1.1.rank : ℚ) := by rw [X.2, Y.2]
+  have hsX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+  have hsY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+  have hYltX : Y.1.1.sum (fun _ m => (m : ℚ)) < X.1.1.sum (fun _ m => (m : ℚ)) := by
+    rw [← hYcells, ← hXcells]; linarith [hsX0, hsY0, hrk0, hgap]
+  have hDom : (Sigma.sigma X.1.1 1).1 ≤ (Sigma.sigma Y.1.1 1).1 :=
+    (le_iff_dominates.mp hXY.le 1).1
+  have hlt : (Sigma.sigma X.1.1 3).1 < (Sigma.sigma Y.1.1 3).1 := by
+    linarith [hXtw, hYtw, hYltX, hDom]
+  obtain ⟨zX, hzX⟩ := sig_fst_isInt_odd X.1.2 (show Odd 3 from ⟨1, by ring⟩)
+  obtain ⟨zY, hzY⟩ := sig_fst_isInt_odd Y.1.2 (show Odd 3 from ⟨1, by ring⟩)
+  rw [hzX, hzY] at hlt ⊢
+  have hz : zX < zY := by exact_mod_cast hlt
+  have : (zX : ℚ) + 1 ≤ zY := by exact_mod_cast (by omega : zX + 1 ≤ zY)
+  linarith
+
+/-- **§16 Case 4 `a`-propagation from the total gap** (`Mix (Pi, Lambda)`): combines the
+level-3 anchor with `branchB_deep_aprop` to give `a_X(j) + 1 ≤ a_Y(j)` for every odd `1 < j ≤ k`,
+with `g₁ = g⁺(2)` the unique minimal gene (mult 1) and all other genes of rank `≥ k ≥ 3`. -/
+lemma branchB_case4_aprop_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+    (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
+    (g₁ : Gene) (hg₁mult : X.1.1 g₁ = 1)
+    (hX2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive))
+    (k : ℕ) (htailk : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank) :
+    ∀ j, 1 < j → j ≤ k → Odd j →
+        (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
+  have h3 := branchB_case4_a3_anchor X Y hXY hgap hX2
+  have hdeep := branchB_deep_aprop X Y hXY hgap 1 g₁ hg₁mult k htailk
+    (by simpa using h3)
+  intro j hj1 hjk hoj
+  obtain ⟨t, ht⟩ : ∃ t, j = 3 + 2 * t := by
+    obtain ⟨r, hr⟩ := hoj; exact ⟨r - 1, by omega⟩
+  subst ht
+  have := hdeep t (by omega)
+  simpa [show 2 * 1 + 1 + 2 * t = 3 + 2 * t from by ring] using this
+
+/-- **Level-2 `(1,1)` absorption from the total gap** (`Mix (Pi, Lambda)`).  With every `X`-gene
+of rank `≥ 2`, `X`'s rank 2-step drop is `2|X|`, `Y`'s is `≤ 2|Y| < 2|X|`, so the rank gap at
+level `2` is `≥ 2`, which (since level 2 is even, `a = b`) halves to a full `(1,1)`.  Used for
+the bottom even level of §16 Case 4 type8, where the odd neighbor `j-1 = 1` is `a`-balanced. -/
+lemma even2_absorb_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+    (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
+    (hmin2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank) :
+    ((1 : ℚ), (1 : ℚ)) + Sigma.sigma X.1.1 2 ≤ Sigma.sigma Y.1.1 2 := by
+  have hXa : (Sigma.sigma X.1.1 0).1 - (Sigma.sigma X.1.1 2).1 =
+      X.1.1.sum (fun _ m => (m : ℚ)) := by
+    have := twostep (W := X.1.1) (i := 0) (fun g hg => by have := hmin2 g hg; omega); simpa using this
+  have hXb : (Sigma.sigma X.1.1 0).2 - (Sigma.sigma X.1.1 2).2 =
+      X.1.1.sum (fun _ m => (m : ℚ)) := by
+    have := twostep_snd (W := X.1.1) (i := 0) (fun g hg => by have := hmin2 g hg; omega)
+    simpa using this
+  have hY01 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
+      ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) = Y.1.1.sum (fun _ m => (m : ℚ)) := by
+    have h0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+    have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+    rw [h0, h1, Function.iterate_one]; exact cells
+  have hconv : (Chromosome.prime^[1] Y.1.1).prime = Chromosome.prime^[2] Y.1.1 :=
+    (Function.iterate_succ_apply' Chromosome.prime 1 Y.1.1).symm
+  have hY12 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 -
+      ((Sigma.sigma Y.1.1 2).1 + (Sigma.sigma Y.1.1 2).2) =
+      (Chromosome.prime^[1] Y.1.1).sum (fun _ m => (m : ℚ)) := by
+    have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+    have h2 : (Sigma.sigma Y.1.1 2).1 + (Sigma.sigma Y.1.1 2).2 =
+        ((Chromosome.prime^[1] Y.1.1).prime.rank : ℚ) := by
+      rw [hconv]; exact @signature_sum_eq_rank _
+    rw [h1, h2]; exact cells
+  have hprimeYle : (Chromosome.prime^[1] Y.1.1).sum (fun _ m => (m : ℚ)) ≤
+      Y.1.1.sum (fun _ m => (m : ℚ)) := by
+    rw [prime_iterate_sum_eq, Finsupp.sum]
+    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+      (fun g _ _ => by positivity)
+  have hr0X : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+  have hr0Y : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+  have hYcellsdef : Y.1.1.sum (fun _ m => (m : ℚ)) =
+      (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
+        ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) := hY01.symm
+  have hXcellsdef : X.1.1.sum (fun _ m => (m : ℚ)) =
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
+    have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+    have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+    rw [h0, h1, Function.iterate_one]; exact cells.symm
+  have hYltX : Y.1.1.sum (fun _ m => (m : ℚ)) < X.1.1.sum (fun _ m => (m : ℚ)) := by
+    rw [hYcellsdef, hXcellsdef]; linarith [hr0X, hr0Y]
+  -- rank gap at level 2 is ≥ 2 (uses integrality of |X| - |Y| ≥ 1)
+  have hYXint : X.1.1.sum (fun _ m => (m : ℚ)) - Y.1.1.sum (fun _ m => (m : ℚ)) ≥ 1 := by
+    have hXn : ∃ n : ℕ, X.1.1.sum (fun _ m => (m : ℚ)) = (n : ℚ) :=
+      ⟨X.1.1.sum (fun _ m => m), by rw [Finsupp.sum, Finsupp.sum]; push_cast; ring⟩
+    have hYn : ∃ n : ℕ, Y.1.1.sum (fun _ m => (m : ℚ)) = (n : ℚ) :=
+      ⟨Y.1.1.sum (fun _ m => m), by rw [Finsupp.sum, Finsupp.sum]; push_cast; ring⟩
+    obtain ⟨nx, hnx⟩ := hXn; obtain ⟨ny, hny⟩ := hYn
+    rw [hnx, hny] at hYltX ⊢
+    have : ny < nx := by exact_mod_cast hYltX
+    have : (ny : ℚ) + 1 ≤ nx := by exact_mod_cast (by omega : ny + 1 ≤ nx)
+    linarith
+  have hrankgap : (Sigma.sigma X.1.1 2).1 + (Sigma.sigma X.1.1 2).2 + 2 ≤
+      (Sigma.sigma Y.1.1 2).1 + (Sigma.sigma Y.1.1 2).2 := by
+    linarith [hXa, hXb, hY01, hY12, hprimeYle, hr0X, hr0Y, hYXint]
+  have hXsym : (Sigma.sigma X.1.1 2).1 = (Sigma.sigma X.1.1 2).2 :=
+    signature_prime_iterate_even_eq_components X.1.2 ⟨1, rfl⟩
+  have hYsym : (Sigma.sigma Y.1.1 2).1 = (Sigma.sigma Y.1.1 2).2 :=
+    signature_prime_iterate_even_eq_components Y.1.2 ⟨1, rfl⟩
+  constructor
+  · simp only [Prod.fst_add]; linarith [hrankgap, hXsym, hYsym]
+  · simp only [Prod.snd_add]; linarith [hrankgap, hXsym, hYsym]
 
 end MixPiLambda
