@@ -268,8 +268,7 @@ section type16
 
 noncomputable def X16 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * m + 2) ε +
-    Gene.ofRank (2 * n + 2) (- ε), ?_⟩
+  refine ⟨type16X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -282,9 +281,7 @@ noncomputable def X16 : Mix (Pi, 2 • Lambda) := by
     IsPolarized_ofRank (k := 2 * n + 2) (by omega)]
   exact ⟨⟨hε, hε⟩, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma X16_eq : (X16 h_le hε).1 =
-  Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * m + 2) ε +
-  Gene.ofRank (2 * n + 2) (- ε) := rfl
+lemma X16_eq : (X16 h_le hε).1 = type16X := rfl
 
 @[simp] lemma neg_X16 :
     - (X16 h_le hε) = X16 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -294,9 +291,7 @@ lemma X16_eq : (X16 h_le hε).1 =
 noncomputable def Y16 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 4) ε, ?_⟩
+  refine ⟨type16Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -311,10 +306,7 @@ noncomputable def Y16 : Mix (Pi, 2 • Lambda) := by
     · rw [mem_Lambda_iff, IsNonPolarized_ofRank (k := 2 * m + 1) (by omega)]
     · rw [two_smul]
 
-lemma Y16_eq : (Y16 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 4) ε := rfl
+lemma Y16_eq : (Y16 h_le hε).1 = type16Y := rfl
 
 @[simp] lemma neg_Y16 :
     - (Y16 h_le hε) = Y16 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

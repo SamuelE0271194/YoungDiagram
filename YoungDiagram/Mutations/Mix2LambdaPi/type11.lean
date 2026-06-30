@@ -169,9 +169,7 @@ section type11
 
 noncomputable def X11 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 3) ε +
-    Gene.ofRank (2 * n + 3) GeneType.Positive +
-    Gene.ofRank (2 * n + 3) GeneType.Negative, ?_⟩
+  refine ⟨type11X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
@@ -182,10 +180,7 @@ noncomputable def X11 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega)]
   exact ⟨⟨hε, by decide⟩, by decide⟩
 
-lemma X11_eq : (X11 h_le hε).1 =
-  Gene.ofRank (2 * m + 3) ε +
-  Gene.ofRank (2 * n + 3) GeneType.Positive +
-  Gene.ofRank (2 * n + 3) GeneType.Negative := rfl
+lemma X11_eq : (X11 h_le hε).1 = type11X := rfl
 
 @[simp] lemma neg_X11 :
     - (X11 h_le hε) = X11 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -196,9 +191,7 @@ lemma X11_eq : (X11 h_le hε).1 =
 
 noncomputable def Y11 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) ε +
-    Gene.ofRank (2 * n + 4) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 4) GeneType.NonPolarized, ?_⟩
+  refine ⟨type11Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_pos (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_pos (by grind)]
@@ -211,10 +204,7 @@ noncomputable def Y11 : Mix (2 • Lambda, Pi) := by
   · rw [mem_Pi_iff, IsPolarized_ofRank (by omega)]
     exact hε
 
-lemma Y11_eq : (Y11 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) ε +
-  Gene.ofRank (2 * n + 4) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 4) GeneType.NonPolarized := rfl
+lemma Y11_eq : (Y11 h_le hε).1 = type11Y := rfl
 
 @[simp] lemma neg_Y11 :
     - (Y11 h_le hε) = Y11 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

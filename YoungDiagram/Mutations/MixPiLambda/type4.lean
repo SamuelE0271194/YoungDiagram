@@ -118,8 +118,7 @@ section type4
 
 noncomputable def X4 : Mix (Pi, Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 1) GeneType.NonPolarized, ?_⟩
+  refine ⟨type4X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind),
@@ -132,9 +131,7 @@ noncomputable def X4 : Mix (Pi, Lambda) := by
     IsNonPolarized_ofRank (k := 2 * n + 1) (by omega)]
   exact ⟨rfl, rfl⟩
 
-lemma X4_eq : (X4 h_le).1 =
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 1) GeneType.NonPolarized := rfl
+lemma X4_eq : (X4 h_le).1 = type4X := rfl
 
 @[simp] lemma neg_X4 : - (X4 h_le) = X4 h_le := by
   apply Subtype.ext
@@ -144,7 +141,7 @@ lemma X4_eq : (X4 h_le).1 =
 noncomputable def Y4 : Mix (Pi, Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m) ε + Gene.ofRank (2 * n + 2) (- ε), ?_⟩
+  refine ⟨type4Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_pos (by grind), evenPart_ofRank, if_pos (by grind),
     oddPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind), add_zero]
@@ -161,9 +158,7 @@ noncomputable def Y4 : Mix (Pi, Lambda) := by
       IsPolarized_ofRank (k := 2 * n + 2) (by omega)]
     exact ⟨hε, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma Y4_eq : (Y4 h_le hε).1 =
-  Gene.ofRank (2 * m) ε +
-  Gene.ofRank (2 * n + 2) (- ε) := rfl
+lemma Y4_eq : (Y4 h_le hε).1 = type4Y := rfl
 
 @[simp] lemma neg_Y4 :
     - (Y4 h_le hε) = Y4 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

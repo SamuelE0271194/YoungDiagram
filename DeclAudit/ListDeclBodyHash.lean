@@ -147,4 +147,4 @@ def dumpSpecClosureBodyHashes
 end DeclAudit
 
 -- 目标 theorem 的 statement/type 所引用的项目内定义闭包：
-#eval! (DeclAudit.dumpSpecClosureBodyHashes "YoungDiagram" `Pi.exists_mutation_le).run'
+#eval! (DeclAudit.dumpSpecClosureBodyHashes "YoungDiagram" `MixLambdaPi.exists_mutation_le).run'

@@ -226,10 +226,7 @@ section type13
 
 noncomputable def X13 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.Positive +
-    Gene.ofRank (2 * m + 1) GeneType.Negative +
-    Gene.ofRank (2 * n + 1) GeneType.Positive +
-    Gene.ofRank (2 * n + 1) GeneType.Negative, ?_⟩
+  refine ⟨type13X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
@@ -243,11 +240,7 @@ noncomputable def X13 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨⟨⟨by decide, by decide⟩, by decide⟩, by decide⟩
 
-lemma X13_eq : (X13 h_le).1 =
-  Gene.ofRank (2 * m + 1) GeneType.Positive +
-  Gene.ofRank (2 * m + 1) GeneType.Negative +
-  Gene.ofRank (2 * n + 1) GeneType.Positive +
-  Gene.ofRank (2 * n + 1) GeneType.Negative := rfl
+lemma X13_eq : (X13 h_le).1 = type13X := rfl
 
 @[simp] lemma neg_X13 : - (X13 h_le) = X13 h_le := by
   apply Subtype.ext
@@ -259,10 +252,7 @@ lemma X13_eq : (X13 h_le).1 =
 
 noncomputable def Y13 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m) GeneType.NonPolarized +
-    Gene.ofRank (2 * m) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 2) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 2) GeneType.NonPolarized, ?_⟩
+  refine ⟨type13Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind),
@@ -286,14 +276,7 @@ noncomputable def Y13 : Mix (2 • Lambda, Pi) := by
       exact ⟨rfl, rfl⟩
     · rw [two_smul]; abel
 
-lemma Y13_eq : (Y13 h_le).1 =
-  Gene.ofRank (2 * m) GeneType.NonPolarized +
-  Gene.ofRank (2 * m) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 2) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 2) GeneType.NonPolarized := by
-  match m with
-  | 0 => simp only [Y13, Nat.mul_zero, Gene.ofRank_zero, zero_add]
-  | m + 1 => rfl
+lemma Y13_eq : (Y13 h_le).1 = type13Y := rfl
 
 @[simp] lemma neg_Y13 : - (Y13 h_le) = Y13 h_le := by
   apply Subtype.ext

@@ -9,7 +9,7 @@ namespace Mix2LambdaPi
 private lemma type9_signature_eq_before
     {p j : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized)
     (hj : j < 2 * p + 2) :
-    signature (Chromosome.prime^[j] (Y9 hε p).1) =
+    signature (Chromosome.prime^[j] (Y9 p hε).1) =
       signature (Chromosome.prime^[j] (X9 p).1) := by
   have h1 : j ≤ 2 * p + 1 := by omega
   have h2 : j ≤ 2 * p + 2 := by omega
@@ -29,7 +29,7 @@ private lemma type9_signature_eq_before
 private lemma type9_signature_eq_after
     {p j : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized)
     (hj : 2 * p + 3 ≤ j) :
-    signature (Chromosome.prime^[j] (Y9 hε p).1) =
+    signature (Chromosome.prime^[j] (Y9 p hε).1) =
       signature (Chromosome.prime^[j] (X9 p).1) := by
   simp only [X9_eq, Y9_eq, iterate_map_add, prime_iterate_ofRank]
   have h1 : 2 * p + 1 - j = 0 := by omega
@@ -39,7 +39,7 @@ private lemma type9_signature_eq_after
 
 private lemma type9_signature_mid
     {p : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) :
-    signature (Chromosome.prime^[2 * p + 2] (Y9 hε p).1) =
+    signature (Chromosome.prime^[2 * p + 2] (Y9 p hε).1) =
       signature (Chromosome.prime^[2 * p + 2] (X9 p).1) +
         signature (Gene.ofRank 1 (-ε)) := by
   simp only [X9_eq, Y9_eq, iterate_map_add, prime_iterate_ofRank]
@@ -125,13 +125,13 @@ lemma exists_mutation_le_type9
       Mix2LambdaSection17.add_one_le_fst_of_lt_Mix_2Lambda_Pi hmemX hmemY hfst
     change (Sigma.sigma X.1.1 (2 * p + 2)).1 + 1 ≤
       (Sigma.sigma Y.1.1 (2 * p + 2)).1 at hboost
-    refine ⟨⟨(Y9 (ε := .Negative) (by decide) p).1 + restval,
-        add_mem (Y9 (ε := .Negative) (by decide) p).2 rest_mem⟩, ?_, ?_⟩
+    refine ⟨⟨(Y9 (ε := .Negative) p (by decide)).1 + restval,
+        add_mem (Y9 (ε := .Negative) p (by decide)).2 rest_mem⟩, ?_, ?_⟩
     · exact (Subtype.ext hXeq :
         (X9 p : Mix (2 • Lambda, Pi)) + rest = X.1) ▸
-          Step.mk (X9 p) (Y9 (ε := .Negative) (by decide) p) rest
+          Step.mk (X9 p) (Y9 (ε := .Negative) p (by decide)) rest
             (Primitive.type9 .Negative (by decide) p)
-    · change (Y9 (ε := .Negative) (by decide) p).1 + restval ≤ Y.1.1
+    · change (Y9 (ε := .Negative) p (by decide)).1 + restval ≤ Y.1.1
       rw [le_iff_dominates]
       intro j
       rw [iterate_map_add, map_add]
@@ -177,13 +177,13 @@ lemma exists_mutation_le_type9
       Mix2LambdaSection17.add_one_le_snd_of_lt_Mix_2Lambda_Pi hmemX hmemY hsnd
     change (Sigma.sigma X.1.1 (2 * p + 2)).2 + 1 ≤
       (Sigma.sigma Y.1.1 (2 * p + 2)).2 at hboost
-    refine ⟨⟨(Y9 (ε := .Positive) (by decide) p).1 + restval,
-        add_mem (Y9 (ε := .Positive) (by decide) p).2 rest_mem⟩, ?_, ?_⟩
+    refine ⟨⟨(Y9 (ε := .Positive) p (by decide)).1 + restval,
+        add_mem (Y9 (ε := .Positive) p (by decide)).2 rest_mem⟩, ?_, ?_⟩
     · exact (Subtype.ext hXeq :
         (X9 p : Mix (2 • Lambda, Pi)) + rest = X.1) ▸
-          Step.mk (X9 p) (Y9 (ε := .Positive) (by decide) p) rest
+          Step.mk (X9 p) (Y9 (ε := .Positive) p (by decide)) rest
             (Primitive.type9 .Positive (by decide) p)
-    · change (Y9 (ε := .Positive) (by decide) p).1 + restval ≤ Y.1.1
+    · change (Y9 (ε := .Positive) p (by decide)).1 + restval ≤ Y.1.1
       rw [le_iff_dominates]
       intro j
       rw [iterate_map_add, map_add]

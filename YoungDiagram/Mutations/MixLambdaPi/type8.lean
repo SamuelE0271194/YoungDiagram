@@ -97,7 +97,7 @@ section type8
 
 noncomputable def X8 : Mix (Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) ε, ?_⟩
+  refine ⟨type8X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
@@ -107,8 +107,7 @@ noncomputable def X8 : Mix (Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, hε⟩
 
-lemma X8_eq : (X8 h_le hε).1 =
-  Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) ε := rfl
+lemma X8_eq : (X8 h_le hε).1 = type8X := rfl
 
 @[simp] lemma neg_X8 :
     - (X8 h_le hε) = X8 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -117,7 +116,7 @@ lemma X8_eq : (X8 h_le hε).1 =
 
 noncomputable def Y8 : Mix (Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) ε + Gene.ofRank (2 * n + 5) ε, ?_⟩
+  refine ⟨type8Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
@@ -127,8 +126,7 @@ noncomputable def Y8 : Mix (Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, hε⟩
 
-lemma Y8_eq : (Y8 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) ε + Gene.ofRank (2 * n + 5) ε := rfl
+lemma Y8_eq : (Y8 h_le hε).1 = type8Y := rfl
 
 @[simp] lemma neg_Y8 :
     - (Y8 h_le hε) = Y8 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

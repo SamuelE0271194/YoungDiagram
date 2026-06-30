@@ -275,10 +275,7 @@ section type14
 noncomputable def X14 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 2) ε +
-    Gene.ofRank (2 * m + 2) ε +
-    Gene.ofRank (2 * n + 2) (- ε) +
-    Gene.ofRank (2 * n + 2) (- ε), ?_⟩
+  refine ⟨type14X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -292,11 +289,7 @@ noncomputable def X14 : Mix (Pi, 2 • Lambda) := by
   have hne : (-ε) ≠ .NonPolarized := by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]
   exact ⟨⟨⟨hε, hε⟩, hne⟩, hne⟩
 
-lemma X14_eq : (X14 h_le hε).1 =
-  Gene.ofRank (2 * m + 2) ε +
-  Gene.ofRank (2 * m + 2) ε +
-  Gene.ofRank (2 * n + 2) (- ε) +
-  Gene.ofRank (2 * n + 2) (- ε) := rfl
+lemma X14_eq : (X14 h_le hε).1 = type14X := rfl
 
 @[simp] lemma neg_X14 :
     - (X14 h_le hε) = X14 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -308,10 +301,7 @@ lemma X14_eq : (X14 h_le hε).1 =
 noncomputable def Y14 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 3) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 3) GeneType.NonPolarized, ?_⟩
+  refine ⟨type14Y, ?_⟩
   have odd_m : ¬ Even (2 * m + 1) := by rw [Nat.not_even_iff_odd]; exact ⟨m, rfl⟩
   have odd_n : ¬ Even (2 * n + 3) := by
     rw [Nat.not_even_iff_odd]; exact ⟨n + 1, by ring⟩
@@ -331,11 +321,7 @@ noncomputable def Y14 : Mix (Pi, 2 • Lambda) := by
     exact ⟨rfl, rfl⟩
   · rw [two_smul]; abel
 
-lemma Y14_eq : (Y14 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 3) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 3) GeneType.NonPolarized := rfl
+lemma Y14_eq : (Y14 h_le hε).1 = type14Y := rfl
 
 @[simp] lemma neg_Y14 :
     - (Y14 h_le hε) = Y14 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

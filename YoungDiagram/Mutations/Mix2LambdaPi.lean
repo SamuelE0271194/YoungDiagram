@@ -17,7 +17,7 @@ namespace Mix2LambdaPi
 
 inductive Primitive : Mix (2 • Lambda, Pi) → Mix (2 • Lambda, Pi) → Prop
   | type9 (ε : GeneType) (hε : ε ≠ .NonPolarized) (k : ℕ) :
-      Primitive (X9 k) (Y9 hε k)
+      Primitive (X9 k) (Y9 k hε)
   | type10 (ε ε' : GeneType) (hε : ε ≠ .NonPolarized) (hε' : ε' ≠ .NonPolarized)
     {m n : ℕ} (h_le : m ≤ n) :
       Primitive (X10 h_le hε hε') (Y10 h_le hε hε')

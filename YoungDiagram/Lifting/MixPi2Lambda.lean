@@ -71,7 +71,7 @@ lemma mutation_lifting_even (hk : Even k)
           Gene.ofRank (2 * k0 + 2) (-ε) + γ.1 := by
         rw [← Subtype.val_inj, AddSubmonoid.coe_add, MixPi2Lambda.Y9_eq] at U_def
         exact U_def
-      set ζ := MixPi2Lambda.Y9 hε (k0 + j) with ζ_def
+      set ζ := MixPi2Lambda.Y9 (k0 + j) hε with ζ_def
       set Z : Chromosome := ζ.1 + (lift^[2 * j] γ.1 + X.below (2 * j)) with Z_def
       have hZ : Z ∈ Mix (Pi, 2 • Lambda) := add_mem (SetLike.coe_mem _) mem1
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩
@@ -419,7 +419,7 @@ lemma mutation_lifting_odd (hk : ¬ Even k)
           Gene.ofRank (2 * k0 + 3) (-ε) + γ.1 := by
         rw [← Subtype.val_inj, AddSubmonoid.coe_add, Mix2LambdaPi.Y9_eq] at U_def
         exact U_def
-      set ζ := MixPi2Lambda.Y9 hε (k0 + j + 1) with ζ_def
+      set ζ := MixPi2Lambda.Y9 (k0 + j + 1) hε with ζ_def
       set Z : Chromosome := ζ.1 + (lift^[2 * j + 1] γ.1 + X.below (2 * j + 1)) with Z_def
       have hZ : Z ∈ Mix (Pi, 2 • Lambda) := add_mem (SetLike.coe_mem _) mem1
       refine ⟨Z, hZ, ⟨?_, ?_, ?_⟩⟩

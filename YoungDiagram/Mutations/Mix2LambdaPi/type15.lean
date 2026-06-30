@@ -180,7 +180,7 @@ section type15
 
 noncomputable def X15 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) (- ε), ?_⟩
+  refine ⟨type15X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), zero_add]
@@ -189,8 +189,7 @@ noncomputable def X15 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma X15_eq : (X15 h_le hε).1 =
-  Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) (- ε) := rfl
+lemma X15_eq : (X15 h_le hε).1 = type15X := rfl
 
 @[simp] lemma neg_X15 :
     - (X15 h_le hε) = X15 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -200,7 +199,7 @@ lemma X15_eq : (X15 h_le hε).1 =
 
 noncomputable def Y15 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) (- ε) + Gene.ofRank (2 * n + 5) ε, ?_⟩
+  refine ⟨type15Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), zero_add]
@@ -209,8 +208,7 @@ noncomputable def Y15 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff], hε⟩
 
-lemma Y15_eq : (Y15 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) (- ε) + Gene.ofRank (2 * n + 5) ε := rfl
+lemma Y15_eq : (Y15 h_le hε).1 = type15Y := rfl
 
 @[simp] lemma neg_Y15 :
     - (Y15 h_le hε) = Y15 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
