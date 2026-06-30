@@ -304,6 +304,109 @@ lemma KEY_X_full_snd {N : ℕ} (X : nMix2LambdaPi N) {m : ℕ}
     simpa [Sigma.sigma, Function.iterate_one] using this
   rw [h4, h5, MixLambdaPi.cells]
 
+private lemma single_edge_drop_fst_positive {gm : Gene} (hgm_pos : gm.type = GeneType.Positive) :
+    (Sigma.sigma (Finsupp.single gm 1 : Chromosome) (gm.rank - 1)).1 -
+        (Sigma.sigma (Finsupp.single gm 1 : Chromosome) (gm.rank + 1)).1 = 1 := by
+  have hsingle : (Finsupp.single gm 1 : Chromosome) = Gene.ofRank gm.rank gm.type :=
+    Gene.ofRank_eq_gene.symm
+  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
+  have hpred : gm.rank - (gm.rank - 1) = 1 := by
+    have := gm.rank_pos
+    omega
+  have hsucc : gm.rank - (gm.rank + 1) = 0 := by omega
+  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hgm_pos, signature_ofRank_one_positive]
+  norm_num
+
+private lemma single_edge_drop_snd_negative {gm : Gene} (hgm_neg : gm.type = GeneType.Negative) :
+    (Sigma.sigma (Finsupp.single gm 1 : Chromosome) (gm.rank - 1)).2 -
+        (Sigma.sigma (Finsupp.single gm 1 : Chromosome) (gm.rank + 1)).2 = 1 := by
+  have hsingle : (Finsupp.single gm 1 : Chromosome) = Gene.ofRank gm.rank gm.type :=
+    Gene.ofRank_eq_gene.symm
+  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
+  have hpred : gm.rank - (gm.rank - 1) = 1 := by
+    have := gm.rank_pos
+    omega
+  have hsucc : gm.rank - (gm.rank + 1) = 0 := by omega
+  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hgm_neg, signature_ofRank_one_negative]
+  norm_num
+
+/-- Lower-edge full drop for a positive minimal single gene.  At the boundary
+`m-1 → m+1`, the positive copy contributes exactly one to the first component,
+so the first-component drop is the full count `r_0-r_1`. -/
+lemma KEY_X_edge_fst_positive {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
+    {gm : Gene} (hgm_rank : gm.rank = m) (hgm_pos : gm.type = GeneType.Positive)
+    (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (hwin : m + 1 ≤ k) :
+    (Sigma.sigma X.1.1 (m - 1)).1 - (Sigma.sigma X.1.1 (m + 1)).1 =
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
+  have hmpos : 1 ≤ m := by
+    rw [← hgm_rank]
+    exact gm.rank_pos
+  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, m + 1 ≤ g.rank := by
+    intro g hg; have := h2nd g hg; omega
+  have h2' : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, (m - 1) + 2 ≤ g.rank := by
+    intro g hg; have := h2 g hg; omega
+  have hWdrop := MixLambdaPi.twostep (W := X.1.1 - Finsupp.single gm 1)
+    (i := m - 1) h2'
+  have hidx : (m - 1) + 2 = m + 1 := by omega
+  rw [hidx] at hWdrop
+  have hsplit_i := sigma_split X gm hgm1 (m - 1)
+  have hsplit_i2 := sigma_split X gm hgm1 (m + 1)
+  have hgm_drop := single_edge_drop_fst_positive (gm := gm) hgm_pos
+  have h4 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) :=
+    @signature_sum_eq_rank _
+  have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      (X.1.1.prime.rank : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
+    simpa [Sigma.sigma, Function.iterate_one] using this
+  rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
+  have hfst_i := congrArg Prod.fst hsplit_i
+  have hfst_i2 := congrArg Prod.fst hsplit_i2
+  simp only [Prod.fst_add] at hfst_i hfst_i2
+  rw [hfst_i, hfst_i2]
+  rw [hgm_rank] at hgm_drop
+  linarith
+
+/-- Lower-edge full drop for a negative minimal single gene, in the second
+component. -/
+lemma KEY_X_edge_snd_negative {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
+    {gm : Gene} (hgm_rank : gm.rank = m) (hgm_neg : gm.type = GeneType.Negative)
+    (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (hwin : m + 1 ≤ k) :
+    (Sigma.sigma X.1.1 (m - 1)).2 - (Sigma.sigma X.1.1 (m + 1)).2 =
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
+  have hmpos : 1 ≤ m := by
+    rw [← hgm_rank]
+    exact gm.rank_pos
+  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, m + 1 ≤ g.rank := by
+    intro g hg; have := h2nd g hg; omega
+  have h2' : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, (m - 1) + 2 ≤ g.rank := by
+    intro g hg; have := h2 g hg; omega
+  have hWdrop := MixLambdaPi.twostep_snd (W := X.1.1 - Finsupp.single gm 1)
+    (i := m - 1) h2'
+  have hidx : (m - 1) + 2 = m + 1 := by omega
+  rw [hidx] at hWdrop
+  have hsplit_i := sigma_split X gm hgm1 (m - 1)
+  have hsplit_i2 := sigma_split X gm hgm1 (m + 1)
+  have hgm_drop := single_edge_drop_snd_negative (gm := gm) hgm_neg
+  have h4 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) :=
+    @signature_sum_eq_rank _
+  have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      (X.1.1.prime.rank : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
+    simpa [Sigma.sigma, Function.iterate_one] using this
+  rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
+  have hsnd_i := congrArg Prod.snd hsplit_i
+  have hsnd_i2 := congrArg Prod.snd hsplit_i2
+  simp only [Prod.snd_add] at hsnd_i hsnd_i2
+  rw [hsnd_i, hsnd_i2]
+  rw [hgm_rank] at hgm_drop
+  linarith
+
 /-- Even-level `a`-window propagation: from a strict seed `a_{j0} < c_{j0}` at an
 even level `j0`, the strict first-component bound propagates across the even
 sublevels of the window.  The `hstep` uses the `Y`-side bound `KEY_Y_fst` and the
