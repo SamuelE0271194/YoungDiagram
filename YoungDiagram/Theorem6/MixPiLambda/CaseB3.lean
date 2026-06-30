@@ -31,6 +31,10 @@ lemma branchB_case3 (m : ℕ)
     (m' : ℕ) (hm' : g₁.rank = 2 * m' + 2) (hmpos : 0 < m') :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
   have hmin2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank := fun g hg => by have := hg₁min g hg; omega
+  have hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 := by
+    have hb1 : (Sigma.sigma X.1.1 1).2 ≤ (Sigma.sigma Y.1.1 1).2 := (le_iff_dominates.mp hXY.le 1).2
+    linarith [ha, hb1]
   by_cases hmult : 2 ≤ X.1.1 g₁
   · -- `X ⊇ 2g₁`: type8 diagonal `2g⁺(m) → g⁺(m-2) + g⁺(m+2)`.
     have hmin' : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank := fun g hg => hm' ▸ hg₁min g hg
@@ -52,7 +56,7 @@ lemma branchB_case3 (m : ℕ)
         exact hXpn ⟨g₁, g, by rw [hgr, hm'], hg₁pos, hgneg, hXg₁, hgpos2⟩
       · exact hge2
     have hpropa := branchB_case4_aprop_gen X Y hXY ha hmin2 (branchB_hpar X) (2 * m' + 3) hk1
-    have hbanchor := branchB_case3_banchor_pl X Y hXY ha m' hmpos hmin'
+    have hbanchor := branchB_case3_banchor_pl X Y hXY hgap m' hmpos hmin'
     have htail2 : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, 2 * m' + 2 ≤ g.rank := by
       intro g hg
       have hgpos : 0 < X.1.1 g := lt_of_lt_of_le
@@ -153,7 +157,7 @@ lemma branchB_case3 (m : ℕ)
           exact hXpn ⟨g₂, g, by rw [hgr, hq], hch, hgneg, hXg₂', hgpos2⟩
         · exact hge3
       have hpropa := branchB_case4_aprop_gen X Y hXY ha hmin2 (branchB_hpar X) (2 * q + 3) hk1
-      have hbanchor := branchB_case3_banchor_pl X Y hXY ha m' hmpos hmin'
+      have hbanchor := branchB_case3_banchor_pl X Y hXY hgap m' hmpos hmin'
       have htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, 2 * q + 2 ≤ g.rank := by
         intro g hg
         have hgne : g ≠ g₁ := by
@@ -165,7 +169,7 @@ lemma branchB_case3 (m : ℕ)
           rw [Finsupp.mem_support_iff] at hg ⊢
           rwa [Finsupp.tsub_apply, Finsupp.single_apply, if_neg (Ne.symm hgne), Nat.sub_zero] at hg
         have := hk2 g hgX hgne; rwa [hq] at this
-      have hdeep := branchB_case3_deep_bprop X Y hXY ha m' g₁ hm' hg₁mult1 (2 * q + 2) htail hbanchor
+      have hdeep := branchB_case3_deep_bprop X Y hXY hgap m' g₁ hm' hg₁mult1 (2 * q + 2) htail hbanchor
       have hhal := branchB_case3_halive X Y hXY ha g₁ (by omega) (2 * q + 2) htail
       refine branchB_case3_assembly_type8 X Y hXY m' q (by omega) g₁ g₂
         hm' hg₁pos hq hch hXg₁ hXg₂ hne hbanchor ?_ ?_ ?_
