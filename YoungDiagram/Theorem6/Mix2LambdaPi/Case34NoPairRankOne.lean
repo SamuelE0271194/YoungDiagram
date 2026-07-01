@@ -1,5 +1,6 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Seed
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34SecondDouble
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -62,8 +63,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_second_double
         (signature (Chromosome.prime^[1] X.1.1)).2 <
           (signature (Chromosome.prime^[1] Y.1.1)).2)
     (hg₂_two : 2 ≤ X.1.1 g₂) :
-    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 :=
+  exists_mutation_le_second_double X Y hXY hcommon h17_1 hXpol hno_pair g g₂
+    hg_one hg_rank_one hg₂min hg₂_pol hg₂_rank_q hseed1 hg₂_two
 
 private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
     {m p q₂ q₃ : ℕ} (X Y : nMix2LambdaPi (m + 2))
