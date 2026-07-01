@@ -146,9 +146,77 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundar
           (signature (Chromosome.prime^[1] Y.1.1)).2)
     (hg₂_one : X.1.1 g₂ = 1)
     (restAfterG₂ : Chromosome)
+    (hrest_def : restAfterG₂ = X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1)
     (hrest₂_empty : ¬ restAfterG₂ ≠ 0) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  -- §17 Case 4 needs `X` to have at least three genes (from `r₀-r₁ ≥ s₀-s₁+2`),
+  -- but here `X = g + g₂` has exactly two.  So this boundary is vacuous.
+  exfalso
+  have hrest0 : X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1 = 0 := by
+    rw [← hrest_def]; exact not_not.mp hrest₂_empty
+  have hg_ne_g₂ : g ≠ g₂ := fun h => hne_g₂_g h.symm
+  have hXeq : X.1.1 = Finsupp.single g 1 + Finsupp.single g₂ 1 := by
+    ext g'
+    have hz := DFunLike.congr_fun hrest0 g'
+    rw [Finsupp.coe_zero, Pi.zero_apply, Finsupp.tsub_apply, Finsupp.tsub_apply,
+        Finsupp.single_apply, Finsupp.single_apply] at hz
+    rw [Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+    by_cases h1 : g = g'
+    · subst h1
+      rw [if_pos rfl, if_neg hne_g₂_g] at hz ⊢
+      omega
+    · by_cases h2 : g₂ = g'
+      · subst h2
+        rw [if_neg hg_ne_g₂, if_pos rfl] at hz ⊢
+        omega
+      · rw [if_neg h1, if_neg h2] at hz ⊢
+        omega
+  -- `rank X = 2q₂+4`, `rank (prime X) = 2q₂+2` (only `g₂` survives one `prime`).
+  have hrankX : X.1.1.rank = 2 * q₂ + 4 := by
+    rw [hXeq, map_add, rank_single, rank_single, one_smul, one_smul,
+        hg_rank_one, hg₂_rank_q]; omega
+  have hprimeX_eq : Chromosome.prime^[1] X.1.1 = Gene.ofRank (2 * q₂ + 2) g₂.type := by
+    show X.1.1.prime = _
+    rw [hXeq, map_add, prime_single, prime_single, one_smul, one_smul,
+        hg_rank_one, hg₂_rank_q]
+    simp [Gene.ofRank_zero, show 2 * q₂ + 3 - 1 = 2 * q₂ + 2 from by omega]
+  have hrankprimeX : (Chromosome.prime^[1] X.1.1).rank = 2 * q₂ + 2 := by
+    rw [hprimeX_eq, rank_ofRank]
+  have hm : m + 2 = 2 * q₂ + 4 := by rw [← X.2]; exact hrankX
+  -- Both `prime X` and `prime Y` lie in `Mix (Pi, 2 • Lambda)`, so their
+  -- signature components are integers; `hseed1` then gives a `+2` rank gap.
+  have hmemX : Chromosome.prime^[1] X.1.1 ∈ Mix (Pi, 2 • Lambda) := by
+    have h := Variety.prime_mem_Mix_2Lambda_Pi_iterate X.1.2 1
+    rwa [if_neg (by decide)] at h
+  have hmemY : Chromosome.prime^[1] Y.1.1 ∈ Mix (Pi, 2 • Lambda) := by
+    have h := Variety.prime_mem_Mix_2Lambda_Pi_iterate Y.1.2 1
+    rwa [if_neg (by decide)] at h
+  obtain ⟨nx, hnx⟩ := Mix2LambdaSection17.signature_Mix_Pi_2Lambda_isNat hmemX
+  obtain ⟨ny, hny⟩ := Mix2LambdaSection17.signature_Mix_Pi_2Lambda_isNat hmemY
+  have hnx1 : (signature (Chromosome.prime^[1] X.1.1)).1 = (nx.1 : ℚ) := by rw [hnx]
+  have hnx2 : (signature (Chromosome.prime^[1] X.1.1)).2 = (nx.2 : ℚ) := by rw [hnx]
+  have hny1 : (signature (Chromosome.prime^[1] Y.1.1)).1 = (ny.1 : ℚ) := by rw [hny]
+  have hny2 : (signature (Chromosome.prime^[1] Y.1.1)).2 = (ny.2 : ℚ) := by rw [hny]
+  have hgap1 : nx.1 < ny.1 := by
+    have h : (nx.1 : ℚ) < ny.1 := by rw [← hnx1, ← hny1]; exact hseed1.1
+    exact_mod_cast h
+  have hgap2 : nx.2 < ny.2 := by
+    have h : (nx.2 : ℚ) < ny.2 := by rw [← hnx2, ← hny2]; exact hseed1.2
+    exact_mod_cast h
+  have hrx : (Chromosome.prime^[1] X.1.1).rank = nx.1 + nx.2 := by
+    have h := signature_sum_eq_rank (X := Chromosome.prime^[1] X.1.1)
+    rw [hnx1, hnx2] at h; exact_mod_cast h.symm
+  have hry : (Chromosome.prime^[1] Y.1.1).rank = ny.1 + ny.2 := by
+    have h := signature_sum_eq_rank (X := Chromosome.prime^[1] Y.1.1)
+    rw [hny1, hny2] at h; exact_mod_cast h.symm
+  have hYne : Y.1.1 ≠ 0 := by
+    intro h; have h2 := Y.2; rw [h] at h2; simp at h2
+  have hprimeYlt : (Chromosome.prime^[1] Y.1.1).rank < Y.1.1.rank := by
+    show Y.1.1.prime.rank < Y.1.1.rank
+    exact prime_rank_lt hYne
+  rw [hrx] at hrankprimeX
+  rw [hry, Y.2] at hprimeYlt
+  omega
 
 private lemma exists_mutation_le_no_pair_rank_one_singleton
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
@@ -307,7 +375,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton
       exact exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundary
         X Y hXY hcommon h17_1 hXpol hno_pair g g₂ hgX hgmin hg_pol hp hp0
         hg_rank_one hXneg_zero hg_one hg₂_rest hg₂min hXg₂ hne_g₂_g
-        hne_g₂_neg hg₂_pol hg₂_rank_q hseed1 hg₂_one restAfterG₂ hrest₂_ne
+        hne_g₂_neg hg₂_pol hg₂_rank_q hseed1 hg₂_one restAfterG₂ rfl hrest₂_ne
 
 lemma exists_mutation_le_no_pair_rank_one
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))

@@ -494,7 +494,7 @@ lemma even_rank_of_polarized_gene_mem_Mix_Pi_2Lambda
   exact hgpol hNP
 
 /-- A chromosome in `2 • Lambda` has a diagonal integral signature. -/
-private lemma signature_twoLambda_isNat
+lemma signature_twoLambda_isNat
     {W : Chromosome} (hW : W ∈ 2 • Lambda) :
     ∃ n : ℕ, signature W = ((n : ℚ), (n : ℚ)) := by
   obtain ⟨W0, hW0, hW0eq⟩ :=

@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPair
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairRankOne
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -35,7 +36,11 @@ private lemma exists_mutation_le_type16_positive_rank_one_zero_successor
     (hYsucc : ¬ Chromosome.prime^[2 * p + 2] Y.1.1 ≠ 0)
     (hp0 : p = 0) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  have hY2 : Chromosome.prime^[2] Y.1.1 = 0 := by
+    simpa [hp0] using not_not.mp hYsucc
+  exact (pair_rank_one_zero_successor_false X Y hXY hcommon hXpol gpos gneg
+    hgpos hgneg (by omega) (by omega) hXpos hXneg
+    (by have := htwo_one.1; have := htwo_one.2; omega) hY2).elim
 
 private lemma exists_mutation_le_type16_negative_rank_one_zero_successor
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
@@ -67,7 +72,11 @@ private lemma exists_mutation_le_type16_negative_rank_one_zero_successor
     (hYsucc : ¬ Chromosome.prime^[2 * p + 2] Y.1.1 ≠ 0)
     (hp0 : p = 0) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  have hY2 : Chromosome.prime^[2] Y.1.1 = 0 := by
+    simpa [hp0] using not_not.mp hYsucc
+  exact (pair_rank_one_zero_successor_false X Y hXY hcommon hXpol gpos gneg
+    hgpos hgneg (by omega) (by omega) hXpos hXneg
+    (by have := hone_two.1; have := hone_two.2; omega) hY2).elim
 
 private lemma exists_mutation_le_type10_pair_rank_one_boundary
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
