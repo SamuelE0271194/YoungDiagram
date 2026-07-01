@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Seed
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
