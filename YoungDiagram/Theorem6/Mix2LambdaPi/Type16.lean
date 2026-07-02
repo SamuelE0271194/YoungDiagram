@@ -5,6 +5,79 @@ open Chromosome Sigma Pointwise
 
 namespace Mix2LambdaPi
 
+/-- A thin theorem-level wrapper for general type16.  The caller supplies the
+source decomposition and the dominance bound after replacing the source by the
+type16 target. -/
+lemma exists_mutation_le_type16_of_decomp
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMix2LambdaPi N) (restval : Chromosome)
+    (hXeq : (X16 h_le hε).1 + restval = X.1.1)
+    (hrest : restval ∈ Mix (2 • Lambda, Pi))
+    (hZle : (Y16 h_le hε).1 + restval ≤ Y.1.1) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let rest : Mix (2 • Lambda, Pi) := ⟨restval, hrest⟩
+  refine ⟨⟨(Y16 h_le hε).1 + restval,
+      add_mem (Y16 h_le hε).2 hrest⟩, ?_, hZle⟩
+  exact (Subtype.ext hXeq :
+      (X16 h_le hε : Mix (2 • Lambda, Pi)) + rest = X.1) ▸
+    Step.mk (X16 h_le hε) (Y16 h_le hε) rest
+      (Primitive.type16 ε hε h_le)
+
+/-- Concrete-gene wrapper for general type16.  This packages the source
+decomposition `2g^ε(2m+1)+g^{-ε}(2n+1)+rest` and the rest membership; the
+caller still supplies the final dominance bound for the type16 target plus the
+rest.  The rank-one boundary used in §17 Case 3 is the specialization `m = 0`. -/
+lemma exists_mutation_le_type16_of_genes
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMix2LambdaPi N)
+    (gdouble gsingle : Gene)
+    (hdouble_type : gdouble.type = ε)
+    (hsingle_type : gsingle.type = -ε)
+    (hdouble_rank : gdouble.rank = 2 * m + 1)
+    (hsingle_rank : gsingle.rank = 2 * n + 1)
+    (hdouble : 2 ≤ X.1.1 gdouble) (hsingle : 1 ≤ X.1.1 gsingle)
+    (hne : gdouble ≠ gsingle)
+    (hZle :
+      (Y16 h_le hε).1 +
+          (X.1.1 - Finsupp.single gdouble 1 - Finsupp.single gdouble 1 -
+            Finsupp.single gsingle 1) ≤ Y.1.1) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let restval : Chromosome :=
+    X.1.1 - Finsupp.single gdouble 1 - Finsupp.single gdouble 1 -
+      Finsupp.single gsingle 1
+  have hodddouble : Odd gdouble.rank := by
+    rw [hdouble_rank]
+    exact ⟨m, rfl⟩
+  have hoddsingle : Odd gsingle.rank := by
+    rw [hsingle_rank]
+    exact ⟨n, rfl⟩
+  have rest_mem : restval ∈ Mix (2 • Lambda, Pi) :=
+    sub_single_one_mem_Mix_2Lambda_Pi
+      (sub_single_one_mem_Mix_2Lambda_Pi
+        (sub_single_one_mem_Mix_2Lambda_Pi X.1.2 hodddouble) hodddouble)
+      hoddsingle
+  have hgdouble_eq :
+      Gene.ofRank (2 * m + 1) ε =
+        (Finsupp.single gdouble 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gdouble)
+    rwa [hdouble_rank, hdouble_type] at h
+  have hgsingle_eq :
+      Gene.ofRank (2 * n + 1) (-ε) =
+        (Finsupp.single gsingle 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gsingle)
+    rwa [hsingle_rank, hsingle_type] at h
+  have hX16val :
+      (X16 h_le hε).1 =
+        Finsupp.single gdouble 1 + Finsupp.single gdouble 1 +
+          Finsupp.single gsingle 1 := by
+    rw [X16_eq, hgdouble_eq, hgsingle_eq]
+  have hXeq : (X16 h_le hε).1 + restval = X.1.1 := by
+    rw [hX16val]
+    exact Mix2LambdaSection17.double_single_pair_add_rest
+      hdouble hsingle hne
+  exact exists_mutation_le_type16_of_decomp hε h_le X Y restval hXeq
+    rest_mem hZle
+
 private lemma type16_diagonal_signature_eq_before
     {p j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized}
     (hj : j < 2 * p + 1) :
@@ -69,6 +142,192 @@ private lemma type16_diagonal_signature_eq_after
   have h1 : 2 * p + 1 - j = 0 := by omega
   have h3 : 2 * p + 3 - j = 0 := by omega
   simp [h0, h1, h3]
+
+private lemma type16_rank_one_signature_eq_zero
+    {q : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} :
+    signature (Chromosome.prime^[0] (Y16 (Nat.zero_le (q + 1)) hε).1) =
+      signature (Chromosome.prime^[0] (X16 (Nat.zero_le (q + 1)) hε).1) := by
+  simpa only [Function.iterate_zero_apply, X16_eq, Y16_eq] using
+    (mutation_type16_signature_eq (ε := ε) (m := 0) (n := q + 1)
+      (h_le := Nat.zero_le (q + 1))).symm
+
+private lemma type16_rank_one_signature_odd_mid
+    {q j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized}
+    (hjlo : 1 ≤ j) (hjhi : j ≤ 2 * q + 3) (hjodd : ¬ Even j) :
+    signature (Chromosome.prime^[j] (Y16 (Nat.zero_le (q + 1)) hε).1) =
+      signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) +
+        ((1 : ℚ), (1 : ℚ)) := by
+  simp only [X16_eq, Y16_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have h1 : 1 - j = 0 := by omega
+  have h0 : 0 - j = 0 := by omega
+  have htop : 2 * (q + 1) + 3 - j =
+      (2 * (q + 1) + 1 - j) + 2 := by
+    omega
+  rw [h1, h0, htop, Gene.ofRank_zero, map_zero, zero_add, zero_add,
+    signature_ofRank_eq₂']
+  have hk_even : Even (2 * (q + 1) + 1 - j) := by
+    rcases Nat.not_even_iff_odd.mp hjodd with ⟨t, rfl⟩
+    use q + 1 - t
+    omega
+  rw [signature_ofRank_even_half (ε := ε) hk_even,
+    signature_ofRank_even_half (ε := -ε) hk_even]
+  simp
+
+private lemma type16_rank_one_signature_even_mid
+    {q j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized}
+    (hjlo : 1 ≤ j) (hjhi : j ≤ 2 * q + 3) (hjeven : Even j) :
+    signature (Chromosome.prime^[j] (Y16 (Nat.zero_le (q + 1)) hε).1) =
+      signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) +
+        (signature (Gene.ofRank 1 ε) + signature (Gene.ofRank 1 ε)) := by
+  simp only [X16_eq, Y16_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have h1 : 1 - j = 0 := by omega
+  have h0 : 0 - j = 0 := by omega
+  have htop : 2 * (q + 1) + 3 - j =
+      (2 * (q + 1) + 1 - j) + 2 := by
+    omega
+  rw [h1, h0, htop, Gene.ofRank_zero, map_zero, zero_add, zero_add,
+    signature_ofRank_eq₂']
+  have hj_le_even : j ≤ 2 * q + 2 := by
+    rcases hjeven with ⟨t, ht⟩
+    rw [ht] at hjhi ⊢
+    omega
+  have hk_pos : 1 ≤ 2 * (q + 1) + 1 - j := by omega
+  have hk_odd : ¬ Even (2 * (q + 1) + 1 - j) := by
+    intro hk_even
+    rcases hjeven with ⟨t, ht⟩
+    rw [ht] at hk_even
+    rcases hk_even with ⟨u, hu⟩
+    omega
+  have hk_pred_even : Even (2 * (q + 1) + 1 - j - 1) := by
+    by_contra h
+    exact hk_odd ((Nat.even_sub_one hk_pos).2 h)
+  cases ε with
+  | NonPolarized => exact False.elim (hε rfl)
+  | Positive =>
+      simp only [GeneType.neg_positive, signature_ofRank_one_positive]
+      rw [signature_ofRank_positive hk_pos]
+      rw [signature_ofRank_negative hk_pos]
+      rw [signature_ofRank_even_half (ε := GeneType.Negative) hk_pred_even,
+        signature_ofRank_even_half (ε := GeneType.Positive) hk_pred_even]
+      simp
+      ring_nf
+  | Negative =>
+      simp only [GeneType.neg_negative, signature_ofRank_one_negative]
+      rw [signature_ofRank_negative hk_pos]
+      rw [signature_ofRank_positive hk_pos]
+      rw [signature_ofRank_even_half (ε := GeneType.Positive) hk_pred_even,
+        signature_ofRank_even_half (ε := GeneType.Negative) hk_pred_even]
+      simp
+      ring_nf
+
+private lemma type16_rank_one_signature_succ
+    {q : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} :
+    signature (Chromosome.prime^[2 * q + 4]
+        (Y16 (Nat.zero_le (q + 1)) hε).1) =
+      signature (Chromosome.prime^[2 * q + 4]
+          (X16 (Nat.zero_le (q + 1)) hε).1) +
+        signature (Gene.ofRank 1 ε) := by
+  simp only [X16_eq, Y16_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have h0 : 0 - (2 * q + 4) = 0 := by omega
+  have h1 : 1 - (2 * q + 4) = 0 := by omega
+  have htop_source : 2 * (q + 1) + 1 - (2 * q + 4) = 0 := by omega
+  have htop_target : 2 * (q + 1) + 3 - (2 * q + 4) = 1 := by omega
+  simp [h0, h1, htop_source, htop_target]
+
+private lemma type16_rank_one_signature_eq_after
+    {q j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized}
+    (hj : 2 * q + 4 < j) :
+    signature (Chromosome.prime^[j] (Y16 (Nat.zero_le (q + 1)) hε).1) =
+      signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) := by
+  simp only [X16_eq, Y16_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have h0 : 0 - j = 0 := by omega
+  have h1 : 1 - j = 0 := by omega
+  have hsource : 2 * (q + 1) + 1 - j = 0 := by omega
+  have htarget : 2 * (q + 1) + 3 - j = 0 := by omega
+  simp [h0, h1, hsource, htarget]
+
+/-- Dominance assembly for the rank-one lower endpoint of type16,
+`2g^ε(1)+g^{-ε}(2q+3) → 2g(0)+g^ε(2q+5)`.
+
+The target-source signature delta is parity-dependent in the middle window:
+odd levels need `(1,1)` slack, while even levels need two copies of the
+rank-one `ε` signature. -/
+lemma type16_rank_one_target_add_rest_le_of_gaps
+    {N q : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized)
+    (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1) (restval : Chromosome)
+    (hXeq : (X16 (Nat.zero_le (q + 1)) hε).1 + restval = X.1.1)
+    (hgap_odd : ∀ j, 1 ≤ j → j ≤ 2 * q + 3 → ¬ Even j →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_even : ∀ j, 1 ≤ j → j ≤ 2 * q + 3 → Even j →
+      (signature (Gene.ofRank 1 ε) + signature (Gene.ofRank 1 ε)) +
+          signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_succ :
+      signature (Gene.ofRank 1 ε) +
+          signature (Chromosome.prime^[2 * q + 4] X.1.1) ≤
+        signature (Chromosome.prime^[2 * q + 4] Y.1.1)) :
+    (Y16 (Nat.zero_le (q + 1)) hε).1 + restval ≤ Y.1.1 := by
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp :
+      signature (Chromosome.prime^[j] X.1.1) =
+        signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) +
+          signature (Chromosome.prime^[j] restval) := by
+    conv_lhs => rw [← hXeq]
+    rw [iterate_map_add, map_add]
+  by_cases hj_zero : j = 0
+  · subst j
+    rw [type16_rank_one_signature_eq_zero, ← hdecomp]
+    exact le_iff_dominates.mp hXY.le 0
+  · by_cases hj_mid : j ≤ 2 * q + 3
+    · have hjlo : 1 ≤ j := by omega
+      by_cases hjeven : Even j
+      · rw [type16_rank_one_signature_even_mid hjlo hj_mid hjeven]
+        calc
+          (signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) +
+                  (signature (Gene.ofRank 1 ε) + signature (Gene.ofRank 1 ε))) +
+              signature (Chromosome.prime^[j] restval)
+              = (signature (Gene.ofRank 1 ε) + signature (Gene.ofRank 1 ε)) +
+                  (signature (Chromosome.prime^[j]
+                      (X16 (Nat.zero_le (q + 1)) hε).1) +
+                    signature (Chromosome.prime^[j] restval)) := by abel
+          _ = (signature (Gene.ofRank 1 ε) + signature (Gene.ofRank 1 ε)) +
+                signature (Chromosome.prime^[j] X.1.1) := by rw [← hdecomp]
+          _ ≤ signature (Chromosome.prime^[j] Y.1.1) :=
+            hgap_even j hjlo hj_mid hjeven
+      · rw [type16_rank_one_signature_odd_mid hjlo hj_mid hjeven]
+        calc
+          (signature (Chromosome.prime^[j] (X16 (Nat.zero_le (q + 1)) hε).1) +
+                  ((1 : ℚ), (1 : ℚ))) +
+              signature (Chromosome.prime^[j] restval)
+              = ((1 : ℚ), (1 : ℚ)) +
+                  (signature (Chromosome.prime^[j]
+                      (X16 (Nat.zero_le (q + 1)) hε).1) +
+                    signature (Chromosome.prime^[j] restval)) := by abel
+          _ = ((1 : ℚ), (1 : ℚ)) +
+                signature (Chromosome.prime^[j] X.1.1) := by rw [← hdecomp]
+          _ ≤ signature (Chromosome.prime^[j] Y.1.1) :=
+            hgap_odd j hjlo hj_mid hjeven
+    · by_cases hj_succ : j = 2 * q + 4
+      · subst j
+        rw [type16_rank_one_signature_succ]
+        calc
+          (signature (Chromosome.prime^[2 * q + 4]
+                    (X16 (Nat.zero_le (q + 1)) hε).1) +
+                  signature (Gene.ofRank 1 ε)) +
+              signature (Chromosome.prime^[2 * q + 4] restval)
+              = signature (Gene.ofRank 1 ε) +
+                  (signature (Chromosome.prime^[2 * q + 4]
+                      (X16 (Nat.zero_le (q + 1)) hε).1) +
+                    signature (Chromosome.prime^[2 * q + 4] restval)) := by abel
+          _ = signature (Gene.ofRank 1 ε) +
+                signature (Chromosome.prime^[2 * q + 4] X.1.1) := by rw [← hdecomp]
+          _ ≤ signature (Chromosome.prime^[2 * q + 4] Y.1.1) := hgap_succ
+      · have hj_after : 2 * q + 4 < j := by omega
+        rw [type16_rank_one_signature_eq_after hj_after, ← hdecomp]
+        exact le_iff_dominates.mp hXY.le j
 
 /-- In the diagonal type16 `2+1` situation, the rank where the two lower
 nonpolarized genes are created has the required `(1,1)` dominance gap. -/

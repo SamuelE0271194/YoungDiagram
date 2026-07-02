@@ -26,8 +26,36 @@ lemma totalMult_sub_single_one {X : Chromosome} {gm : Gene}
   rw [Finsupp.sum_add_index (by simp) (by intros; simp),
     Finsupp.sum_single_index (by simp)]
 
-lemma prime_iterate_eq_sub_single_of_rank_le
-    {X : Chromosome} {gm : Gene} (hgm1 : X gm = 1)
+lemma totalMult_sub_single_one_of_pos {X : Chromosome} {gm : Gene}
+    (hgm : 0 < X gm) :
+    (X - Finsupp.single gm 1).sum (fun _ n => n) + 1 =
+      X.sum (fun _ n => n) := by
+  have hsub : X = (X - Finsupp.single gm 1) + Finsupp.single gm 1 := by
+    ext g
+    simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
+    by_cases hg : gm = g
+    · subst hg; rw [if_pos rfl]; omega
+    · rw [if_neg hg]; omega
+  conv_rhs => rw [hsub]
+  rw [Finsupp.sum_add_index (by simp) (by intros; simp),
+    Finsupp.sum_single_index (by simp)]
+
+lemma totalMult_sub_double_single {X : Chromosome} {gm : Gene}
+    (hgm2 : 2 ≤ X gm) :
+    (X - Finsupp.single gm 1 - Finsupp.single gm 1).sum (fun _ n => n) + 2 =
+      X.sum (fun _ n => n) := by
+  have hfirst : 0 < X gm := by omega
+  have hsecond :
+      0 < (X - Finsupp.single gm 1 : Chromosome) gm := by
+    rw [Finsupp.tsub_apply, Finsupp.single_eq_same]
+    omega
+  have h1 := totalMult_sub_single_one_of_pos (X := X) (gm := gm) hfirst
+  have h2 := totalMult_sub_single_one_of_pos
+    (X := X - Finsupp.single gm 1) (gm := gm) hsecond
+  omega
+
+lemma prime_iterate_eq_sub_single_of_rank_le_of_pos
+    {X : Chromosome} {gm : Gene} (hgm : 0 < X gm)
     {i : ℕ} (hi : gm.rank ≤ i) :
     Chromosome.prime^[i] X =
       Chromosome.prime^[i] (X - Finsupp.single gm 1) := by
@@ -45,6 +73,28 @@ lemma prime_iterate_eq_sub_single_of_rank_le
     · rw [if_neg hg]; omega
   conv_lhs => rw [hsub]
   rw [iterate_map_add, hsingle_zero, add_zero]
+
+lemma prime_iterate_eq_sub_single_of_rank_le
+    {X : Chromosome} {gm : Gene} (hgm1 : X gm = 1)
+    {i : ℕ} (hi : gm.rank ≤ i) :
+    Chromosome.prime^[i] X =
+      Chromosome.prime^[i] (X - Finsupp.single gm 1) := by
+  exact prime_iterate_eq_sub_single_of_rank_le_of_pos (by omega) hi
+
+lemma prime_iterate_eq_sub_double_single_of_rank_le
+    {X : Chromosome} {gm : Gene} (hgm2 : 2 ≤ X gm)
+    {i : ℕ} (hi : gm.rank ≤ i) :
+    Chromosome.prime^[i] X =
+      Chromosome.prime^[i] (X - Finsupp.single gm 1 - Finsupp.single gm 1) := by
+  have hfirst : 0 < X gm := by omega
+  have hsecond :
+      0 < (X - Finsupp.single gm 1 : Chromosome) gm := by
+    rw [Finsupp.tsub_apply, Finsupp.single_eq_same]
+    omega
+  rw [prime_iterate_eq_sub_single_of_rank_le_of_pos
+    (X := X) (gm := gm) hfirst hi]
+  rw [prime_iterate_eq_sub_single_of_rank_le_of_pos
+    (X := X - Finsupp.single gm 1) (gm := gm) hsecond hi]
 
 /-- First-component upper-edge drop: from levels `1` to `3`, every gene of rank
 at least `2` contributes one cell, provided the rank-`2` genes are positive. -/
