@@ -280,8 +280,7 @@ lemma type10_double_target_add_rest_le_of_gaps
   let restval : Chromosome := X.1.1 - Finsupp.single g 1 - Finsupp.single g 1
   have hg_eq :
       Gene.ofRank (2 * q + 3) ε = (Finsupp.single g 1 : Chromosome) := by
-    have h := Gene.ofRank_eq_gene (g := g)
-    rwa [hg_rank, hg] at h
+    rw [← hg_rank, ← hg]; exact Gene.ofRank_eq_gene (g := g)
   have hX10val :
       (X10 (le_refl q) hε hε).1 =
         Finsupp.single g 1 + Finsupp.single g 1 := by
@@ -320,12 +319,10 @@ lemma type10_pair_target_add_rest_le_of_gaps
   let restval : Chromosome := X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₂ 1
   have hg₁_eq :
       Gene.ofRank (2 * q + 3) ε = (Finsupp.single g₁ 1 : Chromosome) := by
-    have h := Gene.ofRank_eq_gene (g := g₁)
-    rwa [hg₁_rank, hg₁] at h
+    rw [← hg₁_rank, ← hg₁]; exact Gene.ofRank_eq_gene (g := g₁)
   have hg₂_eq :
       Gene.ofRank (2 * n + 3) ε' = (Finsupp.single g₂ 1 : Chromosome) := by
-    have h := Gene.ofRank_eq_gene (g := g₂)
-    rwa [hg₂_rank, hg₂] at h
+    rw [← hg₂_rank, ← hg₂]; exact Gene.ofRank_eq_gene (g := g₂)
   have hX10val :
       (X10 h_le hε hε').1 = Finsupp.single g₁ 1 + Finsupp.single g₂ 1 := by
     rw [X10_eq, hg₁_eq, hg₂_eq]
@@ -335,7 +332,6 @@ lemma type10_pair_target_add_rest_le_of_gaps
   simpa [restval] using
     type10_target_add_rest_le_of_diagonal_gap hε hε' h_le X Y hXY
       restval hXeq hgap_pred hgap_mid hgap_succ
-
 
 lemma signature_prime_iterate_even_snd_eq_zero_of_rank_le_no_negative
     {W : Chromosome} {p : ℕ}

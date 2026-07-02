@@ -10,16 +10,14 @@ private lemma type11_pos_neg_signature_sum_fst (k : ℕ) :
       (Gene.ofRank k GeneType.Negative).signature.1 = (k : ℚ) := by
   have h := signature_sum_ofRank_neg_eq_rank (k := k) (ε := GeneType.Positive)
   rw [GeneType.neg_positive] at h
-  have := congr_arg Prod.fst h
-  simpa using this
+  simpa using congr_arg Prod.fst h
 
 private lemma type11_pos_neg_signature_sum_snd (k : ℕ) :
     (Gene.ofRank k GeneType.Positive).signature.2 +
       (Gene.ofRank k GeneType.Negative).signature.2 = (k : ℚ) := by
   have h := signature_sum_ofRank_neg_eq_rank (k := k) (ε := GeneType.Positive)
   rw [GeneType.neg_positive] at h
-  have := congr_arg Prod.snd h
-  simpa using this
+  simpa using congr_arg Prod.snd h
 
 /-- The type11 target never exceeds the source by more than the diagonal
 slack `(1,1)` in any sigma column. -/
@@ -288,12 +286,8 @@ lemma exists_mutation_le_type11_of_genes
   let restval : Chromosome :=
     X.1.1 - Finsupp.single gε 1 -
       Finsupp.single gpos 1 - Finsupp.single gneg 1
-  have hoddε : Odd gε.rank := by
-    rw [hgε_rank]
-    exact ⟨m + 1, by ring⟩
-  have hoddpos : Odd gpos.rank := by
-    rw [hgpos_rank]
-    exact ⟨n + 1, by ring⟩
+  have hoddε : Odd gε.rank := by rw [hgε_rank]; exact ⟨m + 1, by ring⟩
+  have hoddpos : Odd gpos.rank := by rw [hgpos_rank]; exact ⟨n + 1, by ring⟩
   have hoddneg : Odd gneg.rank := hrank ▸ hoddpos
   have rest_mem : restval ∈ Mix (2 • Lambda, Pi) :=
     sub_single_one_mem_Mix_2Lambda_Pi
@@ -314,8 +308,7 @@ lemma exists_mutation_le_type11_of_genes
       Gene.ofRank (2 * n + 3) GeneType.Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg, ← hrank, hgpos_rank] at h
-    exact h
+    rwa [hgneg, ← hrank, hgpos_rank] at h
   have hX11val :
       (X11 h_le hε).1 =
         Finsupp.single gε 1 + Finsupp.single gpos 1 +
@@ -359,12 +352,8 @@ lemma exists_mutation_le_type11_of_genes_with_diagonal_gap
   let restval : Chromosome :=
     X.1.1 - Finsupp.single gε 1 -
       Finsupp.single gpos 1 - Finsupp.single gneg 1
-  have hoddε : Odd gε.rank := by
-    rw [hgε_rank]
-    exact ⟨m + 1, by ring⟩
-  have hoddpos : Odd gpos.rank := by
-    rw [hgpos_rank]
-    exact ⟨n + 1, by ring⟩
+  have hoddε : Odd gε.rank := by rw [hgε_rank]; exact ⟨m + 1, by ring⟩
+  have hoddpos : Odd gpos.rank := by rw [hgpos_rank]; exact ⟨n + 1, by ring⟩
   have hoddneg : Odd gneg.rank := hrank ▸ hoddpos
   have rest_mem : restval ∈ Mix (2 • Lambda, Pi) :=
     sub_single_one_mem_Mix_2Lambda_Pi
@@ -385,8 +374,7 @@ lemma exists_mutation_le_type11_of_genes_with_diagonal_gap
       Gene.ofRank (2 * n + 3) GeneType.Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg, ← hrank, hgpos_rank] at h
-    exact h
+    rwa [hgneg, ← hrank, hgpos_rank] at h
   have hX11val :
       (X11 h_le hε).1 =
         Finsupp.single gε 1 + Finsupp.single gpos 1 +

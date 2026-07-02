@@ -46,12 +46,8 @@ lemma exists_mutation_le_type14_of_genes
   let restval : Chromosome :=
     X.1.1 - Finsupp.single gdouble 1 - Finsupp.single gdouble 1 -
       Finsupp.single gopp 1 - Finsupp.single gopp 1
-  have hodddouble : Odd gdouble.rank := by
-    rw [hdouble_rank]
-    exact ⟨m, rfl⟩
-  have hoddopp : Odd gopp.rank := by
-    rw [hopp_rank]
-    exact ⟨n, rfl⟩
+  have hodddouble : Odd gdouble.rank := by rw [hdouble_rank]; exact ⟨m, rfl⟩
+  have hoddopp : Odd gopp.rank := by rw [hopp_rank]; exact ⟨n, rfl⟩
   have rest_mem : restval ∈ Mix (2 • Lambda, Pi) :=
     sub_single_one_mem_Mix_2Lambda_Pi
       (sub_single_one_mem_Mix_2Lambda_Pi

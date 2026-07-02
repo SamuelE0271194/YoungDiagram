@@ -7,14 +7,12 @@ namespace Mix2LambdaPi
 
 lemma fst_add_one_le_of_one_one_add_le {x y : ℚ × ℚ}
     (h : ((1 : ℚ), (1 : ℚ)) + x ≤ y) : x.1 + 1 ≤ y.1 := by
-  have hfst := h.1
-  change 1 + x.1 ≤ y.1 at hfst
+  have hfst : (1 : ℚ) + x.1 ≤ y.1 := h.1
   linarith
 
 lemma snd_add_one_le_of_one_one_add_le {x y : ℚ × ℚ}
     (h : ((1 : ℚ), (1 : ℚ)) + x ≤ y) : x.2 + 1 ≤ y.2 := by
-  have hsnd := h.2
-  change 1 + x.2 ≤ y.2 at hsnd
+  have hsnd : (1 : ℚ) + x.2 ≤ y.2 := h.2
   linarith
 
 lemma cond_15_7_even_index {m i : ℕ} (Y : nMix2LambdaPi (m + 2))
@@ -118,11 +116,8 @@ lemma totalMult_sub_single_one {X : Chromosome} {gm : Gene}
 lemma totalMult_sub_single_one_cast {X : Chromosome} {gm : Gene}
     (hgm1 : X gm = 1) :
     (X - Finsupp.single gm 1).sum (fun _ n => (n : ℚ)) =
-      X.sum (fun _ n => (n : ℚ)) - 1 := by
-  have hrest_nat := totalMult_sub_single_one hgm1
-  have hrest_q := congrArg (fun t : ℕ => (t : ℚ)) hrest_nat
-  norm_num at hrest_q
-  linarith
+      X.sum (fun _ n => (n : ℚ)) - 1 :=
+  totalMult_cast_eq_sub_one_of_nat_add_one (totalMult_sub_single_one hgm1)
 
 lemma totalMult_sub_two_single_one {X : Chromosome} {g₁ g₂ : Gene}
     (hg₁ : X g₁ = 1) (hg₂ : (X - Finsupp.single g₁ 1 : Chromosome) g₂ = 1) :
@@ -190,8 +185,8 @@ lemma prime_iterate_eq_sub_single_of_rank_le
     {X : Chromosome} {gm : Gene} (hgm1 : X gm = 1)
     {i : ℕ} (hi : gm.rank ≤ i) :
     Chromosome.prime^[i] X =
-      Chromosome.prime^[i] (X - Finsupp.single gm 1) := by
-  exact prime_iterate_eq_sub_single_of_rank_le_of_pos (by omega) hi
+      Chromosome.prime^[i] (X - Finsupp.single gm 1) :=
+  prime_iterate_eq_sub_single_of_rank_le_of_pos (by omega) hi
 
 lemma prime_iterate_eq_sub_double_single_of_rank_le
     {X : Chromosome} {gm : Gene} (hgm2 : 2 ≤ X gm)
@@ -249,14 +244,9 @@ lemma edge_drop_fst_eq_totalMult_positive {W : Chromosome}
         · rw [show g.rank - 1 = (g.rank - 3) + 2 from by omega, signature_ofRank_eq₂']
           simp only [Prod.smul_fst, Prod.fst_add]
           ring
-      rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
-      rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.fst_add, Prod.fst_add]
-      rw [show (Sigma.sigma (Finsupp.single g n) 1).1 + (Sigma.sigma f 1).1 -
-          ((Sigma.sigma (Finsupp.single g n) 3).1 + (Sigma.sigma f 3).1) =
-          ((Sigma.sigma (Finsupp.single g n) 1).1 -
-            (Sigma.sigma (Finsupp.single g n) 3).1) +
-          ((Sigma.sigma f 1).1 - (Sigma.sigma f 3).1) by ring]
-      rw [hsingle, ih hf]
+      rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp),
+        Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.fst_add, Prod.fst_add]
+      linarith [hsingle, ih hf]
 
 /-- Second-component upper-edge drop: from levels `1` to `3`, every gene of
 rank at least `2` contributes one cell, provided the rank-`2` genes are
@@ -300,14 +290,9 @@ lemma edge_drop_snd_eq_totalMult_negative {W : Chromosome}
         · rw [show g.rank - 1 = (g.rank - 3) + 2 from by omega, signature_ofRank_eq₂']
           simp only [Prod.smul_snd, Prod.snd_add]
           ring
-      rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
-      rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.snd_add, Prod.snd_add]
-      rw [show (Sigma.sigma (Finsupp.single g n) 1).2 + (Sigma.sigma f 1).2 -
-          ((Sigma.sigma (Finsupp.single g n) 3).2 + (Sigma.sigma f 3).2) =
-          ((Sigma.sigma (Finsupp.single g n) 1).2 -
-            (Sigma.sigma (Finsupp.single g n) 3).2) +
-          ((Sigma.sigma f 1).2 - (Sigma.sigma f 3).2) by ring]
-      rw [hsingle, ih hf]
+      rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp),
+        Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.snd_add, Prod.snd_add]
+      linarith [hsingle, ih hf]
 
 lemma edge_drop_fst_eq_totalMult_positive_iterate {W : Chromosome} {i : ℕ}
     (hW : ∀ g ∈ (Chromosome.prime^[i] W).support,
@@ -343,9 +328,7 @@ lemma one_le_signature_prime_pred_fst_of_positive {X : Chromosome} {gpos : Gene}
   let r := gpos.rank
   have hr : 1 ≤ r := gpos.rank_pos
   have hgpos_single : Gene.ofRank r .Positive = (Finsupp.single gpos 1 : Chromosome) := by
-    have h := Gene.ofRank_eq_gene (g := gpos)
-    rw [hgpos] at h
-    exact h
+    rw [← hgpos]; exact Gene.ofRank_eq_gene (g := gpos)
   have hprime_gpos : Chromosome.prime^[r - 1] (Finsupp.single gpos 1 : Chromosome) =
       Gene.ofRank 1 .Positive := by
     rw [← hgpos_single, prime_iterate_ofRank, Nat.sub_sub_self hr]
@@ -367,9 +350,7 @@ lemma one_le_signature_prime_pred_snd_of_negative {X : Chromosome} {gneg : Gene}
   let r := gneg.rank
   have hr : 1 ≤ r := gneg.rank_pos
   have hgneg_single : Gene.ofRank r .Negative = (Finsupp.single gneg 1 : Chromosome) := by
-    have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg] at h
-    exact h
+    rw [← hgneg]; exact Gene.ofRank_eq_gene (g := gneg)
   have hprime_gneg : Chromosome.prime^[r - 1] (Finsupp.single gneg 1 : Chromosome) =
       Gene.ofRank 1 .Negative := by
     rw [← hgneg_single, prime_iterate_ofRank, Nat.sub_sub_self hr]

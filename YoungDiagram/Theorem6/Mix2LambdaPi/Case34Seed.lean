@@ -27,12 +27,9 @@ lemma case4_gap2 {N : ℕ} (X Y : nMix2LambdaPi N)
   have hnx2 : (signature (Chromosome.prime^[1] X.1.1)).2 = (nx.2 : ℚ) := by rw [hnx]
   have hny1 : (signature (Chromosome.prime^[1] Y.1.1)).1 = (ny.1 : ℚ) := by rw [hny]
   have hny2 : (signature (Chromosome.prime^[1] Y.1.1)).2 = (ny.2 : ℚ) := by rw [hny]
-  have hg1 : nx.1 < ny.1 := by
-    have h : (nx.1 : ℚ) < ny.1 := by rw [← hnx1, ← hny1]; exact hseed1.1
-    exact_mod_cast h
-  have hg2 : nx.2 < ny.2 := by
-    have h : (nx.2 : ℚ) < ny.2 := by rw [← hnx2, ← hny2]; exact hseed1.2
-    exact_mod_cast h
+  rw [hnx1, hnx2, hny1, hny2] at hseed1
+  have hg1 : nx.1 < ny.1 := by exact_mod_cast hseed1.1
+  have hg2 : nx.2 < ny.2 := by exact_mod_cast hseed1.2
   have hrx : (Chromosome.prime^[1] X.1.1).rank = nx.1 + nx.2 := by
     have h := signature_sum_eq_rank (X := Chromosome.prime^[1] X.1.1)
     rw [hnx1, hnx2] at h; exact_mod_cast h.symm
@@ -48,11 +45,9 @@ lemma sigma_zero_eq {N : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1) :
   have hsum : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
       (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 := by
     have hx : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-      simpa [Sigma.sigma, X.2] using this
+      simpa [Sigma.sigma, X.2] using @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
     have hy : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-      simpa [Sigma.sigma, Y.2] using this
+      simpa [Sigma.sigma, Y.2] using @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
     rw [hx, hy]
   have h1 : (Sigma.sigma X.1.1 0).1 ≤ (Sigma.sigma Y.1.1 0).1 := by
     simpa [Sigma.sigma] using hle.1
@@ -78,11 +73,9 @@ lemma case4_seed_fst {N k : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
   have hcond7 := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi Y.1.2 0
   rw [if_pos (by decide : Even 0)] at hcond7
   have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-    simpa [Sigma.sigma, X.2] using this
+    simpa [Sigma.sigma, X.2] using @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
   have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-    simpa [Sigma.sigma, Y.2] using this
+    simpa [Sigma.sigma, Y.2] using @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
   have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
   have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
@@ -111,11 +104,9 @@ lemma case4_seed_snd {N k : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
   have hcond6 := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi Y.1.2 0
   rw [if_pos (by decide : Even 0)] at hcond6
   have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-    simpa [Sigma.sigma, X.2] using this
+    simpa [Sigma.sigma, X.2] using @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
   have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-    simpa [Sigma.sigma, Y.2] using this
+    simpa [Sigma.sigma, Y.2] using @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
   have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
   have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =

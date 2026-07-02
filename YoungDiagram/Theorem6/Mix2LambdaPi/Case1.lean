@@ -32,8 +32,7 @@ lemma exists_mutation_le_rank_one {X Y : nMix2LambdaPi 1} (hXY : X < Y) :
     rcases rank_one_pi_sig hYPi Y.2 with h | h <;> simp only [h, zero_add, add_zero]
   have hsig_eq : signature X.1.1 = signature Y.1.1 := by
     obtain ⟨h1_le, h2_le⟩ := Prod.le_def.1 hsig_le
-    exact Prod.ext (h1_le.antisymm (by linarith [h2_le]))
-      (h2_le.antisymm (by linarith [h1_le]))
+    exact Prod.ext (h1_le.antisymm (by linarith [h2_le])) (h2_le.antisymm (by linarith [h1_le]))
   exact absurd (Pi_rank_one_eq_of_sig_eq hXPi hYPi X.2 Y.2 hsig_eq) (ne_of_lt hXY)
 
 /-! ## Case 1: X and Y share a gene -/
@@ -51,14 +50,11 @@ private lemma single_odd_mem_Mix_2Lambda_Pi {g : Gene} (hodd : Odd g.rank)
     (Finsupp.single g 1 : Chromosome) ∈ Mix (2 • Lambda, Pi) := by
   refine ⟨?_, ?_⟩
   · -- evenPart of single g 1 is 0
-    have h : evenPart (Finsupp.single g 1 : Chromosome) = 0 := by
-      rw [evenPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd)]
-    rw [h]
+    rw [evenPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd)]
     exact zero_mem _
   · -- oddPart of single g 1 is single g 1, in Π
-    have h : oddPart (Finsupp.single g 1 : Chromosome) = Finsupp.single g 1 := by
-      rw [oddPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd)]
-    rw [h, mem_Pi_iff, IsPolarized_single Nat.one_ne_zero]
+    rw [oddPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd), mem_Pi_iff,
+      IsPolarized_single Nat.one_ne_zero]
     exact hpol
 
 /-- A double-coefficient single gene of even rank with NonPolarized type is in
@@ -70,13 +66,11 @@ private lemma single_even_two_mem_Mix_2Lambda_Pi {g : Gene} (hev : Even g.rank)
   · -- evenPart of single g 2 = single g 2 = 2 • single g 1; need ∈ 2 • Λ
     have h : evenPart (Finsupp.single g 2 : Chromosome) = Finsupp.single g 2 := by
       rw [single_two_eq_two_smul, map_nsmul, evenPart_single, if_pos hev]
-    rw [h, single_two_eq_two_smul]
-    rw [AddSubmonoid.mem_smul_pointwise_iff_exists]
+    rw [h, single_two_eq_two_smul, AddSubmonoid.mem_smul_pointwise_iff_exists]
     refine ⟨Finsupp.single g 1, ?_, rfl⟩
     rw [mem_Lambda_iff, IsNonPolarized_single Nat.one_ne_zero]; exact hNP
-  · have h : oddPart (Finsupp.single g 2 : Chromosome) = 0 := by
-      rw [single_two_eq_two_smul, map_nsmul, oddPart_single, if_pos hev, smul_zero]
-    rw [h]; exact zero_mem _
+  · rw [single_two_eq_two_smul, map_nsmul, oddPart_single, if_pos hev, smul_zero]
+    exact zero_mem _
 
 /-- For `X ∈ Mix (2 • Lambda, Pi)` with `0 < X g` and `g.rank` even, the gene `g`
 is `NonPolarized` and `X g ≥ 2` (since `X.evenPart = 2 • Y0` for some `Y0`). -/
@@ -92,9 +86,7 @@ private lemma even_rank_gene_data {X : Chromosome} (hX : X ∈ Mix (2 • Lambda
     rw [evenPart_eq, Finsupp.filter_apply, if_pos hev]; exact hgX
   -- 2 • Y0 = X.evenPart, so X.evenPart g = 2 * Y0 g.
   have hev_apply : X.evenPart g = 2 * Y0 g := by
-    rw [← hY0_eq]
-    show (2 • Y0) g = 2 * Y0 g
-    rw [Finsupp.smul_apply, smul_eq_mul]
+    rw [← hY0_eq, Finsupp.smul_apply, smul_eq_mul]
   -- g.type = .NonPolarized (from Y0 ∈ Λ)
   have hY0g_pos : 0 < Y0 g := by
     rw [hev_apply] at hgev; omega
@@ -103,11 +95,8 @@ private lemma even_rank_gene_data {X : Chromosome} (hX : X ∈ Mix (2 • Lambda
       (Finsupp.mem_support_iff.mpr (Nat.pos_iff_ne_zero.mp hY0g_pos))
   refine ⟨hNP, ?_⟩
   -- X g = X.evenPart g = 2 * Y0 g ≥ 2.
-  have hXeq : X g = 2 * Y0 g := by
-    have h1 : X g = X.evenPart g := by
-      rw [evenPart_eq, Finsupp.filter_apply, if_pos hev]
-    rw [h1, hev_apply]
-  rw [hXeq]; omega
+  have hXeq : X g = X.evenPart g := by rw [evenPart_eq, Finsupp.filter_apply, if_pos hev]
+  rw [hXeq, hev_apply]; omega
 
 /-- For `X ∈ Mix (2 • Lambda, Pi)` with `0 < X g` and `g.rank` odd, the gene `g`
 has polarized type. -/
@@ -127,9 +116,8 @@ lemma sub_single_one_mem_Mix_2Lambda_Pi {X : Chromosome}
     X - (Finsupp.single g 1 : Chromosome) ∈ Mix (2 • Lambda, Pi) := by
   refine ⟨?_, ?_⟩
   · -- evenPart unchanged since single g 1 has even rank 0 evenPart.
-    have h : evenPart (X - Finsupp.single g 1) = X.evenPart := by
-      rw [evenPart_sub, evenPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd), tsub_zero]
-    rw [h]; exact hX.1
+    rw [evenPart_sub, evenPart_single, if_neg (Nat.not_even_iff_odd.mpr hodd), tsub_zero]
+    exact hX.1
   · -- oddPart drops by single g 1; closed under sub by IsPolarized_sub.
     rw [oddPart_sub]
     exact IsPolarized_sub _ hX.2
@@ -160,10 +148,9 @@ lemma sub_single_two_mem_Mix_2Lambda_Pi {X : Chromosome}
       simp only [Finsupp.smul_apply, smul_eq_mul, Finsupp.tsub_apply, Finsupp.single_apply]
       split_ifs <;> omega
   · -- oddPart: X.oddPart unchanged (single g 2 has odd part 0)
-    have h : oddPart (X - Finsupp.single g 2) = X.oddPart := by
-      rw [oddPart_sub, single_two_eq_two_smul, map_nsmul, oddPart_single, if_pos hev,
-        smul_zero, tsub_zero]
-    rw [h]; exact hX.2
+    rw [oddPart_sub, single_two_eq_two_smul, map_nsmul, oddPart_single, if_pos hev,
+      smul_zero, tsub_zero]
+    exact hX.2
 
 /-- When `2 ≤ X g`, we have `X = (X - single g 2) + single g 2`. -/
 lemma sub_single_two_add_single_two_eq {X : Chromosome} {g : Gene}
@@ -248,8 +235,7 @@ lemma exists_mutation_le_shared_gene (m : ℕ)
       rw [← sub_single_two_add_single_two_eq hY_ge_2, le_iff_dominates]
       intro k
       have h := (le_iff_dominates.mp hle') k
-      simp only [iterate_map_add, map_add, add_le_add_iff_right]
-      exact h
+      simpa only [iterate_map_add, map_add, add_le_add_iff_right] using h
   · -- ODD case: remove single g 1.
     rw [Nat.not_even_iff_odd] at hev
     have hpol : g.type ≠ .NonPolarized :=
@@ -280,7 +266,6 @@ lemma exists_mutation_le_shared_gene (m : ℕ)
       rw [← sub_single_add_single_eq hgY, le_iff_dominates]
       intro k
       have h := (le_iff_dominates.mp hle') k
-      simp only [iterate_map_add, map_add, add_le_add_iff_right]
-      exact h
+      simpa only [iterate_map_add, map_add, add_le_add_iff_right] using h
 
 end Mix2LambdaPi

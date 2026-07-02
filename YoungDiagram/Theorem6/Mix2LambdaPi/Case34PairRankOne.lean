@@ -65,24 +65,23 @@ lemma pair_rank_one_zero_successor_false
       Finsupp.single gpos (X.1.1 gpos) + Finsupp.single gneg (X.1.1 gneg) := by
     ext g
     by_cases h1 : g = gpos
-    · subst h1; simp [Finsupp.single_apply, Finsupp.add_apply, hgne.symm]
+    · subst h1; simp [Finsupp.add_apply, hgne.symm]
     · by_cases h2 : g = gneg
-      · subst h2; simp [Finsupp.single_apply, Finsupp.add_apply, hgne]
+      · subst h2; simp [Finsupp.add_apply, hgne]
       · have hgnot : g ∉ X.1.1.support := by
           intro hg
           rcases Finset.mem_insert.mp (hXsupp hg) with h | h
           · exact h1 h
           · exact h2 (Finset.mem_singleton.mp h)
         rw [Finsupp.notMem_support_iff.mp hgnot]
-        simp [Finsupp.single_apply, Finsupp.add_apply, Ne.symm h1, Ne.symm h2]
+        simp [Finsupp.add_apply, Ne.symm h1, Ne.symm h2]
   have hgpos_sig : gpos.signature = (1, 0) := by
     rw [Gene.signature_of_positive hgpos, if_neg (by rw [hgpos1]; decide), hgpos1]; norm_num
   have hgneg_sig : gneg.signature = (0, 1) := by
     rw [Gene.signature_of_negative hgneg, if_neg (by rw [hgneg1]; decide), hgneg1]; norm_num
   have hsigX : signature X.1.1 = ((X.1.1 gpos : ℚ), (X.1.1 gneg : ℚ)) := by
     conv_lhs => rw [hXeq, map_add, hsig_single, hsig_single, hgpos_sig, hgneg_sig]
-    rw [Prod.ext_iff]
-    constructor <;> simp
+    simp
   -- Step 4: `Y` sits entirely at even rank, so `sig Y` is diagonal.
   have hYeven : ∀ g ∈ Y.1.1.support, Even g.rank := by
     intro g hg

@@ -39,18 +39,17 @@ lemma snd_drop_le_fst_drop_succ_add_one
         (signature (Chromosome.prime^[2 * p + 2] X)).1 + 1 := by
   change (Sigma.sigma X (2 * p)).2 - (Sigma.sigma X (2 * p + 1)).2 ≤
     (Sigma.sigma X (2 * p + 1)).1 - (Sigma.sigma X (2 * p + 2)).1 + 1
-  rw [Sigma.sigma_snd_diff X (2 * p) hXPi]
-  rw [Sigma.sigma_fst_diff X (2 * p + 1) hXPi]
+  rw [Sigma.sigma_snd_diff X (2 * p) hXPi, Sigma.sigma_fst_diff X (2 * p + 1) hXPi]
   change ((Chromosome.prime^[2 * p] X).sum (fun g m =>
       if g.type = Sigma.altType g.rank GeneType.Negative then (m : ℚ) else 0)) ≤
     ((Chromosome.prime^[2 * p + 1] X).sum (fun g m =>
       if g.type = Sigma.altType g.rank GeneType.Positive then (m : ℚ) else 0)) + 1
-  rw [Sigma.prime_iterate_sum_eq X (2 * p) GeneType.Negative]
-  rw [Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Positive]
-  have heven : Int.negOnePow ((2 * p : ℕ) : ℤ) = 1 := by
-    exact Int.negOnePow_even _ ⟨(p : ℤ), by norm_num; ring⟩
-  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 := by
-    exact Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
+  rw [Sigma.prime_iterate_sum_eq X (2 * p) GeneType.Negative,
+    Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Positive]
+  have heven : Int.negOnePow ((2 * p : ℕ) : ℤ) = 1 :=
+    Int.negOnePow_even _ ⟨(p : ℤ), by norm_num; ring⟩
+  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 :=
+    Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
   simp only [heven, hodd, one_smul, GeneType.neg_one_smul,
     GeneType.neg_positive]
   set S₀ := X.support.filter
@@ -92,8 +91,7 @@ lemma snd_drop_le_fst_drop_succ_add_one
   rw [hsplit]
   have hnot : gneg ∉ S₁ := by
     simp [S₁, hgneg_rank]
-  rw [Finset.sum_insert hnot]
-  rw [hcoeff]
+  rw [Finset.sum_insert hnot, hcoeff]
   ring_nf
   exact le_rfl
 
@@ -107,18 +105,17 @@ lemma fst_drop_le_snd_drop_succ_add_one
         (signature (Chromosome.prime^[2 * p + 2] X)).2 + 1 := by
   change (Sigma.sigma X (2 * p)).1 - (Sigma.sigma X (2 * p + 1)).1 ≤
     (Sigma.sigma X (2 * p + 1)).2 - (Sigma.sigma X (2 * p + 2)).2 + 1
-  rw [Sigma.sigma_fst_diff X (2 * p) hXPi]
-  rw [Sigma.sigma_snd_diff X (2 * p + 1) hXPi]
+  rw [Sigma.sigma_fst_diff X (2 * p) hXPi, Sigma.sigma_snd_diff X (2 * p + 1) hXPi]
   change ((Chromosome.prime^[2 * p] X).sum (fun g m =>
       if g.type = Sigma.altType g.rank GeneType.Positive then (m : ℚ) else 0)) ≤
     ((Chromosome.prime^[2 * p + 1] X).sum (fun g m =>
       if g.type = Sigma.altType g.rank GeneType.Negative then (m : ℚ) else 0)) + 1
-  rw [Sigma.prime_iterate_sum_eq X (2 * p) GeneType.Positive]
-  rw [Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Negative]
-  have heven : Int.negOnePow ((2 * p : ℕ) : ℤ) = 1 := by
-    exact Int.negOnePow_even _ ⟨(p : ℤ), by norm_num; ring⟩
-  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 := by
-    exact Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
+  rw [Sigma.prime_iterate_sum_eq X (2 * p) GeneType.Positive,
+    Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Negative]
+  have heven : Int.negOnePow ((2 * p : ℕ) : ℤ) = 1 :=
+    Int.negOnePow_even _ ⟨(p : ℤ), by norm_num; ring⟩
+  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 :=
+    Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
   simp only [heven, hodd, one_smul, GeneType.neg_one_smul,
     GeneType.neg_negative]
   set S₀ := X.support.filter
@@ -160,8 +157,7 @@ lemma fst_drop_le_snd_drop_succ_add_one
   rw [hsplit]
   have hnot : gpos ∉ S₁ := by
     simp [S₁, hgpos_rank]
-  rw [Finset.sum_insert hnot]
-  rw [hcoeff]
+  rw [Finset.sum_insert hnot, hcoeff]
   ring_nf
   exact le_rfl
 
@@ -181,11 +177,10 @@ private lemma type15_diagonal_signature_eq_before
   · have hj_lt : j < 2 * q + 1 := by omega
     have eA : 2 * q + 3 - j = (2 * q + 1 - j) + 2 := by omega
     have eC : 2 * q + 5 - j = (2 * q + 3 - j) + 2 := by omega
-    rw [eA, eC]
-    rw [signature_ofRank_eq₂' (k := 2 * q + 1 - j) (ε := ε),
+    rw [eA, eC, signature_ofRank_eq₂' (k := 2 * q + 1 - j) (ε := ε),
       signature_ofRank_eq₂' (k := 2 * q + 1 - j) (ε := -ε),
-      signature_ofRank_eq₂' (k := 2 * q + 3 - j) (ε := ε)]
-    rw [eA, signature_ofRank_eq₂' (k := 2 * q + 1 - j) (ε := ε)]
+      signature_ofRank_eq₂' (k := 2 * q + 3 - j) (ε := ε), eA,
+      signature_ofRank_eq₂' (k := 2 * q + 1 - j) (ε := ε)]
     abel_nf
 
 private lemma type15_diagonal_signature_at_pred
@@ -293,8 +288,7 @@ lemma exists_mutation_le_type15_diagonal
       Gene.ofRank (2 * q + 3) (-ε) =
         (Finsupp.single gnegε 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gnegε)
-    rw [hgnegε, ← hrank, hgrank] at h
-    exact h
+    rwa [hgnegε, ← hrank, hgrank] at h
   have hX15val :
       (X15 (le_refl q) hε).1 =
         Finsupp.single gε 1 + Finsupp.single gnegε 1 := by
@@ -339,15 +333,13 @@ lemma exists_mutation_le_type15_diagonal
       · by_cases hj_rank : j = 2 * q + 3
         · subst j
           rw [type15_diagonal_signature_at_rank]
-          rw [type15_diagonal_source_at_rank] at hdecomp
-          simp only [zero_add] at hdecomp
+          rw [type15_diagonal_source_at_rank, zero_add] at hdecomp
           rw [← hdecomp]
           exact hgap_rank
         · by_cases hj_succ : j = 2 * q + 4
           · subst j
             rw [type15_diagonal_signature_at_succ]
-            rw [type15_diagonal_source_at_succ] at hdecomp
-            simp only [zero_add] at hdecomp
+            rw [type15_diagonal_source_at_succ, zero_add] at hdecomp
             rw [← hdecomp]
             exact hgap_succ
           · have hj_after : 2 * q + 4 < j := by omega
@@ -391,8 +383,7 @@ lemma type15_diagonal_gap_rank
       Gene.ofRank (2 * q + 3) (-ε) =
         (Finsupp.single gnegε 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gnegε)
-    rw [hgnegε, ← hrank, hgrank] at h
-    exact h
+    rwa [hgnegε, ← hrank, hgrank] at h
   have hX15val :
       (X15 (le_refl q) hε).1 =
         Finsupp.single gε 1 + Finsupp.single gnegε 1 := by

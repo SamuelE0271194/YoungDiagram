@@ -54,8 +54,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
       have hhpos : 0 < X.1.1 h :=
         Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
       have hle := hgmin h hhpos
-      rw [hg_rank_q] at hle
-      exact hle
+      rwa [hg_rank_q] at hle
     have hZle :
         (Y10 (le_refl q) hg_ne_np hg_ne_np).1 +
             (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1) ≤ Y.1.1 := by
@@ -71,7 +70,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_snd X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).2
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_snd_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom)
         | Negative =>
@@ -79,7 +78,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_fst X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).1
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_fst_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom)
       have hgap_mid : ∀ j, 2 * q + 3 ≤ j → j ≤ 2 * q + 3 →
@@ -220,8 +219,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                     (W := X.1.1) (i := 2 * q + 1) hWpos
                 have hWsum_nat :
                     (Chromosome.prime^[2 * q + 1] X.1.1).sum (fun _ n => n) =
-                      X.1.1.sum (fun _ n => n) := by
-                  exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                      X.1.1.sum (fun _ n => n) :=
+                  Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
                     X.1.1 (2 * q + 1) (by
                       intro h hh
                       have hle := hmin_rank h hh
@@ -233,9 +232,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                         (Sigma.sigma X.1.1 (2 * q + 4)).1 =
                       (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                    have htmp := hXdrop_raw
                     rw [show 1 + (2 * q + 1) = 2 * q + 2 by omega,
-                      show 3 + (2 * q + 1) = 2 * q + 4 by omega] at htmp
+                      show 3 + (2 * q + 1) = 2 * q + 4 by omega] at hXdrop_raw
                     linarith
                 have hdom := (le_iff_dominates.mp hXY.le (2 * q + 2)).1
                 have hsucc :
@@ -286,8 +284,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                     (W := X.1.1) (i := 2 * q + 1) hWneg
                 have hWsum_nat :
                     (Chromosome.prime^[2 * q + 1] X.1.1).sum (fun _ n => n) =
-                      X.1.1.sum (fun _ n => n) := by
-                  exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                      X.1.1.sum (fun _ n => n) :=
+                  Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
                     X.1.1 (2 * q + 1) (by
                       intro h hh
                       have hle := hmin_rank h hh
@@ -299,9 +297,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                         (Sigma.sigma X.1.1 (2 * q + 4)).2 =
                       (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                    have htmp := hXdrop_raw
                     rw [show 1 + (2 * q + 1) = 2 * q + 2 by omega,
-                      show 3 + (2 * q + 1) = 2 * q + 4 by omega] at htmp
+                      show 3 + (2 * q + 1) = 2 * q + 4 by omega] at hXdrop_raw
                     linarith
                 have hdom := (le_iff_dominates.mp hXY.le (2 * q + 2)).2
                 have hsucc :
@@ -356,9 +353,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
           (Chromosome.prime^[1] Y.1.1).rank < Y.1.1.rank :=
         prime_iterate_rank_lt_of_ne_zero (by omega) hYprime_ne
       have hYrank_eq_g : Y.1.1.rank = g.rank := by
-        have hXrank_eq_g : X.1.1.rank = g.rank := by
-          rw [hsingle, rank_single, one_smul]
-        rw [Y.2, ← X.2, hXrank_eq_g]
+        rw [Y.2, ← X.2, hsingle, rank_single, one_smul]
       rw [hXprime_rank] at hstrict
       rw [hYrank_eq_g] at hYprime_lt_rank
       omega
@@ -366,8 +361,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
       Mix2LambdaSection17.exists_min_rank_gene hrest_ne
     have hXg₂ : 0 < X.1.1 g₂ := by
       dsimp [restAfterG] at hg₂_rest
-      exact lt_of_lt_of_le hg₂_rest (by
-        exact Nat.sub_le _ _)
+      exact lt_of_lt_of_le hg₂_rest (Nat.sub_le _ _)
     have hg₂_pol : g₂.type ≠ GeneType.NonPolarized :=
       IsPolarized_def'.mp hXpol g₂ (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
     have hg₂_odd : Odd g₂.rank :=
@@ -410,15 +404,13 @@ lemma exists_mutation_le_no_pair_rank_ge_three
       have hhpos : 0 < X.1.1 h :=
         Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
       have hle := hgmin h hhpos
-      rw [hg_rank_q] at hle
-      exact hle
+      rwa [hg_rank_q] at hle
     have h2nd_rank : ∀ h ∈ restAfterG.support, 2 * n10 + 3 ≤ h.rank := by
       intro h hh
       have hhpos : 0 < restAfterG h :=
         Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
       have hle := hg₂min h hhpos
-      rw [hg₂_rank_n10] at hle
-      exact hle
+      rwa [hg₂_rank_n10] at hle
     have hZle :
         (Y10 hq_le_n10 hg_ne_np hg₂_pol).1 +
             (X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1) ≤ Y.1.1 := by
@@ -434,7 +426,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_snd X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).2
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_snd_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom)
         | Negative =>
@@ -442,7 +434,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_fst X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).1
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_fst_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom)
       have hfst_base_top :
@@ -472,7 +464,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_fst X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).1
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_fst_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom
             have hwin_one : 2 * q + 2 + 2 * 1 ≤ 2 * n10 + 3 := by omega
@@ -494,7 +486,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
               have hXdrop := KEY_X_full_snd X hmin_rank
                 (i := 2 * q) (by omega)
               have hdom := (le_iff_dominates.mp hXY.le (2 * q)).2
-              simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+              simpa [Sigma.sigma] using
                 seed_snd_lt X Y hr1 (i := 2 * q)
                   (hi := ⟨q, by ring⟩) hXdrop hdom
             have hwin_one : 2 * q + 2 + 2 * 1 ≤ 2 * n10 + 3 := by omega
@@ -587,7 +579,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                   have hXdrop := KEY_X_full_fst X hmin_rank
                     (i := 2 * q) (by omega)
                   have hdom := (le_iff_dominates.mp hXY.le (2 * q)).1
-                  simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+                  simpa [Sigma.sigma] using
                     seed_fst_lt X Y hr1 (i := 2 * q)
                       (hi := ⟨q, by ring⟩) hXdrop hdom
                 have hwin_one : 2 * q + 2 + 2 * 1 ≤ 2 * n10 + 3 := by omega
@@ -609,7 +601,7 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                   have hXdrop := KEY_X_full_snd X hmin_rank
                     (i := 2 * q) (by omega)
                   have hdom := (le_iff_dominates.mp hXY.le (2 * q)).2
-                  simpa [Sigma.sigma, show 2 * q + 2 = 2 * q + 2 by rfl] using
+                  simpa [Sigma.sigma] using
                     seed_snd_lt X Y hr1 (i := 2 * q)
                       (hi := ⟨q, by ring⟩) hXdrop hdom
                 have hwin_one : 2 * q + 2 + 2 * 1 ≤ 2 * n10 + 3 := by omega
@@ -694,14 +686,14 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                 exact_mod_cast hq
               have hXtop_eq_rest :
                   Chromosome.prime^[2 * n10 + 2] X.1.1 =
-                    Chromosome.prime^[2 * n10 + 2] restAfterG := by
-                exact prime_iterate_eq_sub_single_of_rank_le hg_one (by
+                    Chromosome.prime^[2 * n10 + 2] restAfterG :=
+                prime_iterate_eq_sub_single_of_rank_le hg_one (by
                   rw [hg_rank_q]
                   omega)
               have hrest_total_survives :
                   (Chromosome.prime^[2 * n10 + 2] restAfterG).sum (fun _ n => n) =
-                    restAfterG.sum (fun _ n => n) := by
-                exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                    restAfterG.sum (fun _ n => n) :=
+                Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
                   restAfterG (2 * n10 + 2) (by
                     intro h hh
                     have hle := h2nd_rank h hh
@@ -825,9 +817,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                         (Sigma.sigma X.1.1 (2 * n10 + 4)).1 =
                       (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
-                  have htmp := hXdrop_raw
                   rw [show 1 + (2 * n10 + 1) = 2 * n10 + 2 by omega,
-                    show 3 + (2 * n10 + 1) = 2 * n10 + 4 by omega] at htmp
+                    show 3 + (2 * n10 + 1) = 2 * n10 + 4 by omega] at hXdrop_raw
                   linarith
                 have hYdrop :=
                   KEY_Y_fst X Y hr1 (i := 2 * n10 + 2) ⟨n10 + 1, by ring⟩
@@ -916,9 +907,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                         (Sigma.sigma X.1.1 (2 * n10 + 4)).2 =
                       (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
-                  have htmp := hXdrop_raw
                   rw [show 1 + (2 * n10 + 1) = 2 * n10 + 2 by omega,
-                    show 3 + (2 * n10 + 1) = 2 * n10 + 4 by omega] at htmp
+                    show 3 + (2 * n10 + 1) = 2 * n10 + 4 by omega] at hXdrop_raw
                   linarith
                 have hYdrop :=
                   KEY_Y_snd X Y hr1 (i := 2 * n10 + 2) ⟨n10 + 1, by ring⟩
@@ -944,6 +934,5 @@ lemma exists_mutation_le_no_pair_rank_ge_three
         hne_g_g₂ hgap_pred hgap_mid hgap_succ
     exact exists_mutation_le_type10_of_genes hg_ne_np hg₂_pol hq_le_n10
       X Y g g₂ rfl rfl hg_rank_q hg₂_rank_n10 (by omega) (by omega) hne_g_g₂ hZle
-
 
 end Mix2LambdaPi

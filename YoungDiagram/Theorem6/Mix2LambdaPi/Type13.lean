@@ -20,15 +20,12 @@ private lemma type13_diagonal_signature_eq_before
     have h :=
       signature_sum_ofRank_neg_eq_rank
         (k := 2 * p + 1 - j) (ε := GeneType.Positive)
-    rw [GeneType.neg_positive] at h
-    change _ = (((2 * p + 1 - j : ℕ) : ℚ),
-      ((2 * p + 1 - j : ℕ) : ℚ)) at h
-    exact h
+    rwa [GeneType.neg_positive] at h
   have hnp (a : ℕ) :
       signature (Gene.ofRank a .NonPolarized) +
         signature (Gene.ofRank a .NonPolarized) = ((a : ℚ), (a : ℚ)) := by
     rw [signature_ofRank_nonPolarized]
-    ext <;> simp <;> ring
+    ext <;> simp
   rw [show
       signature (Gene.ofRank (2 * p + 1 - j) .Positive) +
             signature (Gene.ofRank (2 * p + 1 - j) .Negative) +
@@ -59,7 +56,6 @@ private lemma type13_diagonal_signature_mid {p : ℕ} :
         ((1 : ℚ), (1 : ℚ)) := by
   simp only [X13_eq, Y13_eq, iterate_map_add, prime_iterate_ofRank]
   have h0 : 2 * p - (2 * p + 1) = 0 := by omega
-  have h1 : 2 * p + 1 - (2 * p + 1) = 0 := by omega
   have h2 : 2 * p + 2 - (2 * p + 1) = 1 := by omega
   simp [h0, h2, Gene.ofRank_zero, signature_ofRank_nonPolarized]
   norm_num
@@ -112,8 +108,7 @@ lemma exists_mutation_le_type13_diagonal
       Gene.ofRank (2 * p + 1) .Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg, ← hrank, hgrank] at h
-    exact h
+    rwa [hgneg, ← hrank, hgrank] at h
   have hX13val :
       (X13 (le_refl p)).1 =
         Finsupp.single gpos 1 + Finsupp.single gpos 1 +

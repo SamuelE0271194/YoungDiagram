@@ -38,10 +38,9 @@ lemma exists_mutation_le_reduced (m : ℕ)
   · push Not at hNP
     -- From here on `X` is polarized; this is the remaining type10--type17
     -- classification in §17.
-    have hXpol : X.1.1.IsPolarized := by
-      rw [IsPolarized_def']
-      intro g hg
-      exact hNP g (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg))
+    have hXpol : X.1.1.IsPolarized :=
+      IsPolarized_def'.mpr fun g hg =>
+        hNP g (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hg))
     by_cases hdouble : ∃ (gpos gneg : Gene),
         gpos.rank = gneg.rank ∧
         gpos.type = .Positive ∧ gneg.type = .Negative ∧

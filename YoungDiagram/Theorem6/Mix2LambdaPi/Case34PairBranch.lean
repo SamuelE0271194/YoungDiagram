@@ -166,8 +166,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hsnd_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 <
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 := by
-            exact snd_pred_strict_of_snd_succ_strict
+                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 :=
+            snd_pred_strict_of_snd_succ_strict
               (hfst_succ_eq := hfst_succ_eq)
               (hgap_rank_fst := hgap_rank_fst_p)
               (hgap_rank_snd := hgap_rank_snd_p)
@@ -222,8 +222,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hsnd_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 <
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 := by
-            exact snd_pred_strict_of_snd_succ_strict
+                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 :=
+            snd_pred_strict_of_snd_succ_strict
               (hfst_succ_eq := hfst_succ_eq)
               (hgap_rank_fst := hgap_rank_fst_p)
               (hgap_rank_snd := hgap_rank_snd_p)
@@ -327,8 +327,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
           have hsnd_pred_raw :
               (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).2 <
-                (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 := by
-            exact snd_pred_strict_of_succ_fst_eq
+                (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 :=
+            snd_pred_strict_of_succ_fst_eq
               (hfst_succ_eq := by
                 simpa [show 2 * (q + 1) + 2 = 2 * q + 4 by omega]
                   using hfst_succ_eq)
@@ -402,8 +402,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hfst_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 <
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 := by
-            exact fst_pred_strict_of_fst_succ_strict
+                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 :=
+            fst_pred_strict_of_fst_succ_strict
               (hsnd_succ_eq := hsnd_succ_eq)
               (hgap_rank_fst := hgap_rank_fst_p)
               (hgap_rank_snd := hgap_rank_snd_p)
@@ -458,8 +458,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hfst_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 <
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 := by
-            exact fst_pred_strict_of_fst_succ_strict
+                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 :=
+            fst_pred_strict_of_fst_succ_strict
               (hsnd_succ_eq := hsnd_succ_eq)
               (hgap_rank_fst := hgap_rank_fst_p)
               (hgap_rank_snd := hgap_rank_snd_p)
@@ -563,8 +563,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
           have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
           have hfst_pred_raw :
               (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).1 <
-                (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 := by
-            exact fst_pred_strict_of_succ_snd_eq
+                (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 :=
+            fst_pred_strict_of_succ_snd_eq
               (hsnd_succ_eq := by
                 simpa [show 2 * (q + 1) + 2 = 2 * q + 4 by omega]
                   using hsnd_succ_eq)
@@ -599,8 +599,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
     · obtain ⟨q, hgpos_rank_q, hsame⟩ := htype15
       rcases hsame with ⟨hfst_pred, hfst_succ⟩ | ⟨hsnd_pred, hsnd_succ⟩
       · have hgneg_rank_q : gneg.rank = 2 * q + 3 := by
-          rw [← hrank]
-          exact hgpos_rank_q
+          rwa [← hrank]
         exact Mix2LambdaPi.exists_mutation_le_type15_negative_of_fst_lt_of_pair
           X Y hXY hcommon h17_1 gpos gneg hgpos hgneg
           hgneg_rank_q hrank (by omega) (by omega) hfst_pred hfst_succ
@@ -620,8 +619,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
         have hpq : p = q + 1 := by omega
         have hgpos_rank_q : gpos.rank = 2 * q + 3 := by omega
         have hgneg_rank_q : gneg.rank = 2 * q + 3 := by
-          rw [← hrank]
-          exact hgpos_rank_q
+          rwa [← hrank]
         have hgap_rank :
             ((1 : ℚ), (1 : ℚ)) +
                 signature (Chromosome.prime^[2 * q + 3] X.1.1) ≤
@@ -674,8 +672,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
               have hsnd_pred_raw :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).2 <
-                    (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 := by
-                exact snd_pred_strict_of_snd_succ_strict
+                    (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 :=
+                snd_pred_strict_of_snd_succ_strict
                   (hfst_succ_eq := by
                     simpa [show 2 * (q + 1) + 2 = 2 * q + 4 by omega]
                       using hfst_succ_eq)
@@ -721,8 +719,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
               have hfst_pred_raw :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).1 <
-                    (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 := by
-                exact fst_pred_strict_of_fst_succ_strict
+                    (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 :=
+                fst_pred_strict_of_fst_succ_strict
                   (hsnd_succ_eq := by
                     simpa [show 2 * (q + 1) + 2 = 2 * q + 4 by omega]
                       using hsnd_succ_eq)
@@ -807,8 +805,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               Mix2LambdaSection17.two_le_coeff_of_mem_twoLambda
                 hYtop_mem.2 hgtop_oddPart
             have htwo_top : 2 ≤ Ytop gtop := by
-              rw [oddPart_eq, Finsupp.filter_apply, if_pos hgtop_odd_rank] at htwo_odd
-              exact htwo_odd
+              rwa [oddPart_eq, Finsupp.filter_apply, if_pos hgtop_odd_rank] at htwo_odd
             let gone : Gene := ⟨1, GeneType.NonPolarized, le_rfl⟩
             have hgtop_eq : gtop = gone := by
               ext
@@ -826,8 +823,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                 omega
               · simp [gone]
             change 2 ≤ (Chromosome.prime^[2 * q + 3] Y.1.1) gone at htwo_one
-            rw [hcoeff, hgene] at htwo_one
-            exact htwo_one
+            rwa [hcoeff, hgene] at htwo_one
           by_cases hrest_zero :
               X.1.1 - Finsupp.single gpos 1 -
                   Finsupp.single gneg 1 = 0
@@ -854,8 +850,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               simp
             let gNPsucc : Gene :=
               ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩
-            have hYsucc_pos : 0 < Y.1.1 gNPsucc := by
-              exact lt_of_lt_of_le (by omega) hY_double_np_succ
+            have hYsucc_pos : 0 < Y.1.1 gNPsucc :=
+              lt_of_lt_of_le (by omega) hY_double_np_succ
             let Yminus : Chromosome := Y.1.1 - Finsupp.single gNPsucc 1
             have hYsub_rank :
                 Yminus.rank =
@@ -868,8 +864,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               omega
             have hg_le_Ysub_rank :
                 gNPsucc.rank ≤
-                  Yminus.rank := by
-              exact le_trans
+                  Yminus.rank :=
+              le_trans
                 (le_maxRank gNPsucc
                   (Finsupp.mem_support_iff.mpr (ne_of_gt hYsub_g_pos)))
                 (maxRank_le_rank _)
@@ -946,8 +942,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                 simp
               let gNPsucc : Gene :=
                 ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩
-              have hYsucc_pos : 0 < Y.1.1 gNPsucc := by
-                exact lt_of_lt_of_le (by omega) hY_double_np_succ
+              have hYsucc_pos : 0 < Y.1.1 gNPsucc :=
+                lt_of_lt_of_le (by omega) hY_double_np_succ
               let Yminus : Chromosome := Y.1.1 - Finsupp.single gNPsucc 1
               have hYsub_rank :
                   Yminus.rank = Y.1.1.rank - gNPsucc.rank :=
@@ -958,8 +954,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                 simp
                 omega
               have hg_le_Ysub_rank :
-                  gNPsucc.rank ≤ Yminus.rank := by
-                exact le_trans
+                  gNPsucc.rank ≤ Yminus.rank :=
+                le_trans
                   (le_maxRank gNPsucc
                     (Finsupp.mem_support_iff.mpr (ne_of_gt hYsub_g_pos)))
                   (maxRank_le_rank _)
@@ -1176,8 +1172,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                             Gene.ofRank (2 * q + 3) GeneType.Negative =
                               (Finsupp.single gneg 1 : Chromosome) := by
                           have h := Gene.ofRank_eq_gene (g := gneg)
-                          rw [hgneg, hgneg_rank_q] at h
-                          exact h
+                          rwa [hgneg, hgneg_rank_q] at h
                         let gNPsucc : Gene :=
                           ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩
                         have hnp_single :
@@ -1312,8 +1307,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                             Gene.ofRank (2 * q + 3) GeneType.Negative =
                               (Finsupp.single gneg 1 : Chromosome) := by
                           have h := Gene.ofRank_eq_gene (g := gneg)
-                          rw [hgneg, hgneg_rank_q] at h
-                          exact h
+                          rwa [hgneg, hgneg_rank_q] at h
                         let gNPsucc : Gene :=
                           ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩
                         have hnp_single :
@@ -1520,7 +1514,5 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                       rw [if_neg hjeven] at hXj_mem hYj_mem
                       exact Mix2LambdaSection17.one_pair_add_le_of_lt_Mix_Pi_2Lambda
                         hXj_mem hYj_mem hle_j hne_j)
-
-
 
 end Mix2LambdaPi

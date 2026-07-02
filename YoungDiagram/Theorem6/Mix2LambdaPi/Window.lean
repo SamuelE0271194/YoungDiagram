@@ -60,11 +60,9 @@ lemma KEY_Y_fst {N : ℕ} (X Y : nMix2LambdaPi N)
   have hdrop := rank_drop_le Y.1.2 i
   -- rank facts
   have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-    simpa [Sigma.sigma, X.2] using this
+    simpa [Sigma.sigma, X.2] using @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
   have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-    simpa [Sigma.sigma, Y.2] using this
+    simpa [Sigma.sigma, Y.2] using @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
   have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
   have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
@@ -87,11 +85,9 @@ lemma KEY_Y_snd {N : ℕ} (X Y : nMix2LambdaPi N)
   rw [if_pos hi] at hcond6
   have hdrop := rank_drop_le Y.1.2 i
   have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-    simpa [Sigma.sigma, X.2] using this
+    simpa [Sigma.sigma, X.2] using @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
   have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-    simpa [Sigma.sigma, Y.2] using this
+    simpa [Sigma.sigma, Y.2] using @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
   have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
   have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
@@ -157,8 +153,8 @@ lemma KEY_X_fst {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   ring
 
@@ -181,8 +177,8 @@ lemma KEY_X_snd {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   ring
 
@@ -231,8 +227,8 @@ lemma KEY_X_fst_ge {N : ℕ} (X : nMix2LambdaPi N) {k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   have hfst_i := congrArg Prod.fst hsplit_i
   have hfst_i2 := congrArg Prod.fst hsplit_i2
@@ -258,8 +254,8 @@ lemma KEY_X_snd_ge {N : ℕ} (X : nMix2LambdaPi N) {k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   have hsnd_i := congrArg Prod.snd hsplit_i
   have hsnd_i2 := congrArg Prod.snd hsplit_i2
@@ -282,8 +278,8 @@ lemma KEY_X_full_fst {N : ℕ} (X : nMix2LambdaPi N) {m : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells]
 
 /-- Full `X`-drop, second component. -/
@@ -300,8 +296,8 @@ lemma KEY_X_full_snd {N : ℕ} (X : nMix2LambdaPi N) {m : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells]
 
 private lemma single_edge_drop_fst_positive {gm : Gene} (hgm_pos : gm.type = GeneType.Positive) :
@@ -359,8 +355,8 @@ lemma KEY_X_edge_fst_positive {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   have hfst_i := congrArg Prod.fst hsplit_i
   have hfst_i2 := congrArg Prod.fst hsplit_i2
@@ -397,8 +393,8 @@ lemma KEY_X_edge_snd_negative {N : ℕ} (X : nMix2LambdaPi N) {m k : ℕ}
     @signature_sum_eq_rank _
   have h5 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
       (X.1.1.prime.rank : ℚ) := by
-    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-    simpa [Sigma.sigma, Function.iterate_one] using this
+    simpa [Sigma.sigma, Function.iterate_one] using
+      @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
   rw [h4, h5, MixLambdaPi.cells, cells_of_X X gm hgm1]
   have hsnd_i := congrArg Prod.snd hsplit_i
   have hsnd_i2 := congrArg Prod.snd hsplit_i2

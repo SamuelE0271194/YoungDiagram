@@ -13,7 +13,6 @@ private lemma type9_signature_eq_before
       signature (Chromosome.prime^[j] (X9 p).1) := by
   have h1 : j ≤ 2 * p + 1 := by omega
   have h2 : j ≤ 2 * p + 2 := by omega
-  have h3 : j ≤ 2 * p + 3 := by omega
   simp only [X9_eq, Y9_eq, iterate_map_add, prime_iterate_ofRank, map_add,
     signature_ofRank_nonPolarized]
   have heq : 2 * p + 3 - j - 2 = 2 * p + 1 - j := by omega
@@ -44,7 +43,6 @@ private lemma type9_signature_mid
         signature (Gene.ofRank 1 (-ε)) := by
   simp only [X9_eq, Y9_eq, iterate_map_add, prime_iterate_ofRank]
   have h1 : 2 * p + 1 - (2 * p + 2) = 0 := by omega
-  have h2 : 2 * p + 2 - (2 * p + 2) = 0 := by omega
   have h3 : 2 * p + 3 - (2 * p + 2) = 1 := by omega
   simp [h1, h3, Gene.ofRank_zero]
 
@@ -159,8 +157,7 @@ lemma exists_mutation_le_type9
               signature (Chromosome.prime^[2 * p + 2] X.1.1)
             rw [hdecomp]
             abel
-          rw [heq]
-          rw [Prod.le_def]
+          rw [heq, Prod.le_def]
           simp only [Prod.fst_add, Prod.snd_add, zero_add]
           change
             (1 + (Sigma.sigma X.1.1 (2 * p + 2)).1 ≤
@@ -211,8 +208,7 @@ lemma exists_mutation_le_type9
               signature (Chromosome.prime^[2 * p + 2] X.1.1)
             rw [hdecomp]
             abel
-          rw [heq]
-          rw [Prod.le_def]
+          rw [heq, Prod.le_def]
           simp only [Prod.fst_add, Prod.snd_add, zero_add]
           change
             (Sigma.sigma X.1.1 (2 * p + 2)).1 ≤

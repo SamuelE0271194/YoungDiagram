@@ -101,8 +101,8 @@ lemma type17_pred_gap_positive
         (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).2) :
     signature (Gene.ofRank 1 .Negative) +
         signature (Chromosome.prime^[2 * q + 2] X.1.1) ≤
-      signature (Chromosome.prime^[2 * q + 2] Y.1.1) := by
-  exact type16_succ_gap_negative X Y hXY hsnd
+      signature (Chromosome.prime^[2 * q + 2] Y.1.1) :=
+  type16_succ_gap_negative X Y hXY hsnd
 
 /-- The type17 diagonal branch
 `2g⁺(2q+3)+g⁻(2q+3) → g⁺(2q+1)+2g(2q+4)`, assuming the two sigma gaps
@@ -146,8 +146,7 @@ lemma exists_mutation_le_type17_diagonal_positive
       Gene.ofRank (2 * q + 3) .Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg, ← hrank, hgpos_rank] at h
-    exact h
+    rwa [hgneg, ← hrank, hgpos_rank] at h
   have hgpos_eq :
       Gene.ofRank (2 * q + 3) .Positive =
         (Finsupp.single gpos 1 : Chromosome) := by
@@ -209,8 +208,7 @@ lemma exists_mutation_le_type17_diagonal_positive
       · by_cases hj_rank : j = 2 * q + 3
         · subst j
           rw [type17_positive_signature_at_rank]
-          rw [type17_positive_source_at_rank] at hdecomp
-          simp only [zero_add] at hdecomp
+          rw [type17_positive_source_at_rank, zero_add] at hdecomp
           rw [← hdecomp]
           exact hgap_rank
         · have hj_after : 2 * q + 3 < j := by omega
@@ -310,8 +308,8 @@ lemma type17_pred_gap_negative
         (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).1) :
     signature (Gene.ofRank 1 .Positive) +
         signature (Chromosome.prime^[2 * q + 2] X.1.1) ≤
-      signature (Chromosome.prime^[2 * q + 2] Y.1.1) := by
-  exact type16_succ_gap_positive X Y hXY hfst
+      signature (Chromosome.prime^[2 * q + 2] Y.1.1) :=
+  type16_succ_gap_positive X Y hXY hfst
 
 /-- The type17 diagonal branch
 `g⁺(2q+3)+2g⁻(2q+3) → g⁻(2q+1)+2g(2q+4)`, assuming the two sigma gaps
@@ -355,8 +353,7 @@ lemma exists_mutation_le_type17_diagonal_negative
       Gene.ofRank (2 * q + 3) .Positive =
         (Finsupp.single gpos 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gpos)
-    rw [hgpos, hrank, hgneg_rank] at h
-    exact h
+    rwa [hgpos, hrank, hgneg_rank] at h
   have hgneg_eq :
       Gene.ofRank (2 * q + 3) .Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
@@ -418,8 +415,7 @@ lemma exists_mutation_le_type17_diagonal_negative
       · by_cases hj_rank : j = 2 * q + 3
         · subst j
           rw [type17_negative_signature_at_rank]
-          rw [type17_negative_source_at_rank] at hdecomp
-          simp only [zero_add] at hdecomp
+          rw [type17_negative_source_at_rank, zero_add] at hdecomp
           rw [← hdecomp]
           exact hgap_rank
         · have hj_after : 2 * q + 3 < j := by omega

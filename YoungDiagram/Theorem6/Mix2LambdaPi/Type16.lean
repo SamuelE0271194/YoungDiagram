@@ -205,17 +205,15 @@ private lemma type16_rank_one_signature_even_mid
   | NonPolarized => exact False.elim (hε rfl)
   | Positive =>
       simp only [GeneType.neg_positive, signature_ofRank_one_positive]
-      rw [signature_ofRank_positive hk_pos]
-      rw [signature_ofRank_negative hk_pos]
-      rw [signature_ofRank_even_half (ε := GeneType.Negative) hk_pred_even,
+      rw [signature_ofRank_positive hk_pos, signature_ofRank_negative hk_pos,
+        signature_ofRank_even_half (ε := GeneType.Negative) hk_pred_even,
         signature_ofRank_even_half (ε := GeneType.Positive) hk_pred_even]
       simp
       ring_nf
   | Negative =>
       simp only [GeneType.neg_negative, signature_ofRank_one_negative]
-      rw [signature_ofRank_negative hk_pos]
-      rw [signature_ofRank_positive hk_pos]
-      rw [signature_ofRank_even_half (ε := GeneType.Positive) hk_pred_even,
+      rw [signature_ofRank_negative hk_pos, signature_ofRank_positive hk_pos,
+        signature_ofRank_even_half (ε := GeneType.Positive) hk_pred_even,
         signature_ofRank_even_half (ε := GeneType.Negative) hk_pred_even]
       simp
       ring_nf
@@ -367,8 +365,7 @@ lemma type16_diagonal_gap_rank
       Gene.ofRank (2 * p + 1) (-ε) =
         (Finsupp.single gsingle 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gsingle)
-    rw [hsingle_type, ← hrank, hdouble_rank] at h
-    exact h
+    rwa [hsingle_type, ← hrank, hdouble_rank] at h
   have hX16val :
       (X16 (le_refl p) hε).1 =
         Finsupp.single gdouble 1 + Finsupp.single gdouble 1 +
@@ -574,8 +571,7 @@ lemma exists_mutation_le_type16_diagonal
       Gene.ofRank (2 * p + 1) (-ε) =
         (Finsupp.single gsingle 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gsingle)
-    rw [hsingle_type, ← hrank, hdouble_rank] at h
-    exact h
+    rwa [hsingle_type, ← hrank, hdouble_rank] at h
   have hX16val :
       (X16 (le_refl p) hε).1 =
         Finsupp.single gdouble 1 + Finsupp.single gdouble 1 +
@@ -607,15 +603,13 @@ lemma exists_mutation_le_type16_diagonal
     · by_cases hj1 : j = 2 * p + 1
       · subst j
         rw [type16_diagonal_signature_at_rank]
-        rw [type16_diagonal_source_at_rank] at hdecomp
-        simp only [zero_add] at hdecomp
+        rw [type16_diagonal_source_at_rank, zero_add] at hdecomp
         rw [← hdecomp]
         exact hgap_rank
       · by_cases hj2 : j = 2 * p + 2
         · subst j
           rw [type16_diagonal_signature_at_succ]
-          rw [type16_diagonal_source_at_succ] at hdecomp
-          simp only [zero_add] at hdecomp
+          rw [type16_diagonal_source_at_succ, zero_add] at hdecomp
           rw [← hdecomp]
           exact hgap_succ
         · have hj_after : 2 * p + 2 < j := by omega

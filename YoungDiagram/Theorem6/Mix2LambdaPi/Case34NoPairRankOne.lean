@@ -289,23 +289,19 @@ private lemma exists_mutation_le_no_pair_rank_one_double
   have hXg₂ : 0 < X.1.1 g₂ := by
     dsimp [restAfterDouble] at hg₂_rest
     exact lt_of_lt_of_le hg₂_rest (by omega)
-  have hg₂_pol : g₂.type ≠ GeneType.NonPolarized := by
-    exact IsPolarized_def'.mp hXpol g₂
-      (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
-  have hg₂_odd : Odd g₂.rank := by
-    exact Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi
-      X.1.2 hXg₂ hg₂_pol
+  have hg₂_pol : g₂.type ≠ GeneType.NonPolarized :=
+    IsPolarized_def'.mp hXpol g₂ (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
+  have hg₂_odd : Odd g₂.rank :=
+    Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi X.1.2 hXg₂ hg₂_pol
   have hX_rank_ge_three_of_ne_g :
       ∀ h : Gene, 0 < X.1.1 h → h ≠ g → 3 ≤ h.rank := by
     intro h hXh hne_h_g
     have hmin_le := hgmin h hXh
     rw [hg_rank_one] at hmin_le
-    have hpol : h.type ≠ GeneType.NonPolarized := by
-      exact IsPolarized_def'.mp hXpol h
-        (Finsupp.mem_support_iff.mpr (ne_of_gt hXh))
-    have hodd : Odd h.rank := by
-      exact Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi
-        X.1.2 hXh hpol
+    have hpol : h.type ≠ GeneType.NonPolarized :=
+      IsPolarized_def'.mp hXpol h (Finsupp.mem_support_iff.mpr (ne_of_gt hXh))
+    have hodd : Odd h.rank :=
+      Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi X.1.2 hXh hpol
     obtain ⟨nh, h_rank_raw⟩ := hodd
     by_contra hnot
     have h_rank_one : h.rank = 1 := by omega
@@ -355,8 +351,7 @@ private lemma exists_mutation_le_no_pair_rank_one_double
     have hne : g ≠ gsingle := by
       intro h
       have htype_eq : g.type = -g.type := by
-        rw [← h] at hsingle_type
-        exact hsingle_type
+        rwa [← h] at hsingle_type
       cases htype : g.type with
       | NonPolarized => exact hg_pol htype
       | Positive => simp [htype] at htype_eq
@@ -377,8 +372,7 @@ private lemma exists_mutation_le_no_pair_rank_one_double
     have hne : g ≠ gopp := by
       intro h
       have htype_eq : g.type = -g.type := by
-        rw [← h] at hopp_type
-        exact hopp_type
+        rwa [← h] at hopp_type
       cases htype : g.type with
       | NonPolarized => exact hg_pol htype
       | Positive => simp [htype] at htype_eq
@@ -793,7 +787,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
         (X := (X.1.1 - Finsupp.single g 1 : Chromosome)) (gm := g₂)
         hg₂_rest_one_mid (by rw [hg₂_rank_q]; omega)]
       rw [← hrestAfterG₂]
-    simpa [Sigma.sigma, hprime]
+    simp [Sigma.sigma, hprime]
   have hXtail_drop_fst :
       ∀ i, 2 * q₂ + 3 ≤ i → i + 2 ≤ 2 * q₃ + 3 →
         (Sigma.sigma X.1.1 i).1 - (Sigma.sigma X.1.1 (i + 2)).1 =
@@ -928,11 +922,11 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
         (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
           ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
     have hW₂sum : (Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-        (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) := by
-      exact totalMult_cast_eq_of_nat_eq hW₂sum_nat
+        (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) :=
+      totalMult_cast_eq_of_nat_eq hW₂sum_nat
     have hrest1 : (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) =
-        X.1.1.sum (fun _ n => (n : ℚ)) - 1 := by
-      exact totalMult_sub_single_one_cast hg_one
+        X.1.1.sum (fun _ n => (n : ℚ)) - 1 :=
+      totalMult_sub_single_one_cast hg_one
     rw [hW₂sum, hrest1, hD_mid]
   have hbase_g₂_match_fst :
       g₂.type = GeneType.Positive →
@@ -951,10 +945,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
             (Sigma.sigma X.1.1 (2 * q₂ + 4)).1 =
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
-      have htmp := hXdrop_raw
       rw [show 1 + (2 * q₂ + 1) = 2 * q₂ + 2 by omega,
-        show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at htmp
-      rw [htmp, hW₂sumD1]
+        show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at hXdrop_raw
+      rw [hXdrop_raw, hW₂sumD1]
     have hYdrop := hYdrop_fst_strong_even (2 * q₂ + 2) ⟨q₂ + 1, by ring⟩
     have hYdrop' :
         (Sigma.sigma Y.1.1 (2 * q₂ + 2)).1 -
@@ -986,10 +979,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
             (Sigma.sigma X.1.1 (2 * q₂ + 4)).2 =
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
-      have htmp := hXdrop_raw
       rw [show 1 + (2 * q₂ + 1) = 2 * q₂ + 2 by omega,
-        show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at htmp
-      rw [htmp, hW₂sumD1]
+        show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at hXdrop_raw
+      rw [hXdrop_raw, hW₂sumD1]
     have hYdrop := hYdrop_snd_strong_even (2 * q₂ + 2) ⟨q₂ + 1, by ring⟩
     have hYdrop' :
         (Sigma.sigma Y.1.1 (2 * q₂ + 2)).2 -
@@ -1026,7 +1018,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
         rw [← Gene.ofRank_eq_gene (g := g₂), prime_iterate_ofRank, hg₂_rank_q,
           show 2 * q₂ + 3 - (2 * q₂ + 2) = 1 by omega]
       rw [hsingle]
-    simpa [Sigma.sigma, hprime]
+    simp [Sigma.sigma, hprime]
   have hXedge_g₂_nonmatch_snd :
       g₂.type = GeneType.Positive →
         (Sigma.sigma X.1.1 (2 * q₂ + 2)).2 -
@@ -1243,8 +1235,8 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
               rw [← hrestAfterG₂]
             have hrest_total_survives :
                 (Chromosome.prime^[2 * q₃ + 2] restAfterG₂).sum (fun _ n => n) =
-                  restAfterG₂.sum (fun _ n => n) := by
-              exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                  restAfterG₂.sum (fun _ n => n) :=
+              Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
                 restAfterG₂ (2 * q₃ + 2) (by
                   intro h hh
                   have hle := h3rd h hh
@@ -1410,10 +1402,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
                 (Sigma.sigma X.1.1 (2 * q₃ + 4)).1 =
               (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                 ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
-          have htmp := hXdrop_raw
           rw [show 1 + (2 * q₃ + 1) = 2 * q₃ + 2 by omega,
-            show 3 + (2 * q₃ + 1) = 2 * q₃ + 4 by omega] at htmp
-          rw [htmp, hWsumD]
+            show 3 + (2 * q₃ + 1) = 2 * q₃ + 4 by omega] at hXdrop_raw
+          rw [hXdrop_raw, hWsumD]
         have hsucc :
             (signature (Chromosome.prime^[2 * q₃ + 4] X.1.1)).1 <
               (signature (Chromosome.prime^[2 * q₃ + 4] Y.1.1)).1 := by
@@ -1440,10 +1431,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
                 (Sigma.sigma X.1.1 (2 * q₃ + 4)).2 =
               (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
                 ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
-          have htmp := hXdrop_raw
           rw [show 1 + (2 * q₃ + 1) = 2 * q₃ + 2 by omega,
-            show 3 + (2 * q₃ + 1) = 2 * q₃ + 4 by omega] at htmp
-          rw [htmp, hWsumD]
+            show 3 + (2 * q₃ + 1) = 2 * q₃ + 4 by omega] at hXdrop_raw
+          rw [hXdrop_raw, hWsumD]
         have hsucc :
             (signature (Chromosome.prime^[2 * q₃ + 4] X.1.1)).2 <
               (signature (Chromosome.prime^[2 * q₃ + 4] Y.1.1)).2 := by
@@ -1589,12 +1579,10 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton
     subst h
     rw [hXneg_zero] at hXg₂
     omega
-  have hg₂_pol : g₂.type ≠ GeneType.NonPolarized := by
-    exact IsPolarized_def'.mp hXpol g₂
-      (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
-  have hg₂_odd : Odd g₂.rank := by
-    exact Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi
-      X.1.2 hXg₂ hg₂_pol
+  have hg₂_pol : g₂.type ≠ GeneType.NonPolarized :=
+    IsPolarized_def'.mp hXpol g₂ (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
+  have hg₂_odd : Odd g₂.rank :=
+    Mix2LambdaSection17.odd_rank_of_polarized_gene_mem_Mix_2Lambda_Pi X.1.2 hXg₂ hg₂_pol
   have hg₂_rank_ge_three : 3 ≤ g₂.rank := by
     have hmin_le := hgmin g₂ hXg₂
     rw [hg_rank_one] at hmin_le

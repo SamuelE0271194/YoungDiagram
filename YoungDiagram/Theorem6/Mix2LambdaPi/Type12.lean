@@ -40,8 +40,7 @@ private lemma type12_signature_eq_before
     have h :=
       signature_sum_ofRank_neg_eq_rank
         (k := 2 * m + 1 - j) (ε := GeneType.Positive)
-    rw [GeneType.neg_positive] at h
-    exact h
+    rwa [GeneType.neg_positive] at h
   have hnp :
       signature (Gene.ofRank (2 * m - j) GeneType.NonPolarized) +
           signature (Gene.ofRank (2 * m - j) GeneType.NonPolarized) =
@@ -138,13 +137,9 @@ lemma exists_mutation_le_type12
   let restval : Chromosome :=
     X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1 -
       Finsupp.single gε 1
-  have hoddpos : Odd gpos.rank := by
-    rw [hgrank]
-    exact ⟨m, rfl⟩
+  have hoddpos : Odd gpos.rank := by rw [hgrank]; exact ⟨m, rfl⟩
   have hoddneg : Odd gneg.rank := hrank ▸ hoddpos
-  have hoddε : Odd gε.rank := by
-    rw [hgε_rank]
-    exact ⟨n, rfl⟩
+  have hoddε : Odd gε.rank := by rw [hgε_rank]; exact ⟨n, rfl⟩
   have rest_mem : restval ∈ Mix (2 • Lambda, Pi) :=
     sub_single_one_mem_Mix_2Lambda_Pi
       (sub_single_one_mem_Mix_2Lambda_Pi
@@ -160,8 +155,7 @@ lemma exists_mutation_le_type12
       Gene.ofRank (2 * m + 1) GeneType.Negative =
         (Finsupp.single gneg 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := gneg)
-    rw [hgneg, ← hrank, hgrank] at h
-    exact h
+    rwa [hgneg, ← hrank, hgrank] at h
   have hgε_eq :
       Gene.ofRank (2 * n + 1) ε =
         (Finsupp.single gε 1 : Chromosome) := by

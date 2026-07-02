@@ -163,7 +163,7 @@ lemma exists_mutation_le_second_double
             rwa [← hcoeff]
           have hz0_ne_g : z0 ≠ g := by
             intro h
-            have hcontra : z0.rank = 1 := by rw [← hg_rank_one]; exact congrArg Gene.rank h
+            have hcontra : z0.rank = 1 := by rw [h]; exact hg_rank_one
             have hz0rk : z0.rank = z.rank + (2 * q₂ + 1) := rfl
             have := z.rank_pos; omega
           have hz0_rest : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) z0 := by
@@ -216,7 +216,7 @@ lemma exists_mutation_le_second_double
             rwa [← hcoeff]
           have hz0_ne_g : z0 ≠ g := by
             intro h
-            have hcontra : z0.rank = 1 := by rw [← hg_rank_one]; exact congrArg Gene.rank h
+            have hcontra : z0.rank = 1 := by rw [h]; exact hg_rank_one
             have hz0rk : z0.rank = z.rank + (2 * q₂ + 1) := rfl
             have := z.rank_pos; omega
           have hz0_rest : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) z0 := by

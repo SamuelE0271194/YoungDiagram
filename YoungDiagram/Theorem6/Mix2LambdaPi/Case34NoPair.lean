@@ -29,8 +29,8 @@ lemma exists_mutation_le_no_pair (m : ℕ)
   -- `X ≠ 0`, so it has a gene of minimal rank.
   have hXne : X.1.1 ≠ 0 := by
     intro hzero
-    have hrank0 : X.1.1.rank = 0 := by rw [hzero, map_zero]
-    rw [X.2] at hrank0
+    have := X.2
+    rw [hzero, map_zero] at this
     omega
   obtain ⟨g, hgX, hgmin⟩ :=
     Mix2LambdaSection17.exists_min_rank_gene hXne
