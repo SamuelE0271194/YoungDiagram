@@ -226,27 +226,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                       intro h hh
                       have hle := hmin_rank h hh
                       omega)
-                have hWsum :
-                    (Chromosome.prime^[2 * q + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-                      X.1.1.sum (fun _ n => (n : ℚ)) := by
-                  exact_mod_cast hWsum_nat
-                have hD :
-                    X.1.1.sum (fun _ n => (n : ℚ)) =
-                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                  have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-                      (X.1.1.rank : ℚ) := by
-                    simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-                  have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-                      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := by
-                    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-                    simpa [Sigma.sigma, Function.iterate_one] using this
-                  have hcells := MixLambdaPi.cells (Z := X.1.1)
-                  have hcells' :
-                      (X.1.1.rank : ℚ) - ((Chromosome.prime^[1] X.1.1).rank : ℚ) =
-                        X.1.1.sum (fun _ n => (n : ℚ)) := by
-                    simpa [Function.iterate_one] using hcells
-                  linarith
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
                 have hXdrop :
                     (Sigma.sigma X.1.1 (2 * q + 2)).1 -
                         (Sigma.sigma X.1.1 (2 * q + 4)).1 =
@@ -311,27 +292,8 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                       intro h hh
                       have hle := hmin_rank h hh
                       omega)
-                have hWsum :
-                    (Chromosome.prime^[2 * q + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-                      X.1.1.sum (fun _ n => (n : ℚ)) := by
-                  exact_mod_cast hWsum_nat
-                have hD :
-                    X.1.1.sum (fun _ n => (n : ℚ)) =
-                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                  have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-                      (X.1.1.rank : ℚ) := by
-                    simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-                  have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-                      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := by
-                    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-                    simpa [Sigma.sigma, Function.iterate_one] using this
-                  have hcells := MixLambdaPi.cells (Z := X.1.1)
-                  have hcells' :
-                      (X.1.1.rank : ℚ) - ((Chromosome.prime^[1] X.1.1).rank : ℚ) =
-                        X.1.1.sum (fun _ n => (n : ℚ)) := by
-                    simpa [Function.iterate_one] using hcells
-                  linarith
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
                 have hXdrop :
                     (Sigma.sigma X.1.1 (2 * q + 2)).2 -
                         (Sigma.sigma X.1.1 (2 * q + 4)).2 =
@@ -855,30 +817,9 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                       intro h hh
                       have hle := h2nd_rank h hh
                       omega)
-                have hWsum :
-                    (Chromosome.prime^[2 * n10 + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-                      restAfterG.sum (fun _ n => (n : ℚ)) := by
-                  exact_mod_cast hWsum_nat
-                have hrest :
-                    restAfterG.sum (fun _ n => (n : ℚ)) =
-                      X.1.1.sum (fun _ n => (n : ℚ)) - 1 := by
-                  have hrest_nat := totalMult_sub_single_one hg_one
-                  have hrest_q := congrArg (fun t : ℕ => (t : ℚ)) hrest_nat
-                  norm_num at hrest_q
-                  linarith
-                have hD :
-                    X.1.1.sum (fun _ n => (n : ℚ)) =
-                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                  have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-                      (X.1.1.rank : ℚ) := by
-                    simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-                  have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-                      (X.1.1.prime.rank : ℚ) := by
-                    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-                    simpa [Sigma.sigma, Function.iterate_one] using this
-                  have hcells := MixLambdaPi.cells (Z := X.1.1)
-                  linarith
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hrest := totalMult_sub_single_one_cast hg_one
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
                 have hXdrop :
                     (Sigma.sigma X.1.1 (2 * n10 + 2)).1 -
                         (Sigma.sigma X.1.1 (2 * n10 + 4)).1 =
@@ -967,30 +908,9 @@ lemma exists_mutation_le_no_pair_rank_ge_three
                       intro h hh
                       have hle := h2nd_rank h hh
                       omega)
-                have hWsum :
-                    (Chromosome.prime^[2 * n10 + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-                      restAfterG.sum (fun _ n => (n : ℚ)) := by
-                  exact_mod_cast hWsum_nat
-                have hrest :
-                    restAfterG.sum (fun _ n => (n : ℚ)) =
-                      X.1.1.sum (fun _ n => (n : ℚ)) - 1 := by
-                  have hrest_nat := totalMult_sub_single_one hg_one
-                  have hrest_q := congrArg (fun t : ℕ => (t : ℚ)) hrest_nat
-                  norm_num at hrest_q
-                  linarith
-                have hD :
-                    X.1.1.sum (fun _ n => (n : ℚ)) =
-                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-                  have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-                      (X.1.1.rank : ℚ) := by
-                    simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-                  have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-                      (X.1.1.prime.rank : ℚ) := by
-                    have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-                    simpa [Sigma.sigma, Function.iterate_one] using this
-                  have hcells := MixLambdaPi.cells (Z := X.1.1)
-                  linarith
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hrest := totalMult_sub_single_one_cast hg_one
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
                 have hXdrop :
                     (Sigma.sigma X.1.1 (2 * n10 + 2)).2 -
                         (Sigma.sigma X.1.1 (2 * n10 + 4)).2 =

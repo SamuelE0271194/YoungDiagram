@@ -5,6 +5,95 @@ open Chromosome Sigma Pointwise
 
 namespace Mix2LambdaPi
 
+lemma fst_add_one_le_of_one_one_add_le {x y : ℚ × ℚ}
+    (h : ((1 : ℚ), (1 : ℚ)) + x ≤ y) : x.1 + 1 ≤ y.1 := by
+  have hfst := h.1
+  change 1 + x.1 ≤ y.1 at hfst
+  linarith
+
+lemma snd_add_one_le_of_one_one_add_le {x y : ℚ × ℚ}
+    (h : ((1 : ℚ), (1 : ℚ)) + x ≤ y) : x.2 + 1 ≤ y.2 := by
+  have hsnd := h.2
+  change 1 + x.2 ≤ y.2 at hsnd
+  linarith
+
+lemma cond_15_7_even_index {m i : ℕ} (Y : nMix2LambdaPi (m + 2))
+    (hi : Even i) :
+    (signature (Chromosome.prime^[i + 1] Y.1.1)).1 -
+        (signature (Chromosome.prime^[i + 2] Y.1.1)).1 ≤
+      (signature (Chromosome.prime^[i] Y.1.1)).2 -
+        (signature (Chromosome.prime^[i + 1] Y.1.1)).2 := by
+  simpa [Sigma.sigma, hi] using
+    Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi Y.1.2 i
+
+lemma cond_15_6_even_index {m i : ℕ} (Y : nMix2LambdaPi (m + 2))
+    (hi : Even i) :
+    (signature (Chromosome.prime^[i + 1] Y.1.1)).2 -
+        (signature (Chromosome.prime^[i + 2] Y.1.1)).2 ≤
+      (signature (Chromosome.prime^[i] Y.1.1)).1 -
+        (signature (Chromosome.prime^[i + 1] Y.1.1)).1 := by
+  simpa [Sigma.sigma, hi] using
+    Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi Y.1.2 i
+
+lemma cond_15_7_two_mul {m p : ℕ} (Y : nMix2LambdaPi (m + 2)) :
+    (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 -
+        (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1 ≤
+      (signature (Chromosome.prime^[2 * p] Y.1.1)).2 -
+        (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
+  simpa using cond_15_7_even_index (i := 2 * p) Y ⟨p, by ring⟩
+
+lemma cond_15_6_two_mul {m p : ℕ} (Y : nMix2LambdaPi (m + 2)) :
+    (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 -
+        (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2 ≤
+      (signature (Chromosome.prime^[2 * p] Y.1.1)).1 -
+        (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
+  simpa using cond_15_6_even_index (i := 2 * p) Y ⟨p, by ring⟩
+
+lemma cond_15_7_two_mul_add_two {m q : ℕ} (Y : nMix2LambdaPi (m + 2)) :
+    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 -
+        (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).1 ≤
+      (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).2 -
+        (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
+  simpa using cond_15_7_even_index (i := 2 * q + 2) Y ⟨q + 1, by ring⟩
+
+lemma cond_15_6_two_mul_add_two {m q : ℕ} (Y : nMix2LambdaPi (m + 2)) :
+    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 -
+        (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).2 ≤
+      (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).1 -
+        (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
+  simpa using cond_15_6_even_index (i := 2 * q + 2) Y ⟨q + 1, by ring⟩
+
+lemma totalMult_cast_eq_sigma_zero_sub_sigma_one (X : Chromosome) :
+    X.sum (fun _ n => (n : ℚ)) =
+      (Sigma.sigma X 0).1 + (Sigma.sigma X 0).2 -
+        ((Sigma.sigma X 1).1 + (Sigma.sigma X 1).2) := by
+  have h0 : (Sigma.sigma X 0).1 + (Sigma.sigma X 0).2 =
+      (X.rank : ℚ) := by
+    simpa [Sigma.sigma] using (@signature_sum_eq_rank X)
+  have h1 : (Sigma.sigma X 1).1 + (Sigma.sigma X 1).2 =
+      (X.prime.rank : ℚ) := by
+    have := @signature_sum_eq_rank (Chromosome.prime^[1] X)
+    simpa [Sigma.sigma, Function.iterate_one] using this
+  have hcells := MixLambdaPi.cells (Z := X)
+  linarith
+
+lemma totalMult_cast_eq_of_nat_eq {X Y : Chromosome}
+    (h : X.sum (fun _ n => n) = Y.sum (fun _ n => n)) :
+    X.sum (fun _ n => (n : ℚ)) = Y.sum (fun _ n => (n : ℚ)) := by
+  exact_mod_cast h
+
+lemma totalMult_cast_eq_sub_one_of_nat_add_one {X Y : Chromosome}
+    (h : X.sum (fun _ n => n) + 1 = Y.sum (fun _ n => n)) :
+    X.sum (fun _ n => (n : ℚ)) = Y.sum (fun _ n => (n : ℚ)) - 1 := by
+  have hq : X.sum (fun _ n => (n : ℚ)) + 1 = Y.sum (fun _ n => (n : ℚ)) := by exact_mod_cast h
+  linarith
+
+lemma totalMult_cast_eq_sub_two_of_nat_add_two {X Y : Chromosome}
+    (h : X.sum (fun _ n => n) + 2 = Y.sum (fun _ n => n)) :
+    X.sum (fun _ n => (n : ℚ)) = Y.sum (fun _ n => (n : ℚ)) - 2 := by
+  have hq : X.sum (fun _ n => (n : ℚ)) + 2 = Y.sum (fun _ n => (n : ℚ)) := by exact_mod_cast h
+  linarith
+
 lemma totalMult_le_rank (X : Chromosome) :
     X.sum (fun _ n => n) ≤ X.rank := by
   rw [rank_def, Finsupp.sum, Finsupp.sum]
@@ -25,6 +114,29 @@ lemma totalMult_sub_single_one {X : Chromosome} {gm : Gene}
   conv_rhs => rw [hsub]
   rw [Finsupp.sum_add_index (by simp) (by intros; simp),
     Finsupp.sum_single_index (by simp)]
+
+lemma totalMult_sub_single_one_cast {X : Chromosome} {gm : Gene}
+    (hgm1 : X gm = 1) :
+    (X - Finsupp.single gm 1).sum (fun _ n => (n : ℚ)) =
+      X.sum (fun _ n => (n : ℚ)) - 1 := by
+  have hrest_nat := totalMult_sub_single_one hgm1
+  have hrest_q := congrArg (fun t : ℕ => (t : ℚ)) hrest_nat
+  norm_num at hrest_q
+  linarith
+
+lemma totalMult_sub_two_single_one {X : Chromosome} {g₁ g₂ : Gene}
+    (hg₁ : X g₁ = 1) (hg₂ : (X - Finsupp.single g₁ 1 : Chromosome) g₂ = 1) :
+    (X - Finsupp.single g₁ 1 - Finsupp.single g₂ 1).sum (fun _ n => n) + 2 =
+      X.sum (fun _ n => n) := by
+  have h1 := totalMult_sub_single_one hg₁
+  have h2 := totalMult_sub_single_one (X := X - Finsupp.single g₁ 1) (gm := g₂) hg₂
+  omega
+
+lemma totalMult_sub_two_single_one_cast {X : Chromosome} {g₁ g₂ : Gene}
+    (hg₁ : X g₁ = 1) (hg₂ : (X - Finsupp.single g₁ 1 : Chromosome) g₂ = 1) :
+    (X - Finsupp.single g₁ 1 - Finsupp.single g₂ 1).sum (fun _ n => (n : ℚ)) =
+    X.sum (fun _ n => (n : ℚ)) - 2 :=
+  totalMult_cast_eq_sub_two_of_nat_add_two (totalMult_sub_two_single_one hg₁ hg₂)
 
 lemma totalMult_sub_single_one_of_pos {X : Chromosome} {gm : Gene}
     (hgm : 0 < X gm) :

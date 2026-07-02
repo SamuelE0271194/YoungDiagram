@@ -69,6 +69,62 @@ private lemma type16_rank_one_double_tail_gap_pack
         signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1)) := by
   sorry
 
+private lemma case4_Ydrop_fst_strong_even
+    {m i : ℕ} (X Y : nMix2LambdaPi (m + 2))
+    (hseed1 :
+      (signature (Chromosome.prime^[1] X.1.1)).1 <
+          (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
+        (signature (Chromosome.prime^[1] X.1.1)).2 <
+          (signature (Chromosome.prime^[1] Y.1.1)).2)
+    (hi : Even i) :
+    (Sigma.sigma Y.1.1 i).1 - (Sigma.sigma Y.1.1 (i + 2)).1 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+  have hcond7 := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi Y.1.2 i
+  rw [if_pos hi] at hcond7
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
+      ((m + 2 : ℕ) : ℚ) := by
+    simpa [Sigma.sigma, X.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
+      ((m + 2 : ℕ) : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by exact_mod_cast case4_gap2 X Y hseed1
+  linarith
+
+private lemma case4_Ydrop_snd_strong_even
+    {m i : ℕ} (X Y : nMix2LambdaPi (m + 2))
+    (hseed1 :
+      (signature (Chromosome.prime^[1] X.1.1)).1 <
+          (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
+        (signature (Chromosome.prime^[1] X.1.1)).2 <
+          (signature (Chromosome.prime^[1] Y.1.1)).2)
+    (hi : Even i) :
+    (Sigma.sigma Y.1.1 i).2 - (Sigma.sigma Y.1.1 (i + 2)).2 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+  have hcond6 := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi Y.1.2 i
+  rw [if_pos hi] at hcond6
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
+      ((m + 2 : ℕ) : ℚ) := by
+    simpa [Sigma.sigma, X.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
+      ((m + 2 : ℕ) : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by exact_mod_cast case4_gap2 X Y hseed1
+  linarith
+
 private lemma exists_mutation_le_no_pair_rank_one_double
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
     (hXY : X.1 < Y.1)
@@ -525,7 +581,7 @@ private lemma exists_mutation_le_no_pair_rank_one_double
       sorry
 
 private lemma exists_mutation_le_no_pair_rank_one_singleton_second_double
-    {m p q₂ : ℕ} (X Y : nMix2LambdaPi (m + 2))
+    {m q₂ : ℕ} (X Y : nMix2LambdaPi (m + 2))
     (hXY : X.1 < Y.1)
     (hcommon : ∀ g : Gene, 0 < X.1.1 g → Y.1.1 g ≤ 0)
     (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
@@ -536,20 +592,12 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_second_double
       gpos.rank = gneg.rank ∧
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
-    (g g₂ : Gene) (hgX : 0 < X.1.1 g)
-    (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
-    (hg_pol : g.type ≠ .NonPolarized)
-    (hp : g.rank = 2 * p + 1) (hp0 : p = 0)
+    (g g₂ : Gene)
     (hg_rank_one : g.rank = 1)
-    (hXneg_zero : X.1.1 (-g) = 0)
     (hg_one : X.1.1 g = 1)
-    (hg₂_rest : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g₂)
     (hg₂min : ∀ g' : Gene,
       0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g' →
         g₂.rank ≤ g'.rank)
-    (hXg₂ : 0 < X.1.1 g₂)
-    (hne_g₂_g : g₂ ≠ g)
-    (hne_g₂_neg : g₂ ≠ -g)
     (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
     (hg₂_rank_q : g₂.rank = 2 * q₂ + 3)
     (hseed1 :
@@ -732,30 +780,9 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
   have hrest_sum_mid :
       restAfterG₂.sum (fun _ n => (n : ℚ)) =
         X.1.1.sum (fun _ n => (n : ℚ)) - 2 := by
-    have hnat : restAfterG₂.sum (fun _ n => n) + 2 = X.1.1.sum (fun _ n => n) := by
-      rw [hrestAfterG₂]
-      have hrest1 := totalMult_sub_single_one hg_one
-      have hrest2 := totalMult_sub_single_one
-        (X := (X.1.1 - Finsupp.single g 1 : Chromosome)) (gm := g₂)
-        hg₂_rest_one_mid
-      omega
-    have hq : restAfterG₂.sum (fun _ n => (n : ℚ)) + 2 =
-        X.1.1.sum (fun _ n => (n : ℚ)) := by
-      exact_mod_cast hnat
-    linarith
-  have hD_mid :
-      X.1.1.sum (fun _ n => (n : ℚ)) =
-        (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-          ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-    have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        (X.1.1.rank : ℚ) := by
-      simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-    have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        (X.1.1.prime.rank : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-      simpa [Sigma.sigma, Function.iterate_one] using this
-    have hcells := MixLambdaPi.cells (Z := X.1.1)
-    linarith
+    rw [hrestAfterG₂]
+    exact totalMult_sub_two_single_one_cast hg_one hg₂_rest_one_mid
+  have hD_mid := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
   have htail_sigma_eq : ∀ i, 2 * q₂ + 3 ≤ i →
       Sigma.sigma X.1.1 i = Sigma.sigma restAfterG₂ i := by
     intro i hi
@@ -805,52 +832,14 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
     intro i hi
-    have hcond7 := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi Y.1.2 i
-    rw [if_pos hi] at hcond7
-    have hdrop := rank_drop_le Y.1.2 i
-    have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-      simpa [Sigma.sigma, X.2] using this
-    have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-      simpa [Sigma.sigma, Y.2] using this
-    have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hgap2 := case4_gap2 X Y hseed1
-    have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
-      exact_mod_cast hgap2
-    linarith
+    exact case4_Ydrop_fst_strong_even X Y hseed1 hi
   have hYdrop_snd_strong_even :
       ∀ i, Even i →
         (Sigma.sigma Y.1.1 i).2 - (Sigma.sigma Y.1.1 (i + 2)).2 ≤
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
     intro i hi
-    have hcond6 := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi Y.1.2 i
-    rw [if_pos hi] at hcond6
-    have hdrop := rank_drop_le Y.1.2 i
-    have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-      simpa [Sigma.sigma, X.2] using this
-    have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-      simpa [Sigma.sigma, Y.2] using this
-    have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hgap2 := case4_gap2 X Y hseed1
-    have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
-      exact_mod_cast hgap2
-    linarith
+    exact case4_Ydrop_snd_strong_even X Y hseed1 hi
   have hgap_mid_non_top_odd :
       ∀ j, 2 * q₂ + 3 ≤ j → j ≤ 2 * q₃ + 3 → ¬ Even j →
         j ≠ 2 * q₃ + 3 →
@@ -940,14 +929,10 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
           ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
     have hW₂sum : (Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
         (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) := by
-      exact_mod_cast hW₂sum_nat
+      exact totalMult_cast_eq_of_nat_eq hW₂sum_nat
     have hrest1 : (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) =
         X.1.1.sum (fun _ n => (n : ℚ)) - 1 := by
-      have hnat := totalMult_sub_single_one hg_one
-      have hq : (X.1.1 - Finsupp.single g 1 : Chromosome).sum (fun _ n => (n : ℚ)) + 1 =
-          X.1.1.sum (fun _ n => (n : ℚ)) := by
-        exact_mod_cast hnat
-      linarith
+      exact totalMult_sub_single_one_cast hg_one
     rw [hW₂sum, hrest1, hD_mid]
   have hbase_g₂_match_fst :
       g₂.type = GeneType.Positive →
@@ -1271,11 +1256,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
               have hrest_nat : restAfterG₂.sum (fun _ n => n) + 2 =
                   X.1.1.sum (fun _ n => n) := by
                 rw [hrestAfterG₂]
-                have hrest1 := totalMult_sub_single_one hg_one
-                have hrest2 := totalMult_sub_single_one
-                  (X := (X.1.1 - Finsupp.single g 1 : Chromosome)) (gm := g₂)
-                  hg₂_rest_one_mid
-                omega
+                exact totalMult_sub_two_single_one hg_one hg₂_rest_one_mid
               omega
             have hXtop_rank_ge :
                 X.1.1.sum (fun _ n => n) - 2 ≤
@@ -1372,36 +1353,13 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
         intro h hh
         have hle := h3rd h hh
         omega)
-  have hWsum :
-      (Chromosome.prime^[2 * q₃ + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
-        restAfterG₂.sum (fun _ n => (n : ℚ)) := by
-    exact_mod_cast hWsum_nat
+  have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
   have hrest_sum :
       restAfterG₂.sum (fun _ n => (n : ℚ)) =
         X.1.1.sum (fun _ n => (n : ℚ)) - 2 := by
-    have hrest1 := totalMult_sub_single_one hg_one
-    have hrest2 := totalMult_sub_single_one
-      (X := (X.1.1 - Finsupp.single g 1 : Chromosome)) (gm := g₂) hg₂_rest_one
-    have hnat : restAfterG₂.sum (fun _ n => n) + 2 = X.1.1.sum (fun _ n => n) := by
-      rw [hrestAfterG₂]
-      omega
-    have hq : restAfterG₂.sum (fun _ n => (n : ℚ)) + 2 =
-        X.1.1.sum (fun _ n => (n : ℚ)) := by
-      exact_mod_cast hnat
-    linarith
-  have hD :
-      X.1.1.sum (fun _ n => (n : ℚ)) =
-        (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-          ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-    have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        (X.1.1.rank : ℚ) := by
-      simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-    have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        (X.1.1.prime.rank : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-      simpa [Sigma.sigma, Function.iterate_one] using this
-    have hcells := MixLambdaPi.cells (Z := X.1.1)
-    linarith
+    rw [hrestAfterG₂]
+    exact totalMult_sub_two_single_one_cast hg_one hg₂_rest_one
+  have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
   have hWsumD :
       (Chromosome.prime^[2 * q₃ + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
         (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
@@ -1425,58 +1383,14 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
       (Sigma.sigma Y.1.1 (2 * q₃ + 2)).1 - (Sigma.sigma Y.1.1 (2 * q₃ + 4)).1 ≤
         (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
           ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
-    have hi : Even (2 * q₃ + 2) := ⟨q₃ + 1, by ring⟩
-    have hcond7 := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi
-      Y.1.2 (2 * q₃ + 2)
-    rw [if_pos hi] at hcond7
-    have hdrop := rank_drop_le Y.1.2 (2 * q₃ + 2)
-    have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-      simpa [Sigma.sigma, X.2] using this
-    have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-      simpa [Sigma.sigma, Y.2] using this
-    have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hgap2 := case4_gap2 X Y hseed1
-    have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
-      exact_mod_cast hgap2
-    have hidx : 2 * q₃ + 2 + 2 = 2 * q₃ + 4 := by omega
-    rw [hidx] at hcond7
-    linarith
+    simpa [show 2 * q₃ + 2 + 2 = 2 * q₃ + 4 by omega] using
+      case4_Ydrop_fst_strong_even X Y hseed1 ⟨q₃ + 1, by ring⟩
   have hYdrop_snd_strong :
       (Sigma.sigma Y.1.1 (2 * q₃ + 2)).2 - (Sigma.sigma Y.1.1 (2 * q₃ + 4)).2 ≤
         (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
           ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
-    have hi : Even (2 * q₃ + 2) := ⟨q₃ + 1, by ring⟩
-    have hcond6 := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi
-      Y.1.2 (2 * q₃ + 2)
-    rw [if_pos hi] at hcond6
-    have hdrop := rank_drop_le Y.1.2 (2 * q₃ + 2)
-    have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
-      simpa [Sigma.sigma, X.2] using this
-    have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
-        ((m + 2 : ℕ) : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
-      simpa [Sigma.sigma, Y.2] using this
-    have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
-    have hgap2 := case4_gap2 X Y hseed1
-    have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
-        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
-      exact_mod_cast hgap2
-    have hidx : 2 * q₃ + 2 + 2 = 2 * q₃ + 4 := by omega
-    rw [hidx] at hcond6
-    linarith
+    simpa [show 2 * q₃ + 2 + 2 = 2 * q₃ + 4 by omega] using
+      case4_Ydrop_snd_strong_even X Y hseed1 ⟨q₃ + 1, by ring⟩
   have hgap_succ :
       signature (Gene.ofRank 1 g₃.type) +
           signature (Chromosome.prime^[2 * q₃ + 4] X.1.1) ≤
@@ -1554,39 +1468,18 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
     (fun h => hne_g₃_g₂ h.symm) hZle
 
 private lemma exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundary
-    {m p q₂ : ℕ} (X Y : nMix2LambdaPi (m + 2))
-    (hXY : X.1 < Y.1)
-    (hcommon : ∀ g : Gene, 0 < X.1.1 g → Y.1.1 g ≤ 0)
-    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
-      (Chromosome.prime^[k] X.1.1).rank <
-        (Chromosome.prime^[k] Y.1.1).rank)
-    (hXpol : X.1.1.IsPolarized)
-    (hno_pair : ¬ ∃ (gpos gneg : Gene),
-      gpos.rank = gneg.rank ∧
-      gpos.type = .Positive ∧ gneg.type = .Negative ∧
-      0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
-    (g g₂ : Gene) (hgX : 0 < X.1.1 g)
-    (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
-    (hg_pol : g.type ≠ .NonPolarized)
-    (hp : g.rank = 2 * p + 1) (hp0 : p = 0)
+    {m q₂ : ℕ} (X Y : nMix2LambdaPi (m + 2))
+    (g g₂ : Gene)
     (hg_rank_one : g.rank = 1)
-    (hXneg_zero : X.1.1 (-g) = 0)
     (hg_one : X.1.1 g = 1)
-    (hg₂_rest : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g₂)
-    (hg₂min : ∀ g' : Gene,
-      0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g' →
-        g₂.rank ≤ g'.rank)
-    (hXg₂ : 0 < X.1.1 g₂)
     (hne_g₂_g : g₂ ≠ g)
-    (hne_g₂_neg : g₂ ≠ -g)
-    (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
+    (hg₂_one : X.1.1 g₂ = 1)
     (hg₂_rank_q : g₂.rank = 2 * q₂ + 3)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
           (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
         (signature (Chromosome.prime^[1] X.1.1)).2 <
           (signature (Chromosome.prime^[1] Y.1.1)).2)
-    (hg₂_one : X.1.1 g₂ = 1)
     (restAfterG₂ : Chromosome)
     (hrest_def : restAfterG₂ = X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1)
     (hrest₂_empty : ¬ restAfterG₂ ≠ 0) :
@@ -1657,7 +1550,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundar
     show Y.1.1.prime.rank < Y.1.1.rank
     exact prime_rank_lt hYne
   rw [hrx] at hrankprimeX
-  rw [hry, Y.2] at hprimeYlt
+  rw [hry, Y.2, hm] at hprimeYlt
   omega
 
 private lemma exists_mutation_le_no_pair_rank_one_singleton
@@ -1760,9 +1653,8 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton
   · -- There are already two later copies; the type10 source will use
     -- `g₂ + g₂`, with the rank-one gene left in the rest.
     exact exists_mutation_le_no_pair_rank_one_singleton_second_double
-      X Y hXY hcommon h17_1 hXpol hno_pair g g₂ hgX hgmin hg_pol hp hp0
-      hg_rank_one hXneg_zero hg_one hg₂_rest hg₂min hXg₂ hne_g₂_g
-      hne_g₂_neg hg₂_pol hg₂_rank_q hseed1 hg₂_two
+      X Y hXY hcommon h17_1 hXpol hno_pair g g₂ hg_rank_one hg_one hg₂min
+      hg₂_pol hg₂_rank_q hseed1 hg₂_two
   · have hg₂_one : X.1.1 g₂ = 1 := by omega
     let restAfterG₂ : Chromosome :=
       X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1
@@ -1815,9 +1707,8 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton
       -- This is the formal place where the informal proof uses the
       -- `s₁-r₁ ≥ 2` multiplicity gap to rule the case out.
       exact exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundary
-        X Y hXY hcommon h17_1 hXpol hno_pair g g₂ hgX hgmin hg_pol hp hp0
-        hg_rank_one hXneg_zero hg_one hg₂_rest hg₂min hXg₂ hne_g₂_g
-        hne_g₂_neg hg₂_pol hg₂_rank_q hseed1 hg₂_one restAfterG₂ rfl hrest₂_ne
+        X Y g g₂ hg_rank_one hg_one hne_g₂_g hg₂_one hg₂_rank_q hseed1 restAfterG₂
+        rfl hrest₂_ne
 
 lemma exists_mutation_le_no_pair_rank_one
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))

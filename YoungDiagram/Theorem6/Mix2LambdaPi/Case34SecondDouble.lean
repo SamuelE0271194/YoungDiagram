@@ -62,29 +62,13 @@ lemma exists_mutation_le_second_double
         (X.1.1 - Finsupp.single g 1) (2 * q₂ + 1)
         (by intro g' hg'; have := h2nd g' hg'; omega)]
     exact totalMult_sub_single_one hg_one
-  have hcellsX :
-      X.1.1.sum (fun _ n => (n : ℚ)) =
-        (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
-          ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
-    have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
-      simpa [Sigma.sigma] using (@signature_sum_eq_rank X.1.1)
-    have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
-        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[1] X.1.1)
-      simpa [Sigma.sigma, Function.iterate_one] using this
-    have hcells := MixLambdaPi.cells (Z := X.1.1)
-    have hcells' :
-        (X.1.1.rank : ℚ) - ((Chromosome.prime^[1] X.1.1).rank : ℚ) =
-          X.1.1.sum (fun _ n => (n : ℚ)) := by
-      simpa [Function.iterate_one] using hcells
-    linarith
+  have hcellsX := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
   have htotQ :
       (Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => (n : ℚ)) =
         (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
           ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
-    have hnat : ((Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => (n : ℚ))) + 1 =
-        X.1.1.sum (fun _ n => (n : ℚ)) := by exact_mod_cast htot_nat
-    rw [← hcellsX]; linarith
+    rw [← hcellsX]
+    exact totalMult_cast_eq_sub_one_of_nat_add_one htot_nat
   -- Assemble the three gaps.
   have hgap_pred :
       ((1 : ℚ), (1 : ℚ)) +

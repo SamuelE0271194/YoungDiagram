@@ -1,3 +1,4 @@
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Helpers
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPair
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairRankOne
 
@@ -6,77 +7,23 @@ open Chromosome Sigma Pointwise
 
 namespace Mix2LambdaPi
 
-private lemma exists_mutation_le_type16_positive_rank_one_zero_successor
+private lemma exists_mutation_le_type16_rank_one_zero_successor
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
     (hXY : X.1 < Y.1)
     (hcommon : ∀ g : Gene, 0 < X.1.1 g → Y.1.1 g ≤ 0)
-    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
-      (Chromosome.prime^[k] X.1.1).rank <
-        (Chromosome.prime^[k] Y.1.1).rank)
     (hXpol : X.1.1.IsPolarized)
-    (hnodouble : ¬ ∃ (gpos gneg : Gene),
-      gpos.rank = gneg.rank ∧
-      gpos.type = .Positive ∧ gneg.type = .Negative ∧
-      2 ≤ X.1.1 gpos ∧ 2 ≤ X.1.1 gneg)
     (gpos gneg : Gene)
     (hrank : gpos.rank = gneg.rank)
     (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
     (hXpos : 0 < X.1.1 gpos) (hXneg : 0 < X.1.1 gneg)
-    (hmin : ∀ (p' n' : Gene),
-      p'.rank = n'.rank →
-        p'.type = .Positive → n'.type = .Negative →
-          0 < X.1.1 p' → 0 < X.1.1 n' → gpos.rank ≤ p'.rank)
-    (htwo_one : 2 ≤ X.1.1 gpos ∧ X.1.1 gneg = 1)
+    (hne_mult : X.1.1 gpos ≠ X.1.1 gneg)
     (hp : gpos.rank = 2 * p + 1)
-    (hbranch :
-      (∀ p, gpos.rank = 2 * p + 1 →
-          (signature (Chromosome.prime^[2 * p + 2] X.1.1)).1 <
-            (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1) →
-        ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
     (hYsucc : ¬ Chromosome.prime^[2 * p + 2] Y.1.1 ≠ 0)
     (hp0 : p = 0) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  have hY2 : Chromosome.prime^[2] Y.1.1 = 0 := by
-    simpa [hp0] using not_not.mp hYsucc
   exact (pair_rank_one_zero_successor_false X Y hXY hcommon hXpol gpos gneg
-    hgpos hgneg (by omega) (by omega) hXpos hXneg
-    (by have := htwo_one.1; have := htwo_one.2; omega) hY2).elim
-
-private lemma exists_mutation_le_type16_negative_rank_one_zero_successor
-    {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
-    (hXY : X.1 < Y.1)
-    (hcommon : ∀ g : Gene, 0 < X.1.1 g → Y.1.1 g ≤ 0)
-    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
-      (Chromosome.prime^[k] X.1.1).rank <
-        (Chromosome.prime^[k] Y.1.1).rank)
-    (hXpol : X.1.1.IsPolarized)
-    (hnodouble : ¬ ∃ (gpos gneg : Gene),
-      gpos.rank = gneg.rank ∧
-      gpos.type = .Positive ∧ gneg.type = .Negative ∧
-      2 ≤ X.1.1 gpos ∧ 2 ≤ X.1.1 gneg)
-    (gpos gneg : Gene)
-    (hrank : gpos.rank = gneg.rank)
-    (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
-    (hXpos : 0 < X.1.1 gpos) (hXneg : 0 < X.1.1 gneg)
-    (hmin : ∀ (p' n' : Gene),
-      p'.rank = n'.rank →
-        p'.type = .Positive → n'.type = .Negative →
-          0 < X.1.1 p' → 0 < X.1.1 n' → gpos.rank ≤ p'.rank)
-    (hone_two : X.1.1 gpos = 1 ∧ 2 ≤ X.1.1 gneg)
-    (hp : gneg.rank = 2 * p + 1)
-    (hbranch :
-      (∀ p, gneg.rank = 2 * p + 1 →
-          (signature (Chromosome.prime^[2 * p + 2] X.1.1)).2 <
-            (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2) →
-        ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
-    (hYsucc : ¬ Chromosome.prime^[2 * p + 2] Y.1.1 ≠ 0)
-    (hp0 : p = 0) :
-    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  have hY2 : Chromosome.prime^[2] Y.1.1 = 0 := by
-    simpa [hp0] using not_not.mp hYsucc
-  exact (pair_rank_one_zero_successor_false X Y hXY hcommon hXpol gpos gneg
-    hgpos hgneg (by omega) (by omega) hXpos hXneg
-    (by have := hone_two.1; have := hone_two.2; omega) hY2).elim
+    hgpos hgneg (by omega) (by omega) hXpos hXneg hne_mult
+    (by simpa [hp0] using not_not.mp hYsucc)).elim
 
 private lemma exists_mutation_le_type10_pair_rank_one_boundary
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
@@ -206,15 +153,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * p + 2] X.1.1)).1 =
                 (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1 :=
             le_antisymm hle_succ.1 (le_of_not_gt hnfst)
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi
-              Y.1.2 (2 * p)
-            have heven : Even (2 * p) := by exact ⟨p, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_7_two_mul Y (p := p)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hXdrop :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 -
@@ -223,22 +162,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * p + 2] X.1.1)).1 + 1 :=
             snd_drop_le_fst_drop_succ_add_one X.1.1 hXPi
               gneg hgneg_rank_p hgneg htwo_one.2
-          have hgap_rank_fst_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := hgap_rank_p.1
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := hgap_rank_p.2
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst_p := fst_add_one_le_of_one_one_add_le hgap_rank_p
+          have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hsnd_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 <
                 (signature (Chromosome.prime^[2 * p] Y.1.1)).2 := by
@@ -284,15 +209,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * p + 2] X.1.1)).1 =
                 (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1 :=
             le_antisymm hle_succ.1 (le_of_not_gt hnfst)
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi
-              Y.1.2 (2 * p)
-            have heven : Even (2 * p) := by exact ⟨p, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_7_two_mul Y (p := p)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hXdrop :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 -
@@ -301,22 +218,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * p + 2] X.1.1)).1 + 1 :=
             snd_drop_le_fst_drop_succ_add_one X.1.1 hXPi
               gneg hgneg_rank_p hgneg htwo_one.2
-          have hgap_rank_fst_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := hgap_rank_p.1
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := hgap_rank_p.2
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst_p := fst_add_one_le_of_one_one_add_le hgap_rank_p
+          have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hsnd_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).2 <
                 (signature (Chromosome.prime^[2 * p] Y.1.1)).2 := by
@@ -343,9 +246,10 @@ lemma exists_mutation_le_polarized_remaining_of_pair
     · -- Paper's `Y^(m+1)=0` subcase, handled by type17.
       by_cases hp0 : p = 0
       · -- Boundary rank `m=1`; type17 would require `g⁺(m-2)`.
-        exact exists_mutation_le_type16_positive_rank_one_zero_successor
-          X Y hXY hcommon h17_1 hXpol hnodouble gpos gneg hrank hgpos
-          hgneg hXpos hXneg hmin htwo_one hp hbranch hYsucc hp0
+        exact exists_mutation_le_type16_rank_one_zero_successor
+          X Y hXY hcommon hXpol gpos gneg hrank hgpos hgneg hXpos hXneg
+          (by have := htwo_one.1; have := htwo_one.2; omega)
+          hp hYsucc hp0
       · let q := p - 1
         have hpq : p = q + 1 := by omega
         have hgpos_rank_q : gpos.rank = 2 * q + 3 := by omega
@@ -408,16 +312,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * q + 4] X.1.1)).1 =
                 (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).1 := by
             rw [hXsucc_sig_zero, hYsucc_sig_zero]
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-            have h := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi
-              Y.1.2 (2 * q + 2)
-            have heven : Even (2 * q + 2) := by
-              exact ⟨q + 1, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_7_two_mul_add_two Y (q := q)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hgneg_rank_q1 : gneg.rank = 2 * (q + 1) + 1 := by
             omega
@@ -428,22 +323,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * (q + 1) + 2] X.1.1)).1 + 1 :=
             snd_drop_le_fst_drop_succ_add_one X.1.1 hXPi
               gneg hgneg_rank_q1 hgneg htwo_one.2
-          have hgap_rank_fst :
-              (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-            have h := hgap_rank.1
-            change
-              1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd :
-              (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-            have h := hgap_rank.2
-            change
-              1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst := fst_add_one_le_of_one_one_add_le hgap_rank
+          have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
           have hsnd_pred_raw :
               (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).2 <
                 (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 := by
@@ -508,15 +389,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * p + 2] X.1.1)).2 =
                 (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2 :=
             le_antisymm hle_succ.2 (le_of_not_gt hnsnd)
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi
-              Y.1.2 (2 * p)
-            have heven : Even (2 * p) := by exact ⟨p, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_6_two_mul Y (p := p)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hXdrop :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 -
@@ -525,22 +398,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * p + 2] X.1.1)).2 + 1 :=
             fst_drop_le_snd_drop_succ_add_one X.1.1 hXPi
               gpos hgpos_rank_p hgpos hone_two.1
-          have hgap_rank_fst_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := hgap_rank_p.1
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := hgap_rank_p.2
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst_p := fst_add_one_le_of_one_one_add_le hgap_rank_p
+          have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hfst_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 <
                 (signature (Chromosome.prime^[2 * p] Y.1.1)).1 := by
@@ -586,15 +445,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * p + 2] X.1.1)).2 =
                 (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2 :=
             le_antisymm hle_succ.2 (le_of_not_gt hnsnd)
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * p + 2] Y.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi
-              Y.1.2 (2 * p)
-            have heven : Even (2 * p) := by exact ⟨p, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_6_two_mul Y (p := p)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hXdrop :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 -
@@ -603,22 +454,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * p + 2] X.1.1)).2 + 1 :=
             fst_drop_le_snd_drop_succ_add_one X.1.1 hXPi
               gpos hgpos_rank_p hgpos hone_two.1
-          have hgap_rank_fst_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 := by
-            have h := hgap_rank_p.1
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd_p :
-              (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 := by
-            have h := hgap_rank_p.2
-            change
-              1 + (signature (Chromosome.prime^[2 * p + 1] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * p + 1] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst_p := fst_add_one_le_of_one_one_add_le hgap_rank_p
+          have hgap_rank_snd_p := snd_add_one_le_of_one_one_add_le hgap_rank_p
           have hfst_pred_p :
               (signature (Chromosome.prime^[2 * p] X.1.1)).1 <
                 (signature (Chromosome.prime^[2 * p] Y.1.1)).1 := by
@@ -645,9 +482,10 @@ lemma exists_mutation_le_polarized_remaining_of_pair
     · -- Type17 subcase for `g⁺+2g⁻`.
       by_cases hp0 : p = 0
       · -- Boundary rank `m=1`; type17 would require `g⁻(m-2)`.
-        exact exists_mutation_le_type16_negative_rank_one_zero_successor
-          X Y hXY hcommon h17_1 hXpol hnodouble gpos gneg hrank hgpos
-          hgneg hXpos hXneg hmin hone_two hp hbranch hYsucc hp0
+        exact exists_mutation_le_type16_rank_one_zero_successor
+          X Y hXY hcommon hXpol gpos gneg hrank hgpos hgneg hXpos hXneg
+          (by have := hone_two.1; have := hone_two.2; omega)
+          (by rw [hrank, hp]) hYsucc hp0
       · let q := p - 1
         have hpq : p = q + 1 := by omega
         have hgneg_rank_q : gneg.rank = 2 * q + 3 := by omega
@@ -710,16 +548,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               (signature (Chromosome.prime^[2 * q + 4] X.1.1)).2 =
                 (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).2 := by
             rw [hXsucc_sig_zero, hYsucc_sig_zero]
-          have hYdrop :
-              (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 -
-                  (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).1 -
-                  (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-            have h := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi
-              Y.1.2 (2 * q + 2)
-            have heven : Even (2 * q + 2) := by
-              exact ⟨q + 1, by ring⟩
-            simpa [Sigma.sigma, heven] using h
+          have hYdrop := cond_15_6_two_mul_add_two Y (q := q)
           have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
           have hgpos_rank_q1 : gpos.rank = 2 * (q + 1) + 1 := by
             omega
@@ -730,22 +559,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * (q + 1) + 2] X.1.1)).2 + 1 :=
             fst_drop_le_snd_drop_succ_add_one X.1.1 hXPi
               gpos hgpos_rank_q1 hgpos hone_two.1
-          have hgap_rank_fst :
-              (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 + 1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-            have h := hgap_rank.1
-            change
-              1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 at h
-            linarith
-          have hgap_rank_snd :
-              (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 + 1 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-            have h := hgap_rank.2
-            change
-              1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 ≤
-                (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 at h
-            linarith
+          have hgap_rank_fst := fst_add_one_le_of_one_one_add_le hgap_rank
+          have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
           have hfst_pred_raw :
               (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).1 <
                 (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 := by
@@ -846,16 +661,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   (signature (Chromosome.prime^[2 * q + 4] X.1.1)).1 =
                     (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).1 :=
                 le_antisymm hle_succ.1 (le_of_not_gt hnfst_succ)
-              have hYdrop :
-                  (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 -
-                      (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).1 ≤
-                    (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).2 -
-                      (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-                have h := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi
-                  Y.1.2 (2 * q + 2)
-                have heven : Even (2 * q + 2) := by
-                  exact ⟨q + 1, by ring⟩
-                simpa [Sigma.sigma, heven] using h
+              have hYdrop := cond_15_7_two_mul_add_two Y (q := q)
               have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
               have hXdrop :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).2 -
@@ -864,22 +670,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                       (signature (Chromosome.prime^[2 * (q + 1) + 2] X.1.1)).1 + 1 :=
                 snd_drop_le_fst_drop_succ_add_one X.1.1 hXPi
                   gneg (by omega) hgneg hone_one.2
-              have hgap_rank_fst :
-                  (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 + 1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-                have h := hgap_rank.1
-                change
-                  1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 at h
-                linarith
-              have hgap_rank_snd :
-                  (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 + 1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-                have h := hgap_rank.2
-                change
-                  1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 at h
-                linarith
+              have hgap_rank_fst := fst_add_one_le_of_one_one_add_le hgap_rank
+              have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
               have hsnd_pred_raw :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).2 <
                     (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).2 := by
@@ -916,16 +708,7 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                   intro hsnd_succ'
                   exact htype15 ⟨q, hgpos_rank_q,
                     Or.inr ⟨hsnd_pred, hsnd_succ'⟩⟩))
-              have hYdrop :
-                  (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 -
-                      (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).2 ≤
-                    (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).1 -
-                      (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-                have h := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi
-                  Y.1.2 (2 * q + 2)
-                have heven : Even (2 * q + 2) := by
-                  exact ⟨q + 1, by ring⟩
-                simpa [Sigma.sigma, heven] using h
+              have hYdrop := cond_15_6_two_mul_add_two Y (q := q)
               have hXPi : X.1.1 ∈ Pi := Variety.mem_Pi_iff.mpr hXpol
               have hXdrop :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).1 -
@@ -934,22 +717,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
                       (signature (Chromosome.prime^[2 * (q + 1) + 2] X.1.1)).2 + 1 :=
                 fst_drop_le_snd_drop_succ_add_one X.1.1 hXPi
                   gpos (by omega) hgpos hone_one.1
-              have hgap_rank_fst :
-                  (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 + 1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 := by
-                have h := hgap_rank.1
-                change
-                  1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1 at h
-                linarith
-              have hgap_rank_snd :
-                  (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 + 1 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 := by
-                have h := hgap_rank.2
-                change
-                  1 + (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 ≤
-                    (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2 at h
-                linarith
+              have hgap_rank_fst := fst_add_one_le_of_one_one_add_le hgap_rank
+              have hgap_rank_snd := snd_add_one_le_of_one_one_add_le hgap_rank
               have hfst_pred_raw :
                   (signature (Chromosome.prime^[2 * (q + 1)] X.1.1)).1 <
                     (signature (Chromosome.prime^[2 * (q + 1)] Y.1.1)).1 := by
