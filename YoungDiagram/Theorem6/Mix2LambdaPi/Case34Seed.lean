@@ -38,6 +38,64 @@ lemma case4_gap2 {N : ℕ} (X Y : nMix2LambdaPi N)
     rw [hny1, hny2] at h; exact_mod_cast h.symm
   omega
 
+lemma case4_Ydrop_fst_strong_even
+    {N i : ℕ} (X Y : nMix2LambdaPi N)
+    (hseed1 :
+      (signature (Chromosome.prime^[1] X.1.1)).1 <
+          (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
+        (signature (Chromosome.prime^[1] X.1.1)).2 <
+          (signature (Chromosome.prime^[1] Y.1.1)).2)
+    (hi : Even i) :
+    (Sigma.sigma Y.1.1 i).1 - (Sigma.sigma Y.1.1 (i + 2)).1 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+  have hcond7 := Mix2LambdaSection17.cond_15_7_Mix_2Lambda_Pi Y.1.2 i
+  rw [if_pos hi] at hcond7
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
+      (N : ℚ) := by
+    simpa [Sigma.sigma, X.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
+      (N : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    exact_mod_cast case4_gap2 X Y hseed1
+  linarith
+
+lemma case4_Ydrop_snd_strong_even
+    {N i : ℕ} (X Y : nMix2LambdaPi N)
+    (hseed1 :
+      (signature (Chromosome.prime^[1] X.1.1)).1 <
+          (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
+        (signature (Chromosome.prime^[1] X.1.1)).2 <
+          (signature (Chromosome.prime^[1] Y.1.1)).2)
+    (hi : Even i) :
+    (Sigma.sigma Y.1.1 i).2 - (Sigma.sigma Y.1.1 (i + 2)).2 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+  have hcond6 := Mix2LambdaSection17.cond_15_6_Mix_2Lambda_Pi Y.1.2 i
+  rw [if_pos hi] at hcond6
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 =
+      (N : ℚ) := by
+    simpa [Sigma.sigma, X.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 =
+      (N : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hrY1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
+  have hgapQ : ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 2 ≤
+      ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    exact_mod_cast case4_gap2 X Y hseed1
+  linarith
+
 /-- Level-0 signature agreement: `X < Y` of equal rank agree at level 0. -/
 lemma sigma_zero_eq {N : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1) :
     Sigma.sigma X.1.1 0 = Sigma.sigma Y.1.1 0 := by
