@@ -1,4 +1,6 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPairRankOneDoubleSameGene
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPairRankOneDoubleSameSign
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Seed
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34SecondDouble
 import YoungDiagram.Theorem6.Mix2LambdaPi.Type14
@@ -234,36 +236,6 @@ private lemma rank_one_double_seed_snd_add_two_negative
     congrArg Prod.snd (sigma_zero_eq X Y hXY)
   simp only [Nat.zero_add] at hYdrop
   linarith
-
-private lemma single_pred_succ_drop_fst_negative {q : ℕ} {g : Gene}
-    (hrank : g.rank = 2 * q + 3) (hneg : g.type = GeneType.Negative) :
-    (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 2)).1 -
-        (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 4)).1 = 0 := by
-  have hsingle : (Finsupp.single g 1 : Chromosome) = Gene.ofRank g.rank g.type :=
-    Gene.ofRank_eq_gene.symm
-  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
-  have hpred : g.rank - (2 * q + 2) = 1 := by omega
-  have hsucc : g.rank - (2 * q + 4) = 0 := by omega
-  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hneg, signature_ofRank_one_negative]
-  norm_num
-
-private lemma single_pred_succ_drop_snd_positive {q : ℕ} {g : Gene}
-    (hrank : g.rank = 2 * q + 3) (hpos : g.type = GeneType.Positive) :
-    (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 2)).2 -
-        (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 4)).2 = 0 := by
-  have hsingle : (Finsupp.single g 1 : Chromosome) = Gene.ofRank g.rank g.type :=
-    Gene.ofRank_eq_gene.symm
-  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
-  have hpred : g.rank - (2 * q + 2) = 1 := by omega
-  have hsucc : g.rank - (2 * q + 4) = 0 := by omega
-  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hpos, signature_ofRank_one_positive]
-  norm_num
-
-private lemma polarized_same_type_of_not_neg {ε δ : GeneType}
-    (hε : ε ≠ GeneType.NonPolarized) (hδ : δ ≠ GeneType.NonPolarized)
-    (hnot : ¬ δ = -ε) :
-    δ = ε := by
-  cases ε <;> cases δ <;> simp at hε hδ hnot ⊢
 
 private lemma rank_one_double_middle_gap_pack
     {m q₂ : ℕ} (X Y : nMix2LambdaPi (m + 2))
@@ -1329,69 +1301,13 @@ lemma exists_mutation_le_no_pair_rank_one_double
       hg_pol (Nat.zero_le q) X Y g gopp rfl hopp_type
       (by simpa using hg_rank_one) hopp_rank hg_two hopp hne hZle
   by_cases hsame : g₂ = g
-  · have hg_extra : 3 ≤ X.1.1 g := hg₂_same_extra hsame
-    have hrestAfterDouble_g : restAfterDouble g = X.1.1 g - 2 := by
-      dsimp [restAfterDouble]
-      simp only [Finsupp.single_eq_same]
-      omega
-    have hrestAfterDouble_g_pos : 0 < restAfterDouble g := by
-      rw [hrestAfterDouble_g]
-      omega
-    let restAfterTriple : Chromosome := restAfterDouble - Finsupp.single g 1
-    have hrestAfterTriple_eq :
-        restAfterTriple =
-          X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 - Finsupp.single g 1 := by
-      rfl
-    have hprimeX_eq_restAfterTriple :
-        Chromosome.prime^[1] X.1.1 =
-          Chromosome.prime^[1] restAfterTriple := by
-      rw [hprimeX_eq_restAfterDouble]
-      dsimp [restAfterTriple]
-      exact prime_iterate_eq_sub_single_of_rank_le_of_pos
-        (X := restAfterDouble) (gm := g) hrestAfterDouble_g_pos
-        (by rw [hg_rank_one])
-    have hrestAfterTriple_total :
-        restAfterTriple.sum (fun _ n => n) + 3 =
-          X.1.1.sum (fun _ n => n) := by
-      have hdrop_last :
-          restAfterTriple.sum (fun _ n => n) + 1 =
-            restAfterDouble.sum (fun _ n => n) := by
-        dsimp [restAfterTriple]
-        exact totalMult_sub_single_one_of_pos hrestAfterDouble_g_pos
-      omega
-    let tailAfterG : Chromosome := X.1.1 - Finsupp.single g (X.1.1 g)
-    have htailAfterG_g_zero : tailAfterG g = 0 := by
-      dsimp [tailAfterG]
-      simp
-    have htailAfterG_pos_X_ne :
-        ∀ h : Gene, 0 < tailAfterG h → 0 < X.1.1 h ∧ h ≠ g := by
-      intro h hh
-      constructor
-      · dsimp [tailAfterG] at hh
-        exact lt_of_lt_of_le hh (Nat.sub_le _ _)
-      · intro h_eq
-        subst h_eq
-        omega
-    have htailAfterG_rank_ge_three :
-        ∀ h : Gene, 0 < tailAfterG h → 3 ≤ h.rank := by
-      intro h hh
-      exact hX_rank_ge_three_of_ne_g h
-        (htailAfterG_pos_X_ne h hh).1 (htailAfterG_pos_X_ne h hh).2
-    have htailAfterG_zero_or_min :
-        tailAfterG = 0 ∨
-          ∃ gtail : Gene, 0 < tailAfterG gtail ∧
-            (∀ h : Gene, 0 < tailAfterG h → gtail.rank ≤ h.rank) ∧
-            3 ≤ gtail.rank := by
-      by_cases htail_zero : tailAfterG = 0
-      · exact Or.inl htail_zero
-      · obtain ⟨gtail, hgtail, hgtail_min⟩ :=
-          Mix2LambdaSection17.exists_min_rank_gene htail_zero
-        exact Or.inr
-          ⟨gtail, hgtail, hgtail_min, htailAfterG_rank_ge_three gtail hgtail⟩
-    -- Boundary subcase: after removing the two source copies of the minimal
-    -- rank-one gene, the residue-minimal gene is again `g`.
-    -- This is the formal `same-gene extra multiplicity` branch.
-    sorry
+  · exact rank_one_double_same_gene_extra X Y hXY hcommon h17_1 hXpol
+      hno_pair g g₂ hgX hgmin hg_pol hp hp0 hg_rank_one hXneg_zero
+      hg_two hseed1 hXsig1_eq hYsig1_eq hgap1 restAfterDouble rfl
+      hrestAfterDouble_ne hrestAfterDouble_mem hprimeX_eq_restAfterDouble
+      hrestAfterDouble_total hg₂_rest hg₂min hXg₂ hg₂_pol hg₂_odd
+      hX_rank_ge_three_of_ne_g hg₂min_X_ne_g hg₂_same_extra
+      hg₂_rank_ge_three_of_ne_g htype16_boundary htype14_boundary hsame
   · have hg₂_rank_ge_three : 3 ≤ g₂.rank :=
       hg₂_rank_ge_three_of_ne_g hsame
     obtain ⟨n₂, hg₂_rank_raw⟩ := hg₂_odd
@@ -1404,6 +1320,9 @@ lemma exists_mutation_le_no_pair_rank_one_double
     have hg₂min_X_tail :
         ∀ h : Gene, 0 < X.1.1 h → h ≠ g → g₂.rank ≤ h.rank :=
       hg₂min_X_ne_g
+    have hrestAfterDouble_g₂_eq_X : restAfterDouble g₂ = X.1.1 g₂ := by
+      dsimp [restAfterDouble]
+      simp [hsame]
     by_cases hopp : g₂.type = -g.type
     · by_cases hg₂_two : 2 ≤ X.1.1 g₂
       · -- Type14 boundary candidate:
@@ -1607,9 +1526,437 @@ lemma exists_mutation_le_no_pair_rank_one_double
       -- must use the extra same-sign mass to find the next useful source.
       have hg₂_same_type : g₂.type = g.type :=
         polarized_same_type_of_not_neg hg_pol hg₂_pol hopp
+      have hXneg_g₂_zero : X.1.1 (-g₂) = 0 :=
+        no_pair_neg_gene_zero hno_pair hg₂_pol hXg₂
+      have hneg_g₂_ne_g : -g₂ ≠ g := by
+        intro h
+        have hr : g₂.rank = g.rank := by
+          rw [← Gene.neg_rank g₂, h]
+        rw [hg₂_rank_q, hg_rank_one] at hr
+        omega
+      have hrestAfterDouble_neg_g₂_zero : restAfterDouble (-g₂) = 0 := by
+        dsimp [restAfterDouble]
+        rw [hXneg_g₂_zero]
+        simp [hneg_g₂_ne_g]
       have hg₂_single_or_double : X.1.1 g₂ = 1 ∨ 2 ≤ X.1.1 g₂ := by
         omega
-      sorry
+      have htail_after_double_same :
+          ∀ h ∈ restAfterDouble.support, 2 * q₂ + 3 ≤ h.rank := by
+        intro h hh
+        have hhpos : 0 < restAfterDouble h :=
+          Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+        have hle := hg₂min h hhpos
+        rwa [hg₂_rank_q] at hle
+      have hgap_middle_same :
+          (∀ j, 1 ≤ j → j ≤ 2 * q₂ + 3 → ¬ Even j → j ≠ 1 →
+            ((1 : ℚ), (1 : ℚ)) +
+                signature (Chromosome.prime^[j] X.1.1) ≤
+              signature (Chromosome.prime^[j] Y.1.1)) ∧
+          (∀ j, 1 ≤ j → j ≤ 2 * q₂ + 3 → Even j →
+            (signature (Gene.ofRank 1 g.type) +
+                  signature (Gene.ofRank 1 g.type)) +
+                signature (Chromosome.prime^[j] X.1.1) ≤
+              signature (Chromosome.prime^[j] Y.1.1)) :=
+        rank_one_double_middle_gap_pack X Y hXY hcommon h17_1
+          g g₂ hg_pol hg_rank_one hg_two hseed1 restAfterDouble
+          hXg₂ hg₂_pol hg₂_rank_q htail_after_double_same rfl
+      have htype10_same_double_boundary :
+          2 ≤ X.1.1 g₂ →
+            (Y10 (le_refl q₂) hg₂_pol hg₂_pol).1 +
+                (X.1.1 - Finsupp.single g₂ 1 - Finsupp.single g₂ 1) ≤
+              Y.1.1 →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+        intro hg₂_two hZle
+        exact exists_mutation_le_type10_of_double (ε := g₂.type) hg₂_pol
+          X Y g₂ rfl hg₂_rank_q hg₂_two hZle
+      have hgap_mid_same_double :
+          ∀ j, 2 * q₂ + 3 ≤ j → j ≤ 2 * q₂ + 3 →
+            ((1 : ℚ), (1 : ℚ)) +
+                signature (Chromosome.prime^[j] X.1.1) ≤
+              signature (Chromosome.prime^[j] Y.1.1) := by
+        intro j hjlo hjhi
+        have hj : j = 2 * q₂ + 3 := by omega
+        subst j
+        exact hgap_middle_same.1 (2 * q₂ + 3) (by omega) (by omega)
+          (Nat.not_even_iff_odd.mpr ⟨q₂ + 1, by ring⟩) (by omega)
+      have hgap_pred_even_same :
+          (signature (Gene.ofRank 1 g₂.type) +
+                signature (Gene.ofRank 1 g₂.type)) +
+              signature (Chromosome.prime^[2 * q₂ + 2] X.1.1) ≤
+            signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1) := by
+        simpa [hg₂_same_type] using
+          hgap_middle_same.2 (2 * q₂ + 2) (by omega) (by omega)
+            ⟨q₂ + 1, by ring⟩
+      have hgap_succ_same_double :
+          signature (Gene.ofRank 1 g₂.type) +
+              signature (Chromosome.prime^[2 * q₂ + 4] X.1.1) ≤
+            signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1) := by
+        cases htype : g₂.type with
+        | NonPolarized => exact False.elim (hg₂_pol htype)
+        | Positive =>
+            simpa [htype, show 2 * (q₂ + 1) + 2 = 2 * q₂ + 4 by omega] using
+              type16_succ_gap_positive X Y hXY (p := q₂ + 1) (by
+                have hWpos :
+                    ∀ z ∈ (Chromosome.prime^[2 * q₂ + 1] X.1.1).support,
+                      2 ≤ z.rank ∧ (z.rank = 2 → z.type = GeneType.Positive) := by
+                  intro z hz
+                  have hzpos : 0 < (Chromosome.prime^[2 * q₂ + 1] X.1.1) z :=
+                    Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hz)
+                  let z0 : Gene :=
+                    ⟨z.rank + (2 * q₂ + 1), z.type,
+                      Nat.le_add_right_of_le z.rank_pos⟩
+                  have hz0X : 0 < X.1.1 z0 := by
+                    have hcoeff := prime_iterate_coeff (2 * q₂ + 1) X.1.1 z
+                    change (Chromosome.prime^[2 * q₂ + 1] X.1.1) z =
+                      X.1.1 z0 at hcoeff
+                    rwa [← hcoeff]
+                  have hz0_ne_g : z0 ≠ g := by
+                    intro hzg
+                    have hrank := congrArg Gene.rank hzg
+                    dsimp [z0] at hrank
+                    rw [hg_rank_one] at hrank
+                    have zpos := z.rank_pos
+                    omega
+                  have hz0_rest : 0 < restAfterDouble z0 := by
+                    dsimp [restAfterDouble]
+                    simp [hz0_ne_g.symm, hz0X]
+                  have hz0_rank_le :=
+                    htail_after_double_same z0
+                      (Finsupp.mem_support_iff.mpr (ne_of_gt hz0_rest))
+                  constructor
+                  · dsimp [z0] at hz0_rank_le
+                    omega
+                  · intro hz_rank
+                    have hz0_support : z0 ∈ X.1.1.support :=
+                      Finsupp.mem_support_iff.mpr (ne_of_gt hz0X)
+                    have hz0_rank_eq : z0.rank = g₂.rank := by
+                      dsimp [z0]
+                      rw [hz_rank, hg₂_rank_q]
+                      omega
+                    cases hz_type : z.type with
+                    | NonPolarized =>
+                        have hpol0 := IsPolarized_def'.mp hXpol z0 hz0_support
+                        exact False.elim (hpol0 (by simpa [z0] using hz_type))
+                    | Positive => rfl
+                    | Negative =>
+                        have hz0_eq_neg : z0 = -g₂ := by
+                          apply Gene.ext
+                          · rw [Gene.neg_rank]
+                            exact hz0_rank_eq
+                          · rw [Gene.neg_type, htype]
+                            simpa [z0] using hz_type
+                        have hz0_zero : restAfterDouble z0 = 0 := by
+                          rw [hz0_eq_neg]
+                          exact hrestAfterDouble_neg_g₂_zero
+                        omega
+                have hXdrop_raw :=
+                  edge_drop_fst_eq_totalMult_positive_iterate
+                    (W := X.1.1) (i := 2 * q₂ + 1) hWpos
+                have hWsum_nat :
+                    (Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => n) =
+                      restAfterDouble.sum (fun _ n => n) := by
+                  rw [prime_iterate_eq_sub_double_single_of_rank_le
+                    (X := X.1.1) (gm := g) hg_two (by
+                      rw [hg_rank_one]
+                      omega)]
+                  exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                    restAfterDouble (2 * q₂ + 1) (by
+                      intro h hh
+                      have hle := htail_after_double_same h hh
+                      omega)
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hrest := totalMult_cast_eq_sub_two_of_nat_add_two hrestAfterDouble_total
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
+                have hXdrop :
+                    (Sigma.sigma X.1.1 (2 * q₂ + 2)).1 -
+                        (Sigma.sigma X.1.1 (2 * q₂ + 4)).1 =
+                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+                  rw [show 1 + (2 * q₂ + 1) = 2 * q₂ + 2 by omega,
+                    show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at hXdrop_raw
+                  linarith
+                have hYdrop :=
+                  KEY_Y_fst X Y hr1 (i := 2 * q₂ + 2) ⟨q₂ + 1, by ring⟩
+                have htop :
+                    (Sigma.sigma X.1.1 (2 * q₂ + 2)).1 + 2 ≤
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 2)).1 := by
+                  have h := hgap_pred_even_same.1
+                  have h' :
+                      1 + 1 + (Sigma.sigma X.1.1 (2 * q₂ + 2)).1 ≤
+                        (Sigma.sigma Y.1.1 (2 * q₂ + 2)).1 := by
+                    simpa [Sigma.sigma, htype, signature_ofRank_one_positive] using h
+                  linarith
+                have hsucc :
+                    (signature (Chromosome.prime^[2 * q₂ + 4] X.1.1)).1 <
+                      (signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1)).1 := by
+                  have hYdrop' :
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 2)).1 -
+                          (Sigma.sigma Y.1.1 (2 * q₂ + 4)).1 ≤
+                        (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+                          ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
+                    simpa [show 2 * q₂ + 2 + 2 = 2 * q₂ + 4 by omega] using hYdrop
+                  simpa [Sigma.sigma] using (by
+                    linarith : (Sigma.sigma X.1.1 (2 * q₂ + 4)).1 <
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 4)).1)
+                simpa [show 2 * (q₂ + 1) + 2 = 2 * q₂ + 4 by omega] using hsucc)
+        | Negative =>
+            simpa [htype, show 2 * (q₂ + 1) + 2 = 2 * q₂ + 4 by omega] using
+              type16_succ_gap_negative X Y hXY (p := q₂ + 1) (by
+                have hWneg :
+                    ∀ z ∈ (Chromosome.prime^[2 * q₂ + 1] X.1.1).support,
+                      2 ≤ z.rank ∧ (z.rank = 2 → z.type = GeneType.Negative) := by
+                  intro z hz
+                  have hzpos : 0 < (Chromosome.prime^[2 * q₂ + 1] X.1.1) z :=
+                    Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hz)
+                  let z0 : Gene :=
+                    ⟨z.rank + (2 * q₂ + 1), z.type,
+                      Nat.le_add_right_of_le z.rank_pos⟩
+                  have hz0X : 0 < X.1.1 z0 := by
+                    have hcoeff := prime_iterate_coeff (2 * q₂ + 1) X.1.1 z
+                    change (Chromosome.prime^[2 * q₂ + 1] X.1.1) z =
+                      X.1.1 z0 at hcoeff
+                    rwa [← hcoeff]
+                  have hz0_ne_g : z0 ≠ g := by
+                    intro hzg
+                    have hrank := congrArg Gene.rank hzg
+                    dsimp [z0] at hrank
+                    rw [hg_rank_one] at hrank
+                    have zpos := z.rank_pos
+                    omega
+                  have hz0_rest : 0 < restAfterDouble z0 := by
+                    dsimp [restAfterDouble]
+                    simp [hz0_ne_g.symm, hz0X]
+                  have hz0_rank_le :=
+                    htail_after_double_same z0
+                      (Finsupp.mem_support_iff.mpr (ne_of_gt hz0_rest))
+                  constructor
+                  · dsimp [z0] at hz0_rank_le
+                    omega
+                  · intro hz_rank
+                    have hz0_support : z0 ∈ X.1.1.support :=
+                      Finsupp.mem_support_iff.mpr (ne_of_gt hz0X)
+                    have hz0_rank_eq : z0.rank = g₂.rank := by
+                      dsimp [z0]
+                      rw [hz_rank, hg₂_rank_q]
+                      omega
+                    cases hz_type : z.type with
+                    | NonPolarized =>
+                        have hpol0 := IsPolarized_def'.mp hXpol z0 hz0_support
+                        exact False.elim (hpol0 (by simpa [z0] using hz_type))
+                    | Positive =>
+                        have hz0_eq_neg : z0 = -g₂ := by
+                          apply Gene.ext
+                          · rw [Gene.neg_rank]
+                            exact hz0_rank_eq
+                          · rw [Gene.neg_type, htype]
+                            simpa [z0] using hz_type
+                        have hz0_zero : restAfterDouble z0 = 0 := by
+                          rw [hz0_eq_neg]
+                          exact hrestAfterDouble_neg_g₂_zero
+                        omega
+                    | Negative => rfl
+                have hXdrop_raw :=
+                  edge_drop_snd_eq_totalMult_negative_iterate
+                    (W := X.1.1) (i := 2 * q₂ + 1) hWneg
+                have hWsum_nat :
+                    (Chromosome.prime^[2 * q₂ + 1] X.1.1).sum (fun _ n => n) =
+                      restAfterDouble.sum (fun _ n => n) := by
+                  rw [prime_iterate_eq_sub_double_single_of_rank_le
+                    (X := X.1.1) (gm := g) hg_two (by
+                      rw [hg_rank_one]
+                      omega)]
+                  exact Mix2LambdaSection17.totalMult_prime_iterate_eq_of_lt_minRank
+                    restAfterDouble (2 * q₂ + 1) (by
+                      intro h hh
+                      have hle := htail_after_double_same h hh
+                      omega)
+                have hWsum := totalMult_cast_eq_of_nat_eq hWsum_nat
+                have hrest := totalMult_cast_eq_sub_two_of_nat_add_two hrestAfterDouble_total
+                have hD := totalMult_cast_eq_sigma_zero_sub_sigma_one X.1.1
+                have hXdrop :
+                    (Sigma.sigma X.1.1 (2 * q₂ + 2)).2 -
+                        (Sigma.sigma X.1.1 (2 * q₂ + 4)).2 =
+                      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+                        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
+                  rw [show 1 + (2 * q₂ + 1) = 2 * q₂ + 2 by omega,
+                    show 3 + (2 * q₂ + 1) = 2 * q₂ + 4 by omega] at hXdrop_raw
+                  linarith
+                have hYdrop :=
+                  KEY_Y_snd X Y hr1 (i := 2 * q₂ + 2) ⟨q₂ + 1, by ring⟩
+                have htop :
+                    (Sigma.sigma X.1.1 (2 * q₂ + 2)).2 + 2 ≤
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 2)).2 := by
+                  have h := hgap_pred_even_same.2
+                  have h' :
+                      1 + 1 + (Sigma.sigma X.1.1 (2 * q₂ + 2)).2 ≤
+                        (Sigma.sigma Y.1.1 (2 * q₂ + 2)).2 := by
+                    simpa [Sigma.sigma, htype, signature_ofRank_one_negative] using h
+                  linarith
+                have hsucc :
+                    (signature (Chromosome.prime^[2 * q₂ + 4] X.1.1)).2 <
+                      (signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1)).2 := by
+                  have hYdrop' :
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 2)).2 -
+                          (Sigma.sigma Y.1.1 (2 * q₂ + 4)).2 ≤
+                        (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+                          ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
+                    simpa [show 2 * q₂ + 2 + 2 = 2 * q₂ + 4 by omega] using hYdrop
+                  simpa [Sigma.sigma] using (by
+                    linarith : (Sigma.sigma X.1.1 (2 * q₂ + 4)).2 <
+                      (Sigma.sigma Y.1.1 (2 * q₂ + 4)).2)
+                simpa [show 2 * (q₂ + 1) + 2 = 2 * q₂ + 4 by omega] using hsucc)
+      have htype10_same_double_of_gaps :
+          2 ≤ X.1.1 g₂ →
+            (((1 : ℚ), (1 : ℚ)) +
+                signature (Chromosome.prime^[2 * q₂ + 2] X.1.1) ≤
+              signature (Gene.ofRank 1 g₂.type) +
+                signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)) →
+            (signature (Gene.ofRank 1 g₂.type) +
+                signature (Chromosome.prime^[2 * q₂ + 4] X.1.1) ≤
+              signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1)) →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+        intro hg₂_two hgap_pred hgap_succ
+        have hZle :
+            (Y10 (le_refl q₂) hg₂_pol hg₂_pol).1 +
+                (X.1.1 - Finsupp.single g₂ 1 - Finsupp.single g₂ 1) ≤
+              Y.1.1 :=
+          type10_double_target_add_rest_le_of_gaps hg₂_pol X Y hXY
+            g₂ rfl hg₂_rank_q hg₂_two hgap_pred hgap_mid_same_double
+            hgap_succ
+        exact htype10_same_double_boundary hg₂_two hZle
+      have htype10_same_double_of_pred_gap :
+          2 ≤ X.1.1 g₂ →
+            (((1 : ℚ), (1 : ℚ)) +
+                signature (Chromosome.prime^[2 * q₂ + 2] X.1.1) ≤
+              signature (Gene.ofRank 1 g₂.type) +
+                signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)) →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+        intro hg₂_two hgap_pred
+        exact htype10_same_double_of_gaps hg₂_two hgap_pred hgap_succ_same_double
+      have hYpred_same_double_ne :
+          Chromosome.prime^[2 * q₂ + 2] Y.1.1 ≠ 0 := by
+        intro hYzero
+        have hYsig :
+            signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1) = 0 := by
+          rw [hYzero, map_zero]
+        cases htype : g₂.type with
+        | NonPolarized => exact False.elim (hg₂_pol htype)
+        | Positive =>
+            have h := hgap_pred_even_same.1
+            have hxnonneg :
+                (0 : ℚ) ≤
+                  (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 :=
+              (signature_nonneg (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1
+            rw [hYsig] at h
+            simp [htype, signature_ofRank_one_positive] at h
+            have hxnonneg' :
+                (0 : ℚ) ≤
+                  (signature
+                    (Chromosome.prime^[2 * q₂]
+                      (Chromosome.prime (Chromosome.prime X.1.1)))).1 :=
+              (signature_nonneg _).1
+            linarith
+        | Negative =>
+            have h := hgap_pred_even_same.2
+            have hxnonneg :
+                (0 : ℚ) ≤
+                  (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 :=
+              (signature_nonneg (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2
+            rw [hYsig] at h
+            simp [htype, signature_ofRank_one_negative] at h
+            have hxnonneg' :
+                (0 : ℚ) ≤
+                  (signature
+                    (Chromosome.prime^[2 * q₂]
+                      (Chromosome.prime (Chromosome.prime X.1.1)))).2 :=
+              (signature_nonneg _).2
+            linarith
+      have htype10_same_double_of_wrong_pred :
+          2 ≤ X.1.1 g₂ →
+            ((g₂.type = GeneType.Positive ∧
+                (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2) ∨
+              (g₂.type = GeneType.Negative ∧
+                (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1)) →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+        intro hg₂_two hwrong
+        rcases hwrong with ⟨htype, hsnd⟩ | ⟨htype, hfst⟩
+        · exact htype10_same_double_of_pred_gap hg₂_two (by
+            simpa [htype] using type10_pred_gap_positive X Y hXY (p := q₂) hsnd)
+        · exact htype10_same_double_of_pred_gap hg₂_two (by
+            simpa [htype] using type10_pred_gap_negative X Y hXY (p := q₂) hfst)
+      have hpred_same_double_split :
+          (g₂.type = GeneType.Positive ∧
+              ((signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2 ∨
+                (¬ (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+                    (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2 ∧
+                  (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+                    (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1))) ∨
+            (g₂.type = GeneType.Negative ∧
+              ((signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1 ∨
+                (¬ (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+                    (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1 ∧
+                  (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+                    (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2))) := by
+        cases htype : g₂.type with
+        | NonPolarized => exact False.elim (hg₂_pol htype)
+        | Positive =>
+            exact Or.inl ⟨rfl,
+              prime_iterate_snd_or_fst_lt X Y hXY h17_1
+                (k := 2 * q₂ + 2) (by omega) hYpred_same_double_ne⟩
+        | Negative =>
+            exact Or.inr ⟨rfl,
+              prime_iterate_fst_or_snd_lt X Y hXY h17_1
+                (k := 2 * q₂ + 2) (by omega) hYpred_same_double_ne⟩
+      have hdouble_same_pred_or_done :
+          2 ≤ X.1.1 g₂ →
+            (∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∨
+              (g₂.type = GeneType.Positive ∧
+                (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1) ∨
+              (g₂.type = GeneType.Negative ∧
+                (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+                  (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2) := by
+        intro hg₂_two
+        rcases hpred_same_double_split with ⟨htype, hsnd_or_fst⟩ | ⟨htype, hfst_or_snd⟩
+        · rcases hsnd_or_fst with hsnd | ⟨_hnsnd, hfst⟩
+          · exact Or.inl
+              (htype10_same_double_of_wrong_pred hg₂_two (Or.inl ⟨htype, hsnd⟩))
+          · exact Or.inr (Or.inl ⟨htype, hfst⟩)
+        · rcases hfst_or_snd with hfst | ⟨_hnfst, hsnd⟩
+          · exact Or.inl
+              (htype10_same_double_of_wrong_pred hg₂_two (Or.inr ⟨htype, hfst⟩))
+          · exact Or.inr (Or.inr ⟨htype, hsnd⟩)
+      suffices hremaining :
+          (X.1.1 g₂ = 1 →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∧
+          (2 ≤ X.1.1 g₂ → g₂.type = GeneType.Positive →
+            (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 <
+              (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).1 →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∧
+          (2 ≤ X.1.1 g₂ → g₂.type = GeneType.Negative →
+            (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
+              (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2 →
+            ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) by
+        rcases hg₂_single_or_double with hg₂_one | hg₂_two
+        · exact hremaining.1 hg₂_one
+        · rcases hdouble_same_pred_or_done hg₂_two with hdone | hfallback
+          · exact hdone
+          · rcases hfallback with ⟨hpos, hfst⟩ | ⟨hneg, hsnd⟩
+            · exact hremaining.2.1 hg₂_two hpos hfst
+            · exact hremaining.2.2 hg₂_two hneg hsnd
+      exact rank_one_double_same_sign_remaining X Y hXY hcommon h17_1
+        hXpol hno_pair g g₂ hgX hgmin hg_pol hp hp0 hg_rank_one
+        hXneg_zero hg_two hseed1 restAfterDouble rfl hrestAfterDouble_ne
+        hrestAfterDouble_total hg₂_rest hg₂min hXg₂ hg₂_pol hsame
+        hg₂_rank_q hopp hg₂_same_type hXneg_g₂_zero
+        hrestAfterDouble_g₂_eq_X hrestAfterDouble_neg_g₂_zero
+        htail_after_double_same hgap_middle_same hgap_pred_even_same
+        hgap_succ_same_double htype10_same_double_of_pred_gap
+        hdouble_same_pred_or_done
 
 
 end Mix2LambdaPi

@@ -177,8 +177,7 @@ lemma type10_hgap_mid_of_components
       ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
         signature (Chromosome.prime^[j] Y.1.1) := by
   intro j hjlo hjhi
-  exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2
-    (hfst j hjlo hjhi) (hsnd j hjlo hjhi)
+  exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2 (hfst j hjlo hjhi) (hsnd j hjlo hjhi)
 
 /-- Odd-level middle gap from the reduced §17 rank-strict hypothesis.  At odd
 levels Label 3 lies in the `Pi` side, so a strict rank gap splits into strict
@@ -190,10 +189,8 @@ lemma one_one_gap_of_odd_rank_lt
         (Chromosome.prime^[j] Y.1.1).rank) :
     ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
       signature (Chromosome.prime^[j] Y.1.1) := by
-  have hcomp := Mix2LambdaSection17.seed_strict_lt_at_odd
-    X.1.2 Y.1.2 hodd hrank
-  exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2
-    hcomp.1 hcomp.2
+  have hcomp := Mix2LambdaSection17.seed_strict_lt_at_odd X.1.2 Y.1.2 hodd hrank
+  exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2 hcomp.1 hcomp.2
 
 /-- Odd-level middle gap directly from the reduced §17 hypothesis once the
 corresponding iterate of `Y` is known to be nonzero. -/
@@ -225,8 +222,7 @@ lemma type10_pred_gap_positive
   have heven : Even (2 * p + 2) := ⟨p + 1, by ring⟩
   rw [if_pos heven] at hXk_mem hYk_mem
   have hsnd_gap :=
-    Mix2LambdaSection17.add_one_le_snd_of_lt_Mix_2Lambda_Pi
-      hXk_mem hYk_mem hsnd
+    Mix2LambdaSection17.add_one_le_snd_of_lt_Mix_2Lambda_Pi hXk_mem hYk_mem hsnd
   have hle := le_iff_dominates.mp hXY.le (2 * p + 2)
   rw [signature_ofRank_one_positive]
   exact ⟨by simpa [Prod.fst_add] using hle.1,

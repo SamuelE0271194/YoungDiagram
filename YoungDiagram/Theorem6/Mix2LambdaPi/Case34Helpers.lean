@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Window
+import YoungDiagram.Sigma.Diff
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -14,6 +15,77 @@ lemma snd_add_one_le_of_one_one_add_le {x y : ℚ × ℚ}
     (h : ((1 : ℚ), (1 : ℚ)) + x ≤ y) : x.2 + 1 ≤ y.2 := by
   have hsnd : (1 : ℚ) + x.2 ≤ y.2 := h.2
   linarith
+
+lemma polarized_same_type_of_not_neg {ε δ : GeneType}
+    (hε : ε ≠ GeneType.NonPolarized) (hδ : δ ≠ GeneType.NonPolarized)
+    (hnot : ¬ δ = -ε) :
+    δ = ε := by
+  cases ε <;> cases δ <;> simp at hε hδ hnot ⊢
+
+lemma no_pair_neg_gene_zero {X : Chromosome}
+    (hno_pair : ¬ ∃ (gpos gneg : Gene),
+      gpos.rank = gneg.rank ∧
+      gpos.type = GeneType.Positive ∧ gneg.type = GeneType.Negative ∧
+      0 < X gpos ∧ 0 < X gneg)
+    {g : Gene} (hg_pol : g.type ≠ GeneType.NonPolarized)
+    (hXg : 0 < X g) :
+    X (-g) = 0 := by
+  by_contra hne
+  have hXneg : 0 < X (-g) := Nat.pos_of_ne_zero hne
+  cases hg_type : g.type with
+  | NonPolarized => exact hg_pol hg_type
+  | Positive =>
+      exact hno_pair ⟨g, -g, by simp, hg_type, by rw [Gene.neg_type, hg_type]; rfl,
+        hXg, hXneg⟩
+  | Negative =>
+      exact hno_pair ⟨-g, g, by simp, by rw [Gene.neg_type, hg_type]; rfl, hg_type,
+        hXneg, hXg⟩
+
+lemma single_pred_succ_drop_fst_negative {q : ℕ} {g : Gene}
+    (hrank : g.rank = 2 * q + 3) (hneg : g.type = GeneType.Negative) :
+    (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 2)).1 -
+        (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 4)).1 = 0 := by
+  have hsingle : (Finsupp.single g 1 : Chromosome) = Gene.ofRank g.rank g.type :=
+    Gene.ofRank_eq_gene.symm
+  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
+  have hpred : g.rank - (2 * q + 2) = 1 := by omega
+  have hsucc : g.rank - (2 * q + 4) = 0 := by omega
+  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hneg, signature_ofRank_one_negative]
+  norm_num
+
+lemma single_pred_succ_drop_snd_positive {q : ℕ} {g : Gene}
+    (hrank : g.rank = 2 * q + 3) (hpos : g.type = GeneType.Positive) :
+    (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 2)).2 -
+        (Sigma.sigma (Finsupp.single g 1 : Chromosome) (2 * q + 4)).2 = 0 := by
+  have hsingle : (Finsupp.single g 1 : Chromosome) = Gene.ofRank g.rank g.type :=
+    Gene.ofRank_eq_gene.symm
+  rw [hsingle, Sigma.sigma, Sigma.sigma, prime_iterate_ofRank, prime_iterate_ofRank]
+  have hpred : g.rank - (2 * q + 2) = 1 := by omega
+  have hsucc : g.rank - (2 * q + 4) = 0 := by omega
+  rw [hpred, hsucc, Gene.ofRank_zero, map_zero, hpos, signature_ofRank_one_positive]
+  norm_num
+
+lemma sigma_fst_drop_le_totalMult_of_Pi {X : Chromosome}
+    (hXPi : X ∈ Pi) (k : ℕ) :
+    (Sigma.sigma X k).1 - (Sigma.sigma X (k + 1)).1 ≤
+      (Chromosome.prime^[k] X).sum (fun _ m => (m : ℚ)) := by
+  rw [Sigma.sigma_fst_diff X k hXPi]
+  exact Finsupp.sum_le_sum fun g m => by
+    by_cases htype :
+        g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Positive
+    · simp [htype]
+    · simp [htype]
+
+lemma sigma_snd_drop_le_totalMult_of_Pi {X : Chromosome}
+    (hXPi : X ∈ Pi) (k : ℕ) :
+    (Sigma.sigma X k).2 - (Sigma.sigma X (k + 1)).2 ≤
+      (Chromosome.prime^[k] X).sum (fun _ m => (m : ℚ)) := by
+  rw [Sigma.sigma_snd_diff X k hXPi]
+  exact Finsupp.sum_le_sum fun g m => by
+    by_cases htype :
+        g.type = Int.negOnePow ((g.rank : ℤ) - 1) • GeneType.Negative
+    · simp [htype]
+    · simp [htype]
 
 lemma cond_15_7_even_index {m i : ℕ} (Y : nMix2LambdaPi (m + 2))
     (hi : Even i) :
