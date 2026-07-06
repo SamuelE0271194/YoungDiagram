@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NegPartner
 import YoungDiagram.Theorem6.Mix2LambdaPi.Type14
 import YoungDiagram.Theorem6.Mix2LambdaPi.Type16
 
@@ -1097,11 +1098,10 @@ lemma rank_one_double_same_gene_tail_cases
       -- is vacuous (mirror of the SameSign all-positive branch); otherwise `X`
       -- has a negative gene and needs the §17 Case 3 negative-partner move.
       by_cases hb0a1 : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma X.1.1 0).2
-      · -- Opposite-sign mass present: `X ⊇ g⁻(k)` with `k > gtail.rank` (since
-        -- `hno_pair` forbids an equal-rank pair).  The §17 move
-        -- `2g⁺(1)+g⁻(k) → g⁺(k+2)` / `2g⁺(1)+2g⁻(k) → 2g(k+1)` needs the even-gap
-        -- telescoping extended past the intermediate same-sign gene — open.
-        sorry
+      · -- Opposite-sign mass present: dispatch on the minimal opposite-sign gene
+        -- (Type16/Type14 boundary anchored at its rank), via the shared engine.
+        exact exists_step_neg_partner_dispatch hg_pol X Y hXY hcommon h17_1 hXpol
+          hno_pair g hg_rank_one rfl hg_two hgmin hseed1
       · -- No opposite-sign mass ⟹ `X` all-positive ⟹ vacuous:
         -- `b₁ = a₁ ≥ b₀ = d₀ ≥ d₁ > b₁`  (last strict step is `hseed1.2`).
         exfalso

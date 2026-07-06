@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NegPartner
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -115,13 +116,10 @@ lemma rank_one_double_same_sign_remaining
   -- `hno_pair`, so k ≥ 3) exactly when `a₁ < b₀`; that gene pairs with the
   -- rank-one source `g` to feed the opposite-sign Type16/Type14 boundary.
   by_cases hb0a1 : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma X.1.1 0).2
-  · obtain ⟨gneg, hgneg_type, hgneg_pos⟩ :=
-      Sigma.neg_gene_of_b0_gt_a1 X.1.1 hXPi hb0a1
-    have hgneg_rank_ge : g.rank ≤ gneg.rank := hgmin gneg hgneg_pos
-    -- Opposite-sign tail gene present: use the (already-proven) Type16/Type14
-    -- opposite-sign boundary machinery anchored at `gneg.rank`, mirroring the
-    -- opposite-sign branch of `rank_one_double_same_gene_tail_cases`.
-    sorry
+  · -- Opposite-sign mass present: dispatch on the minimal opposite-sign gene
+    -- (Type16/Type14 boundary anchored at its rank), via the shared engine.
+    exact exists_step_neg_partner_dispatch hg_pol X Y hXY hcommon h17_1 hXpol
+      hno_pair g hg_rank_one rfl hg_two hgmin hseed1
   · -- No opposite-sign mass: `b₀ ≤ a₁`, so (via `b₀ - a₁ = neg-count`) `X` has no
     -- negative gene, i.e. `X` is all-positive.  This configuration is vacuous:
     -- level 1 is odd, so `a₁ = b₁`; level-0 dominance forces `b₀ = d₀`; and `sigma`
