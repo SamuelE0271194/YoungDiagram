@@ -20,3 +20,4 @@ import YoungDiagram.Theorem6.MixPiLambda.SigmaWindow
 import YoungDiagram.Theorem6.MixPiLambda.Propagation
 import YoungDiagram.Theorem6.MixPiLambda.CaseAProp
 import YoungDiagram.Theorem6.MixVarietyJoint
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NegPartner
