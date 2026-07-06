@@ -122,10 +122,25 @@ lemma rank_one_double_same_sign_remaining
     -- opposite-sign boundary machinery anchored at `gneg.rank`, mirroring the
     -- opposite-sign branch of `rank_one_double_same_gene_tail_cases`.
     sorry
-  · -- No opposite-sign mass: `a₁ = b₀`, i.e. `X` is (rank-1-and-up) same-sign.
-    -- This is the pure same-sign residue; needs the same-sign locate/telescoping
-    -- move (mirror of the still-open `SameGene.lean:1097` branch).
-    sorry
+  · -- No opposite-sign mass: `b₀ ≤ a₁`, so (via `b₀ - a₁ = neg-count`) `X` has no
+    -- negative gene, i.e. `X` is all-positive.  This configuration is vacuous:
+    -- level 1 is odd, so `a₁ = b₁`; level-0 dominance forces `b₀ = d₀`; and `sigma`
+    -- is antitone, so `d₁ ≤ d₀`.  Chaining
+    --   `b₁ = a₁ ≥ b₀ = d₀ ≥ d₁ > b₁`   (the last strict step is `hseed1.2`)
+    -- gives `b₁ < b₁`, a contradiction.
+    exfalso
+    have hB0A1 : (signature X.1.1).2 ≤ (signature (Chromosome.prime^[1] X.1.1)).1 :=
+      not_lt.mp hb0a1
+    have hle0 := le_iff_dominates.mp hXY.le 0
+    simp only [Function.iterate_zero, id_eq] at hle0
+    have hsum : (signature X.1.1).1 + (signature X.1.1).2 =
+        (signature Y.1.1).1 + (signature Y.1.1).2 := by
+      rw [signature_sum_eq_rank, signature_sum_eq_rank, X.2, Y.2]
+    have hB0D0 : (signature X.1.1).2 = (signature Y.1.1).2 :=
+      le_antisymm hle0.2 (by linarith [hle0.1])
+    have hD1D0 : (signature (Chromosome.prime^[1] Y.1.1)).2 ≤ (signature Y.1.1).2 :=
+      ((signature_prime_le Y.1.1).trans inf_le_left).2
+    linarith [hseed1.2, ha1b1, hB0A1, hB0D0, hD1D0]
 
 end Mix2LambdaPi
 
