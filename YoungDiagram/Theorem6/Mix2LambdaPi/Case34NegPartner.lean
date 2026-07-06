@@ -102,4 +102,26 @@ lemma case3_value2_even_gap {N : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
     (Prod.le_def.mp hgapi1).2
   linarith
 
-end Mix2LambdaPi
+/-- Packaged even gap for the type16/type14 assembly (positive doubled gene):
+`2·sig(g⁺(1)) + σX(i) ≤ σY(i)` at even `i`. -/
+lemma case3_gap_even_positive {N : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
+    (hXPi : X.1.1 ∈ Variety.Pi)
+    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
+      (Chromosome.prime^[k] X.1.1).rank < (Chromosome.prime^[k] Y.1.1).rank)
+    {i : ℕ} (hi_even : Even i) (hi2 : 2 ≤ i)
+    (hpos : ∀ g ∈ X.1.1.support, g.rank ≤ i - 1 → g.type = .Positive)
+    (hY1 : Chromosome.prime^[1] Y.1.1 ≠ 0)
+    (hYi1 : Chromosome.prime^[i - 1] Y.1.1 ≠ 0) :
+    signature (Gene.ofRank 1 GeneType.Positive) +
+        signature (Gene.ofRank 1 GeneType.Positive) +
+        signature (Chromosome.prime^[i] X.1.1) ≤
+      signature (Chromosome.prime^[i] Y.1.1) := by
+  have hfst : (signature (Chromosome.prime^[i] X.1.1)).1 + 2 ≤
+      (signature (Chromosome.prime^[i] Y.1.1)).1 :=
+    case3_value2_even_gap X Y hXY hXPi h17_1 hi_even hi2 hpos hY1 hYi1
+  have hsnd : (signature (Chromosome.prime^[i] X.1.1)).2 ≤
+      (signature (Chromosome.prime^[i] Y.1.1)).2 := (le_iff_dominates.mp hXY.le i).2
+  rw [Prod.le_def]
+  refine ⟨?_, ?_⟩ <;> simp only [signature_ofRank_one_positive, Prod.fst_add, Prod.snd_add]
+  · linarith
+  · linarith
