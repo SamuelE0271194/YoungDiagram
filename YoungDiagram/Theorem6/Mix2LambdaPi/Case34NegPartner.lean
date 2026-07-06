@@ -1,5 +1,7 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Seed
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
+import YoungDiagram.Theorem6.Mix2LambdaPi.Type14
+import YoungDiagram.Theorem6.Mix2LambdaPi.Type16
 
 /-!
 # §17 Case 3 negative-partner gaps (Label 3)
@@ -125,3 +127,108 @@ lemma case3_gap_even_positive {N : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1
   refine ⟨?_, ?_⟩ <;> simp only [signature_ofRank_one_positive, Prod.fst_add, Prod.snd_add]
   · linarith
   · linarith
+
+/-- §17 Case 3 type14 branch: doubled positive rank-one gene `g` plus a doubled
+minimal negative gene `gneg` at rank `2Q+3` give a reducing step (no succ gap needed). -/
+lemma exists_step_type14_neg_partner {N Q : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
+    (hXPi : X.1.1 ∈ Variety.Pi)
+    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
+      (Chromosome.prime^[k] X.1.1).rank < (Chromosome.prime^[k] Y.1.1).rank)
+    (g gneg : Gene)
+    (hg_rank : g.rank = 1) (hg_pos : g.type = GeneType.Positive)
+    (hgneg_rank : gneg.rank = 2 * Q + 3) (hgneg_neg : gneg.type = GeneType.Negative)
+    (hg_two : 2 ≤ X.1.1 g) (hgneg_two : 2 ≤ X.1.1 gneg)
+    (hpos_below : ∀ h ∈ X.1.1.support, h.rank ≤ 2 * Q + 2 → h.type = .Positive)
+    (hYne : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hε : (GeneType.Positive) ≠ .NonPolarized := by decide
+  have hne : g ≠ gneg := by
+    intro h; rw [h, hgneg_neg] at hg_pos; exact absurd hg_pos (by decide)
+  have hgap_odd : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → ¬ Even j →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := fun j hjlo hjhi hjodd =>
+    type10_mid_gap_odd_of_Y_ne X Y h17_1 hjodd (by omega) (hYne j hjlo hjhi)
+  have hgap_even : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → Even j →
+      (signature (Gene.ofRank 1 GeneType.Positive) +
+          signature (Gene.ofRank 1 GeneType.Positive)) +
+          signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := by
+    intro j hjlo hjhi hjeven
+    have hjge2 : 2 ≤ j := by obtain ⟨t, ht⟩ := hjeven; omega
+    exact case3_gap_even_positive X Y hXY hXPi h17_1 hjeven (by omega)
+      (fun h hh hr => hpos_below h hh (by omega)) (hYne 1 (by omega) (by omega))
+      (hYne (j - 1) (by omega) (by omega))
+  have hg_rank' : g.rank = 2 * 0 + 1 := by omega
+  have hgneg_rank' : gneg.rank = 2 * (Q + 1) + 1 := by omega
+  have hg_eq : Gene.ofRank (2 * 0 + 1) GeneType.Positive = (Finsupp.single g 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := g); rwa [hg_rank', hg_pos] at h
+  have hgneg_eq : Gene.ofRank (2 * (Q + 1) + 1) (-GeneType.Positive) =
+      (Finsupp.single gneg 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gneg); rwa [hgneg_rank', hgneg_neg] at h
+  have hX14val : (X14 (Nat.zero_le (Q + 1)) hε).1 =
+      Finsupp.single g 1 + Finsupp.single g 1 +
+        Finsupp.single gneg 1 + Finsupp.single gneg 1 := by
+    rw [X14_eq, hg_eq, hgneg_eq]
+  have hXeq : (X14 (Nat.zero_le (Q + 1)) hε).1 +
+      (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 -
+        Finsupp.single gneg 1 - Finsupp.single gneg 1) = X.1.1 := by
+    rw [hX14val]; exact Mix2LambdaSection17.double_pair_add_rest hg_two hgneg_two hne
+  have hZle := type14_rank_one_target_add_rest_le_of_gaps hε X Y hXY
+    (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 -
+      Finsupp.single gneg 1 - Finsupp.single gneg 1) hXeq hgap_odd hgap_even
+  exact exists_mutation_le_type14_of_genes hε (Nat.zero_le (Q + 1)) X Y g gneg
+    hg_pos hgneg_neg hg_rank' hgneg_rank' hg_two hgneg_two hne hZle
+
+/-- §17 Case 3 type16 branch: doubled positive rank-one gene `g` plus a single
+minimal negative gene `gneg` at rank `2Q+3`, given the successor gap. -/
+lemma exists_step_type16_neg_partner {N Q : ℕ} (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
+    (hXPi : X.1.1 ∈ Variety.Pi)
+    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
+      (Chromosome.prime^[k] X.1.1).rank < (Chromosome.prime^[k] Y.1.1).rank)
+    (g gneg : Gene)
+    (hg_rank : g.rank = 1) (hg_pos : g.type = GeneType.Positive)
+    (hgneg_rank : gneg.rank = 2 * Q + 3) (hgneg_neg : gneg.type = GeneType.Negative)
+    (hg_two : 2 ≤ X.1.1 g) (hgneg_one : 1 ≤ X.1.1 gneg)
+    (hpos_below : ∀ h ∈ X.1.1.support, h.rank ≤ 2 * Q + 2 → h.type = .Positive)
+    (hYne : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0)
+    (hgap_succ : signature (Gene.ofRank 1 GeneType.Positive) +
+        signature (Chromosome.prime^[2 * Q + 4] X.1.1) ≤
+      signature (Chromosome.prime^[2 * Q + 4] Y.1.1)) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hε : (GeneType.Positive) ≠ .NonPolarized := by decide
+  have hne : g ≠ gneg := by
+    intro h; rw [h, hgneg_neg] at hg_pos; exact absurd hg_pos (by decide)
+  have hgap_odd : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → ¬ Even j →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := fun j hjlo hjhi hjodd =>
+    type10_mid_gap_odd_of_Y_ne X Y h17_1 hjodd (by omega) (hYne j hjlo hjhi)
+  have hgap_even : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → Even j →
+      (signature (Gene.ofRank 1 GeneType.Positive) +
+          signature (Gene.ofRank 1 GeneType.Positive)) +
+          signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := by
+    intro j hjlo hjhi hjeven
+    have hjge2 : 2 ≤ j := by obtain ⟨t, ht⟩ := hjeven; omega
+    exact case3_gap_even_positive X Y hXY hXPi h17_1 hjeven (by omega)
+      (fun h hh hr => hpos_below h hh (by omega)) (hYne 1 (by omega) (by omega))
+      (hYne (j - 1) (by omega) (by omega))
+  have hg_rank' : g.rank = 2 * 0 + 1 := by omega
+  have hgneg_rank' : gneg.rank = 2 * (Q + 1) + 1 := by omega
+  have hg_eq : Gene.ofRank (2 * 0 + 1) GeneType.Positive = (Finsupp.single g 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := g); rwa [hg_rank', hg_pos] at h
+  have hgneg_eq : Gene.ofRank (2 * (Q + 1) + 1) (-GeneType.Positive) =
+      (Finsupp.single gneg 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gneg); rwa [hgneg_rank', hgneg_neg] at h
+  have hX16val : (X16 (Nat.zero_le (Q + 1)) hε).1 =
+      Finsupp.single g 1 + Finsupp.single g 1 + Finsupp.single gneg 1 := by
+    rw [X16_eq, hg_eq, hgneg_eq]
+  have hXeq : (X16 (Nat.zero_le (Q + 1)) hε).1 +
+      (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 - Finsupp.single gneg 1) = X.1.1 := by
+    rw [hX16val]; exact Mix2LambdaSection17.double_single_pair_add_rest hg_two hgneg_one hne
+  have hZle := type16_rank_one_target_add_rest_le_of_gaps hε X Y hXY
+    (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 - Finsupp.single gneg 1)
+    hXeq hgap_odd hgap_even hgap_succ
+  exact exists_mutation_le_type16_of_genes hε (Nat.zero_le (Q + 1)) X Y g gneg
+    hg_pos hgneg_neg hg_rank' hgneg_rank' hg_two hgneg_one hne hZle
+
+end Mix2LambdaPi
