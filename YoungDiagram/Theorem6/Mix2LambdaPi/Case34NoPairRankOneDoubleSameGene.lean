@@ -1092,9 +1092,25 @@ lemma rank_one_double_same_gene_tail_cases
       · refine hcont14 ?_
         exact type14_rank_one_target_add_rest_le_of_gaps hg_pol X Y hXY
           restAfterType14 hX14eq hgap_odd_tail hgap_even_tail
-    · -- Same-sign tail gene (`gtail.type = g.type`): needs the extra same-sign
-      -- mass to locate the next usable source.
-      sorry
+    · -- Same-sign tail gene (`gtail.type = g.type`).  Split on opposite-sign mass:
+      -- if `X` carries no negative charge it is all-positive and the configuration
+      -- is vacuous (mirror of the SameSign all-positive branch); otherwise `X`
+      -- has a negative gene and needs the §17 Case 3 negative-partner move.
+      by_cases hb0a1 : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma X.1.1 0).2
+      · -- Opposite-sign mass present: `X ⊇ g⁻(k)` with `k > gtail.rank` (since
+        -- `hno_pair` forbids an equal-rank pair).  The §17 move
+        -- `2g⁺(1)+g⁻(k) → g⁺(k+2)` / `2g⁺(1)+2g⁻(k) → 2g(k+1)` needs the even-gap
+        -- telescoping extended past the intermediate same-sign gene — open.
+        sorry
+      · -- No opposite-sign mass ⟹ `X` all-positive ⟹ vacuous:
+        -- `b₁ = a₁ ≥ b₀ = d₀ ≥ d₁ > b₁`  (last strict step is `hseed1.2`).
+        exfalso
+        have hB0A1 : (signature X.1.1).2 ≤
+            (signature (Chromosome.prime^[1] X.1.1)).1 := not_lt.mp hb0a1
+        have hB0D0 : (signature X.1.1).2 = (signature Y.1.1).2 := hb0d0
+        have hD1D0 : (signature (Chromosome.prime^[1] Y.1.1)).2 ≤
+            (signature Y.1.1).2 := ((signature_prime_le Y.1.1).trans inf_le_left).2
+        linarith [hseed1.2, hXsig1_eq, hB0A1, hB0D0, hD1D0]
 
 lemma rank_one_double_same_gene_tail_frontier
     {m p : ℕ} (X Y : nMix2LambdaPi (m + 2))
