@@ -78,6 +78,18 @@ private lemma exists_mutation_le_type10_rank_one_remainder_double
     (hgpos_rank_q : gpos.rank = 2 * q + 3)
     (hgneg_rank_q : gneg.rank = 2 * q + 3)
     (restPair : Chromosome) (gOnePos gOneNeg : Gene)
+    (hgOnePos : gOnePos = ⟨1, GeneType.Positive, le_rfl⟩)
+    (hgOneNeg : gOneNeg = ⟨1, GeneType.Negative, le_rfl⟩)
+    (hrestPair_def :
+      restPair = X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1)
+    (hrest_support_rank_one :
+      restPair =
+        Finsupp.single gOnePos (restPair gOnePos) +
+          Finsupp.single gOneNeg (restPair gOneNeg))
+    (hrest_no_rank_one_pair :
+      ¬ (0 < restPair gOnePos ∧ 0 < restPair gOneNeg))
+    (hY_double_np_succ :
+      2 ≤ Y.1.1 ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩)
     (hrest_double_rank_one :
       2 ≤ restPair gOnePos ∨ 2 ≤ restPair gOneNeg) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
@@ -1031,7 +1043,8 @@ lemma exists_mutation_le_polarized_remaining_of_pair
               exact exists_mutation_le_type10_rank_one_remainder_double
                 X Y hXY hcommon h17_1 hXpol hnodouble gpos gneg hrank hgpos
                 hgneg hone_one hgpos_rank_q hgneg_rank_q restPair gOnePos
-                gOneNeg hrest_double_rank_one
+                gOneNeg rfl rfl rfl hrest_support_rank_one
+                hrest_no_rank_one_pair hY_double_np_succ hrest_double_rank_one
             · have ht_lt : t < q := by
                 by_contra hnot
                 have htq : t = q := by omega

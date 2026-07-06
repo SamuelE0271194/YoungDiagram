@@ -101,7 +101,31 @@ lemma rank_one_double_same_sign_remaining
       (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 <
         (signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)).2 →
       ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) := by
-  sorry
+  -- All three conclusions have the same unconditional consequent
+  -- `∃ Z, Step X.1 Z ∧ Z ≤ Y.1`, so it suffices to produce one reducing step.
+  suffices hstep : ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 by
+    exact ⟨fun _ => hstep, fun _ _ _ => hstep, fun _ _ _ => hstep⟩
+  have hXPi : X.1.1 ∈ Variety.Pi := Variety.mem_Pi_iff.mpr hXpol
+  -- Level 1 is odd, so its two signature components agree (Label 3 symmetry).
+  have ha1b1 : (signature (Chromosome.prime^[1] X.1.1)).1
+             = (signature (Chromosome.prime^[1] X.1.1)).2 :=
+    Mix2LambdaSection17.signature_prime_iterate_odd_eq_components_L3 X.1.2 (by decide)
+  -- Case 3 (§17) dichotomy: does `X` carry opposite-sign (negative-count) mass?
+  -- `neg_gene_of_b0_gt_a1` extracts an opposite-sign gene `g⁻(k)` (k ≠ 1 by
+  -- `hno_pair`, so k ≥ 3) exactly when `a₁ < b₀`; that gene pairs with the
+  -- rank-one source `g` to feed the opposite-sign Type16/Type14 boundary.
+  by_cases hb0a1 : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma X.1.1 0).2
+  · obtain ⟨gneg, hgneg_type, hgneg_pos⟩ :=
+      Sigma.neg_gene_of_b0_gt_a1 X.1.1 hXPi hb0a1
+    have hgneg_rank_ge : g.rank ≤ gneg.rank := hgmin gneg hgneg_pos
+    -- Opposite-sign tail gene present: use the (already-proven) Type16/Type14
+    -- opposite-sign boundary machinery anchored at `gneg.rank`, mirroring the
+    -- opposite-sign branch of `rank_one_double_same_gene_tail_cases`.
+    sorry
+  · -- No opposite-sign mass: `a₁ = b₀`, i.e. `X` is (rank-1-and-up) same-sign.
+    -- This is the pure same-sign residue; needs the same-sign locate/telescoping
+    -- move (mirror of the still-open `SameGene.lean:1097` branch).
+    sorry
 
 end Mix2LambdaPi
 
