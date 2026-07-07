@@ -2,6 +2,7 @@ import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Helpers
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPair
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairRankOne
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairFinallyOne
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairFinallyBoundary
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -58,7 +59,10 @@ private lemma exists_mutation_le_type10_pair_rank_one_boundary
           (signature (Chromosome.prime^[2 * q + 4] Y.1.1)).2)))
     (hp : gpos.rank = 2 * p + 1) (hp0 : p = 0) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  have hgpos1 : gpos.rank = 1 := by rw [hp, hp0]
+  have hgneg1 : gneg.rank = 1 := by rw [← hrank, hgpos1]
+  exact exists_mutation_le_pair_finally_boundary X Y hXY hcommon h17_1 hXpol
+    gpos gneg hgpos hgneg hgpos1 hgneg1 hmin hone_one
 
 private lemma exists_mutation_le_type10_rank_one_remainder_double
     {m q : ℕ} (X Y : nMix2LambdaPi (m + 2))
