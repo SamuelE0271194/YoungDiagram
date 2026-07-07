@@ -1,6 +1,7 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Helpers
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPair
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairRankOne
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairFinallyOne
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
