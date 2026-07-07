@@ -1,4 +1,5 @@
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Seed
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34Gaps
 
 /-!
 # §17 "Finally m = 1" pair case: value-(1,1) gap chain
@@ -306,5 +307,69 @@ lemma pair_finally_gap_even (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
   have hfst := pair_window_fst X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1 h2nd hk t ht
   have hsnd := pair_window_snd X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1 h2nd hk t ht
   exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2 hfst hsnd
+
+/-- Full value-`(1,1)` gap on the whole window `1 ≤ j ≤ k` for the §17
+"Finally m = 1" rank-one pair, where `gk` is a gene of `X - pair` of minimal
+odd rank `k ≥ 3` and `Y` has no gene of rank `k` (true by disjointness from
+`X`'s rank-`k` polarized gene together with the odd-rank parity of Label 3).
+
+Even levels come from `pair_finally_gap_even`; odd levels `j < k` from the
+reduced §17 hypothesis once `prime^[j] Y ≠ 0` (which holds because `gk`
+survives `prime^[j]`); the top odd level `j = k` from
+`prime^[k] Y ≠ 0` via the no-gene-at-`k` argument. -/
+lemma pair_finally_gap (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
+    (h17_1 : ∀ j, 0 < j → Chromosome.prime^[j] Y.1.1 ≠ 0 →
+      (Chromosome.prime^[j] X.1.1).rank < (Chromosome.prime^[j] Y.1.1).rank)
+    (hseed1 :
+      (signature (Chromosome.prime^[1] X.1.1)).1 < (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
+        (signature (Chromosome.prime^[1] X.1.1)).2 < (signature (Chromosome.prime^[1] Y.1.1)).2)
+    {gpos gneg gk : Gene}
+    (hgpos1 : gpos.rank = 1) (hgneg1 : gneg.rank = 1)
+    (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
+    (hne : gpos ≠ gneg) (hXpos1 : X.1.1 gpos = 1) (hXneg1 : X.1.1 gneg = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support, k ≤ g.rank)
+    (hgkX : 0 < X.1.1 gk) (hgk_rank : gk.rank = k) (hk3 : 3 ≤ k) (hkodd : Odd k)
+    (hYnok : ∀ g : Gene, g.rank = k → Y.1.1 g = 0) :
+    ∀ j, 0 < j → j ≤ k →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := by
+  -- `prime^[j] X ≠ 0` for `j < k`, since `gk` (rank `k`) survives.
+  have hXne : ∀ i, i < k → Chromosome.prime^[i] X.1.1 ≠ 0 := by
+    intro i hik hz
+    rw [← prime_iterate_eq_zero_rank_le] at hz
+    have := hz gk (Finsupp.mem_support_iff.mpr hgkX.ne')
+    rw [hgk_rank] at this; omega
+  -- `prime^[i] Y ≠ 0` for `0 < i ≤ k`.
+  have hYne : ∀ i, 0 < i → i ≤ k → Chromosome.prime^[i] Y.1.1 ≠ 0 := by
+    intro i hi0 hik
+    rcases lt_or_eq_of_le hik with hlt | heq
+    · intro hcon
+      have hd := le_iff_dominates.mp hXY.le i
+      rw [hcon, map_zero] at hd
+      have hnn := signature_nonneg (Chromosome.prime^[i] X.1.1)
+      exact hXne i hlt (signature_eq_zero (le_antisymm hd hnn))
+    · subst heq
+      have hprev : Chromosome.prime^[i - 1] Y.1.1 ≠ 0 := by
+        obtain ⟨w, hw⟩ := hkodd
+        obtain ⟨t, ht⟩ : ∃ t, i - 1 = 2 + 2 * t := ⟨w - 1, by omega⟩
+        have hg := pair_finally_gap_even X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne
+          hXpos1 hXneg1 h2nd (by omega) t (by omega)
+        rw [← ht] at hg
+        intro hz
+        rw [hz, map_zero] at hg
+        have hnn : (0 : ℚ) ≤ (signature (Chromosome.prime^[i - 1] X.1.1)).1 := by
+          simpa using (signature_nonneg (Chromosome.prime^[i - 1] X.1.1)).1
+        have hh := hg.1
+        simp only [Prod.fst_add, Prod.fst_one, Prod.fst_zero] at hh
+        linarith
+      exact Mix2LambdaSection17.prime_iterate_ne_zero_of_no_gene (by omega) hYnok hprev
+  intro j hj0 hjk
+  by_cases hje : Even j
+  · obtain ⟨t, ht⟩ : ∃ t, j = 2 + 2 * t := by
+      obtain ⟨s, hs⟩ := hje; exact ⟨s - 1, by omega⟩
+    subst ht
+    exact pair_finally_gap_even X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne
+      hXpos1 hXneg1 h2nd (by omega) t (by omega)
+  · exact one_one_gap_of_odd_rank_lt X Y hje (h17_1 j hj0 (hYne j hj0 hjk))
 
 end Mix2LambdaPi

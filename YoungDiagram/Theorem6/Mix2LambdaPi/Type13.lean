@@ -247,4 +247,20 @@ lemma exists_mutation_le_of_double_pair
   exact exists_mutation_le_type13_diagonal X Y hXY hcommon h17_1 p gpos gneg
     hgpos hgneg hgrank hrank hXpos2 hXneg2
 
+/-- General (possibly off-diagonal) type13 step constructor: given the source
+decomposition `X13 h_le + rest = X` and the target dominance
+`Y13 h_le + rest ≤ Y`, produce the reducing mutation.  The dominance bound is
+supplied by the caller (e.g. from the §17 value-`(1,1)` window gaps). -/
+lemma exists_mutation_le_type13_of_decomp
+    {N m n : ℕ} (h_le : m ≤ n)
+    (X Y : nMix2LambdaPi N) (restval : Chromosome)
+    (hXeq : (X13 h_le).1 + restval = X.1.1)
+    (hrest : restval ∈ Mix (2 • Lambda, Pi))
+    (hZle : (Y13 h_le).1 + restval ≤ Y.1.1) :
+    ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
+  refine ⟨⟨(Y13 h_le).1 + restval, add_mem (Y13 h_le).2 hrest⟩, ?_, hZle⟩
+  exact (Subtype.ext hXeq :
+      (X13 h_le : Mix (2 • Lambda, Pi)) + ⟨restval, hrest⟩ = X.1) ▸
+    Step.mk (X13 h_le) (Y13 h_le) ⟨restval, hrest⟩ (Primitive.type13 h_le)
+
 end Mix2LambdaPi
