@@ -3,6 +3,7 @@ import YoungDiagram.Theorem6.Mix2LambdaPi.Case34NoPair
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairRankOne
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairFinallyOne
 import YoungDiagram.Theorem6.Mix2LambdaPi.Case34PairFinallyBoundary
+import YoungDiagram.Theorem6.Mix2LambdaPi.Case34RemainderDouble
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
@@ -98,7 +99,93 @@ private lemma exists_mutation_le_type10_rank_one_remainder_double
     (hrest_double_rank_one :
       2 ≤ restPair gOnePos ∨ 2 ≤ restPair gOneNeg) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  have hne_pos_neg : gpos ≠ gneg := by
+    intro h; have := congrArg Gene.type h; rw [hgpos, hgneg] at this; exact absurd this (by decide)
+  have hXPi : X.1.1 ∈ Variety.Pi := Variety.mem_Pi_iff.mpr hXpol
+  -- The rank-`2q+3` pair genes differ from the rank-`1` genes.
+  have hp_ne_1p : gpos ≠ gOnePos := by
+    intro h; have := congrArg Gene.rank h; rw [hgpos_rank_q, hgOnePos] at this; simp at this
+  have hp_ne_1n : gpos ≠ gOneNeg := by
+    intro h; have := congrArg Gene.rank h; rw [hgpos_rank_q, hgOneNeg] at this; simp at this
+  have hn_ne_1p : gneg ≠ gOnePos := by
+    intro h; have := congrArg Gene.rank h; rw [hgneg_rank_q, hgOnePos] at this; simp at this
+  have hn_ne_1n : gneg ≠ gOneNeg := by
+    intro h; have := congrArg Gene.rank h; rw [hgneg_rank_q, hgOneNeg] at this; simp at this
+  -- `X` and `restPair` agree on the rank-`1` genes.
+  have hXOnePos : X.1.1 gOnePos = restPair gOnePos := by
+    rw [hrestPair_def, Finsupp.tsub_apply, Finsupp.tsub_apply,
+      Finsupp.single_apply, Finsupp.single_apply, if_neg hp_ne_1p, if_neg hn_ne_1p]
+    simp
+  have hXOneNeg : X.1.1 gOneNeg = restPair gOneNeg := by
+    rw [hrestPair_def, Finsupp.tsub_apply, Finsupp.tsub_apply,
+      Finsupp.single_apply, Finsupp.single_apply, if_neg hp_ne_1n, if_neg hn_ne_1n]
+    simp
+  -- Every gene of `X` at rank `≤ 2q+3` other than one of the pair is a rank-`1`
+  -- gene of the present sign.
+  -- The doubled sign determines `ε`; dispatch on it.
+  -- A general helper: any `X`-support gene of rank `≤ 2q+3` is `gpos`, `gneg`,
+  -- or a rank-`1` gene equal to `gOnePos`/`gOneNeg` (from `hrest_support_rank_one`).
+  have hclass : ∀ h : Gene, 0 < X.1.1 h → h.rank ≤ 2 * q + 3 →
+      h = gpos ∨ h = gneg ∨ h = gOnePos ∨ h = gOneNeg := by
+    intro h hh _
+    by_cases hhp : h = gpos
+    · exact Or.inl hhp
+    · by_cases hhn : h = gneg
+      · exact Or.inr (Or.inl hhn)
+      · -- `h` survives in `restPair`, so it is `gOnePos` or `gOneNeg`.
+        have hhrest : 0 < restPair h := by
+          rw [hrestPair_def, Finsupp.tsub_apply, Finsupp.tsub_apply,
+            Finsupp.single_apply, Finsupp.single_apply,
+            if_neg (fun he => hhp he.symm), if_neg (fun he => hhn he.symm)]
+          simpa using hh
+        by_contra hcon
+        push_neg at hcon
+        obtain ⟨_, _, hne1p, hne1n⟩ := hcon
+        have : restPair h = 0 := by
+          rw [hrest_support_rank_one, Finsupp.add_apply,
+            Finsupp.single_apply, Finsupp.single_apply,
+            if_neg (fun he => hne1p he.symm), if_neg (fun he => hne1n he.symm)]
+          simp
+        omega
+  rcases hrest_double_rank_one with hdpos | hdneg
+  · -- `g⁺(1)` is doubled: `ε = Positive`, `gopp = gneg`.
+    have hg_two : 2 ≤ X.1.1 gOnePos := by rw [hXOnePos]; exact hdpos
+    have hgopp_pos : 0 < X.1.1 gneg := by rw [hone_one.2]; omega
+    have hlow : ∀ h ∈ X.1.1.support, h.rank ≤ 2 * q + 3 → h ≠ gneg →
+        h.type = GeneType.Positive := by
+      intro h hh hr hne
+      have hhpos : 0 < X.1.1 h := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+      rcases hclass h hhpos hr with he | he | he | he
+      · rw [he, hgpos]
+      · exact absurd he hne
+      · rw [he, hgOnePos]
+      · -- `h = gOneNeg`: then `g⁻(1)` is present, forming a rank-1 pair, excluded.
+        exfalso
+        have hpos1 : 0 < restPair gOnePos := by omega
+        have hneg1 : 0 < restPair gOneNeg := by rw [he, hXOneNeg] at hhpos; exact hhpos
+        exact hrest_no_rank_one_pair ⟨hpos1, hneg1⟩
+    exact exists_step_remainder_double (ε := GeneType.Positive) (by decide) X Y hXY
+      hcommon h17_1 hXPi gOnePos gneg (by rw [hgOnePos]) (by rw [hgOnePos])
+      hgneg_rank_q (by rw [hgneg]; decide) hg_two hgopp_pos hone_one.2 hlow
+  · -- `g⁻(1)` is doubled: `ε = Negative`, `gopp = gpos`.
+    have hg_two : 2 ≤ X.1.1 gOneNeg := by rw [hXOneNeg]; exact hdneg
+    have hgopp_pos : 0 < X.1.1 gpos := by rw [hone_one.1]; omega
+    have hlow : ∀ h ∈ X.1.1.support, h.rank ≤ 2 * q + 3 → h ≠ gpos →
+        h.type = GeneType.Negative := by
+      intro h hh hr hne
+      have hhpos : 0 < X.1.1 h := Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+      rcases hclass h hhpos hr with he | he | he | he
+      · exact absurd he hne
+      · rw [he, hgneg]
+      · -- `h = gOnePos`: then `g⁺(1)` is present, forming a rank-1 pair, excluded.
+        exfalso
+        have hneg1 : 0 < restPair gOneNeg := by omega
+        have hpos1 : 0 < restPair gOnePos := by rw [he, hXOnePos] at hhpos; exact hhpos
+        exact hrest_no_rank_one_pair ⟨hpos1, hneg1⟩
+      · rw [he, hgOneNeg]
+    exact exists_step_remainder_double (ε := GeneType.Negative) (by decide) X Y hXY
+      hcommon h17_1 hXPi gOneNeg gpos (by rw [hgOneNeg]) (by rw [hgOneNeg])
+      hgpos_rank_q (by rw [hgpos]; decide) hg_two hgopp_pos hone_one.1 hlow
 
 set_option maxHeartbeats 800000 in
 -- The equal-rank-pair branch still carries the nested type10--type17 proof;
