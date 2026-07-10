@@ -308,6 +308,30 @@ lemma type10_pred_gap_negative
   exact ⟨by simpa [Prod.fst_add, add_comm] using hfst_gap,
     by simpa [Prod.snd_add] using hle.2⟩
 
+/-- Type10 successor gap for a positive lower-moving gene.  This is the same
+odd-level integral gap used by type16, exposed under the type10 name expected
+by the Case34 dispatchers. -/
+lemma type10_succ_gap_positive
+    {N q : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hfst :
+      (signature (Chromosome.prime^[2 * q + 3] X.1.1)).1 <
+        (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).1) :
+    signature (Gene.ofRank 1 .Positive) +
+        signature (Chromosome.prime^[2 * q + 3] X.1.1) ≤
+      signature (Chromosome.prime^[2 * q + 3] Y.1.1) :=
+  type16_succ_gap_positive X Y hXY hfst
+
+/-- Type10 successor gap for a negative lower-moving gene. -/
+lemma type10_succ_gap_negative
+    {N q : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hsnd :
+      (signature (Chromosome.prime^[2 * q + 3] X.1.1)).2 <
+        (signature (Chromosome.prime^[2 * q + 3] Y.1.1)).2) :
+    signature (Gene.ofRank 1 .Negative) +
+        signature (Chromosome.prime^[2 * q + 3] X.1.1) ≤
+      signature (Chromosome.prime^[2 * q + 3] Y.1.1) :=
+  type16_succ_gap_negative X Y hXY hsnd
+
 /-- Pack the doubled-gene type10 dominance check into the standard
 pred/mid/succ gap interface.  This keeps the no-pair dispatcher focused on
 proving the three window gaps rather than rebuilding the source decomposition. -/
