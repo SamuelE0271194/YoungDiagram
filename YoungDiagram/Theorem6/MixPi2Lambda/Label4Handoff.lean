@@ -93,7 +93,7 @@ multi-session effort; verify per file.
   files (flag failures at boundary leaves for the orchestrator).
 
 ## 6. Current batch C checkpoint
-* 2026-07-09: batch C started with thirteen green dependency modules:
+* 2026-07-09: batch C started with fourteen green dependency modules:
   `Case34PairRankOne.lean`, `Case34NoPair.lean`, and
   `Case34NoPairRankGeFour.lean`, plus `Case34NoPairSplit.lean` and
   `Case34NoPairDispatcher.lean`, and the rank-2 boundary setup
@@ -103,7 +103,8 @@ multi-session effort; verify per file.
   `Case34NoPairRankTwoBranches.lean`, plus the no-pair aggregate dispatcher
   `Case34NoPairBranches.lean`, and the double-empty leaf wrapper
   `Case34NoPairRankTwoDoubleEmpty.lean`, plus its reduced rank-two integration
-  layer `Case34NoPairRankTwoClosed.lean`.
+  layer `Case34NoPairRankTwoClosed.lean`, and the singleton level-one boundary
+  module `Case34NoPairRankTwoSingle.lean`.
 * `Case34PairRankOne.pair_rank_two_zero_successor_shape` records the Label 4
   rank-2 boundary shape.  Unlike Label 3's rank-one pair boundary, this is not
   a contradiction: rank-2 positive and negative genes both have signature `(1,1)`.
@@ -190,9 +191,43 @@ multi-session effort; verify per file.
   `no_pair_rank_two_double_empty_case2_pred_gap` rules out the wrong
   predecessor component using level-`0` agreement and `signature_prime_le`.
   Consequently `exists_mutation_le_no_pair_rank_two_double_empty` closes the
-  leaf unconditionally.  `Case34NoPairRankTwoClosed` supplies this theorem to
-  the prepared dispatcher and reduces the rank-`2` no-pair branch from five
-  future leaves to four.
+  leaf unconditionally.  The singleton-empty leaf is also impossible:
+  `exists_mutation_le_no_pair_rank_two_single_empty` uses (17.1) to force the
+  nonzero `Y^[1]` rank strictly between `1 = rank(X^[1])` and `rank(Y) = 2`.
+  `Case34NoPairRankTwoClosed` supplies both empty-leaf results to the prepared
+  dispatcher and reduces the rank-`2` no-pair branch from five future leaves
+  to three: singleton rank-ge-four, double same-gene-extra, and double
+  rank-ge-four.
+* `Type15.exists_mutation_le_type15_of_decomp` and
+  `Type15.exists_mutation_le_type15_of_genes` now expose the general
+  `m <= n` theorem-level constructor.  The previous API only packaged the
+  same-rank diagonal case, but the §17 Case 2 equality branch needs the genuine
+  boundary instance `m = 0 < n`, where the rank-`2` source gene disappears and
+  the later opposite-sign gene moves up by two.  The remaining work for that
+  branch is the paper's component/window gap argument, not Step construction or
+  source-remainder bookkeeping.
+* `Case34NoPairRankTwoSingle.no_pair_rank_two_single_Y_prime_one_ne` proves the
+  first iterate of `Y` is nonzero from the minimal rank-`2` gene and dominance.
+  `no_pair_rank_two_single_level_one_split` then applies (17.1) and orients the
+  strict level-`1` component exactly as in §17 Case 2: second component first
+  for a positive low gene, first component first for a negative low gene.
+  `no_pair_rank_two_single_preferred_type10_pred_gap` converts the preferred
+  branch directly into the boundary type10 predecessor gap.  The remaining
+  singleton work is now the middle/successor window plus the equality fallback.
+  `no_pair_rank_two_single_Y_iterate_ne_before_second_rank` transfers
+  nonvanishing from the selected second gene to every lower iterate of `Y`, so
+  `no_pair_rank_two_single_even_mid_gap_before_second_rank` closes every even
+  middle gap below the top directly from (17.1).  The preferred type10 branch
+  is assembled by
+  `exists_mutation_le_no_pair_rank_two_single_preferred_of_odd_top_succ_gaps`;
+  `Window.KEY_Y_fst_odd` / `KEY_Y_snd_odd` and
+  `window_odd_fst_lt` / `window_odd_snd_lt` now provide the missing odd-level
+  propagation core.  The Case 2 seeds `a_3<c_3` and `b_3<d_3` are proved in
+  `Case34NoPairRankTwoSingle`, and the sign-specific component windows are kept
+  separate to avoid large proof terms.  Consequently
+  `exists_mutation_le_no_pair_rank_two_single_preferred_of_top_succ_gaps`
+  closes every interior middle level; only the top even gap and successor gap
+  remain in the preferred branch.
 * Verified directly:
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34PairRankOne`,
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPair`,
@@ -206,6 +241,7 @@ multi-session effort; verify per file.
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairRankTwoBranches`,
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairBranches`,
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairRankTwoDoubleEmpty`, and
+  `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairRankTwoSingle`, and
   `lake build YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairRankTwoClosed`, and
   `lake build YoungDiagram.Theorem6.MixPi2Lambda`.
 -/

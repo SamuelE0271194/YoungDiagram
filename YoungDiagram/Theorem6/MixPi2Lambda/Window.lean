@@ -97,6 +97,78 @@ lemma KEY_Y_snd {N : ℕ} (X Y : nMixPi2Lambda N)
     exact_mod_cast Nat.succ_le_of_lt hr1
   linarith
 
+/-- Odd-level first-component counterpart of `KEY_Y_fst`.  At odd `i`,
+(15.6) bounds the second half of `c_i-c_(i+2)` by the complementary component
+of the one-step rank drop. -/
+lemma KEY_Y_fst_odd {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {i : ℕ} (hi : ¬ Even i) :
+    (Sigma.sigma Y.1.1 i).1 - (Sigma.sigma Y.1.1 (i + 2)).1 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
+  have hcond6 := cond_15_6_Mix_Pi_2Lambda Y.1.2 i
+  rw [if_neg hi] at hcond6
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 :
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
+    simpa [Sigma.sigma, X.2] using
+      (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 :
+      (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using
+      (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 :
+      (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := by
+    simpa [Sigma.sigma] using
+      (@signature_sum_eq_rank (Chromosome.prime^[1] X.1.1))
+  have hrY1 :
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    simpa [Sigma.sigma] using
+      (@signature_sum_eq_rank (Chromosome.prime^[1] Y.1.1))
+  have hgap :
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 1 ≤
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    exact_mod_cast Nat.succ_le_of_lt hr1
+  linarith
+
+/-- Odd-level second-component counterpart of `KEY_Y_snd`, using (15.7). -/
+lemma KEY_Y_snd_odd {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {i : ℕ} (hi : ¬ Even i) :
+    (Sigma.sigma Y.1.1 i).2 - (Sigma.sigma Y.1.1 (i + 2)).2 ≤
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 1 := by
+  have hcond7 := cond_15_7_Mix_Pi_2Lambda Y.1.2 i
+  rw [if_neg hi] at hcond7
+  have hdrop := rank_drop_le Y.1.2 i
+  have hrX0 :
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
+    simpa [Sigma.sigma, X.2] using
+      (@signature_sum_eq_rank (Chromosome.prime^[0] X.1.1))
+  have hrY0 :
+      (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
+    simpa [Sigma.sigma, Y.2] using
+      (@signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1))
+  have hrX1 :
+      (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
+        ((Chromosome.prime^[1] X.1.1).rank : ℚ) := by
+    simpa [Sigma.sigma] using
+      (@signature_sum_eq_rank (Chromosome.prime^[1] X.1.1))
+  have hrY1 :
+      (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    simpa [Sigma.sigma] using
+      (@signature_sum_eq_rank (Chromosome.prime^[1] Y.1.1))
+  have hgap :
+      ((Chromosome.prime^[1] X.1.1).rank : ℚ) + 1 ≤
+        ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := by
+    exact_mod_cast Nat.succ_le_of_lt hr1
+  linarith
+
 /-- Removing one copy of the minimal gene `gm` does not change the sigma column
 at levels `≥ gm.rank` (the removed gene is already annihilated). -/
 private lemma shift_ge {N : ℕ} (X : nMixPi2Lambda N) (gm : Gene)
@@ -437,6 +509,53 @@ lemma window_even_snd_lt {N : ℕ} (X Y : nMixPi2Lambda N)
   have heven : Even (j0 + 2 * t) := hj0_even.add (⟨t, by ring⟩)
   have hY := KEY_Y_snd X Y hr1 heven
   have hX := KEY_X_snd_ge X (k := k) hgm1 h2nd (i := j0 + 2 * t) (by omega)
+  simp only [Sigma.sigma] at hX hY ⊢
+  linarith
+
+/-- Odd-level first-component strict propagation, using `KEY_Y_fst_odd` and
+the residue lower bound `KEY_X_fst_ge`. -/
+lemma window_odd_fst_lt {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {k : ℕ} {gm : Gene} (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (j0 d : ℕ) (hj0_odd : ¬ Even j0) (hwin : j0 + 2 * d ≤ k)
+    (hseed : (Sigma.sigma X.1.1 j0).1 < (Sigma.sigma Y.1.1 j0).1) :
+    ∀ t, t ≤ d →
+      (Sigma.sigma X.1.1 (j0 + 2 * t)).1 <
+        (Sigma.sigma Y.1.1 (j0 + 2 * t)).1 := by
+  apply Mix2LambdaSection17.fst_propagate_window_lt
+    (X := X.1.1) (Y := Y.1.1) j0 d hseed
+  intro t ht
+  have hodd : ¬ Even (j0 + 2 * t) := by
+    obtain ⟨q, hq⟩ := Nat.not_even_iff_odd.mp hj0_odd
+    exact Nat.not_even_iff_odd.mpr ⟨q + t, by omega⟩
+  have hY := KEY_Y_fst_odd X Y hr1 hodd
+  have hX := KEY_X_fst_ge X (k := k) hgm1 h2nd
+    (i := j0 + 2 * t) (by omega)
+  simp only [Sigma.sigma] at hX hY ⊢
+  linarith
+
+/-- Odd-level second-component strict propagation. -/
+lemma window_odd_snd_lt {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {k : ℕ} {gm : Gene} (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (j0 d : ℕ) (hj0_odd : ¬ Even j0) (hwin : j0 + 2 * d ≤ k)
+    (hseed : (Sigma.sigma X.1.1 j0).2 < (Sigma.sigma Y.1.1 j0).2) :
+    ∀ t, t ≤ d →
+      (Sigma.sigma X.1.1 (j0 + 2 * t)).2 <
+        (Sigma.sigma Y.1.1 (j0 + 2 * t)).2 := by
+  apply Mix2LambdaSection17.snd_propagate_window_lt
+    (X := X.1.1) (Y := Y.1.1) j0 d hseed
+  intro t ht
+  have hodd : ¬ Even (j0 + 2 * t) := by
+    obtain ⟨q, hq⟩ := Nat.not_even_iff_odd.mp hj0_odd
+    exact Nat.not_even_iff_odd.mpr ⟨q + t, by omega⟩
+  have hY := KEY_Y_snd_odd X Y hr1 hodd
+  have hX := KEY_X_snd_ge X (k := k) hgm1 h2nd
+    (i := j0 + 2 * t) (by omega)
   simp only [Sigma.sigma] at hX hY ⊢
   linarith
 

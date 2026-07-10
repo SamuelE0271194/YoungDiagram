@@ -7,6 +7,70 @@ open Chromosome Sigma Pointwise
 
 namespace MixPi2Lambda
 
+/-- General type15 step constructor from a source decomposition and a target
+dominance bound. -/
+lemma exists_mutation_le_type15_of_decomp
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (restval : Chromosome)
+    (hXeq : (X15 h_le hε).1 + restval = X.1.1)
+    (hrest : restval ∈ Mix (Pi, 2 • Lambda))
+    (hZle : (Y15 h_le hε).1 + restval ≤ Y.1.1) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let rest : Mix (Pi, 2 • Lambda) := ⟨restval, hrest⟩
+  refine ⟨⟨(Y15 h_le hε).1 + restval,
+      add_mem (Y15 h_le hε).2 hrest⟩, ?_, hZle⟩
+  exact (Subtype.ext hXeq :
+      (X15 h_le hε : Mix (Pi, 2 • Lambda)) + rest = X.1) ▸
+    Step.mk (X15 h_le hε) (Y15 h_le hε) rest
+      (Primitive.type15 ε hε h_le)
+
+/-- Concrete-gene wrapper for the general type15 source
+`g^ε(2m+2) + g^{-ε}(2n+2)`. -/
+lemma exists_mutation_le_type15_of_genes
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (gε gnegε : Gene)
+    (hgε : gε.type = ε) (hgnegε : gnegε.type = -ε)
+    (hgε_rank : gε.rank = 2 * m + 2)
+    (hgnegε_rank : gnegε.rank = 2 * n + 2)
+    (hεcopy : 1 ≤ X.1.1 gε) (hnegεcopy : 1 ≤ X.1.1 gnegε)
+    (hne : gε ≠ gnegε)
+    (hZle :
+      (Y15 h_le hε).1 +
+          (X.1.1 - Finsupp.single gε 1 - Finsupp.single gnegε 1) ≤
+        Y.1.1) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let restval : Chromosome :=
+    X.1.1 - Finsupp.single gε 1 - Finsupp.single gnegε 1
+  have hevenε : Even gε.rank := by
+    rw [hgε_rank]
+    exact ⟨m + 1, by ring⟩
+  have hevennegε : Even gnegε.rank := by
+    rw [hgnegε_rank]
+    exact ⟨n + 1, by ring⟩
+  have rest_mem : restval ∈ Mix (Pi, 2 • Lambda) :=
+    sub_single_one_mem_Mix_Pi_2Lambda
+      (sub_single_one_mem_Mix_Pi_2Lambda X.1.2 hevenε) hevennegε
+  have hgε_eq :
+      Gene.ofRank (2 * m + 2) ε =
+        (Finsupp.single gε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gε)
+    rwa [hgε_rank, hgε] at h
+  have hgnegε_eq :
+      Gene.ofRank (2 * n + 2) (-ε) =
+        (Finsupp.single gnegε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gnegε)
+    rwa [hgnegε_rank, hgnegε] at h
+  have hX15val :
+      (X15 h_le hε).1 =
+        Finsupp.single gε 1 + Finsupp.single gnegε 1 := by
+    rw [X15_eq, hgε_eq, hgnegε_eq]
+  have hXeq : (X15 h_le hε).1 + restval = X.1.1 := by
+    rw [hX15val]
+    exact Mix2LambdaSection17.single_pair_add_rest
+      hεcopy hnegεcopy hne
+  exact exists_mutation_le_type15_of_decomp hε h_le X Y restval hXeq
+    rest_mem hZle
+
 lemma snd_pred_strict_of_snd_succ_strict
     {b₀ a₁ b₁ a₂ b₂ d₀ c₁ d₁ c₂ d₂ : ℚ}
     (hfst_succ_eq : a₂ = c₂)
