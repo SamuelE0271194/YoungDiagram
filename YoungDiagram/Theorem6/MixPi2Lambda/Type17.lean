@@ -8,6 +8,75 @@ namespace MixPi2Lambda
 private lemma negative_ne_nonPolarized : GeneType.Negative ≠ .NonPolarized := by decide
 private lemma positive_ne_nonPolarized : GeneType.Positive ≠ .NonPolarized := by decide
 
+/-- General type17 step constructor from a source decomposition and a target
+dominance bound. -/
+lemma exists_mutation_le_type17_of_decomp
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (restval : Chromosome)
+    (hXeq : (X17 h_le hε).1 + restval = X.1.1)
+    (hrest : restval ∈ Mix (Pi, 2 • Lambda))
+    (hZle : (Y17 h_le hε).1 + restval ≤ Y.1.1) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let rest : Mix (Pi, 2 • Lambda) := ⟨restval, hrest⟩
+  refine ⟨⟨(Y17 h_le hε).1 + restval,
+      add_mem (Y17 h_le hε).2 hrest⟩, ?_, hZle⟩
+  exact (Subtype.ext hXeq :
+      (X17 h_le hε : Mix (Pi, 2 • Lambda)) + rest = X.1) ▸
+    Step.mk (X17 h_le hε) (Y17 h_le hε) rest
+      (Primitive.type17 ε hε h_le)
+
+/-- Concrete-gene wrapper for the general type17 source
+`g^ε(2m+2) + 2g^{-ε}(2n+2)`. -/
+lemma exists_mutation_le_type17_of_genes
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (gε gnegε : Gene)
+    (hgε : gε.type = ε) (hgnegε : gnegε.type = -ε)
+    (hgε_rank : gε.rank = 2 * m + 2)
+    (hgnegε_rank : gnegε.rank = 2 * n + 2)
+    (hεcopy : 1 ≤ X.1.1 gε) (hnegεtwo : 2 ≤ X.1.1 gnegε)
+    (hne : gε ≠ gnegε)
+    (hZle :
+      (Y17 h_le hε).1 +
+          (X.1.1 - Finsupp.single gnegε 1 - Finsupp.single gnegε 1 -
+            Finsupp.single gε 1) ≤ Y.1.1) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let restval : Chromosome :=
+    X.1.1 - Finsupp.single gnegε 1 - Finsupp.single gnegε 1 -
+      Finsupp.single gε 1
+  have hevenε : Even gε.rank := by
+    rw [hgε_rank]
+    exact ⟨m + 1, by ring⟩
+  have hevennegε : Even gnegε.rank := by
+    rw [hgnegε_rank]
+    exact ⟨n + 1, by ring⟩
+  have rest_mem : restval ∈ Mix (Pi, 2 • Lambda) :=
+    sub_single_one_mem_Mix_Pi_2Lambda
+      (sub_single_one_mem_Mix_Pi_2Lambda
+        (sub_single_one_mem_Mix_Pi_2Lambda X.1.2 hevennegε)
+        hevennegε)
+      hevenε
+  have hgε_eq :
+      Gene.ofRank (2 * m + 2) ε =
+        (Finsupp.single gε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gε)
+    rwa [hgε_rank, hgε] at h
+  have hgnegε_eq :
+      Gene.ofRank (2 * n + 2) (-ε) =
+        (Finsupp.single gnegε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gnegε)
+    rwa [hgnegε_rank, hgnegε] at h
+  have hX17val :
+      (X17 h_le hε).1 =
+        Finsupp.single gε 1 + Finsupp.single gnegε 1 +
+          Finsupp.single gnegε 1 := by
+    rw [X17_eq, hgε_eq, hgnegε_eq]
+  have hXeq : (X17 h_le hε).1 + restval = X.1.1 := by
+    rw [hX17val]
+    exact Mix2LambdaSection17.single_double_pair_add_rest
+      hnegεtwo hεcopy hne.symm
+  exact exists_mutation_le_type17_of_decomp hε h_le X Y restval hXeq
+    rest_mem hZle
+
 private lemma type17_positive_signature_eq_before
     {q j : ℕ} (hj : j < 2 * q + 1) :
     signature (Chromosome.prime^[j]

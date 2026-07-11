@@ -71,6 +71,357 @@ lemma exists_mutation_le_type15_of_genes
   exact exists_mutation_le_type15_of_decomp hε h_le X Y restval hXeq
     rest_mem hZle
 
+/-! ### General type15 middle-window signature profile
+
+For a non-diagonal type15 source, the middle window is parity-sensitive: even
+levels contribute `(1,1)`, while odd levels contribute two cells in the
+component selected by `ε`. -/
+
+/-- Before the lower transition of a general type15 mutation, the source and
+target signatures agree. -/
+lemma type15_signature_eq_before
+    {m n j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n)
+    (hj : j ≤ 2 * m) :
+    signature (Chromosome.prime^[j] (Y15 h_le hε).1) =
+      signature (Chromosome.prime^[j] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlow : 2 * m + 2 - j = (2 * m - j) + 2 := by omega
+  have htop : 2 * n + 4 - j = (2 * n + 2 - j) + 2 := by omega
+  rw [hlow, htop, signature_ofRank_eq₂', signature_ofRank_eq₂']
+  have hab : Even ((2 * m - j) + (2 * n + 2 - j)) := by
+    exact ⟨m + n + 1 - j, by omega⟩
+  have hsumX := signature_ofRank_sum_even (ε := ε)
+    (m := 2 * m - j) (n := 2 * n + 2 - j) hab
+  have hsumY := signature_ofRank_sum_even (ε := -ε)
+    (m := 2 * m - j) (n := 2 * n + 2 - j) hab
+  simp only [neg_neg] at hsumY
+  calc
+    signature (Gene.ofRank (2 * m - j) (-ε)) +
+          (signature (Gene.ofRank (2 * n + 2 - j) ε) + ((1 : ℚ), (1 : ℚ)))
+        = (signature (Gene.ofRank (2 * m - j) (-ε)) +
+            signature (Gene.ofRank (2 * n + 2 - j) ε)) +
+          ((1 : ℚ), (1 : ℚ)) := by abel
+    _ = (signature (Gene.ofRank (2 * m - j) ε) +
+            signature (Gene.ofRank (2 * n + 2 - j) (-ε))) +
+          ((1 : ℚ), (1 : ℚ)) := by rw [hsumY, hsumX]
+    _ = signature (Gene.ofRank (2 * m - j) ε) + ((1 : ℚ), (1 : ℚ)) +
+          signature (Gene.ofRank (2 * n + 2 - j) (-ε)) := by abel
+
+/-- Lower transition level of a general type15 mutation. -/
+lemma type15_signature_pred
+    {m n : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n) :
+    signature (Chromosome.prime^[2 * m + 1] (Y15 h_le hε).1) =
+      signature (Gene.ofRank 1 ε) +
+        signature (Chromosome.prime^[2 * m + 1] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowY : 2 * m - (2 * m + 1) = 0 := by omega
+  have hlowX : 2 * m + 2 - (2 * m + 1) = 1 := by omega
+  have htop : 2 * n + 4 - (2 * m + 1) =
+      (2 * n + 2 - (2 * m + 1)) + 2 := by omega
+  simp only [hlowY, hlowX, Gene.ofRank_zero, map_zero, zero_add]
+  rw [htop, signature_ofRank_eq₂']
+  cases htype : ε with
+  | NonPolarized => exact False.elim (hε htype)
+  | Positive =>
+      have hb_eq : 2 * n + 2 - (2 * m + 1) = 2 * (n - m) + 1 := by omega
+      have hb_odd : ¬ Even (2 * (n - m) + 1) :=
+        Nat.not_even_iff_odd.mpr ⟨n - m, by ring⟩
+      rw [GeneType.neg_positive, hb_eq]
+      simp [signature_ofRank, Gene.signature, hb_odd]
+      constructor <;> ring_nf
+  | Negative =>
+      have hb_eq : 2 * n + 2 - (2 * m + 1) = 2 * (n - m) + 1 := by omega
+      have hb_odd : ¬ Even (2 * (n - m) + 1) :=
+        Nat.not_even_iff_odd.mpr ⟨n - m, by ring⟩
+      rw [GeneType.neg_negative, hb_eq]
+      simp [signature_ofRank, Gene.signature, hb_odd]
+      constructor <;> ring_nf
+
+/-- Even middle levels of a general type15 mutation have the same `(1,1)` slack
+as type10. -/
+lemma type15_signature_mid_even
+    {m n j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n)
+    (hjlo : 2 * m + 2 ≤ j) (hjhi : j ≤ 2 * n + 2) (heven : Even j) :
+    signature (Chromosome.prime^[j] (Y15 h_le hε).1) =
+      ((1 : ℚ), (1 : ℚ)) +
+        signature (Chromosome.prime^[j] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowX : 2 * m + 2 - j = 0 := by omega
+  have hlowY : 2 * m - j = 0 := by omega
+  have htop : 2 * n + 4 - j = (2 * n + 2 - j) + 2 := by omega
+  have hb_even : Even (2 * n + 2 - j) := by
+    rcases heven with ⟨r, hr⟩
+    exact ⟨n + 1 - r, by omega⟩
+  simp only [hlowX, hlowY, Gene.ofRank_zero, map_zero, zero_add]
+  rw [htop, signature_ofRank_eq₂', signature_ofRank_even (ε := ε) hb_even]
+  abel
+
+/-- Odd middle levels of a positive type15 mutation put both slack cells in the
+first component. -/
+lemma type15_signature_mid_odd_positive
+    {m n j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n)
+    (hjlo : 2 * m + 2 ≤ j) (hjhi : j ≤ 2 * n + 2) (hodd : ¬ Even j)
+    (hεpos : ε = GeneType.Positive) :
+    signature (Chromosome.prime^[j] (Y15 h_le hε).1) =
+      ((2 : ℚ), (0 : ℚ)) +
+        signature (Chromosome.prime^[j] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowX : 2 * m + 2 - j = 0 := by omega
+  have hlowY : 2 * m - j = 0 := by omega
+  have htop : 2 * n + 4 - j = (2 * n + 2 - j) + 2 := by omega
+  obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp hodd
+  have hb_odd : ¬ Even (2 * n + 2 - j) :=
+    Nat.not_even_iff_odd.mpr ⟨n - r, by omega⟩
+  have hb_ne : 2 * n + 2 - j ≠ 0 := by
+    intro hzero
+    rw [hzero] at hb_odd
+    exact hb_odd (by decide)
+  simp only [hlowX, hlowY, Gene.ofRank_zero, map_zero, zero_add]
+  rw [htop, signature_ofRank_eq₂']
+  have hb_eq : 2 * n + 2 - j = 2 * (n - r) + 1 := by omega
+  have hb_odd' : ¬ Even (2 * (n - r) + 1) :=
+    Nat.not_even_iff_odd.mpr ⟨n - r, by ring⟩
+  rw [hb_eq]
+  rw [hεpos, GeneType.neg_positive]
+  simp only [signature_ofRank, show 2 * (n - r) + 1 ≠ 0 by omega, ↓reduceDIte,
+    Gene.signature_of_positive, Gene.signature_of_negative, hb_odd', ↓reduceIte,
+    Prod.mk_add_mk]
+  ext <;> ring
+
+/-- Odd middle levels of a negative type15 mutation put both slack cells in the
+second component. -/
+lemma type15_signature_mid_odd_negative
+    {m n j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n)
+    (hjlo : 2 * m + 2 ≤ j) (hjhi : j ≤ 2 * n + 2) (hodd : ¬ Even j)
+    (hεneg : ε = GeneType.Negative) :
+    signature (Chromosome.prime^[j] (Y15 h_le hε).1) =
+      ((0 : ℚ), (2 : ℚ)) +
+        signature (Chromosome.prime^[j] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowX : 2 * m + 2 - j = 0 := by omega
+  have hlowY : 2 * m - j = 0 := by omega
+  have htop : 2 * n + 4 - j = (2 * n + 2 - j) + 2 := by omega
+  obtain ⟨r, hr⟩ := Nat.not_even_iff_odd.mp hodd
+  have hb_odd : ¬ Even (2 * n + 2 - j) :=
+    Nat.not_even_iff_odd.mpr ⟨n - r, by omega⟩
+  have hb_ne : 2 * n + 2 - j ≠ 0 := by
+    intro hzero
+    rw [hzero] at hb_odd
+    exact hb_odd (by decide)
+  simp only [hlowX, hlowY, Gene.ofRank_zero, map_zero, zero_add]
+  rw [htop, signature_ofRank_eq₂']
+  have hb_eq : 2 * n + 2 - j = 2 * (n - r) + 1 := by omega
+  have hb_odd' : ¬ Even (2 * (n - r) + 1) :=
+    Nat.not_even_iff_odd.mpr ⟨n - r, by ring⟩
+  rw [hb_eq]
+  rw [hεneg, GeneType.neg_negative]
+  simp only [signature_ofRank, show 2 * (n - r) + 1 ≠ 0 by omega, ↓reduceDIte,
+    Gene.signature_of_positive, Gene.signature_of_negative, hb_odd', ↓reduceIte,
+    Prod.mk_add_mk]
+  ext <;> ring
+
+/-- Upper transition level of a general type15 mutation. -/
+lemma type15_signature_succ
+    {m n : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n) :
+    signature (Chromosome.prime^[2 * n + 3] (Y15 h_le hε).1) =
+      signature (Gene.ofRank 1 ε) +
+        signature (Chromosome.prime^[2 * n + 3] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowY : 2 * m - (2 * n + 3) = 0 := by omega
+  have hlowX : 2 * m + 2 - (2 * n + 3) = 0 := by omega
+  have htopX : 2 * n + 2 - (2 * n + 3) = 0 := by omega
+  have htopY : 2 * n + 4 - (2 * n + 3) = 1 := by omega
+  simp [hlowY, hlowX, htopX, htopY]
+
+/-- After the upper transition of a general type15 mutation, the source and
+target signatures agree. -/
+lemma type15_signature_eq_after
+    {m n j : ℕ} {ε : GeneType} {hε : ε ≠ .NonPolarized} (h_le : m ≤ n)
+    (hj : 2 * n + 4 ≤ j) :
+    signature (Chromosome.prime^[j] (Y15 h_le hε).1) =
+      signature (Chromosome.prime^[j] (X15 h_le hε).1) := by
+  simp only [X15_eq, Y15_eq, iterate_map_add, prime_iterate_ofRank, map_add]
+  have hlowY : 2 * m - j = 0 := by omega
+  have hlowX : 2 * m + 2 - j = 0 := by omega
+  have htopX : 2 * n + 2 - j = 0 := by omega
+  have htopY : 2 * n + 4 - j = 0 := by omega
+  simp [hlowY, hlowX, htopX, htopY]
+
+/-- Dominance assembly for the general type15 mutation.  The middle window is
+parity-sensitive: even levels use `(1,1)` slack, while odd levels require two
+cells in the component selected by `ε`. -/
+lemma type15_target_add_rest_le_of_gaps
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1) (restval : Chromosome)
+    (hXeq : (X15 h_le hε).1 + restval = X.1.1)
+    (hgap_pred :
+      signature (Gene.ofRank 1 ε) +
+          signature (Chromosome.prime^[2 * m + 1] X.1.1) ≤
+        signature (Chromosome.prime^[2 * m + 1] Y.1.1))
+    (hgap_mid_even : ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → Even j →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_mid_odd_positive :
+      ε = GeneType.Positive →
+        ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → ¬ Even j →
+          ((2 : ℚ), (0 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+            signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_mid_odd_negative :
+      ε = GeneType.Negative →
+        ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → ¬ Even j →
+          ((0 : ℚ), (2 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+            signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_succ :
+      signature (Gene.ofRank 1 ε) +
+          signature (Chromosome.prime^[2 * n + 3] X.1.1) ≤
+        signature (Chromosome.prime^[2 * n + 3] Y.1.1)) :
+    (Y15 h_le hε).1 + restval ≤ Y.1.1 := by
+  rw [le_iff_dominates]
+  intro j
+  rw [iterate_map_add, map_add]
+  have hdecomp :
+      signature (Chromosome.prime^[j] X.1.1) =
+        signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+          signature (Chromosome.prime^[j] restval) := by
+    conv_lhs => rw [← hXeq]
+    rw [iterate_map_add, map_add]
+  by_cases hj_before : j ≤ 2 * m
+  · rw [type15_signature_eq_before h_le hj_before, ← hdecomp]
+    exact le_iff_dominates.mp hXY.le j
+  · by_cases hj_pred : j = 2 * m + 1
+    · subst j
+      rw [type15_signature_pred h_le]
+      calc
+        signature (Gene.ofRank 1 ε) +
+              signature (Chromosome.prime^[2 * m + 1] (X15 h_le hε).1) +
+            signature (Chromosome.prime^[2 * m + 1] restval)
+            = signature (Gene.ofRank 1 ε) +
+              (signature (Chromosome.prime^[2 * m + 1] (X15 h_le hε).1) +
+                signature (Chromosome.prime^[2 * m + 1] restval)) := by abel
+        _ = signature (Gene.ofRank 1 ε) +
+              signature (Chromosome.prime^[2 * m + 1] X.1.1) := by rw [← hdecomp]
+        _ ≤ signature (Chromosome.prime^[2 * m + 1] Y.1.1) := hgap_pred
+    · by_cases hj_mid : j ≤ 2 * n + 2
+      · by_cases heven : Even j
+        · rw [type15_signature_mid_even h_le (by omega : 2 * m + 2 ≤ j) hj_mid heven]
+          calc
+            ((1 : ℚ), (1 : ℚ)) +
+                  signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                signature (Chromosome.prime^[j] restval)
+                = ((1 : ℚ), (1 : ℚ)) +
+                  (signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                    signature (Chromosome.prime^[j] restval)) := by abel
+            _ = ((1 : ℚ), (1 : ℚ)) +
+                  signature (Chromosome.prime^[j] X.1.1) := by rw [← hdecomp]
+            _ ≤ signature (Chromosome.prime^[j] Y.1.1) :=
+              hgap_mid_even j (by omega) hj_mid heven
+        · by_cases hpos : ε = GeneType.Positive
+          · rw [type15_signature_mid_odd_positive h_le (by omega : 2 * m + 2 ≤ j)
+              hj_mid heven hpos]
+            calc
+              ((2 : ℚ), (0 : ℚ)) +
+                    signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                  signature (Chromosome.prime^[j] restval)
+                  = ((2 : ℚ), (0 : ℚ)) +
+                    (signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                      signature (Chromosome.prime^[j] restval)) := by abel
+              _ = ((2 : ℚ), (0 : ℚ)) +
+                    signature (Chromosome.prime^[j] X.1.1) := by rw [← hdecomp]
+              _ ≤ signature (Chromosome.prime^[j] Y.1.1) :=
+                hgap_mid_odd_positive hpos j (by omega) hj_mid heven
+          · have hneg : ε = GeneType.Negative := by
+              cases htype : ε with
+              | NonPolarized => exact False.elim (hε htype)
+              | Positive => exact False.elim (hpos htype)
+              | Negative => rfl
+            rw [type15_signature_mid_odd_negative h_le (by omega : 2 * m + 2 ≤ j)
+              hj_mid heven hneg]
+            calc
+              ((0 : ℚ), (2 : ℚ)) +
+                    signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                  signature (Chromosome.prime^[j] restval)
+                  = ((0 : ℚ), (2 : ℚ)) +
+                    (signature (Chromosome.prime^[j] (X15 h_le hε).1) +
+                      signature (Chromosome.prime^[j] restval)) := by abel
+              _ = ((0 : ℚ), (2 : ℚ)) +
+                    signature (Chromosome.prime^[j] X.1.1) := by rw [← hdecomp]
+              _ ≤ signature (Chromosome.prime^[j] Y.1.1) :=
+                hgap_mid_odd_negative hneg j (by omega) hj_mid heven
+      · by_cases hj_succ : j = 2 * n + 3
+        · subst j
+          rw [type15_signature_succ h_le]
+          calc
+            signature (Gene.ofRank 1 ε) +
+                  signature (Chromosome.prime^[2 * n + 3] (X15 h_le hε).1) +
+                signature (Chromosome.prime^[2 * n + 3] restval)
+                = signature (Gene.ofRank 1 ε) +
+                  (signature (Chromosome.prime^[2 * n + 3] (X15 h_le hε).1) +
+                    signature (Chromosome.prime^[2 * n + 3] restval)) := by abel
+            _ = signature (Gene.ofRank 1 ε) +
+                  signature (Chromosome.prime^[2 * n + 3] X.1.1) := by rw [← hdecomp]
+            _ ≤ signature (Chromosome.prime^[2 * n + 3] Y.1.1) := hgap_succ
+        · have hj_after : 2 * n + 4 ≤ j := by omega
+          rw [type15_signature_eq_after h_le hj_after, ← hdecomp]
+          exact le_iff_dominates.mp hXY.le j
+
+/-- Concrete-gene type15 constructor using the natural parity-sensitive gap
+interface.  This combines source-remainder bookkeeping with
+`type15_target_add_rest_le_of_gaps`, so Case34 leaves only prove window facts. -/
+lemma exists_mutation_le_type15_of_genes_of_gaps
+    {N m n : ℕ} {ε : GeneType} (hε : ε ≠ .NonPolarized) (h_le : m ≤ n)
+    (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1) (gε gnegε : Gene)
+    (hgε : gε.type = ε) (hgnegε : gnegε.type = -ε)
+    (hgε_rank : gε.rank = 2 * m + 2)
+    (hgnegε_rank : gnegε.rank = 2 * n + 2)
+    (hεcopy : 1 ≤ X.1.1 gε) (hnegεcopy : 1 ≤ X.1.1 gnegε)
+    (hne : gε ≠ gnegε)
+    (hgap_pred :
+      signature (Gene.ofRank 1 ε) +
+          signature (Chromosome.prime^[2 * m + 1] X.1.1) ≤
+        signature (Chromosome.prime^[2 * m + 1] Y.1.1))
+    (hgap_mid_even : ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → Even j →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_mid_odd_positive :
+      ε = GeneType.Positive →
+        ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → ¬ Even j →
+          ((2 : ℚ), (0 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+            signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_mid_odd_negative :
+      ε = GeneType.Negative →
+        ∀ j, 2 * m + 2 ≤ j → j ≤ 2 * n + 2 → ¬ Even j →
+          ((0 : ℚ), (2 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+            signature (Chromosome.prime^[j] Y.1.1))
+    (hgap_succ :
+      signature (Gene.ofRank 1 ε) +
+          signature (Chromosome.prime^[2 * n + 3] X.1.1) ≤
+        signature (Chromosome.prime^[2 * n + 3] Y.1.1)) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  let restval : Chromosome :=
+    X.1.1 - Finsupp.single gε 1 - Finsupp.single gnegε 1
+  have hgε_eq :
+      Gene.ofRank (2 * m + 2) ε = (Finsupp.single gε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gε)
+    rwa [hgε_rank, hgε] at h
+  have hgnegε_eq :
+      Gene.ofRank (2 * n + 2) (-ε) =
+        (Finsupp.single gnegε 1 : Chromosome) := by
+    have h := Gene.ofRank_eq_gene (g := gnegε)
+    rwa [hgnegε_rank, hgnegε] at h
+  have hX15val :
+      (X15 h_le hε).1 =
+        Finsupp.single gε 1 + Finsupp.single gnegε 1 := by
+    rw [X15_eq, hgε_eq, hgnegε_eq]
+  have hXeq : (X15 h_le hε).1 + restval = X.1.1 := by
+    rw [hX15val]
+    exact Mix2LambdaSection17.single_pair_add_rest
+      hεcopy hnegεcopy hne
+  have hZle := type15_target_add_rest_le_of_gaps hε h_le X Y hXY
+    restval hXeq hgap_pred hgap_mid_even hgap_mid_odd_positive
+    hgap_mid_odd_negative hgap_succ
+  exact exists_mutation_le_type15_of_genes hε h_le X Y gε gnegε
+    hgε hgnegε hgε_rank hgnegε_rank hεcopy hnegεcopy hne hZle
+
 lemma snd_pred_strict_of_snd_succ_strict
     {b₀ a₁ b₁ a₂ b₂ d₀ c₁ d₁ c₂ d₂ : ℚ}
     (hfst_succ_eq : a₂ = c₂)
@@ -216,6 +567,134 @@ lemma fst_drop_le_snd_drop_succ_add_one
           symm
           apply Sigma.altType_odd
           exact Nat.not_even_iff_odd.mpr ⟨p, by ring⟩
+      · rcases h with ⟨hgsupp, hgt, hgtype⟩
+        exact ⟨hgsupp, by omega, hgtype⟩
+  rw [hsplit]
+  have hnot : gpos ∉ S₁ := by
+    simp [S₁, hgpos_rank]
+  rw [Finset.sum_insert hnot, hcoeff]
+  ring_nf
+  exact le_rfl
+
+lemma snd_drop_le_fst_drop_succ_add_one_even
+    {p : ℕ} (X : Chromosome) (hXPi : X ∈ Pi)
+    (gneg : Gene) (hgneg_rank : gneg.rank = 2 * p + 2)
+    (hgneg : gneg.type = GeneType.Negative) (hcoeff : X gneg = 1) :
+    (signature (Chromosome.prime^[2 * p + 1] X)).2 -
+        (signature (Chromosome.prime^[2 * p + 2] X)).2 ≤
+      (signature (Chromosome.prime^[2 * p + 2] X)).1 -
+        (signature (Chromosome.prime^[2 * p + 3] X)).1 + 1 := by
+  change (Sigma.sigma X (2 * p + 1)).2 - (Sigma.sigma X (2 * p + 2)).2 ≤
+    (Sigma.sigma X (2 * p + 2)).1 - (Sigma.sigma X (2 * p + 3)).1 + 1
+  rw [Sigma.sigma_snd_diff X (2 * p + 1) hXPi,
+    Sigma.sigma_fst_diff X (2 * p + 2) hXPi]
+  change ((Chromosome.prime^[2 * p + 1] X).sum (fun g m =>
+      if g.type = Sigma.altType g.rank GeneType.Negative then (m : ℚ) else 0)) ≤
+    ((Chromosome.prime^[2 * p + 2] X).sum (fun g m =>
+      if g.type = Sigma.altType g.rank GeneType.Positive then (m : ℚ) else 0)) + 1
+  rw [Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Negative,
+    Sigma.prime_iterate_sum_eq X (2 * p + 2) GeneType.Positive]
+  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 :=
+    Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
+  have heven : Int.negOnePow (((2 * p + 2 : ℕ) : ℤ)) = 1 :=
+    Int.negOnePow_even _ ⟨(p : ℤ) + 1, by norm_num; ring⟩
+  simp only [hodd, heven, one_smul, GeneType.neg_one_smul,
+    GeneType.neg_negative]
+  set S₀ := X.support.filter
+    (fun g => 2 * p + 1 < g.rank ∧
+      g.type = Sigma.altType g.rank GeneType.Positive)
+  set S₁ := X.support.filter
+    (fun g => 2 * p + 2 < g.rank ∧
+      g.type = Sigma.altType g.rank GeneType.Positive)
+  have hgneg_mem_support : gneg ∈ X.support := by
+    rw [Finsupp.mem_support_iff]
+    omega
+  have hsplit : S₀ = insert gneg S₁ := by
+    ext g
+    simp only [S₀, S₁, Finset.mem_filter, Finset.mem_insert]
+    constructor
+    · intro h
+      rcases h with ⟨hgsupp, hgt, hgtype⟩
+      by_cases hr : g.rank = 2 * p + 2
+      · left
+        apply Gene.ext (hr.trans hgneg_rank.symm)
+        rw [hgtype, Sigma.altType_even g.rank (by rw [hr]; exact ⟨p + 1, by ring⟩),
+          GeneType.neg_positive, hgneg]
+      · right
+        exact ⟨hgsupp, by omega, hgtype⟩
+    · intro h
+      rcases h with hg | h
+      · subst hg
+        refine ⟨hgneg_mem_support, ?_, ?_⟩
+        · rw [hgneg_rank]
+          omega
+        · rw [hgneg, hgneg_rank,
+            Sigma.altType_even (2 * p + 2) ⟨p + 1, by ring⟩ GeneType.Positive,
+            GeneType.neg_positive]
+      · rcases h with ⟨hgsupp, hgt, hgtype⟩
+        exact ⟨hgsupp, by omega, hgtype⟩
+  rw [hsplit]
+  have hnot : gneg ∉ S₁ := by
+    simp [S₁, hgneg_rank]
+  rw [Finset.sum_insert hnot, hcoeff]
+  ring_nf
+  exact le_rfl
+
+lemma fst_drop_le_snd_drop_succ_add_one_even
+    {p : ℕ} (X : Chromosome) (hXPi : X ∈ Pi)
+    (gpos : Gene) (hgpos_rank : gpos.rank = 2 * p + 2)
+    (hgpos : gpos.type = GeneType.Positive) (hcoeff : X gpos = 1) :
+    (signature (Chromosome.prime^[2 * p + 1] X)).1 -
+        (signature (Chromosome.prime^[2 * p + 2] X)).1 ≤
+      (signature (Chromosome.prime^[2 * p + 2] X)).2 -
+        (signature (Chromosome.prime^[2 * p + 3] X)).2 + 1 := by
+  change (Sigma.sigma X (2 * p + 1)).1 - (Sigma.sigma X (2 * p + 2)).1 ≤
+    (Sigma.sigma X (2 * p + 2)).2 - (Sigma.sigma X (2 * p + 3)).2 + 1
+  rw [Sigma.sigma_fst_diff X (2 * p + 1) hXPi,
+    Sigma.sigma_snd_diff X (2 * p + 2) hXPi]
+  change ((Chromosome.prime^[2 * p + 1] X).sum (fun g m =>
+      if g.type = Sigma.altType g.rank GeneType.Positive then (m : ℚ) else 0)) ≤
+    ((Chromosome.prime^[2 * p + 2] X).sum (fun g m =>
+      if g.type = Sigma.altType g.rank GeneType.Negative then (m : ℚ) else 0)) + 1
+  rw [Sigma.prime_iterate_sum_eq X (2 * p + 1) GeneType.Positive,
+    Sigma.prime_iterate_sum_eq X (2 * p + 2) GeneType.Negative]
+  have hodd : Int.negOnePow (((2 * p + 1 : ℕ) : ℤ)) = -1 :=
+    Int.negOnePow_odd _ ⟨(p : ℤ), by norm_num⟩
+  have heven : Int.negOnePow (((2 * p + 2 : ℕ) : ℤ)) = 1 :=
+    Int.negOnePow_even _ ⟨(p : ℤ) + 1, by norm_num; ring⟩
+  simp only [hodd, heven, one_smul, GeneType.neg_one_smul,
+    GeneType.neg_positive]
+  set S₀ := X.support.filter
+    (fun g => 2 * p + 1 < g.rank ∧
+      g.type = Sigma.altType g.rank GeneType.Negative)
+  set S₁ := X.support.filter
+    (fun g => 2 * p + 2 < g.rank ∧
+      g.type = Sigma.altType g.rank GeneType.Negative)
+  have hgpos_mem_support : gpos ∈ X.support := by
+    rw [Finsupp.mem_support_iff]
+    omega
+  have hsplit : S₀ = insert gpos S₁ := by
+    ext g
+    simp only [S₀, S₁, Finset.mem_filter, Finset.mem_insert]
+    constructor
+    · intro h
+      rcases h with ⟨hgsupp, hgt, hgtype⟩
+      by_cases hr : g.rank = 2 * p + 2
+      · left
+        apply Gene.ext (hr.trans hgpos_rank.symm)
+        rw [hgtype, Sigma.altType_even g.rank (by rw [hr]; exact ⟨p + 1, by ring⟩),
+          GeneType.neg_negative, hgpos]
+      · right
+        exact ⟨hgsupp, by omega, hgtype⟩
+    · intro h
+      rcases h with hg | h
+      · subst hg
+        refine ⟨hgpos_mem_support, ?_, ?_⟩
+        · rw [hgpos_rank]
+          omega
+        · rw [hgpos, hgpos_rank,
+            Sigma.altType_even (2 * p + 2) ⟨p + 1, by ring⟩ GeneType.Negative,
+            GeneType.neg_negative]
       · rcases h with ⟨hgsupp, hgt, hgtype⟩
         exact ⟨hgsupp, by omega, hgtype⟩
   rw [hsplit]

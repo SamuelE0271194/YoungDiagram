@@ -14,6 +14,43 @@ remainder is empty and passes the prepared shape/minimal-gene data to future
 leaf solvers.
 -/
 
+/-- Rank-`2` double branch reduced to the standard doubled-gene type10 gap
+interface.  Unlike the double-empty leaf wrapper, this version does not assume
+anything about the remainder after removing two copies of `g`, so it can be
+reused by the same-gene-extra and rank-ge-four double leaves. -/
+lemma exists_mutation_le_no_pair_rank_two_double_of_type10_gaps {m : ℕ}
+    (X Y : nMixPi2Lambda (m + 2))
+    (hXY : X.1 < Y.1)
+    (g : Gene)
+    (hg_pol : g.type ≠ GeneType.NonPolarized)
+    (hg_rank : g.rank = 2)
+    (hg_two : 2 ≤ X.1.1 g)
+    (hgap_pred :
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[1] X.1.1) ≤
+        signature (Gene.ofRank 1 g.type) +
+          signature (Chromosome.prime^[1] Y.1.1))
+    (hgap_mid :
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[2] X.1.1) ≤
+        signature (Chromosome.prime^[2] Y.1.1))
+    (hgap_succ :
+      signature (Gene.ofRank 1 g.type) +
+          signature (Chromosome.prime^[3] X.1.1) ≤
+        signature (Chromosome.prime^[3] Y.1.1)) :
+    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
+  have hg_rank0 : g.rank = 2 * 0 + 2 := by omega
+  have hZle :
+      (Y10 (le_refl 0) hg_pol hg_pol).1 +
+          (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1) ≤ Y.1.1 := by
+    refine type10_double_target_add_rest_le_of_gaps
+      (q := 0) hg_pol X Y hXY g rfl hg_rank0 hg_two ?_ ?_ ?_
+    · simpa using hgap_pred
+    · intro j hjlo hjhi
+      have hj : j = 2 := by omega
+      simpa [hj] using hgap_mid
+    · simpa using hgap_succ
+  exact exists_mutation_le_type10_of_double hg_pol X Y g rfl hg_rank0
+    hg_two hZle
+
 /-- Dispatcher glue for the double minimal-gene branch of the rank-`2` no-pair
 case. -/
 lemma exists_mutation_le_no_pair_rank_two_double_of_subcases {m : ℕ}

@@ -236,6 +236,135 @@ lemma type10_hgap_mid_of_components
   intro j hjlo hjhi
   exact one_one_le_of_both_lt X.1.2 Y.1.2 (hfst j hjlo hjhi) (hsnd j hjlo hjhi)
 
+/-- Type15 odd-middle positive gap from a two-cell first-component gap.  The
+second component is supplied by ordinary dominance. -/
+lemma type15_odd_positive_gap_of_fst_add_two
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hfst :
+      (signature (Chromosome.prime^[j] X.1.1)).1 + 2 ≤
+        (signature (Chromosome.prime^[j] Y.1.1)).1) :
+    ((2 : ℚ), (0 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := by
+  have hle := le_iff_dominates.mp hXY.le j
+  exact ⟨by simpa [Prod.fst_add, add_comm] using hfst,
+    by simpa [Prod.snd_add] using hle.2⟩
+
+/-- Type15 odd-middle negative gap from a two-cell second-component gap.  The
+first component is supplied by ordinary dominance. -/
+lemma type15_odd_negative_gap_of_snd_add_two
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hsnd :
+      (signature (Chromosome.prime^[j] X.1.1)).2 + 2 ≤
+        (signature (Chromosome.prime^[j] Y.1.1)).2) :
+    ((0 : ℚ), (2 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := by
+  have hle := le_iff_dominates.mp hXY.le j
+  exact ⟨by simpa [Prod.fst_add] using hle.1,
+    by simpa [Prod.snd_add, add_comm] using hsnd⟩
+
+/-- Type15 predecessor gap for a positive lower gene.  At the odd predecessor
+level, strictness of the first component upgrades to one integral cell; the
+second component is ordinary dominance. -/
+lemma type15_pred_gap_positive
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hodd : ¬ Even j)
+    (hfst :
+      (signature (Chromosome.prime^[j] X.1.1)).1 <
+        (signature (Chromosome.prime^[j] Y.1.1)).1) :
+    signature (Gene.ofRank 1 GeneType.Positive) +
+        signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := by
+  have hXj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate X.1.2 j
+  have hYj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate Y.1.2 j
+  rw [if_neg hodd] at hXj_mem hYj_mem
+  have hfst_gap :=
+    Mix2LambdaSection17.add_one_le_fst_of_lt_Mix_2Lambda_Pi
+      hXj_mem hYj_mem hfst
+  have hle := le_iff_dominates.mp hXY.le j
+  rw [signature_ofRank_one_positive]
+  exact ⟨by simpa [Prod.fst_add, add_comm] using hfst_gap,
+    by simpa [Prod.snd_add] using hle.2⟩
+
+/-- Negative-sign mirror of `type15_pred_gap_positive`. -/
+lemma type15_pred_gap_negative
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
+    (hodd : ¬ Even j)
+    (hsnd :
+      (signature (Chromosome.prime^[j] X.1.1)).2 <
+        (signature (Chromosome.prime^[j] Y.1.1)).2) :
+    signature (Gene.ofRank 1 GeneType.Negative) +
+        signature (Chromosome.prime^[j] X.1.1) ≤
+      signature (Chromosome.prime^[j] Y.1.1) := by
+  have hXj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate X.1.2 j
+  have hYj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate Y.1.2 j
+  rw [if_neg hodd] at hXj_mem hYj_mem
+  have hsnd_gap :=
+    Mix2LambdaSection17.add_one_le_snd_of_lt_Mix_2Lambda_Pi
+      hXj_mem hYj_mem hsnd
+  have hle := le_iff_dominates.mp hXY.le j
+  rw [signature_ofRank_one_negative]
+  exact ⟨by simpa [Prod.fst_add] using hle.1,
+    by simpa [Prod.snd_add, add_comm] using hsnd_gap⟩
+
+/-- At an odd Label 4 level, an integral strict first-component gap is either
+at least two cells or exactly one cell. -/
+lemma odd_fst_gap_two_or_one
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hodd : ¬ Even j)
+    (hfst :
+      (signature (Chromosome.prime^[j] X.1.1)).1 <
+        (signature (Chromosome.prime^[j] Y.1.1)).1) :
+    (signature (Chromosome.prime^[j] X.1.1)).1 + 2 ≤
+        (signature (Chromosome.prime^[j] Y.1.1)).1 ∨
+      (signature (Chromosome.prime^[j] X.1.1)).1 + 1 =
+        (signature (Chromosome.prime^[j] Y.1.1)).1 := by
+  have hXj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate X.1.2 j
+  have hYj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate Y.1.2 j
+  rw [if_neg hodd] at hXj_mem hYj_mem
+  obtain ⟨nx, hnx⟩ :=
+    Mix2LambdaSection17.signature_Mix_2Lambda_Pi_isNat hXj_mem
+  obtain ⟨ny, hny⟩ :=
+    Mix2LambdaSection17.signature_Mix_2Lambda_Pi_isNat hYj_mem
+  rw [hnx, hny] at hfst ⊢
+  change (nx.1 : ℚ) < (ny.1 : ℚ) at hfst
+  change (nx.1 : ℚ) + 2 ≤ (ny.1 : ℚ) ∨
+    (nx.1 : ℚ) + 1 = (ny.1 : ℚ)
+  have hnat : nx.1 < ny.1 := by exact_mod_cast hfst
+  by_cases htwo : nx.1 + 2 ≤ ny.1
+  · left
+    exact_mod_cast htwo
+  · right
+    have hone : nx.1 + 1 = ny.1 := by omega
+    exact_mod_cast hone
+
+/-- Second-component mirror of `odd_fst_gap_two_or_one`. -/
+lemma odd_snd_gap_two_or_one
+    {N j : ℕ} (X Y : nMixPi2Lambda N) (hodd : ¬ Even j)
+    (hsnd :
+      (signature (Chromosome.prime^[j] X.1.1)).2 <
+        (signature (Chromosome.prime^[j] Y.1.1)).2) :
+    (signature (Chromosome.prime^[j] X.1.1)).2 + 2 ≤
+        (signature (Chromosome.prime^[j] Y.1.1)).2 ∨
+      (signature (Chromosome.prime^[j] X.1.1)).2 + 1 =
+        (signature (Chromosome.prime^[j] Y.1.1)).2 := by
+  have hXj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate X.1.2 j
+  have hYj_mem := Variety.prime_mem_Mix_Pi_2Lambda_iterate Y.1.2 j
+  rw [if_neg hodd] at hXj_mem hYj_mem
+  obtain ⟨nx, hnx⟩ :=
+    Mix2LambdaSection17.signature_Mix_2Lambda_Pi_isNat hXj_mem
+  obtain ⟨ny, hny⟩ :=
+    Mix2LambdaSection17.signature_Mix_2Lambda_Pi_isNat hYj_mem
+  rw [hnx, hny] at hsnd ⊢
+  change (nx.2 : ℚ) < (ny.2 : ℚ) at hsnd
+  change (nx.2 : ℚ) + 2 ≤ (ny.2 : ℚ) ∨
+    (nx.2 : ℚ) + 1 = (ny.2 : ℚ)
+  have hnat : nx.2 < ny.2 := by exact_mod_cast hsnd
+  by_cases htwo : nx.2 + 2 ≤ ny.2
+  · left
+    exact_mod_cast htwo
+  · right
+    have hone : nx.2 + 1 = ny.2 := by omega
+    exact_mod_cast hone
+
 /-- Even-level middle gap from the reduced §17 rank-strict hypothesis.  At even
 levels Label 4 lies in the `Pi` side, so a strict rank gap splits into strict
 gaps in both signature components, then integrality gives `(1,1)` slack. -/

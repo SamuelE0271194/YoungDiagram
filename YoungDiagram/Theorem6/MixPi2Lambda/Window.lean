@@ -559,6 +559,57 @@ lemma window_odd_snd_lt {N : ℕ} (X Y : nMixPi2Lambda N)
   simp only [Sigma.sigma] at hX hY ⊢
   linarith
 
+/-- Odd-level first-component propagation preserving a two-cell gap.  This is
+the strong window needed by the non-diagonal type15 branch. -/
+lemma window_odd_fst_add_two {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {k : ℕ} {gm : Gene} (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (j0 d : ℕ) (hj0_odd : ¬ Even j0) (hwin : j0 + 2 * d ≤ k)
+    (hseed : (Sigma.sigma X.1.1 j0).1 + 2 ≤
+      (Sigma.sigma Y.1.1 j0).1) :
+    ∀ t, t ≤ d →
+      (Sigma.sigma X.1.1 (j0 + 2 * t)).1 + 2 ≤
+        (Sigma.sigma Y.1.1 (j0 + 2 * t)).1 := by
+  apply Mix2LambdaSection17.le_of_window_step
+    (fun i => (Sigma.sigma X.1.1 i).1 + 2)
+    (fun i => (Sigma.sigma Y.1.1 i).1) j0 d hseed
+  intro t ht
+  have hodd : ¬ Even (j0 + 2 * t) := by
+    obtain ⟨q, hq⟩ := Nat.not_even_iff_odd.mp hj0_odd
+    exact Nat.not_even_iff_odd.mpr ⟨q + t, by omega⟩
+  have hY := KEY_Y_fst_odd X Y hr1 hodd
+  have hX := KEY_X_fst_ge X (k := k) hgm1 h2nd
+    (i := j0 + 2 * t) (by omega)
+  simp only [Sigma.sigma] at hX hY ⊢
+  linarith
+
+/-- Second-component mirror of `window_odd_fst_add_two`. -/
+lemma window_odd_snd_add_two {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
+      (Chromosome.prime^[1] Y.1.1).rank)
+    {k : ℕ} {gm : Gene} (hgm1 : X.1.1 gm = 1)
+    (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, k ≤ g.rank)
+    (j0 d : ℕ) (hj0_odd : ¬ Even j0) (hwin : j0 + 2 * d ≤ k)
+    (hseed : (Sigma.sigma X.1.1 j0).2 + 2 ≤
+      (Sigma.sigma Y.1.1 j0).2) :
+    ∀ t, t ≤ d →
+      (Sigma.sigma X.1.1 (j0 + 2 * t)).2 + 2 ≤
+        (Sigma.sigma Y.1.1 (j0 + 2 * t)).2 := by
+  apply Mix2LambdaSection17.le_of_window_step
+    (fun i => (Sigma.sigma X.1.1 i).2 + 2)
+    (fun i => (Sigma.sigma Y.1.1 i).2) j0 d hseed
+  intro t ht
+  have hodd : ¬ Even (j0 + 2 * t) := by
+    obtain ⟨q, hq⟩ := Nat.not_even_iff_odd.mp hj0_odd
+    exact Nat.not_even_iff_odd.mpr ⟨q + t, by omega⟩
+  have hY := KEY_Y_snd_odd X Y hr1 hodd
+  have hX := KEY_X_snd_ge X (k := k) hgm1 h2nd
+    (i := j0 + 2 * t) (by omega)
+  simp only [Sigma.sigma] at hX hY ⊢
+  linarith
+
 /-! ### Seeds for the even windows.
 
 The even-window seeds are one-shot drop comparisons.  At an even level `i`, if
@@ -589,6 +640,31 @@ lemma seed_snd_lt {N : ℕ} (X Y : nMixPi2Lambda N)
     (hdom : (Sigma.sigma X.1.1 i).2 ≤ (Sigma.sigma Y.1.1 i).2) :
     (Sigma.sigma X.1.1 (i + 2)).2 < (Sigma.sigma Y.1.1 (i + 2)).2 := by
   have hY := KEY_Y_snd X Y hr1 hi
+  linarith
+
+/-- Generic first-component seed at an odd level, using the odd Label 4
+condition branch. -/
+lemma seed_fst_lt_odd {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
+    {i : ℕ} (hi : ¬ Even i)
+    (hXdrop : (Sigma.sigma X.1.1 i).1 - (Sigma.sigma X.1.1 (i + 2)).1 =
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2))
+    (hdom : (Sigma.sigma X.1.1 i).1 ≤ (Sigma.sigma Y.1.1 i).1) :
+    (Sigma.sigma X.1.1 (i + 2)).1 < (Sigma.sigma Y.1.1 (i + 2)).1 := by
+  have hY := KEY_Y_fst_odd X Y hr1 hi
+  linarith
+
+/-- Generic second-component seed at an odd level. -/
+lemma seed_snd_lt_odd {N : ℕ} (X Y : nMixPi2Lambda N)
+    (hr1 : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
+    {i : ℕ} (hi : ¬ Even i)
+    (hXdrop : (Sigma.sigma X.1.1 i).2 - (Sigma.sigma X.1.1 (i + 2)).2 =
+      (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
+        ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2))
+    (hdom : (Sigma.sigma X.1.1 i).2 ≤ (Sigma.sigma Y.1.1 i).2) :
+    (Sigma.sigma X.1.1 (i + 2)).2 < (Sigma.sigma Y.1.1 (i + 2)).2 := by
+  have hY := KEY_Y_snd_odd X Y hr1 hi
   linarith
 
 end MixPi2Lambda
