@@ -246,7 +246,115 @@ lemma exists_mutation_le_no_pair_rank_ge_four_single
     (hg_rank : g.rank = 2 * p + 2) (hp : 0 < p)
     (hg_two : ¬ 2 ≤ X.1.1 g) :
     ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  obtain ⟨q, hg_rank_q, hmin_rank, hXprime1_ne, hYprime1_ne, hr1⟩ :=
+    no_pair_rank_ge_four_window_data X Y hXY h17_1 g hgX hgmin hg_rank hp
+  have hg_one : X.1.1 g = 1 := by omega
+  -- extract the second gene of minimal rank in `X - g`
+  let restAfterG : Chromosome := X.1.1 - Finsupp.single g 1
+  have hrest_ne : restAfterG ≠ 0 := by
+    intro hrest_zero
+    have hsingle : X.1.1 = Finsupp.single g 1 := by
+      ext h
+      by_cases hh : h = g
+      · subst hh; simp [hg_one]
+      · have hz : restAfterG h = 0 := by rw [hrest_zero]; rfl
+        dsimp [restAfterG] at hz
+        rw [Finsupp.single_apply, if_neg (fun heq => hh heq.symm)] at hz
+        rw [Finsupp.single_apply, if_neg (fun heq => hh heq.symm)]
+        omega
+    have hXprime_ne : Chromosome.prime^[1] X.1.1 ≠ 0 := hXprime1_ne
+    have hXprime_rank : (Chromosome.prime^[1] X.1.1).rank = g.rank - 1 := by
+      rw [Function.iterate_one, hsingle, prime_single, one_nsmul, rank_ofRank]
+    have hstrict := h17_1 1 (by omega) hYprime1_ne
+    have hYprime_lt_rank : (Chromosome.prime^[1] Y.1.1).rank < Y.1.1.rank :=
+      prime_iterate_rank_lt_of_ne_zero (by omega) hYprime1_ne
+    have hYrank_eq_g : Y.1.1.rank = g.rank := by
+      rw [Y.2, ← X.2, hsingle, rank_single, one_smul]
+    rw [hXprime_rank] at hstrict
+    rw [hYrank_eq_g] at hYprime_lt_rank
+    omega
+  obtain ⟨g₂, hg₂_rest, hg₂min⟩ :=
+    Mix2LambdaSection17.exists_min_rank_gene hrest_ne
+  have hXg₂ : 0 < X.1.1 g₂ := by
+    dsimp [restAfterG] at hg₂_rest
+    exact lt_of_lt_of_le hg₂_rest (Nat.sub_le _ _)
+  have hg₂_pol : g₂.type ≠ GeneType.NonPolarized :=
+    IsPolarized_def'.mp hXpol g₂ (Finsupp.mem_support_iff.mpr (ne_of_gt hXg₂))
+  have hg₂_even : Even g₂.rank :=
+    Mix2LambdaSection17.even_rank_of_polarized_gene_mem_Mix_Pi_2Lambda
+      X.1.2 hXg₂ hg₂_pol
+  obtain ⟨n, hg₂_rank_raw⟩ := hg₂_even
+  have hg₂_rank_2n : g₂.rank = 2 * n := by omega
+  have hne_g_g₂ : g ≠ g₂ := by
+    intro h
+    subst h
+    dsimp [restAfterG] at hg₂_rest
+    simp [hg_one] at hg₂_rest
+  have hn_ge : q + 3 ≤ n := by
+    have hg_le_g₂ := hgmin g₂ hXg₂
+    rw [hg_rank_q, hg₂_rank_2n] at hg_le_g₂
+    -- g₂.rank ≥ 2q+4 and even, and cannot equal 2q+4 by no-pair/hne
+    rcases Nat.lt_or_ge (2 * n) (2 * q + 6) with hlt | hge
+    · exfalso
+      have hn_eq : 2 * n = 2 * q + 4 := by omega
+      have hrank_eq : g.rank = g₂.rank := by rw [hg_rank_q, hg₂_rank_2n, hn_eq]
+      cases hg_type : g.type <;> cases hg₂_type : g₂.type
+      · exact hg_pol hg_type
+      · exact hg_pol hg_type
+      · exact hg_pol hg_type
+      · exact hg₂_pol hg₂_type
+      · exact hne_g_g₂ (Gene.ext hrank_eq (by rw [hg_type, hg₂_type]))
+      · exact hno_pair ⟨g, g₂, hrank_eq, hg_type, hg₂_type, hgX, hXg₂⟩
+      · exact hg₂_pol hg₂_type
+      · exact hno_pair ⟨g₂, g, hrank_eq.symm, hg₂_type, hg_type, hXg₂, hgX⟩
+      · exact hne_g_g₂ (Gene.ext hrank_eq (by rw [hg_type, hg₂_type]))
+    · omega
+  have hg_rank' : g.rank = 2 * (q + 1) + 2 := by rw [hg_rank_q]; ring
+  have hg₂_rank' : g₂.rank = 2 * (n - 1) + 2 := by rw [hg₂_rank_2n]; omega
+  have h_le : q + 1 ≤ n - 1 := by omega
+  have h2nd_rank : ∀ h ∈ restAfterG.support, 2 * (n - 1) + 2 ≤ h.rank := by
+    intro h hh
+    have hhpos : 0 < restAfterG h :=
+      Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hh)
+    have hle := hg₂min h hhpos
+    rw [hg₂_rank_2n] at hle
+    omega
+  -- three window gaps for the two-gene type10 move
+  have hgap_pred :
+      ((1 : ℚ), (1 : ℚ)) +
+          signature (Chromosome.prime^[2 * (q + 1) + 1] X.1.1) ≤
+        signature (Gene.ofRank 1 g.type) +
+          signature (Chromosome.prime^[2 * (q + 1) + 1] Y.1.1) := by
+    cases htype : g.type with
+    | NonPolarized => exact absurd htype hg_pol
+    | Positive =>
+        refine type10_pred_gap_positive (p := q + 1) X Y hXY ?_
+        have hXdrop := KEY_X_full_snd X hmin_rank (i := 2 * q + 1) (by omega)
+        have hdom := (le_iff_dominates.mp hXY.le (2 * q + 1)).2
+        have hs := seed_snd_lt_odd X Y hr1 (i := 2 * q + 1)
+          (Nat.not_even_iff_odd.mpr ⟨q, by ring⟩) hXdrop hdom
+        simpa [Sigma.sigma, show 2 * q + 1 + 2 = 2 * (q + 1) + 1 by ring] using hs
+    | Negative =>
+        refine type10_pred_gap_negative (p := q + 1) X Y hXY ?_
+        have hXdrop := KEY_X_full_fst X hmin_rank (i := 2 * q + 1) (by omega)
+        have hdom := (le_iff_dominates.mp hXY.le (2 * q + 1)).1
+        have hs := seed_fst_lt_odd X Y hr1 (i := 2 * q + 1)
+          (Nat.not_even_iff_odd.mpr ⟨q, by ring⟩) hXdrop hdom
+        simpa [Sigma.sigma, show 2 * q + 1 + 2 = 2 * (q + 1) + 1 by ring] using hs
+  have hgap_mid : ∀ j, 2 * (q + 1) + 2 ≤ j → j ≤ 2 * (n - 1) + 2 →
+      ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[j] X.1.1) ≤
+        signature (Chromosome.prime^[j] Y.1.1) := by
+    sorry
+  have hgap_succ :
+      signature (Gene.ofRank 1 g₂.type) +
+          signature (Chromosome.prime^[2 * (n - 1) + 3] X.1.1) ≤
+        signature (Chromosome.prime^[2 * (n - 1) + 3] Y.1.1) := by
+    sorry
+  have hZle := type10_pair_target_add_rest_le_of_gaps
+    hg_pol hg₂_pol h_le X Y hXY g g₂ rfl rfl hg_rank' hg₂_rank'
+    hg_one.ge hXg₂ hne_g_g₂ hgap_pred hgap_mid hgap_succ
+  exact exists_mutation_le_type10_of_genes hg_pol hg₂_pol h_le X Y
+    g g₂ rfl rfl hg_rank' hg₂_rank' hg_one.ge hXg₂ hne_g_g₂ hZle
 
 set_option maxHeartbeats 800000 in
 lemma exists_mutation_le_no_pair_rank_ge_four
