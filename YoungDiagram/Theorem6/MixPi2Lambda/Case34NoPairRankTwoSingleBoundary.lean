@@ -201,72 +201,8 @@ lemma exists_mutation_le_no_pair_rank_two_single_preferred_one_empty
           norm_num at hfst
     · simp [hg₂_pos_type] at hcontra
 
-/-- The coefficient-one successor-preferred branch reduced to a nonempty
-remainder after removing `g` and `g₂`; the empty remainder is impossible. -/
-lemma exists_mutation_le_no_pair_rank_two_single_preferred_one_of_nonempty
-    {m q₂ : ℕ} (X Y : nMixPi2Lambda (m + 2))
-    (hXY : X.1 < Y.1) (g g₂ : Gene)
-    (hg_rank : g.rank = 2) (hg₂_rank : g₂.rank = 2 * q₂ + 4)
-    (hg_one : X.1.1 g = 1) (hg₂_one : X.1.1 g₂ = 1)
-    (hne : g ≠ g₂) (hg₂_neg : g₂.type = -g.type)
-    (hlow : RankTwoSingleLowFallback X Y g)
-    (hone : RankTwoSingleExactOne X Y g)
-    (hpreferred : RankTwoSingleSuccPreferred (q₂ := q₂) X Y g₂)
-    (nonempty :
-      ∀ restAfterG₂ : Chromosome,
-        restAfterG₂ =
-          X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1 →
-        restAfterG₂ ≠ 0 →
-        ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1) :
-    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  let restAfterG₂ : Chromosome :=
-    X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1
-  by_cases hrest : restAfterG₂ = 0
-  · exact exists_mutation_le_no_pair_rank_two_single_preferred_one_empty
-      X Y hXY g g₂ hg_rank hg₂_rank hg_one hg₂_one hne hg₂_neg
-      hlow hone hpreferred restAfterG₂ rfl hrest
-  · exact nonempty restAfterG₂ rfl hrest
-
-/-- Exact-one singleton branch with every closed Type15/Type17/empty-remainder
-subcase discharged.  The only remaining input is the nonempty third-gene
-continuation. -/
-lemma exists_mutation_le_no_pair_rank_two_single_exact_one_of_nonempty
-    {m q₂ : ℕ} (X Y : nMixPi2Lambda (m + 2))
-    (hXY : X.1 < Y.1)
-    (h17_1 : ∀ k, 0 < k → Chromosome.prime^[k] Y.1.1 ≠ 0 →
-      (Chromosome.prime^[k] X.1.1).rank <
-        (Chromosome.prime^[k] Y.1.1).rank)
-    (hr1 : (Chromosome.prime^[1] X.1.1).rank <
-      (Chromosome.prime^[1] Y.1.1).rank)
-    (g g₂ : Gene) (hg_pol : g.type ≠ GeneType.NonPolarized)
-    (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
-    (hg_rank : g.rank = 2) (hg₂_rank : g₂.rank = 2 * q₂ + 4)
-    (hg_one : X.1.1 g = 1) (hXg₂ : 0 < X.1.1 g₂)
-    (hne : g ≠ g₂) (hg₂_neg : g₂.type = -g.type)
-    (h2nd : ∀ h ∈ (X.1.1 - Finsupp.single g 1).support,
-      2 * q₂ + 4 ≤ h.rank)
-    (hlow : RankTwoSingleLowFallback X Y g)
-    (hone : RankTwoSingleExactOne X Y g)
-    (hYsucc : Chromosome.prime^[2 * q₂ + 5] Y.1.1 ≠ 0)
-    (nonempty :
-      X.1.1 g₂ = 1 →
-      RankTwoSingleSuccPreferred (q₂ := q₂) X Y g₂ →
-      ∀ restAfterG₂ : Chromosome,
-        restAfterG₂ =
-          X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1 →
-        restAfterG₂ ≠ 0 →
-        ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1) :
-    ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  apply exists_mutation_le_no_pair_rank_two_single_exact_one_of_preferred_one
-    X Y hXY h17_1 hr1 g g₂ hg_pol hg₂_pol hg_rank hg₂_rank
-      hg_one hXg₂ hne hg₂_neg h2nd hlow hone hYsucc
-  intro hg₂_one hpreferred
-  exact exists_mutation_le_no_pair_rank_two_single_preferred_one_of_nonempty
-    X Y hXY g g₂ hg_rank hg₂_rank hg_one hg₂_one hne hg₂_neg
-      hlow hone hpreferred (nonempty hg₂_one hpreferred)
-
-/-- Select and normalize the third gene in the only remaining nonempty
-remainder branch. -/
+/-- Select and normalize a minimal gene in the nonempty tail after `g₂`.
+This data is used only for the Case 2 multiplicity contradiction. -/
 lemma no_pair_rank_two_single_third_gene_data
     {m q₂ : ℕ} (X : nMixPi2Lambda (m + 2))
     (hXpol : X.1.1.IsPolarized) (g g₂ : Gene)

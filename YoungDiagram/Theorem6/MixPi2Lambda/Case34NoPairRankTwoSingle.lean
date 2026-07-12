@@ -54,6 +54,17 @@ abbrev RankTwoSingleSuccFallback {N q₂ : ℕ}
       (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).1 <
         (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).1)
 
+/-- Successor component required by the Type15 move based at the rank-two
+gene `g`. -/
+abbrev RankTwoSingleType15Succ {N q₂ : ℕ}
+    (X Y : nMixPi2Lambda N) (g : Gene) : Prop :=
+  (g.type = GeneType.Positive ∧
+      (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).1 <
+        (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).1) ∨
+    (g.type = GeneType.Negative ∧
+      (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).2 <
+        (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).2)
+
 private lemma one_one_le_of_both_lt_current_L3
     {W Z : Chromosome}
     (hW : W ∈ Mix (2 • Lambda, Pi))
@@ -537,6 +548,23 @@ lemma no_pair_rank_two_single_type15_succ_gap_of_opposite_fallback
     simpa [hg_pos, show 2 * (q₂ + 1) + 3 = 2 * q₂ + 5 by omega] using
       type10_succ_gap_positive X Y hXY (q := q₂ + 1) hfst
 
+/-- The sign-selected strict successor component is precisely the upper
+transition gap for Type15. -/
+lemma no_pair_rank_two_single_type15_succ_gap
+    {m q₂ : ℕ} (X Y : nMixPi2Lambda (m + 2))
+    (hXY : X.1 < Y.1) (g : Gene)
+    (hsucc : RankTwoSingleType15Succ (q₂ := q₂) X Y g) :
+    signature (Gene.ofRank 1 g.type) +
+        signature (Chromosome.prime^[2 * q₂ + 5] X.1.1) ≤
+      signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1) := by
+  rcases hsucc with ⟨hg_pos, hfst⟩ | ⟨hg_neg, hsnd⟩
+  · simpa [hg_pos] using type15_pred_gap_positive X Y hXY
+      (j := 2 * q₂ + 5)
+      (Nat.not_even_iff_odd.mpr ⟨q₂ + 2, by ring⟩) hfst
+  · simpa [hg_neg] using type15_pred_gap_negative X Y hXY
+      (j := 2 * q₂ + 5)
+      (Nat.not_even_iff_odd.mpr ⟨q₂ + 2, by ring⟩) hsnd
+
 /-- Complete the singleton Type15 branch once the top iterate is nonzero and
 the successor split selects the component opposite to `g₂`. -/
 lemma exists_mutation_le_no_pair_rank_two_single_type15
@@ -788,17 +816,7 @@ lemma exists_mutation_le_no_pair_rank_two_single_type15_exact_one
         (signature (Chromosome.prime^[1] X.1.1)).2 + 1 =
           (signature (Chromosome.prime^[1] Y.1.1)).2))
     (hYtop : Chromosome.prime^[2 * q₂ + 4] Y.1.1 ≠ 0)
-    (hsucc :
-      (g₂.type = GeneType.Positive ∧
-          ¬ (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).1 <
-              (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).1 ∧
-          (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).2 <
-              (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).2) ∨
-        (g₂.type = GeneType.Negative ∧
-          ¬ (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).2 <
-              (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).2 ∧
-          (signature (Chromosome.prime^[2 * q₂ + 5] X.1.1)).1 <
-              (signature (Chromosome.prime^[2 * q₂ + 5] Y.1.1)).1)) :
+    (hsucc : RankTwoSingleType15Succ (q₂ := q₂) X Y g) :
     ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
   have hodd := no_pair_rank_two_single_type17_odd_mid_gaps
     X Y hXY hr1 g hg_rank hg_one h2nd hone
@@ -822,8 +840,7 @@ lemma exists_mutation_le_no_pair_rank_two_single_type15_exact_one
   · intro hg_neg
     exact hodd.2 hg_neg
   · simpa [show 2 * (q₂ + 1) + 3 = 2 * q₂ + 5 by omega] using
-      no_pair_rank_two_single_type15_succ_gap_of_opposite_fallback
-        X Y hXY g g₂ hg₂_neg hsucc
+      no_pair_rank_two_single_type15_succ_gap X Y hXY g hsucc
 
 /-- Exact-one dispatcher after the later-type and multiplicity splits.  All
 branches are closed except the genuine coefficient-one, successor-preferred
@@ -865,12 +882,28 @@ lemma exists_mutation_le_no_pair_rank_two_single_exact_one_of_preferred_one
     · exact exists_mutation_le_no_pair_rank_two_single_type15_exact_one
         X Y hXY h17_1 hr1 g g₂ hg_pol hg_rank hg₂_rank hg_one
         (by omega) hne hg₂_neg h2nd hlow hone hYtop
-        (Or.inl ⟨hg₂_pos, hfallback⟩)
+        (Or.inr ⟨(by
+          cases ht : g.type with
+          | NonPolarized => exact False.elim (hg_pol ht)
+          | Positive =>
+              have h := hg₂_neg
+              rw [ht, GeneType.neg_positive, hg₂_pos] at h
+              contradiction
+          | Negative => rfl),
+          hfallback.2⟩)
     · exact preferred_one hg₂_one (Or.inr ⟨hg₂_neg_type, hsnd⟩)
     · exact exists_mutation_le_no_pair_rank_two_single_type15_exact_one
         X Y hXY h17_1 hr1 g g₂ hg_pol hg_rank hg₂_rank hg_one
         (by omega) hne hg₂_neg h2nd hlow hone hYtop
-        (Or.inr ⟨hg₂_neg_type, hfallback⟩)
+        (Or.inl ⟨(by
+          cases ht : g.type with
+          | NonPolarized => exact False.elim (hg_pol ht)
+          | Positive => rfl
+          | Negative =>
+              have h := hg₂_neg
+              rw [ht, GeneType.neg_negative, hg₂_neg_type] at h
+              contradiction),
+          hfallback.2⟩)
 
 /-- §17 Case 2 positive low-gene seed:
 `a₁-a₃ = r₀-r₁ > s₀-s₁ ≥ s₁-s₂ ≥ c₁-c₃`. -/
