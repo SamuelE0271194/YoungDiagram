@@ -1,15 +1,13 @@
 import YoungDiagram.Theorem6.Pi
+import YoungDiagram.Theorem6.MixVarietyJoint
+import YoungDiagram.Theorem6.Mix2LambdaPi
+import YoungDiagram.Theorem6.MixPi2Lambda
 
 open Variety hiding prime prime_def
-open Chromosome Sigma
+open Chromosome
 
-/-! ## Decomposition of Π-mutations into primitive steps
+section Finalize
 
-Every Π-mutation `X → Y` decomposes as a finite chain of primitive `Pi.Step`s,
-and conversely.  The forward direction iterates `exists_mutation_le` along a
-well-founded measure; the converse is composition of mutations. -/
-
-/-- Under dominance, the rank of every prime-iterate is monotone. -/
 private lemma rank_prime_iterate_mono {A B : Chromosome} (h : A ≤ B) (k : ℕ) :
     (prime^[k] A).rank ≤ (prime^[k] B).rank := by
   obtain ⟨h1, h2⟩ := Prod.le_def.1 (le_iff_dominates.mp h k)
@@ -67,6 +65,12 @@ private lemma primeDist_lt {X Z Y : Chromosome} (hXZ : X < Z) (hZY : Z ≤ Y) :
 
 namespace Pi
 
+/-! ## Decomposition of Π-mutations into primitive steps
+
+Every Π-mutation `X → Y` decomposes as a finite chain of primitive `Pi.Step`s,
+and conversely.  The forward direction iterates `exists_mutation_le` along a
+well-founded measure; the converse is composition of mutations. -/
+
 /-- Every Π-mutation decomposes as a finite sequence of primitive steps.
 Proven by iterating `exists_mutation_le` along the `primeDist` measure. -/
 lemma isMutation_imp_transGen_step {X Y : Pi} (h : IsMutation X Y) :
@@ -109,3 +113,5 @@ lemma isMutation_iff_transGen_step {X Y : Pi} :
   ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
 
 end Pi
+
+end Finalize
