@@ -1222,9 +1222,6 @@ separate parity-specific classification cores.
   \[
     \operatorname{Step}(X,Z)\qquad\text{and}\qquad Z\le Y.
   \]
-  Repeated application produces a finite chain
-  $X=X_0\to X_1\to\cdots\to X_r=Y$, which is Djokovi\'c's Theorem 6.
-
   Label $0$ is proved by strong induction inside $\Pi$.  Labels $1$ and $2$
   are proved together because prime exchanges their varieties; labels $3$ and
   $4$ are proved by the analogous joint induction.  In each proof, common
@@ -1234,3 +1231,38 @@ separate parity-specific classification cores.
   points are \texttt{MixVarietyJoint.exists\_mutation\_le\_joint} and
   \texttt{Mix2LambdaJoint.exists\_mutation\_le\_joint}.
 \end{theorem}
+
+\begin{corollary}[Mutation equals finite step reachability]
+  \label{cor:isMutation_iff_transGen_step_all}
+  \lean{Pi.isMutation_iff_transGen_step,
+    MixLambdaPi.isMutation_iff_transGen_step,
+    MixPiLambda.isMutation_iff_transGen_step,
+    Mix2LambdaPi.isMutation_iff_transGen_step,
+    MixPi2Lambda.isMutation_iff_transGen_step}
+  \leanok
+  \uses{thm:exists_mutation_le_all, thm:Primitive.isMutation}
+  For each of the five varieties, $X$ mutates to $Y$ if and only if there is a
+  nonempty finite chain of primitive steps
+  \[
+    X=X_0\longrightarrow X_1\longrightarrow\cdots\longrightarrow X_r=Y.
+  \]
+  Thus the one-step descent theorem yields exactly Djokovi\'c's ``enough
+  mutations'' statement, not merely its local reduction lemma.
+\end{corollary}
+
+\begin{remark}[Rank fibres versus the whole variety]
+  The Lean statements quantify over every $n$ and take
+  $X,Y\in V(n)=\{T\in V:\operatorname{rank}(T)=n\}$.  This is equivalent to
+  the paper's whole-variety formulation, which assumes $X\le Y$ and
+  $\operatorname{sig}(X)=\operatorname{sig}(Y)$.  Indeed, equality of signatures
+  implies equality of ranks, while under $X\le Y$, equality of ranks forces
+  equality of the two signature components at level zero.
+
+  The strong induction therefore requires equal rank only for each pair to
+  which its hypothesis is applied.  Removing a common gene lowers both ranks
+  by the same amount.  In the sigma-agreement branch,
+  $\sigma_X(k)=\sigma_Y(k)$ implies that $X^{(k)}$ and $Y^{(k)}$ have equal
+  rank; their common new rank is strictly smaller than the original one.
+  Odd $k$ may exchange labels $3$ and $4$, but it does not disturb this rank
+  equality.
+\end{remark}

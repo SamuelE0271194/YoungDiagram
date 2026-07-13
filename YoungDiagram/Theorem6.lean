@@ -5,6 +5,7 @@ import YoungDiagram.Theorem6.MixPi2Lambda
 
 open Variety hiding prime prime_def
 open Chromosome
+open Pointwise
 
 section Finalize
 
@@ -113,5 +114,143 @@ lemma isMutation_iff_transGen_step {X Y : Pi} :
   ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
 
 end Pi
+
+/-! ## Decomposition on the four mixed varieties
+
+The well-founded decomposition argument is independent of the primitive list.
+The only variety-specific inputs are the one-step theorem, the fact that each
+step is a mutation, and sigma-uniqueness for antisymmetry. -/
+
+private lemma mutation_trans_of_bile {V : Variety} {X Y Z : V}
+    (eq_of_bile : ∀ A B : V, (A : Chromosome) ≤ B → (B : Chromosome) ≤ A → A = B)
+    (h₁ : IsMutation X Y) (h₂ : IsMutation Y Z) : IsMutation X Z where
+  le := h₁.le.trans h₂.le
+  ne := by
+    intro hXZ
+    apply h₁.ne
+    exact congrArg Subtype.val (eq_of_bile X Y h₁.le (by
+      show (Y : Chromosome) ≤ X
+      rw [hXZ]
+      exact h₂.le))
+  signature_eq := h₁.signature_eq.trans h₂.signature_eq
+
+private lemma isMutation_imp_transGen_step_of_exists {V : Variety}
+    (StepV : V → V → Prop)
+    (eq_of_bile : ∀ A B : V, (A : Chromosome) ≤ B → (B : Chromosome) ≤ A → A = B)
+    (step_isMutation : ∀ {A B : V}, StepV A B → IsMutation A B)
+    (existsStep : ∀ {n : ℕ} (A B : {T : V // T.1.rank = n}), A < B →
+      ∃ Z : V, StepV A.1 Z ∧ Z ≤ B.1)
+    {X Y : V} (h : IsMutation X Y) : Relation.TransGen StepV X Y := by
+  have hrank : Y.1.rank = X.1.rank := by
+    have hq : ((X : Chromosome).rank : ℚ) = ((Y : Chromosome).rank : ℚ) := by
+      rw [← signature_sum_eq_rank, ← signature_sum_eq_rank, h.signature_eq]
+    exact_mod_cast hq.symm
+  have hXltY : (⟨X, rfl⟩ : {T : V // T.1.rank = X.1.rank}) < ⟨Y, hrank⟩ := by
+    refine ⟨h.le, fun hYX => h.ne ?_⟩
+    exact congrArg Subtype.val (eq_of_bile X Y h.le hYX)
+  obtain ⟨Z, hstep, hZY⟩ := existsStep ⟨X, rfl⟩ ⟨Y, hrank⟩ hXltY
+  by_cases hZeqY : Z = Y
+  · exact Relation.TransGen.single (hZeqY ▸ hstep)
+  · have hZmut : IsMutation Z Y :=
+      { le := hZY
+        ne := fun heq => hZeqY (Subtype.val_injective heq)
+        signature_eq := (step_isMutation hstep).signature_eq.symm.trans h.signature_eq }
+    exact Relation.TransGen.head hstep
+      (isMutation_imp_transGen_step_of_exists StepV eq_of_bile step_isMutation existsStep hZmut)
+termination_by primeDist (X : Chromosome) (Y : Chromosome)
+decreasing_by
+  have hstepMut := step_isMutation hstep
+  refine primeDist_lt ⟨hstepMut.le, fun hZX => hstepMut.ne ?_⟩ hZY
+  exact congrArg Subtype.val (eq_of_bile X Z hstepMut.le hZX)
+
+private lemma transGen_step_imp_isMutation_of_step {V : Variety}
+    (StepV : V → V → Prop)
+    (eq_of_bile : ∀ A B : V, (A : Chromosome) ≤ B → (B : Chromosome) ≤ A → A = B)
+    (step_isMutation : ∀ {A B : V}, StepV A B → IsMutation A B)
+    {X Y : V} (h : Relation.TransGen StepV X Y) : IsMutation X Y := by
+  induction h with
+  | single hstep => exact step_isMutation hstep
+  | @tail A B hpath hstep ih =>
+      exact mutation_trans_of_bile eq_of_bile ih (step_isMutation hstep)
+
+namespace MixLambdaPi
+
+lemma isMutation_imp_transGen_step {X Y : Mix (Lambda, Pi)} (h : IsMutation X Y) :
+    Relation.TransGen Step X Y :=
+  isMutation_imp_transGen_step_of_exists Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation exists_mutation_le h
+
+lemma transGen_step_imp_isMutation {X Y : Mix (Lambda, Pi)}
+    (h : Relation.TransGen Step X Y) : IsMutation X Y :=
+  transGen_step_imp_isMutation_of_step Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation h
+
+lemma isMutation_iff_transGen_step {X Y : Mix (Lambda, Pi)} :
+    IsMutation X Y ↔ Relation.TransGen Step X Y :=
+  ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
+
+end MixLambdaPi
+
+namespace MixPiLambda
+
+lemma isMutation_imp_transGen_step {X Y : Mix (Pi, Lambda)} (h : IsMutation X Y) :
+    Relation.TransGen Step X Y :=
+  isMutation_imp_transGen_step_of_exists Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation exists_mutation_le h
+
+lemma transGen_step_imp_isMutation {X Y : Mix (Pi, Lambda)}
+    (h : Relation.TransGen Step X Y) : IsMutation X Y :=
+  transGen_step_imp_isMutation_of_step Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation h
+
+lemma isMutation_iff_transGen_step {X Y : Mix (Pi, Lambda)} :
+    IsMutation X Y ↔ Relation.TransGen Step X Y :=
+  ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
+
+end MixPiLambda
+
+namespace Mix2LambdaPi
+
+lemma isMutation_imp_transGen_step {X Y : Mix (2 • Lambda, Pi)} (h : IsMutation X Y) :
+    Relation.TransGen Step X Y :=
+  isMutation_imp_transGen_step_of_exists Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation exists_mutation_le h
+
+lemma transGen_step_imp_isMutation {X Y : Mix (2 • Lambda, Pi)}
+    (h : Relation.TransGen Step X Y) : IsMutation X Y :=
+  transGen_step_imp_isMutation_of_step Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation h
+
+lemma isMutation_iff_transGen_step {X Y : Mix (2 • Lambda, Pi)} :
+    IsMutation X Y ↔ Relation.TransGen Step X Y :=
+  ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
+
+end Mix2LambdaPi
+
+namespace MixPi2Lambda
+
+lemma isMutation_imp_transGen_step {X Y : Mix (Pi, 2 • Lambda)} (h : IsMutation X Y) :
+    Relation.TransGen Step X Y :=
+  isMutation_imp_transGen_step_of_exists Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation exists_mutation_le h
+
+lemma transGen_step_imp_isMutation {X Y : Mix (Pi, 2 • Lambda)}
+    (h : Relation.TransGen Step X Y) : IsMutation X Y :=
+  transGen_step_imp_isMutation_of_step Step
+    (fun A B hAB hBA => le_antisymm (show A ≤ B from hAB) (show B ≤ A from hBA))
+    Step.isMutation h
+
+lemma isMutation_iff_transGen_step {X Y : Mix (Pi, 2 • Lambda)} :
+    IsMutation X Y ↔ Relation.TransGen Step X Y :=
+  ⟨isMutation_imp_transGen_step, transGen_step_imp_isMutation⟩
+
+end MixPi2Lambda
 
 end Finalize
