@@ -1,0 +1,29 @@
+YoungDiagram/Theorem6.lean
+  h_c69bb6ec5d6200 153-154
+  s_163c3e833c1577::t_504173cfd4b11b 8,118-152,155-255
+blueprint/src/content.tex
+  s_163c3e833c1577::t_09cf6a671a5cca 1234-1268
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c5cdeca3dfbc59bd14246b885c8f518b29031a9d",
+  "prompts": {},
+  "humans": {
+    "h_c69bb6ec5d6200": {
+      "author": "Yu-Misaka <109365723+Yu-Misaka@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_163c3e833c1577": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4f1c-f705-7522-af6b-5f8b35557338",
+        "model": "unknown"
+      },
+      "human_author": "Yu-Misaka <109365723+Yu-Misaka@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
