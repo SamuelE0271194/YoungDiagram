@@ -1,0 +1,23 @@
+blueprint/src/content.tex
+  s_163c3e833c1577::t_cb9647a14451c9 514,525-530,538-543,551-558,566-568,585-588,591-602,636,652,668,684,687-689,716,721-724,728,731-734,739,742-745,750,753-756,761,764-767,772,775-779,784-785,801-802,810-811,817,830-832,848,931-1080,1082-1084,1087-1090,1134-1136,1163-1166,1209,1211-1236
+blueprint/src/macros/print.tex
+  s_163c3e833c1577::t_43e8ff72804072 15,30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6215b6ff2ff6e241d36e21b691e6961095c7132b",
+  "prompts": {},
+  "sessions": {
+    "s_163c3e833c1577": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4f1c-f705-7522-af6b-5f8b35557338",
+        "model": "unknown"
+      },
+      "human_author": "Yu-Misaka <109365723+Yu-Misaka@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
