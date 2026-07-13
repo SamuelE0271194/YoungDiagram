@@ -46,3 +46,67 @@ example : IsMutation X Y₁ := by
   simpa [Pi.Y1, Pi.X1] using this
 
 end example_of_mutation
+
+section check
+
+/--
+info: 'Pi.exists_mutation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Pi.exists_mutation_le
+
+/--
+info: Pi.exists_mutation_le {n : ℕ} (X Y : nPi n) : X < Y → ∃ Z, Pi.Step (↑X) Z ∧ Z ≤ ↑Y
+-/
+#guard_msgs in
+#check Pi.exists_mutation_le
+
+/--
+info: 'MixPiLambda.exists_mutation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms MixPiLambda.exists_mutation_le
+
+/--
+info: MixPiLambda.exists_mutation_le {n : ℕ} (X Y : nMixPiLambda n) (hXY : ↑X < ↑Y) : ∃ Z, MixPiLambda.Step (↑X) Z ∧ Z ≤ ↑Y
+-/
+#guard_msgs in
+#check MixPiLambda.exists_mutation_le
+
+/--
+info: 'MixLambdaPi.exists_mutation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms MixLambdaPi.exists_mutation_le
+
+/--
+info: MixLambdaPi.exists_mutation_le {n : ℕ} (X Y : nMixLambdaPi n) (hXY : ↑X < ↑Y) : ∃ Z, MixLambdaPi.Step (↑X) Z ∧ Z ≤ ↑Y
+-/
+#guard_msgs in
+#check MixLambdaPi.exists_mutation_le
+
+/--
+info: 'Mix2LambdaPi.exists_mutation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Mix2LambdaPi.exists_mutation_le
+
+/--
+info: Mix2LambdaPi.exists_mutation_le {n : ℕ} (X Y : nMix2LambdaPi n) (hXY : X < Y) : ∃ Z, Mix2LambdaPi.Step (↑X) Z ∧ Z ≤ ↑Y
+-/
+#guard_msgs in
+#check Mix2LambdaPi.exists_mutation_le
+
+/--
+info: 'MixPi2Lambda.exists_mutation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms MixPi2Lambda.exists_mutation_le
+
+/--
+info: MixPi2Lambda.exists_mutation_le {n : ℕ} (X Y : nMixPi2Lambda n) (hXY : X < Y) : ∃ Z, MixPi2Lambda.Step (↑X) Z ∧ Z ≤ ↑Y
+-/
+#guard_msgs in
+#check MixPi2Lambda.exists_mutation_le
+
+end check
