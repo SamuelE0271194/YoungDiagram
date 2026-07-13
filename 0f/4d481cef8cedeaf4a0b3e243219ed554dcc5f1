@@ -1,0 +1,83 @@
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34NegPartner.lean
+  s_cdb8666512eefb::t_1eb304cb9d2ef4 590,619,643,713
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34NoPairRankOne.lean
+  s_cdb8666512eefb::t_3834594ab75d94 54-56,59,61,67,79,82,85,476,497,939,975
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34NoPairRankOneDouble.lean
+  s_cdb8666512eefb::t_3d9ce66f139a04 1851-1852,1867-1868
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34NoPairRankOneDoubleSameGene.lean
+  s_cdb8666512eefb::t_341bd8ad61cde5 310,313,315,332,335-337,340,342-347,349,351-352,371-372,377,380,383
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34NoPairRankOneDoubleSameSign.lean
+  s_cdb8666512eefb::t_99d116cc1d0f30 28,31,33,41,44-45,47-58,60,70,75,79,86
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34PairBranch.lean
+  s_cdb8666512eefb::t_a4fb2511251ece 39,46,52,76,81,97,142
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34PairFinallyBoundary.lean
+  s_cdb8666512eefb::t_3c7da8eeb36011 40,254,258
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34PairFinallyOne.lean
+  s_cdb8666512eefb::t_82d296c8cb6c14 36,41,106,113,154-156,175-177,202-204,211,229-231,238,315-318,373
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34PairFinallyQuad.lean
+  s_cdb8666512eefb::t_5afb010290ccdd 69,89
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34PairFinallyTriple.lean
+  s_cdb8666512eefb::t_9ab70e58640675 173,233
+YoungDiagram/Theorem6/Mix2LambdaPi/Case34Seed.lean
+  s_cdb8666512eefb::t_fd7a459eac5ff8 120,151
+YoungDiagram/Theorem6/Mix2LambdaPi/Window.lean
+  s_cdb8666512eefb::t_4c4ba49536ba34 108
+YoungDiagram/Theorem6/MixCase4.lean
+  s_cdb8666512eefb::t_36b919379b3ee2 32,34,153,155
+YoungDiagram/Theorem6/MixLambdaPi/Case3.lean
+  s_cdb8666512eefb::t_8682ffd8d46398 28-30,117,222,379
+YoungDiagram/Theorem6/MixLambdaPi/CaseA.lean
+  s_cdb8666512eefb::t_6ad3e7e7b5ee97 101,156,213-215,258,260-263,265,274,277,279-282,296-297,336-337,470,473,511,589,592,611-612,687,716-717,870-872,892,929-930,1021,1066
+YoungDiagram/Theorem6/MixLambdaPi/CaseB.lean
+  s_cdb8666512eefb::t_580c37db94d1a2 50,162,227,230,265,343,346,358
+YoungDiagram/Theorem6/MixLambdaPi/CaseB3.lean
+  s_cdb8666512eefb::t_9e35afc44671c4 117,181,184,219,296,299,677-679,705-706,721-722,739-741
+YoungDiagram/Theorem6/MixLambdaPi/CaseBProp.lean
+  s_cdb8666512eefb::t_18b4159218bbcf 50-51,223,280,282,393,399-400,403,410,412,555,598-599
+YoungDiagram/Theorem6/MixLambdaPi/Propagation.lean
+  s_cdb8666512eefb::t_c4fa73359b9349 96,116,133,153,169,186,188,262,275,338
+YoungDiagram/Theorem6/MixPi2Lambda/Case34Seed.lean
+  s_cdb8666512eefb::t_77ce5e8506760b 120,151
+YoungDiagram/Theorem6/MixPi2Lambda/Type13.lean
+  s_cdb8666512eefb::t_1b09bebb9e5099 31
+YoungDiagram/Theorem6/MixPi2Lambda/Window.lean
+  s_cdb8666512eefb::t_4afe0a9a963620 180
+YoungDiagram/Theorem6/MixPiLambda/Case3.lean
+  s_cdb8666512eefb::t_581865ff153996 31,33,130,235,391
+YoungDiagram/Theorem6/MixPiLambda/CaseA2.lean
+  s_cdb8666512eefb::t_8d287f9226d904 104-105,134-135,223-225,245,374-375,464,469
+YoungDiagram/Theorem6/MixPiLambda/CaseA2Prop.lean
+  s_cdb8666512eefb::t_4701af6ae368bc 45,118,150-151,190,253,256,290,366,369
+YoungDiagram/Theorem6/MixPiLambda/CaseAProp.lean
+  s_cdb8666512eefb::t_7cb43d7d3a6652 87,142,199,247,254,262,265,329,396,399,432-433,512,590,593
+YoungDiagram/Theorem6/MixPiLambda/CaseB.lean
+  s_cdb8666512eefb::t_0f357f2bbd690c 38
+YoungDiagram/Theorem6/MixPiLambda/CaseB3.lean
+  s_cdb8666512eefb::t_948dc236686145 140-142,174-175
+YoungDiagram/Theorem6/MixPiLambda/CaseB3Prop.lean
+  s_cdb8666512eefb::t_d222af57f41891 52,58-59,62,69,246,581,605,668,827,834-837
+YoungDiagram/Theorem6/MixPiLambda/CaseB4.lean
+  s_cdb8666512eefb::t_a2869d02cca00c 55-56,58-59,151,161,173-174,182-183,188-189,191-192,259-261,407-408,431,440,452-453,461-462,467-468,470-471,531-533,617-618
+YoungDiagram/Theorem6/MixPiLambda/CaseProp5.lean
+  s_cdb8666512eefb::t_afb451d4ec1dd3 193-194,209-210,239,296-297,299-300,329-330,392-393,395-396
+YoungDiagram/Theorem6/MixPiLambda/Propagation.lean
+  s_cdb8666512eefb::t_eb89e6c740bf3f 112,132,147,167,183,200,202,276,285,344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0f4d481cef8cedeaf4a0b3e243219ed554dcc5f1",
+  "prompts": {},
+  "sessions": {
+    "s_cdb8666512eefb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5a5c-8823-7e50-8cc5-3b3ef6949b22",
+        "model": "unknown"
+      },
+      "human_author": "Yu-Misaka <109365723+Yu-Misaka@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
