@@ -101,7 +101,7 @@ section type10
 
 noncomputable def X10 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) ε', ?_⟩
+  refine ⟨type10X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
@@ -111,8 +111,7 @@ noncomputable def X10 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, hε'⟩
 
-lemma X10_eq : (X10 h_le hε hε').1 =
-  Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) ε' := rfl
+lemma X10_eq : (X10 h_le hε hε').1 = type10X := rfl
 
 @[simp] lemma neg_X10 :
     - (X10 h_le hε hε') =
@@ -123,7 +122,7 @@ lemma X10_eq : (X10 h_le hε hε').1 =
 
 noncomputable def Y10 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) ε + Gene.ofRank (2 * n + 5) ε', ?_⟩
+  refine ⟨type10Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), zero_add]
@@ -132,8 +131,7 @@ noncomputable def Y10 : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, hε'⟩
 
-lemma Y10_eq : (Y10 h_le hε hε').1 =
-  Gene.ofRank (2 * m + 1) ε + Gene.ofRank (2 * n + 5) ε' := rfl
+lemma Y10_eq : (Y10 h_le hε hε').1 = type10Y := rfl
 
 @[simp] lemma neg_Y10 :
     - (Y10 h_le hε hε') =

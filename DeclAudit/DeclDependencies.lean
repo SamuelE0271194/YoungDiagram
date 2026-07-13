@@ -202,10 +202,10 @@ def dumpTransitiveInducedEdgesTsvForDecl (modulePrefix : String) (name : Name) :
 end DeclAudit
 
 -- 单个 declaration 的 direct 依赖：
--- #eval (DeclAudit.dumpDirectDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
+#eval (DeclAudit.dumpDirectDeps "YoungDiagram" `Pi.X1_eq).run'
 
 -- 单个 declaration 的 transitive 依赖闭包：
--- #eval (DeclAudit.dumpTransitiveDeps "YoungDiagram" `Pi.dual_le_dual_iff).run'
+-- #eval (DeclAudit.dumpTransitiveDeps "YoungDiagram" `Pi.X1_eq).run'
 
 -- 打印本项目全部 declaration 的 direct 依赖：
 -- #eval (DeclAudit.dumpAllDirectDeps "YoungDiagram").run'

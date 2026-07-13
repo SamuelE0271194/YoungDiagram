@@ -41,7 +41,7 @@ lemma mutation_type17_ne : type17X ≠ type17Y := by
   split_ifs at h <;> omega
 
 omit h_le in
-private lemma mutation_type17_sig_eq_aux (p d : ℕ) :
+lemma mutation_type17_sig_eq_aux (p d : ℕ) :
     (Gene.ofRank (2 * p + 3 + d) ε).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 3 + d) (- ε)).signature +
       (Gene.ofRank (2 * (p + (n - m)) + 3 + d) (- ε)).signature =
@@ -296,8 +296,7 @@ section type17
 
 noncomputable def X17 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) (- ε) +
-    Gene.ofRank (2 * n + 3) (- ε), ?_⟩
+  refine ⟨type17X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind),
@@ -311,9 +310,7 @@ noncomputable def X17 : Mix (2 • Lambda, Pi) := by
   exact ⟨⟨hε, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩,
     by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma X17_eq : (X17 h_le hε).1 =
-  Gene.ofRank (2 * m + 3) ε + Gene.ofRank (2 * n + 3) (- ε) +
-  Gene.ofRank (2 * n + 3) (- ε) := rfl
+lemma X17_eq : (X17 h_le hε).1 = type17X := rfl
 
 @[simp] lemma neg_X17 :
     - (X17 h_le hε) = X17 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -323,9 +320,7 @@ lemma X17_eq : (X17 h_le hε).1 =
 noncomputable def Y17 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 1) (- ε) +
-    Gene.ofRank (2 * n + 4) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 4) GeneType.NonPolarized, ?_⟩
+  refine ⟨type17Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -340,10 +335,7 @@ noncomputable def Y17 : Mix (2 • Lambda, Pi) := by
   · rw [mem_Pi_iff, IsPolarized_ofRank (k := 2 * m + 1) (by omega)]
     rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]
 
-lemma Y17_eq : (Y17 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) (- ε) +
-  Gene.ofRank (2 * n + 4) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 4) GeneType.NonPolarized := rfl
+lemma Y17_eq : (Y17 h_le hε).1 = type17Y := rfl
 
 @[simp] lemma neg_Y17 :
     - (Y17 h_le hε) = Y17 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

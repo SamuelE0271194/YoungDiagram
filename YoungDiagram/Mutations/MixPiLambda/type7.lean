@@ -98,7 +98,7 @@ section type7
 noncomputable def X7 : Mix (Pi, Lambda) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) (- ε), ?_⟩
+  refine ⟨type7X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -111,8 +111,7 @@ noncomputable def X7 : Mix (Pi, Lambda) := by
     IsPolarized_ofRank (k := 2 * n + 2) (by omega)]
   exact ⟨hε, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma X7_eq : (X7 h_le hε).1 =
-  Gene.ofRank (2 * m + 2) ε + Gene.ofRank (2 * n + 2) (- ε) := rfl
+lemma X7_eq : (X7 h_le hε).1 = type7X := rfl
 
 @[simp] lemma neg_X7 :
     - (X7 h_le hε) = X7 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -121,8 +120,7 @@ lemma X7_eq : (X7 h_le hε).1 =
 
 noncomputable def Y7 : Mix (Pi, Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 3) GeneType.NonPolarized, ?_⟩
+  refine ⟨type7Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind),
@@ -135,9 +133,7 @@ noncomputable def Y7 : Mix (Pi, Lambda) := by
     IsNonPolarized_ofRank (k := 2 * n + 3) (by omega)]
   exact ⟨rfl, rfl⟩
 
-lemma Y7_eq : (Y7 h_le).1 =
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 3) GeneType.NonPolarized := rfl
+lemma Y7_eq : (Y7 h_le).1 = type7Y := rfl
 
 @[simp] lemma neg_Y7 : - (Y7 h_le) = Y7 h_le := by
   apply Subtype.ext

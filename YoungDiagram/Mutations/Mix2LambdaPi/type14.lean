@@ -290,10 +290,7 @@ section type14
 noncomputable def X14 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m + 1) ε +
-    Gene.ofRank (2 * m + 1) ε +
-    Gene.ofRank (2 * n + 1) (- ε) +
-    Gene.ofRank (2 * n + 1) (- ε), ?_⟩
+  refine ⟨type14X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_neg (by grind), evenPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
@@ -304,11 +301,7 @@ noncomputable def X14 : Mix (2 • Lambda, Pi) := by
   have hne : (-ε) ≠ .NonPolarized := by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]
   exact ⟨⟨⟨hε, hε⟩, hne⟩, hne⟩
 
-lemma X14_eq : (X14 h_le hε).1 =
-  Gene.ofRank (2 * m + 1) ε +
-  Gene.ofRank (2 * m + 1) ε +
-  Gene.ofRank (2 * n + 1) (- ε) +
-  Gene.ofRank (2 * n + 1) (- ε) := rfl
+lemma X14_eq : (X14 h_le hε).1 = type14X := rfl
 
 @[simp] lemma neg_X14 :
     - (X14 h_le hε) = X14 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
@@ -320,10 +313,7 @@ lemma X14_eq : (X14 h_le hε).1 =
 noncomputable def Y14 : Mix (2 • Lambda, Pi) := by
   have _ := h_le
   have _ := hε
-  refine ⟨Gene.ofRank (2 * m) GeneType.NonPolarized +
-    Gene.ofRank (2 * m) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 2) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 2) GeneType.NonPolarized, ?_⟩
+  refine ⟨type14Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind), oddPart_ofRank, if_pos (by grind)]
@@ -346,14 +336,7 @@ noncomputable def Y14 : Mix (2 • Lambda, Pi) := by
       exact ⟨rfl, rfl⟩
     · rw [two_smul]; abel
 
-lemma Y14_eq : (Y14 h_le hε).1 =
-  Gene.ofRank (2 * m) GeneType.NonPolarized +
-  Gene.ofRank (2 * m) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 2) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 2) GeneType.NonPolarized := by
-  match m with
-  | 0 => simp only [Y14, Nat.mul_zero, Gene.ofRank_zero, zero_add]
-  | m + 1 => rfl
+lemma Y14_eq : (Y14 h_le hε).1 = type14Y := rfl
 
 @[simp] lemma neg_Y14 :
     - (Y14 h_le hε) = Y14 h_le (GeneType.neg_ne_nonPolarized_iff.1 hε) := by

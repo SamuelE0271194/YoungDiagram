@@ -231,10 +231,7 @@ section type13
 
 noncomputable def X13 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 2) GeneType.Positive +
-    Gene.ofRank (2 * m + 2) GeneType.Negative +
-    Gene.ofRank (2 * n + 2) GeneType.Positive +
-    Gene.ofRank (2 * n + 2) GeneType.Negative, ?_⟩
+  refine ⟨type13X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, map_add, map_add, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     evenPart_ofRank, if_pos (by grind),
@@ -254,11 +251,7 @@ noncomputable def X13 : Mix (Pi, 2 • Lambda) := by
     IsPolarized_ofRank (k := 2 * n + 2) (ε := .Negative) (by omega)]
   exact ⟨⟨⟨by decide, by decide⟩, by decide⟩, by decide⟩
 
-lemma X13_eq : (X13 h_le).1 =
-  Gene.ofRank (2 * m + 2) GeneType.Positive +
-  Gene.ofRank (2 * m + 2) GeneType.Negative +
-  Gene.ofRank (2 * n + 2) GeneType.Positive +
-  Gene.ofRank (2 * n + 2) GeneType.Negative := rfl
+lemma X13_eq : (X13 h_le).1 = type13X := rfl
 
 @[simp] lemma neg_X13 : - (X13 h_le) = X13 h_le := by
   apply Subtype.ext
@@ -270,10 +263,7 @@ lemma X13_eq : (X13 h_le).1 =
 
 noncomputable def Y13 : Mix (Pi, 2 • Lambda) := by
   have _ := h_le
-  refine ⟨Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 3) GeneType.NonPolarized +
-    Gene.ofRank (2 * n + 3) GeneType.NonPolarized, ?_⟩
+  refine ⟨type13Y, ?_⟩
   have odd_m : ¬ Even (2 * m + 1) := by rw [Nat.not_even_iff_odd]; exact ⟨m, rfl⟩
   have odd_n : ¬ Even (2 * n + 3) := by
     rw [Nat.not_even_iff_odd]; exact ⟨n + 1, by ring⟩
@@ -293,11 +283,7 @@ noncomputable def Y13 : Mix (Pi, 2 • Lambda) := by
     exact ⟨rfl, rfl⟩
   · rw [two_smul]; abel
 
-lemma Y13_eq : (Y13 h_le).1 =
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * m + 1) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 3) GeneType.NonPolarized +
-  Gene.ofRank (2 * n + 3) GeneType.NonPolarized := rfl
+lemma Y13_eq : (Y13 h_le).1 = type13Y := rfl
 
 @[simp] lemma neg_Y13 : - (Y13 h_le) = Y13 h_le := by
   apply Subtype.ext

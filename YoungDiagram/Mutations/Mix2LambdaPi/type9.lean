@@ -101,13 +101,12 @@ open Variety
 
 namespace Mix2LambdaPi
 
-variable (hε : ε ≠ .NonPolarized)
+variable (k) (hε : ε ≠ .NonPolarized)
 
 section type9
 
-noncomputable def X9 (k : ℕ) : Mix (2 • Lambda, Pi) := by
-  refine ⟨Gene.ofRank (2 * k + 2) GeneType.NonPolarized +
-    Gene.ofRank (2 * k + 2) GeneType.NonPolarized, ?_⟩
+noncomputable def X9 : Mix (2 • Lambda, Pi) := by
+  refine ⟨type9X, ?_⟩
   rw [mem_Mix_iff, map_add, map_add,
     evenPart_ofRank, if_pos (by grind),
     oddPart_ofRank, if_pos (by grind), add_zero]
@@ -117,17 +116,15 @@ noncomputable def X9 (k : ℕ) : Mix (2 • Lambda, Pi) := by
   · rw [mem_Lambda_iff, IsNonPolarized_ofRank (k := 2 * k + 2) (by omega)]
   · rw [two_smul]
 
-lemma X9_eq : (X9 k).1 =
-  Gene.ofRank (2 * k + 2) GeneType.NonPolarized +
-  Gene.ofRank (2 * k + 2) GeneType.NonPolarized := rfl
+lemma X9_eq : (X9 k).1 = type9X := rfl
 
 @[simp] lemma neg_X9 : - (X9 k) = X9 k := by
   apply Subtype.ext
   rw [Mix.tLambda_Pi_neg_val, X9_eq, Chromosome.neg_add, neg_ofRank,
     GeneType.neg_nonPolarized]
 
-noncomputable def Y9 (k : ℕ) : Mix (2 • Lambda, Pi) := by
-  refine ⟨Gene.ofRank (2 * k + 1) ε + Gene.ofRank (2 * k + 3) (- ε), ?_⟩
+noncomputable def Y9 : Mix (2 • Lambda, Pi) := by
+  refine ⟨type9Y, ?_⟩
   rw [mem_Mix_iff, map_add, map_add, evenPart_ofRank, if_neg (by grind),
     evenPart_ofRank, if_neg (by grind), oddPart_ofRank, if_neg (by grind),
     oddPart_ofRank, if_neg (by grind), zero_add]
@@ -136,12 +133,12 @@ noncomputable def Y9 (k : ℕ) : Mix (2 • Lambda, Pi) := by
     IsPolarized_ofRank (by omega), IsPolarized_ofRank (by omega)]
   exact ⟨hε, by rwa [ne_eq, ← GeneType.neg_eq_nonPolarized_iff]⟩
 
-lemma Y9_eq : (Y9 hε k).1 =
+lemma Y9_eq : (Y9 k hε).1 =
   Gene.ofRank (2 * k + 1) ε +
   Gene.ofRank (2 * k + 3) (- ε) := rfl
 
 @[simp] lemma neg_Y9 :
-    - (Y9 hε k) = Y9 (GeneType.neg_ne_nonPolarized_iff.1 hε) k := by
+    - (Y9 k hε) = Y9 k (GeneType.neg_ne_nonPolarized_iff.1 hε) := by
   apply Subtype.ext
   rw [Mix.tLambda_Pi_neg_val, Y9_eq, Y9_eq, Chromosome.neg_add, neg_ofRank, neg_ofRank]
 

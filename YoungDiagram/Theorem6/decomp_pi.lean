@@ -1,4 +1,4 @@
-import YoungDiagram.Theorem6
+import YoungDiagram.Theorem6.Pi
 
 open Variety hiding prime prime_def
 open Chromosome Sigma
