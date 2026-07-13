@@ -4,8 +4,7 @@ import YoungDiagram.Theorem6.Mix2LambdaPi
 import YoungDiagram.Theorem6.MixPi2Lambda
 
 open Variety hiding prime prime_def
-open Chromosome
-open Pointwise
+open Chromosome Pointwise
 
 section Finalize
 

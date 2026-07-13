@@ -144,7 +144,41 @@ def dumpSpecClosureBodyHashes
   | none =>
       throwError "unknown declaration {target}"
 
+def mixDeclSpecHash (name : Name) (info : ConstantInfo) : UInt64 :=
+  let h := mixHash (hash name) (hash (kindOf info))
+  let h := mixHash h (hash info.type)
+  match info with
+  | .defnInfo v => mixHash h (hash v.value)
+  | .thmInfo _ => h
+  | .opaqueInfo v => mixHash h (hash v.value)
+  | .inductInfo v => v.ctors.foldl (fun h ctor => mixHash h (hash ctor)) h
+  | .axiomInfo _ | .quotInfo _ | .ctorInfo _ | .recInfo _ => h
+
+def specClosureHash
+    (modulePrefix : String)
+    (target : Name) : MetaM (UInt64 × Nat) := do
+  let projectDecls ← projectDeclSet modulePrefix
+  ensureProjectDecl modulePrefix projectDecls target
+  let some targetInfo ← getCheckedConst? target
+    | throwError "unknown declaration {target}"
+  let closure ← collectSpecClosureForTarget modulePrefix target
+  let mut total := mixHash (hash "spec-closure-v1") (hash target)
+  total := mixHash total (hash targetInfo.type)
+  total := mixHash total (hash closure.size)
+  for name in closure do
+    let some info ← getCheckedConst? name
+      | throwError "unknown declaration {name} in specification closure of {target}"
+    total := mixHash total (mixDeclSpecHash name info)
+  return (total, closure.size)
+
+def dumpSpecClosureHash
+    (modulePrefix : String)
+    (target : Name) : MetaM Unit := do
+  let (total, checked) ← specClosureHash modulePrefix target
+  IO.println s!"SPEC_HASH target={target} checked={checked} hash={total}"
+
 end DeclAudit
 
 -- 目标 theorem 的 statement/type 所引用的项目内定义闭包：
-#eval! (DeclAudit.dumpSpecClosureBodyHashes "YoungDiagram" `MixLambdaPi.exists_mutation_le).run'
+-- #eval! (DeclAudit.dumpSpecClosureBodyHashes "YoungDiagram"
+--   `MixPi2Lambda.isMutation_iff_transGen_step).run'

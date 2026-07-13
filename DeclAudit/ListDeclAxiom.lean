@@ -85,7 +85,7 @@ def dumpDeclAxioms (modulePrefix : String) (onlyBad : Bool := true) : MetaM Unit
 end DeclAudit
 
 -- 用这个检查每个 declaration 依赖的 axioms 是否都在 allowedAxioms 中，只打印异常项：
-#eval! (DeclAudit.dumpDeclAxioms "YoungDiagram").run'
+-- #eval! (DeclAudit.dumpDeclAxioms "YoungDiagram").run'
 
 -- 如果也想打印 OK 项，改用这一行：
 -- #eval! (DeclAudit.dumpDeclAxioms "YoungDiagram" (onlyBad := false)).run'
