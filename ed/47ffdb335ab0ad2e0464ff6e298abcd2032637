@@ -1,0 +1,22 @@
+DeclAudit/ListDeclAxiom.lean
+  h_c69bb6ec5d6200 88
+DeclAudit/ListDeclBodyHash.lean
+  h_c69bb6ec5d6200 147-179,183-184
+DeclAudit/DeclDependencies.lean
+  h_c69bb6ec5d6200 205
+Guard.lean
+  h_c69bb6ec5d6200 1-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ed47ffdb335ab0ad2e0464ff6e298abcd2032637",
+  "prompts": {},
+  "humans": {
+    "h_c69bb6ec5d6200": {
+      "author": "Yu-Misaka <109365723+Yu-Misaka@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
