@@ -1,30 +1,10 @@
-import YoungDiagram.Theorem6.MixPi2Lambda.Type13
+import YoungDiagram.Theorem6.MixPi2Lambda.Case34NoPairSolver
+import YoungDiagram.Theorem6.MixPi2Lambda.Case34PairSolver
 
 open Variety hiding prime prime_def
 open Chromosome Sigma Pointwise
 
 namespace MixPi2Lambda
-
-private lemma prime_iterate_rank_lt_of_sigma_ne
-    {X Y : Chromosome} (hXY : X ≤ Y) {k : ℕ}
-    (hne : Sigma.sigma X k ≠ Sigma.sigma Y k) :
-    (Chromosome.prime^[k] X).rank < (Chromosome.prime^[k] Y).rank := by
-  have hle := le_iff_dominates.mp hXY k
-  change Sigma.sigma X k ≤ Sigma.sigma Y k at hle
-  have hstrict :
-      (Sigma.sigma X k).1 < (Sigma.sigma Y k).1 ∨
-      (Sigma.sigma X k).2 < (Sigma.sigma Y k).2 := by
-    by_cases hfst : (Sigma.sigma X k).1 = (Sigma.sigma Y k).1
-    · right
-      exact lt_of_le_of_ne hle.2 fun hsnd => hne (Prod.ext hfst hsnd)
-    · left
-      exact lt_of_le_of_ne hle.1 hfst
-  have hsum :
-      (Sigma.sigma X k).1 + (Sigma.sigma X k).2 <
-      (Sigma.sigma Y k).1 + (Sigma.sigma Y k).2 := by
-    rcases hstrict with h | h <;> linarith [hle.1, hle.2]
-  simp only [Sigma.sigma, signature_sum_eq_rank] at hsum
-  exact_mod_cast hsum
 
 /-- Remaining polarized cases after the diagonal type13 branch. -/
 private lemma exists_mutation_le_polarized_remaining (m : ℕ)
@@ -40,7 +20,13 @@ private lemma exists_mutation_le_polarized_remaining (m : ℕ)
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       2 ≤ X.1.1 gpos ∧ 2 ≤ X.1.1 gneg) :
     ∃ Z : Mix (Pi, 2 • Lambda), MixPi2Lambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  sorry
+  by_cases hpairs : ∃ (gpos gneg : Gene),
+      gpos.rank = gneg.rank ∧
+      gpos.type = .Positive ∧ gneg.type = .Negative ∧
+      0 < X.1.1 gpos ∧ 0 < X.1.1 gneg
+  · exact exists_mutation_le_polarized_remaining_of_pair X Y hXY hcommon
+      h17_1 hXpol hnodouble hpairs
+  · exact exists_mutation_le_no_pair m X Y hXY hcommon h17_1 hXpol hpairs
 
 /-! ## Section 17 core after the induction and lifting reductions
 
