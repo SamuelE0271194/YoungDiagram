@@ -93,7 +93,7 @@ lemma twostep {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 ≤ g.
   induction W using Finsupp.induction with
   | zero => simp [Sigma.sigma]
   | single_add g n f hg hn ih =>
-    have hgr : i + 2 ≤ g.rank := hW g (by simp [hg, hn])
+    have hgr : i + 2 ≤ g.rank := hW g (by simp [hn])
     have hf : ∀ g' ∈ f.support, i + 2 ≤ g'.rank := by
       intro g' hg'
       apply hW
@@ -113,7 +113,7 @@ lemma twostep {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 ≤ g.
         (Sigma.sigma (Finsupp.single g n) (i + 2)).1 = (n : ℚ) := by
       simp only [Sigma.sigma, e1, e2, map_nsmul]
       rw [show g.rank - i = (g.rank - (i + 2)) + 2 by omega, signature_ofRank_eq₂']
-      simp only [Prod.smul_fst, smul_eq_mul, Prod.fst_add]
+      simp only [Prod.smul_fst, Prod.fst_add]
       ring
     rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
     rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.fst_add, Prod.fst_add]
@@ -130,7 +130,7 @@ lemma twostep_snd {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 �
   induction W using Finsupp.induction with
   | zero => simp [Sigma.sigma]
   | single_add g n f hg hn ih =>
-    have hgr : i + 2 ≤ g.rank := hW g (by simp [hg, hn])
+    have hgr : i + 2 ≤ g.rank := hW g (by simp [hn])
     have hf : ∀ g' ∈ f.support, i + 2 ≤ g'.rank := by
       intro g' hg'
       apply hW
@@ -150,7 +150,7 @@ lemma twostep_snd {W : Chromosome} {i : ℕ} (hW : ∀ g ∈ W.support, i + 2 �
         (Sigma.sigma (Finsupp.single g n) (i + 2)).2 = (n : ℚ) := by
       simp only [Sigma.sigma, e1, e2, map_nsmul]
       rw [show g.rank - i = (g.rank - (i + 2)) + 2 by omega, signature_ofRank_eq₂']
-      simp only [Prod.smul_snd, smul_eq_mul, Prod.snd_add]
+      simp only [Prod.smul_snd, Prod.snd_add]
       ring
     rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
     rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.snd_add, Prod.snd_add]
@@ -166,7 +166,7 @@ private lemma shift {N : ℕ} (X : nMixLambdaPi N) (gm : Gene) {m' : ℕ}
   have h3 : Chromosome.prime^[i] (Finsupp.single gm 1) = 0 := by
     rw [← prime_iterate_eq_zero_rank_le]
     intro g hg
-    rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+    rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
     subst hg; omega
   conv_lhs => rw [X_sub_add X gm hgm1]
   rw [Sigma.sigma_linearity]
@@ -183,9 +183,9 @@ private lemma cells_of_X {N : ℕ} (X : nMixLambdaPi N) (gm : Gene)
 /-- KEY_X: under the Branch-A structure, `X`'s `a`-component 2-step drop is constant
 `= r_0 - r_1 - 1` on the window.  (X-structure count.) -/
 private lemma KEY_X {N : ℕ} (X : nMixLambdaPi N) {m' n' : ℕ}
-    {gm : Gene} (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
+    {gm : Gene} (hgm_rank : gm.rank = 2 * m' + 2) (_ : gm.type = .NonPolarized)
     (hgm1 : X.1.1 gm = 1)
-    (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
+    (_ : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
     {i : ℕ} (hi1 : 2 * m' + 2 ≤ i) (hi2 : i + 2 ≤ 2 * n' + 2) :
     (Sigma.sigma X.1.1 i).1 - (Sigma.sigma X.1.1 (i + 2)).1 =
@@ -259,7 +259,7 @@ lemma sig_fst_isInt_even {Z : Chromosome} (hZ : Z ∈ Mix (Lambda, Pi))
     conv_lhs => rw [hdecomp]
     rw [map_add]; rfl
   refine ⟨(n.1 : ℤ) + (k : ℤ), ?_⟩
-  show (signature W).1 = _
+  change (signature W).1 = _
   rw [hsig, hn, heven_int]
   push_cast; ring
 
@@ -272,7 +272,7 @@ The proof never inspects the second gene, so it is reused (via sign-duality) for
 lemma branchA_hprop_even_gen {N : ℕ}
     (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (m' n' : ℕ) (hmn : m' ≤ n')
+    (m' n' : ℕ) (_ : m' ≤ n')
     (gm : Gene)
     (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
     (hgm1 : X.1.1 gm = 1)
@@ -335,7 +335,7 @@ lemma branchA_case1_hprop_even {N : ℕ}
     (hgm_rank : gm.rank = 2 * m' + 2) (hgm_np : gm.type = .NonPolarized)
     (hgk_rank : gk.rank = 2 * n' + 2) (hgk_np : gk.type = .NonPolarized)
     (hXgm : 0 < X.1.1 gm)
-    (hXgk : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
+    (_ : 0 < (X.1.1 - Finsupp.single gm 1 : Chromosome) gk)
     (hne : gm ≠ gk)
     (hmin : ∀ g ∈ X.1.1.support, 2 * m' + 2 ≤ g.rank)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)

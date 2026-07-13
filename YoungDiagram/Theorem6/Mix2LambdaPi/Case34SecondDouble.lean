@@ -8,7 +8,6 @@ open Chromosome Sigma Pointwise
 
 namespace Mix2LambdaPi
 
-set_option maxHeartbeats 1000000 in
 /-- §17 Case 4, the `k = t` subcase: the second gene `g₂` (rank `2q₂+3`) already
 has multiplicity `≥ 2`, so the diagonal double mutation
 `2g₂ → g₂^-(2q₂+1) + g₂^+(2q₂+5)` works.  The rank-one gene `g` stays in the rest.

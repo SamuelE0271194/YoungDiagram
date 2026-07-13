@@ -47,7 +47,7 @@ lemma branchB_case5_aprop {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
     have hprime0 : Chromosome.prime^[j] (Finsupp.single g₁ 1) = 0 := by
       rw [← prime_iterate_eq_zero_rank_le]
       intro g hg
-      rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+      rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
       subst hg; omega
     rw [hXadd, Sigma.sigma_linearity]
     simp only [Sigma.sigma, hprime0, map_zero, add_zero]
@@ -159,7 +159,7 @@ lemma branchB_case5_assembly_type6 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 1 ≤ j → j < 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   have hle : (0 : ℕ) ≤ n' := Nat.zero_le n'
   let Y6' : Mix (Lambda, Pi) := Y6 hle hε
@@ -224,10 +224,10 @@ lemma branchB_case5_assembly_type6 {N : ℕ}
           have h_sigma := hprop_even j hj2 (by omega) h_even_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
       · rw [if_neg hpar]
@@ -262,7 +262,7 @@ lemma branchB_case5_assembly_type7 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 1 ≤ j → j ≤ 2 * n' + 1 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   have hle : (0 : ℕ) ≤ n' := Nat.zero_le n'
   let Y7' : Mix (Lambda, Pi) := Y7 hle
@@ -340,10 +340,10 @@ lemma branchB_case5_assembly_type7 {N : ℕ}
           have h_sigma := hprop_even j hj2 hjle h_even_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
 
@@ -355,7 +355,7 @@ lemma branchB_case5 (m : ℕ)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
     (hsigeq : ¬∃ k : ℕ, 0 < k ∧ Chromosome.prime^[k] Y.1.1 ≠ 0 ∧
       Sigma.sigma X.1.1 k = Sigma.sigma Y.1.1 k)
-    (hXpn : ¬∃ (g h : Gene), g.rank = h.rank ∧
+    (_ : ¬∃ (g h : Gene), g.rank = h.rank ∧
       g.type = .Positive ∧ h.type = .Negative ∧ 0 < X.1.1 g ∧ 0 < X.1.1 h)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
     (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁)

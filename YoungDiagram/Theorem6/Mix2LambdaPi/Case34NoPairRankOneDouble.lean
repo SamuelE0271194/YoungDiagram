@@ -1848,7 +1848,8 @@ lemma exists_mutation_le_no_pair_rank_one_double
                   (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1 :=
               (signature_nonneg (Chromosome.prime^[2 * q₂ + 2] X.1.1)).1
             rw [hYsig] at h
-            simp [htype, signature_ofRank_one_positive] at h
+            simp only [htype, signature_ofRank_one_positive, Prod.mk_add_mk, add_zero,
+              Function.iterate_succ, Function.comp_apply, Prod.fst_add, Prod.fst_zero] at h
             have hxnonneg' :
                 (0 : ℚ) ≤
                   (signature
@@ -1863,7 +1864,8 @@ lemma exists_mutation_le_no_pair_rank_one_double
                   (signature (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2 :=
               (signature_nonneg (Chromosome.prime^[2 * q₂ + 2] X.1.1)).2
             rw [hYsig] at h
-            simp [htype, signature_ofRank_one_negative] at h
+            simp only [htype, signature_ofRank_one_negative, Prod.mk_add_mk, add_zero,
+              Function.iterate_succ, Function.comp_apply, Prod.snd_add, Prod.snd_zero] at h
             have hxnonneg' :
                 (0 : ℚ) ≤
                   (signature

@@ -51,20 +51,20 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
       gpos.rank = gneg.rank ∧
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
-    (g g₂ g₃ : Gene) (hgX : 0 < X.1.1 g)
-    (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
-    (hg_pol : g.type ≠ .NonPolarized)
+    (g g₂ g₃ : Gene) (_ : 0 < X.1.1 g)
+    (_ : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
+    (_ : g.type ≠ .NonPolarized)
     (hp : g.rank = 2 * p + 1) (hp0 : p = 0)
     (hg_rank_one : g.rank = 1)
-    (hXneg_zero : X.1.1 (-g) = 0)
+    (_ : X.1.1 (-g) = 0)
     (hg_one : X.1.1 g = 1)
-    (hg₂_rest : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g₂)
+    (_ : 0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g₂)
     (hg₂min : ∀ g' : Gene,
       0 < (X.1.1 - Finsupp.single g 1 : Chromosome) g' →
         g₂.rank ≤ g'.rank)
     (hXg₂ : 0 < X.1.1 g₂)
     (hne_g₂_g : g₂ ≠ g)
-    (hne_g₂_neg : g₂ ≠ -g)
+    (_ : g₂ ≠ -g)
     (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
     (hg₂_rank_q : g₂.rank = 2 * q₂ + 3)
     (hseed1 :
@@ -76,13 +76,13 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
     (restAfterG₂ : Chromosome)
     (hrestAfterG₂ :
       restAfterG₂ = X.1.1 - Finsupp.single g 1 - Finsupp.single g₂ 1)
-    (hg₃_rest : 0 < restAfterG₂ g₃)
+    (_ : 0 < restAfterG₂ g₃)
     (hg₃min : ∀ g' : Gene, 0 < restAfterG₂ g' → g₃.rank ≤ g'.rank)
     (hXg₃ : 0 < X.1.1 g₃)
-    (hne_g₃_g : g₃ ≠ g)
+    (_ : g₃ ≠ g)
     (hne_g₃_g₂ : g₃ ≠ g₂)
     (hg₃_pol : g₃.type ≠ GeneType.NonPolarized)
-    (hg₂_le_g₃ : g₂.rank ≤ g₃.rank)
+    (_ : g₂.rank ≤ g₃.rank)
     (hg₃_rank_q : g₃.rank = 2 * q₃ + 3)
     (hq₂_le_q₃ : q₂ ≤ q₃) :
     ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
@@ -473,7 +473,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
             (Sigma.sigma restAfterG₂ (2 * q₂ + 4)).2 =
           restAfterG₂.sum (fun _ n => (n : ℚ)) := by
       simpa [show 2 * q₂ + 2 + 2 = 2 * q₂ + 4 by omega] using hdrop
-    simp [htype₂, signature_ofRank_one_positive] at hpred
+    simp only [htype₂, signature_ofRank_one_positive, Prod.snd_add, add_zero] at hpred
     rw [hpred, hsucc, hdrop', hrest_sum_mid, hD_mid]
   have hXedge_g₂_nonmatch_fst :
       g₂.type = GeneType.Negative →
@@ -494,7 +494,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_later_distinct
             (Sigma.sigma restAfterG₂ (2 * q₂ + 4)).1 =
           restAfterG₂.sum (fun _ n => (n : ℚ)) := by
       simpa [show 2 * q₂ + 2 + 2 = 2 * q₂ + 4 by omega] using hdrop
-    simp [htype₂, signature_ofRank_one_negative] at hpred
+    simp only [htype₂, signature_ofRank_one_negative, Prod.fst_add, add_zero] at hpred
     rw [hpred, hsucc, hdrop', hrest_sum_mid, hD_mid]
   have hbase_g₂_nonmatch_snd :
       g₂.type = GeneType.Positive →
@@ -936,7 +936,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundar
     rw [hXeq, map_add, rank_single, rank_single, one_smul, one_smul,
         hg_rank_one, hg₂_rank_q]; omega
   have hprimeX_eq : Chromosome.prime^[1] X.1.1 = Gene.ofRank (2 * q₂ + 2) g₂.type := by
-    show X.1.1.prime = _
+    change X.1.1.prime = _
     rw [hXeq, map_add, prime_single, prime_single, one_smul, one_smul,
         hg_rank_one, hg₂_rank_q]
     simp [Gene.ofRank_zero, show 2 * q₂ + 3 - 1 = 2 * q₂ + 2 from by omega]
@@ -972,7 +972,7 @@ private lemma exists_mutation_le_no_pair_rank_one_singleton_multiplicity_boundar
   have hYne : Y.1.1 ≠ 0 := by
     intro h; have h2 := Y.2; rw [h] at h2; simp at h2
   have hprimeYlt : (Chromosome.prime^[1] Y.1.1).rank < Y.1.1.rank := by
-    show Y.1.1.prime.rank < Y.1.1.rank
+    change Y.1.1.prime.rank < Y.1.1.rank
     exact prime_rank_lt hYne
   rw [hrx] at hrankprimeX
   rw [hry, Y.2, hm] at hprimeYlt

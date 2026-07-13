@@ -47,7 +47,8 @@ lemma pergene_adrop {i : ℕ} (hi : Even i) (hi1 : 1 ≤ i) (r : ℕ) (t : GeneT
     by_cases hri : i ≤ r
     · -- surviving: a-drop at even step, r odd
       have hge1 : 1 ≤ r - (i - 1) := by omega
-      have hstep := signature_ofRank_eq' (k := r - (i - 1)) (ε := GeneType.Positive) hge1 (by decide)
+      have hstep := signature_ofRank_eq' (k := r - (i - 1))
+        (ε := GeneType.Positive) hge1 (by decide)
       have he : r - (i - 1) - 1 = r - i := by omega
       rw [he] at hstep
       have heven : Even (r - (i - 1)) := by
@@ -219,7 +220,7 @@ lemma branchB_case5_exists_negNP {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1) :
     ∃ g ∈ X.1.1.support, g.type ≠ .Positive := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hk : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * N + 2 ≤ g.rank :=
     fun g hg hgnp => absurd (hcon g hg) hgnp
   have hprop := branchB_case5_aprop_gen X Y hXY ha (2 * N + 2) hk (2 * N + 2)
@@ -276,9 +277,9 @@ is the unique minimal gene (mult 1) and all other genes have rank `≥ k`.  The 
 (parity-free): for even `j`, the `Y` b-drop `b_Y(j)-b_Y(j+2) ≤ s₀-s₁ = |Y| < |X| = |X-g₁|+1`,
 while the `X` b-drop `b_X(j)-b_X(j+2) ≥ |X-g₁|` (tail `twostep_snd` + `g₁`'s nonneg drop), so
 the gap `b_Y-b_X` is non-decreasing. -/
-lemma branchB_case3_deep_bprop {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+lemma branchB_case3_deep_bprop {N : ℕ} (X Y : nMixLambdaPi N) (_ : X.1 < Y.1)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (m' : ℕ) (g₁ : Gene) (hg₁rank : g₁.rank = 2 * m' + 1) (hg₁mult : X.1.1 g₁ = 1)
+    (m' : ℕ) (g₁ : Gene) (_ : g₁.rank = 2 * m' + 1) (hg₁mult : X.1.1 g₁ = 1)
     (k : ℕ) (htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank)
     (hbanchor : (Sigma.sigma X.1.1 (2 * m')).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m')).2) :
     ∀ t, 2 * m' + 2 * t ≤ k →
@@ -389,26 +390,26 @@ lemma prime_iterate_sum_eq (Z : Chromosome) (i : ℕ) :
   · intro g hg
     rw [Finsupp.mem_support_iff] at hg
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
-    exact ⟨by rwa [← prime_iterate_coeff], by show i < g.rank + i; have := g.rank_pos; omega⟩
+    exact ⟨by rwa [← prime_iterate_coeff], by change i < g.rank + i; have := g.rank_pos; omega⟩
   · intro h hh
     rw [Finset.mem_filter, Finsupp.mem_support_iff] at hh
     rw [Finsupp.mem_support_iff, prime_iterate_coeff]
     have hle : i ≤ h.rank := le_of_lt hh.2
     convert hh.1 using 2
-    exact Gene.ext (by show h.rank - i + i = h.rank; omega) rfl
-  · intro g _; exact Gene.ext (by show g.rank + i - i = g.rank; omega) rfl
+    exact Gene.ext (by change h.rank - i + i = h.rank; omega) rfl
+  · intro g _; exact Gene.ext (by change g.rank + i - i = g.rank; omega) rfl
   · intro h hh
     have hle : i ≤ h.rank := le_of_lt (Finset.mem_filter.mp hh).2
-    exact Gene.ext (by show h.rank - i + i = h.rank; omega) rfl
+    exact Gene.ext (by change h.rank - i + i = h.rank; omega) rfl
   · intro g _; rw [prime_iterate_coeff]
 
 /-- **Alive-count comparison for §16 Case 3 type8.**  For `i + 1 ≤ k`, the rank-drop of
 `Y` at level `i` is `≤` the rank-drop of `X` (i.e. `#Yalive(i) ≤ #Xalive(i)`): `Y`'s drop is
 `≤ |Y| < |X| = |X-g₁| + 1`, while `X`'s drop is `≥ |X-g₁|` (the tail genes, all of rank `≥ k > i`,
 each contribute a cell).  This is the counting fact behind `odd_interior_absorb_neighbor`. -/
-lemma branchB_case3_halive {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y.1)
+lemma branchB_case3_halive {N : ℕ} (X Y : nMixLambdaPi N) (_ : X.1 < Y.1)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
-    (m' : ℕ) (g₁ : Gene) (hg₁rank : g₁.rank = 2 * m' + 1) (hg₁mult : X.1.1 g₁ = 1)
+    (m' : ℕ) (g₁ : Gene) (_ : g₁.rank = 2 * m' + 1) (hg₁mult : X.1.1 g₁ = 1)
     (k : ℕ) (htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, k ≤ g.rank) :
     ∀ i, i + 1 ≤ k →
       ((Sigma.sigma Y.1.1 i).1 + (Sigma.sigma Y.1.1 i).2) -
@@ -551,7 +552,7 @@ lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y
     (n' : ℕ) (gk : Gene) (hgk_rank : gk.rank = 2 * n' + 1)
     (hgk_neg : gk.type = .Negative) (hXgk : 0 < X.1.1 gk) :
     Chromosome.prime^[2 * n' + 1] Y.1.1 ≠ 0 := by
-  push_neg at hcommon
+  push Not at hcommon
   intro hYzero
   have hbX : 1 ≤ (signature (Chromosome.prime^[2 * n'] X.1.1)).2 := by
     have hgk_single : Gene.ofRank gk.rank gk.type = (Finsupp.single gk 1 : Chromosome) :=
@@ -594,8 +595,8 @@ lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y
       have hWh : W h = Y.1.1 ⟨h.rank + 2 * n', h.type,
           Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * n') Y.1.1 h
       have hge : (⟨h.rank + 2 * n', h.type, Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = gk :=
-        Gene.ext (by show h.rank + 2 * n' = gk.rank; rw [hgk_rank]; omega)
-          (by show h.type = gk.type; rw [hneg, hgk_neg])
+        Gene.ext (by change h.rank + 2 * n' = gk.rank; rw [hgk_rank]; omega)
+          (by change h.type = gk.type; rw [hneg, hgk_neg])
       rw [hge] at hWh
       have hYgk : Y.1.1 gk = 0 := Nat.le_zero.mp (hcommon gk hXgk)
       rw [hYgk] at hWh
@@ -616,6 +617,3 @@ lemma branchB_case5_Ynonzero_top {N : ℕ} (X Y : nMixLambdaPi N) (hXY : X.1 < Y
   linarith
 
 end MixLambdaPi
-
-
-

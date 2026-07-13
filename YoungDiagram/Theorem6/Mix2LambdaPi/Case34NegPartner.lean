@@ -587,7 +587,7 @@ lemma exists_step_neg_partner_dispatch {m : ℕ} {ε : GeneType}
       0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
     (g : Gene) (hg_rank_one : g.rank = 1) (hg_type : g.type = ε)
     (hg_two : 2 ≤ X.1.1 g)
-    (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
+    (_ : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
           (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
@@ -616,7 +616,7 @@ lemma exists_step_neg_partner_dispatch {m : ℕ} {ε : GeneType}
         -- need a Negative gene; negative mass `a1 < b0`.
         have hmass : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma X.1.1 0).2 := by
           by_contra hle
-          push_neg at hle
+          push Not at hle
           have hD1D0 : (signature (Chromosome.prime^[1] Y.1.1)).2 ≤
               (signature Y.1.1).2 := ((signature_prime_le Y.1.1).trans inf_le_left).2
           simp only [Sigma.sigma] at hle hb0d0 ⊢
@@ -640,7 +640,7 @@ lemma exists_step_neg_partner_dispatch {m : ℕ} {ε : GeneType}
           rw [np_sigma_neg_swap, np_sigma_neg_swap, Prod.fst_swap, Prod.snd_swap]
           -- goal: (sigma X 1).2 < (sigma X 0).1  (positive mass)
           by_contra hle
-          push_neg at hle
+          push Not at hle
           have hC1C0 : (signature (Chromosome.prime^[1] Y.1.1)).1 ≤
               (signature Y.1.1).1 := ((signature_prime_le Y.1.1).trans inf_le_left).1
           simp only [Sigma.sigma] at hle ha0c0 ⊢
@@ -710,10 +710,9 @@ lemma exists_step_neg_partner_dispatch {m : ℕ} {ε : GeneType}
     intro he; subst he; rw [hQ] at hrank; omega
   -- `Y` does not vanish at any level `1 ≤ j ≤ 2Q+3`.
   have hYne : ∀ j, 1 ≤ j → j ≤ 2 * Q + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0 := by
-    intro j hjlo hjhi
+    intro j hjlo hjhi hYzero
     -- If `prime^[j] Y = 0`, then all genes of `Y` have rank `< j ≤ 2Q+3`, but
     -- `X` has an opposite-sign gene of rank `2Q+3` forcing `Y`'s rank up.
-    intro hYzero
     have hYzero3 : Chromosome.prime^[2 * Q + 3] Y.1.1 = 0 := by
       have hjle : j ≤ 2 * Q + 3 := hjhi
       have := (Chromosome.prime_iterate_eq_zero_rank_le (X := Y.1.1) (k := j)).2 hYzero

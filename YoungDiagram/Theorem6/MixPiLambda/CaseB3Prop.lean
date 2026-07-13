@@ -49,24 +49,24 @@ lemma prime_iterate_sum_eq (Z : Chromosome) (i : ℕ) :
   · intro g hg
     rw [Finsupp.mem_support_iff] at hg
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
-    exact ⟨by rwa [← prime_iterate_coeff], by show i < g.rank + i; have := g.rank_pos; omega⟩
+    exact ⟨by rwa [← prime_iterate_coeff], by change i < g.rank + i; have := g.rank_pos; omega⟩
   · intro h hh
     rw [Finset.mem_filter, Finsupp.mem_support_iff] at hh
     rw [Finsupp.mem_support_iff, prime_iterate_coeff]
     have hle : i ≤ h.rank := le_of_lt hh.2
     convert hh.1 using 2
-    exact Gene.ext (by show h.rank - i + i = h.rank; omega) rfl
-  · intro g _; exact Gene.ext (by show g.rank + i - i = g.rank; omega) rfl
+    exact Gene.ext (by change h.rank - i + i = h.rank; omega) rfl
+  · intro g _; exact Gene.ext (by change g.rank + i - i = g.rank; omega) rfl
   · intro h hh
     have hle : i ≤ h.rank := le_of_lt (Finset.mem_filter.mp hh).2
-    exact Gene.ext (by show h.rank - i + i = h.rank; omega) rfl
+    exact Gene.ext (by change h.rank - i + i = h.rank; omega) rfl
   · intro g _; rw [prime_iterate_coeff]
 
 /-- **Alive-count comparison for §16 Case 3 type8** (`Mix (Pi, Lambda)`).  For `i + 1 ≤ k`,
 `Y`'s rank-drop at level `i` is `≤` `X`'s: `Y`'s drop `≤ |Y| < |X| = |X-g₁| + 1`, while `X`'s
 drop `≥ |X-g₁|`.  `|Y| < |X|` comes from the self-dual rank gap (`ha` + dominance), not
 level-1 symmetry. -/
-lemma branchB_case3_halive {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+lemma branchB_case3_halive {N : ℕ} (X Y : nMixPiLambda N) (_ : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
     (g₁ : Gene) (hg₁mult : 1 ≤ X.1.1 g₁)
@@ -243,7 +243,7 @@ the odd-level anchor `b_X(2m'+1) + 1 ≤ b_Y(2m'+1)` upward to every odd level
 `j = 2m'+1+2t ≤ k`, where `g₁ = g⁺(2m'+2)` is the unique minimal gene (mult 1) and all other
 genes have rank `≥ k`.  Parity-mirror of `MixLambdaPi.branchB_case3_deep_bprop`; `|Y| < |X|`
 is from the self-dual rank gap. -/
-lemma branchB_case3_deep_bprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+lemma branchB_case3_deep_bprop {N : ℕ} (X Y : nMixPiLambda N) (_ : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
     (m' : ℕ) (g₁ : Gene) (hg₁mult : 1 ≤ X.1.1 g₁)
@@ -578,7 +578,7 @@ lemma a13_drop_eq_cells {W : Chromosome}
   induction W using Finsupp.induction with
   | zero => simp [Sigma.sigma]
   | single_add g n f hg hn ih =>
-    have hgr : 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive) := hW g (by simp [hg, hn])
+    have hgr : 2 ≤ g.rank ∧ (g.rank = 2 → g.type = .Positive) := hW g (by simp [hn])
     have hf : ∀ g' ∈ f.support, 2 ≤ g'.rank ∧ (g'.rank = 2 → g'.type = .Positive) := by
       intro g' hg'
       apply hW
@@ -602,7 +602,7 @@ lemma a13_drop_eq_cells {W : Chromosome}
           signature_ofRank_one_positive, signature_ofRank_zero]
         simp
       · rw [show g.rank - 1 = (g.rank - 3) + 2 from by omega, signature_ofRank_eq₂']
-        simp only [Prod.smul_fst, smul_eq_mul, Prod.fst_add]; ring
+        simp only [Prod.smul_fst, Prod.fst_add]; ring
     rw [Finsupp.sum_add_index (by simp) (by intros; simp), Finsupp.sum_single_index (by simp)]
     rw [Sigma.sigma_linearity, Sigma.sigma_linearity, Prod.fst_add, Prod.fst_add]
     rw [show (Sigma.sigma (Finsupp.single g n) 1).1 + (Sigma.sigma f 1).1 -
@@ -665,7 +665,7 @@ lemma branchB_a_anchor_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.
 /-- **Deep-interior `a`-propagation from the total gap** (`Mix (Pi, Lambda)`).  `a`-mirror of
 `branchB_case3_deep_bprop`: propagates the odd-level anchor `a_X(2m'+1) + 1 ≤ a_Y(2m'+1)`
 upward to every odd level `2m'+1+2t ≤ k`. -/
-lemma branchB_deep_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+lemma branchB_deep_aprop {N : ℕ} (X Y : nMixPiLambda N) (_ : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
     (m' : ℕ) (g₁ : Gene) (hg₁mult : X.1.1 g₁ = 1)
@@ -824,14 +824,17 @@ lemma branchB_case4_aprop_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 <
 of rank `≥ 2`, `X`'s rank 2-step drop is `2|X|`, `Y`'s is `≤ 2|Y| < 2|X|`, so the rank gap at
 level `2` is `≥ 2`, which (since level 2 is even, `a = b`) halves to a full `(1,1)`.  Used for
 the bottom even level of §16 Case 4 type8, where the odd neighbor `j-1 = 1` is `a`-balanced. -/
-lemma even2_absorb_totalgap {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
+lemma even2_absorb_totalgap {N : ℕ} (X Y : nMixPiLambda N) (_ : X.1 < Y.1)
     (hgap : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 <
       (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2)
     (hmin2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank) :
     ((1 : ℚ), (1 : ℚ)) + Sigma.sigma X.1.1 2 ≤ Sigma.sigma Y.1.1 2 := by
   have hXa : (Sigma.sigma X.1.1 0).1 - (Sigma.sigma X.1.1 2).1 =
       X.1.1.sum (fun _ m => (m : ℚ)) := by
-    have := twostep (W := X.1.1) (i := 0) (fun g hg => by have := hmin2 g hg; omega); simpa using this
+    have := twostep (W := X.1.1) (i := 0) (fun g hg => by
+      have := hmin2 g hg
+      omega)
+    simpa using this
   have hXb : (Sigma.sigma X.1.1 0).2 - (Sigma.sigma X.1.1 2).2 =
       X.1.1.sum (fun _ m => (m : ℚ)) := by
     have := twostep_snd (W := X.1.1) (i := 0) (fun g hg => by have := hmin2 g hg; omega)

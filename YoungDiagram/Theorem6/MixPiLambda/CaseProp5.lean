@@ -190,7 +190,8 @@ lemma pergene_xshift_pl (r : ℕ) (hr2 : 2 ≤ r) (t : GeneType)
       rw [hstep, if_pos hre, GeneType.neg_positive, signature_ofRank_one_negative]; simp
     have h2 : (Gene.ofRank (r - 1) .Positive).signature.2 -
         (Gene.ofRank (r - 2) .Positive).signature.2 = 0 := by
-      have hstep := signature_ofRank_eq' (k := r - 1) (ε := GeneType.Positive) (by omega) (by decide)
+      have hstep := signature_ofRank_eq' (k := r - 1)
+        (ε := GeneType.Positive) (by omega) (by decide)
       have he : r - 1 - 1 = r - 2 := by omega
       rw [he] at hstep
       have hodd : ¬ Even (r - 1) := by
@@ -205,7 +206,8 @@ lemma pergene_xshift_pl (r : ℕ) (hr2 : 2 ≤ r) (t : GeneType)
       rw [hstep, if_pos hre, GeneType.neg_negative, signature_ofRank_one_positive]; simp
     have h2 : (Gene.ofRank (r - 1) .Negative).signature.2 -
         (Gene.ofRank (r - 2) .Negative).signature.2 = 1 := by
-      have hstep := signature_ofRank_eq' (k := r - 1) (ε := GeneType.Negative) (by omega) (by decide)
+      have hstep := signature_ofRank_eq' (k := r - 1)
+        (ε := GeneType.Negative) (by omega) (by decide)
       have he : r - 1 - 1 = r - 2 := by omega
       rw [he] at hstep
       have hodd : ¬ Even (r - 1) := by
@@ -234,7 +236,7 @@ lemma xgap_pl {X : Chromosome} (g₁ : Gene)
   · -- the g₁ term equals 1/2
     rw [hg₁mult, hg₁NP, hg₁rank]
     simp only [Nat.cast_one, one_smul, Nat.sub_zero]
-    simp [signature_ofRank_nonPolarized, signature_ofRank_zero]
+    simp [signature_ofRank_nonPolarized]
   · -- every other gene (rank ≥ 2) contributes 0
     intro g hg hgne
     have hrank2 : 2 ≤ g.rank := by
@@ -291,9 +293,11 @@ lemma branchA_g3_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
   -- level-0 a-components agree
   have ha0 : (Sigma.sigma X.1.1 0).1 = (Sigma.sigma Y.1.1 0).1 := by
     have hXr : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+      simpa [Sigma.sigma, X.2] using this
     have hYr : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+      simpa [Sigma.sigma, Y.2] using this
     have h1 : (Sigma.sigma X.1.1 0).1 ≤ (Sigma.sigma Y.1.1 0).1 :=
       (le_iff_dominates.mp hXY.le 0).1
     have h2 : (Sigma.sigma X.1.1 0).2 ≤ (Sigma.sigma Y.1.1 0).2 :=
@@ -322,7 +326,8 @@ lemma branchA_g3_aprop {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     -- hxd : a_X(i) - a_X(i+1) = b_X(1) - b_X(2)
     -- hadrop : a_Y(i) - a_Y(i+1) ≤ a_Y(0) - a_Y(1)
     have hsX : (Sigma.sigma X.1.1 i).1 = (signature (Chromosome.prime^[i] X.1.1)).1 := rfl
-    have hsX1 : (Sigma.sigma X.1.1 (i + 1)).1 = (signature (Chromosome.prime^[i + 1] X.1.1)).1 := rfl
+    have hsX1 : (Sigma.sigma X.1.1 (i + 1)).1 =
+        (signature (Chromosome.prime^[i + 1] X.1.1)).1 := rfl
     have hxd' : (Sigma.sigma X.1.1 i).1 - (Sigma.sigma X.1.1 (i + 1)).1 =
         (Sigma.sigma X.1.1 1).2 - (Sigma.sigma X.1.1 2).2 := by
       rw [hsX, hsX1]; exact hxd
@@ -384,9 +389,11 @@ lemma branchB_case4_aprop_gen {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
   have ha0 : (Sigma.sigma X.1.1 0).1 = (Sigma.sigma Y.1.1 0).1 := by
     have hXr : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+      simpa [Sigma.sigma, X.2] using this
     have hYr : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+      simpa [Sigma.sigma, Y.2] using this
     have h1 : (Sigma.sigma X.1.1 0).1 ≤ (Sigma.sigma Y.1.1 0).1 :=
       (le_iff_dominates.mp hXY.le 0).1
     have h2 : (Sigma.sigma X.1.1 0).2 ≤ (Sigma.sigma Y.1.1 0).2 :=

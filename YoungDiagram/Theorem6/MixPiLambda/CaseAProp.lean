@@ -84,7 +84,7 @@ lemma sig_snd_isInt_odd {Z : Chromosome} (hZ : Z ∈ Mix (Pi, Lambda))
       ((Chromosome.prime^[i] Z).rank : ℚ) := signature_sum_eq_rank
   refine ⟨((Chromosome.prime^[i] Z).rank : ℤ) - a, ?_⟩
   have : (Sigma.sigma Z i).2 = ((Chromosome.prime^[i] Z).rank : ℚ) - (Sigma.sigma Z i).1 := by
-    show (signature (Chromosome.prime^[i] Z)).2 = _
+    change (signature (Chromosome.prime^[i] Z)).2 = _
     have : (Sigma.sigma Z i).1 = (signature (Chromosome.prime^[i] Z)).1 := rfl
     rw [this] at *; linarith
   rw [this, ha]; push_cast; ring
@@ -139,7 +139,7 @@ lemma branchA_R2_step {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
   have hg₁_eq : Gene.ofRank (2 * m' + 1) .NonPolarized = (Finsupp.single g₁ 1 : Chromosome) := by
     have h := Gene.ofRank_eq_gene (g := g₁); rw [hg₁rank, hg₁NP] at h; exact h
   have hX4_val : X4'.1 = Finsupp.single g₁ 1 + Finsupp.single g₁ 1 := by
-    show (X4 (le_refl m')).1 = _
+    change (X4 (le_refl m')).1 = _
     rw [X4_eq, hg₁_eq]
   let restval : Chromosome := X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₁ 1
   have rest_mem : restval ∈ Mix (Pi, Lambda) :=
@@ -196,7 +196,7 @@ lemma branchA_dichotomy {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (hg₁rank : g₁.rank = 2 * m' + 1) (hXg₁ : 0 < X.1.1 g₁) :
     (Sigma.sigma X.1.1 (2 * m' + 1)).1 < (Sigma.sigma Y.1.1 (2 * m' + 1)).1 ∨
     (Sigma.sigma X.1.1 (2 * m' + 1)).2 < (Sigma.sigma Y.1.1 (2 * m' + 1)).2 := by
-  push_neg at hcommon hsigeq
+  push Not at hcommon hsigeq
   have hrev : Odd (2 * m' + 1) := ⟨m', by ring⟩
   have hr1 : 1 ≤ 2 * m' + 1 := by omega
   have hY_no_gene : ∀ g : Gene, g.rank = 2 * m' + 1 → Y.1.1 g = 0 :=
@@ -244,14 +244,14 @@ lemma branchA_R2 {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     refine branchA_R2_step X Y hXY m' g₁ hg₁NP hg₁rank hXg₁2 .Negative (by decide) ?_
     rw [GeneType.neg_negative, signature_ofRank_one_positive]
     refine ⟨?_, ?_⟩
-    · show (1 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).1 ≤
+    · change (1 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).1 ≤
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).1
       have h1 : (Sigma.sigma X.1.1 (2 * m' + 1)).1 =
         (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).1 := rfl
       have h2 : (Sigma.sigma Y.1.1 (2 * m' + 1)).1 =
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).1 := rfl
       rw [h1, h2] at hint; linarith
-    · show (0 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).2 ≤
+    · change (0 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).2 ≤
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).2
       rw [zero_add]; exact hle_r.2
   · have hint : (Sigma.sigma X.1.1 (2 * m' + 1)).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m' + 1)).2 :=
@@ -259,10 +259,10 @@ lemma branchA_R2 {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     refine branchA_R2_step X Y hXY m' g₁ hg₁NP hg₁rank hXg₁2 .Positive (by decide) ?_
     rw [GeneType.neg_positive, signature_ofRank_one_negative]
     refine ⟨?_, ?_⟩
-    · show (0 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).1 ≤
+    · change (0 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).1 ≤
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).1
       rw [zero_add]; exact hle_r.1
-    · show (1 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).2 ≤
+    · change (1 : ℚ) + (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).2 ≤
         (signature (Chromosome.prime^[2 * m' + 1] Y.1.1)).2
       have h1 : (Sigma.sigma X.1.1 (2 * m' + 1)).2 =
         (signature (Chromosome.prime^[2 * m' + 1] X.1.1)).2 := rfl
@@ -326,7 +326,7 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 2 * m' + 1 ≤ j → j < 2 * n' + 1 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Negative ≠ .NonPolarized := by decide
   let Y4' : Mix (Pi, Lambda) := Y4 hmn hε
   let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
@@ -393,10 +393,10 @@ lemma exists_mutation_le_caseA_branchA_case1 {N : ℕ}
           have h_sigma := hprop_odd j (by omega) (by omega) h_odd_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
       · rw [if_neg hpar]
@@ -429,7 +429,8 @@ lemma branchA_case2_bprop {N : ℕ}
     (hb_m : (Sigma.sigma X.1.1 (2 * m' + 1)).2 < (Sigma.sigma Y.1.1 (2 * m' + 1)).2) :
     ∀ j, 2 * m' + 1 ≤ j → j ≤ 2 * n' + 1 → Odd j →
         (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2 := by
-  have hg₁neg : (-gm : Gene) = gm := Gene.ext (Gene.neg_rank gm) (by rw [Gene.neg_type, hgm_np]; rfl)
+  have hg₁neg : (-gm : Gene) = gm :=
+    Gene.ext (Gene.neg_rank gm) (by rw [Gene.neg_type, hgm_np]; rfl)
   set Xd : nMixPiLambda N := ⟨- X.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, X.2]⟩ with Xd_def
   set Yd : nMixPiLambda N := ⟨- Y.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, Y.2]⟩ with Yd_def
   have hgap_d : (Chromosome.prime^[1] Xd.1.1).rank < (Chromosome.prime^[1] Yd.1.1).rank := by
@@ -508,7 +509,7 @@ lemma exists_mutation_le_caseA_branchA_case2_assembly {N : ℕ}
         (Sigma.sigma X.1.1 j).2 + 1 ≤ (Sigma.sigma Y.1.1 j).2)
     (hYwin : ∀ j, 2 * m' + 1 ≤ j → j ≤ 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   let Y5' : Mix (Pi, Lambda) := Y5 hmn hε
   let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
@@ -586,10 +587,10 @@ lemma exists_mutation_le_caseA_branchA_case2_assembly {N : ℕ}
           have h_sigma := hprop_odd j (by omega) hjle hodd_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           rw [add_zero]; exact hXYj.1
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           exact h_sigXj
 

@@ -33,12 +33,12 @@ private lemma pair_shift (X : nMix2LambdaPi N) {gpos gneg : Gene}
   have hkillpos : Chromosome.prime^[i] (Finsupp.single gpos 1) = 0 := by
     rw [← prime_iterate_eq_zero_rank_le]
     intro g hg
-    rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+    rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
     subst hg; omega
   have hkillneg : Chromosome.prime^[i] (Finsupp.single gneg 1) = 0 := by
     rw [← prime_iterate_eq_zero_rank_le]
     intro g hg
-    rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+    rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
     subst hg; omega
   have hdecomp :
       Finsupp.single gpos 1 + Finsupp.single gneg 1 +
@@ -103,14 +103,14 @@ private lemma pair_cells (X : nMix2LambdaPi N) {gpos gneg : Gene}
     have h1 : Chromosome.prime^[1] (Finsupp.single gpos 1) = 0 := by
       rw [← prime_iterate_eq_zero_rank_le]
       intro g hg
-      rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+      rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
       subst hg; omega
     simpa using h1
   have hkillneg : Chromosome.prime (Finsupp.single gneg 1) = 0 := by
     have h1 : Chromosome.prime^[1] (Finsupp.single gneg 1) = 0 := by
       rw [← prime_iterate_eq_zero_rank_le]
       intro g hg
-      rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+      rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
       subst hg; omega
     simpa using h1
   have hprime_eq :
@@ -151,7 +151,9 @@ private lemma pair_Xdrop_fst (X : nMix2LambdaPi N) {gpos gneg : Gene}
         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
   have hshift_i := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := i) hi
   have hshift_i2 := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := i + 2) (by omega)
-  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support, i + 2 ≤ g.rank := by
+  have h2 :
+      ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support,
+        i + 2 ≤ g.rank := by
     intro g hg; have := h2nd g hg; omega
   have hdrop := MixLambdaPi.twostep h2
   have hcells := pair_cells X hgpos1 hgneg1 hne hXpos1 hXneg1
@@ -170,7 +172,9 @@ private lemma pair_Xdrop_snd (X : nMix2LambdaPi N) {gpos gneg : Gene}
         ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) - 2 := by
   have hshift_i := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := i) hi
   have hshift_i2 := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := i + 2) (by omega)
-  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support, i + 2 ≤ g.rank := by
+  have h2 :
+      ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support,
+        i + 2 ≤ g.rank := by
     intro g hg; have := h2nd g hg; omega
   have hdrop := MixLambdaPi.twostep_snd h2
   have hcells := pair_cells X hgpos1 hgneg1 hne hXpos1 hXneg1
@@ -195,14 +199,16 @@ private lemma pair_seed_fst (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
   have hshift2 := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := 2) (by omega)
   have hlevel0 := pair_level0 X hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1
   have hcells := pair_cells X hgpos1 hgneg1 hne hXpos1 hXneg1
-  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support, 0 + 2 ≤ g.rank := by
+  have h2 :
+      ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support,
+        0 + 2 ≤ g.rank := by
     intro g hg; have := h2nd g hg; omega
   have hXrdrop := MixLambdaPi.twostep h2
   have hYdrop := case4_Ydrop_fst_strong_even (i := 0) X Y hseed1 (by decide)
   have h0eq := congrArg Prod.fst (sigma_zero_eq X Y hXY)
   have e_shift2 := congrArg Prod.fst hshift2
   have e_lvl0 := congrArg Prod.fst hlevel0
-  simp only [Prod.fst_sub, Prod.fst_one] at e_lvl0
+  simp only [Prod.fst_sub] at e_lvl0
   linarith
 
 /-- Level-2 seed, second component: `b_2 < d_2`. -/
@@ -220,14 +226,16 @@ private lemma pair_seed_snd (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
   have hshift2 := pair_shift X hgpos1 hgneg1 hne hXpos1 hXneg1 (i := 2) (by omega)
   have hlevel0 := pair_level0 X hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1
   have hcells := pair_cells X hgpos1 hgneg1 hne hXpos1 hXneg1
-  have h2 : ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support, 0 + 2 ≤ g.rank := by
+  have h2 :
+      ∀ g ∈ (X.1.1 - Finsupp.single gpos 1 - Finsupp.single gneg 1).support,
+        0 + 2 ≤ g.rank := by
     intro g hg; have := h2nd g hg; omega
   have hXrdrop := MixLambdaPi.twostep_snd h2
   have hYdrop := case4_Ydrop_snd_strong_even (i := 0) X Y hseed1 (by decide)
   have h0eq := congrArg Prod.snd (sigma_zero_eq X Y hXY)
   have e_shift2 := congrArg Prod.snd hshift2
   have e_lvl0 := congrArg Prod.snd hlevel0
-  simp only [Prod.snd_sub, Prod.snd_one] at e_lvl0
+  simp only [Prod.snd_sub] at e_lvl0
   linarith
 
 /-- Even-level first-component window: strict on every even level `2 ≤ 2+2t ≤ k`. -/
@@ -304,8 +312,10 @@ lemma pair_finally_gap_even (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
       ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[2 + 2 * t] X.1.1) ≤
         signature (Chromosome.prime^[2 + 2 * t] Y.1.1) := by
   intro t ht
-  have hfst := pair_window_fst X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1 h2nd hk t ht
-  have hsnd := pair_window_snd X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne hXpos1 hXneg1 h2nd hk t ht
+  have hfst := pair_window_fst X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne
+    hXpos1 hXneg1 h2nd hk t ht
+  have hsnd := pair_window_snd X Y hXY hseed1 hgpos1 hgneg1 hgpos hgneg hne
+    hXpos1 hXneg1 h2nd hk t ht
   exact Mix2LambdaSection17.one_one_le_of_both_lt X.1.2 Y.1.2 hfst hsnd
 
 /-- Full value-`(1,1)` gap on the whole window `1 ≤ j ≤ k` for the §17
@@ -360,7 +370,7 @@ lemma pair_finally_gap (X Y : nMix2LambdaPi N) (hXY : X.1 < Y.1)
         have hnn : (0 : ℚ) ≤ (signature (Chromosome.prime^[i - 1] X.1.1)).1 := by
           simpa using (signature_nonneg (Chromosome.prime^[i - 1] X.1.1)).1
         have hh := hg.1
-        simp only [Prod.fst_add, Prod.fst_one, Prod.fst_zero] at hh
+        simp only [Prod.fst_add, Prod.fst_zero] at hh
         linarith
       exact Mix2LambdaSection17.prime_iterate_ne_zero_of_no_gene (by omega) hYnok hprev
   intro j hj0 hjk

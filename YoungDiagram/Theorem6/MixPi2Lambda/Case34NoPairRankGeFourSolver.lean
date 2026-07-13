@@ -33,7 +33,6 @@ first normalize the exponent to the lemma's shape, e.g.
 lemma with the index passed EXPLICITLY: `type10_pred_gap_positive (p := q+1) …`.
 Never let a `2*?p+c =?= 2*q+d` unification be attempted. -/
 
-set_option maxHeartbeats 800000 in
 lemma exists_mutation_le_no_pair_rank_ge_four_double
     {m p : ℕ} (X Y : nMixPi2Lambda (m + 2))
     (hXY : X.1 < Y.1)
@@ -225,7 +224,6 @@ lemma exists_mutation_le_no_pair_rank_ge_four_double
         · exact type10_succ_gap_negative (q := q + 1) X Y hXY hsucc
       exact exists_mutation_le_type10_of_double hεN X Y g htype hg_rank' hg_two hZle
 
-set_option maxHeartbeats 800000 in
 lemma exists_mutation_le_no_pair_rank_ge_four_single
     {m p : ℕ} (X Y : nMixPi2Lambda (m + 2))
     (hXY : X.1 < Y.1)
@@ -628,7 +626,6 @@ lemma exists_mutation_le_no_pair_rank_ge_four_single
   exact exists_mutation_le_type10_of_genes hg_pol hg₂_pol h_le X Y
     g g₂ rfl rfl hg_rank' hg₂_rank' hg_one.ge hXg₂ hne_g_g₂ hZle
 
-set_option maxHeartbeats 800000 in
 lemma exists_mutation_le_no_pair_rank_ge_four
     {m p : ℕ} (X Y : nMixPi2Lambda (m + 2))
     (hXY : X.1 < Y.1)

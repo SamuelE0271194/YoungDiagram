@@ -37,7 +37,7 @@ lemma exists_mutation_le_pair_finally_boundary
     (gpos gneg : Gene)
     (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
     (hgpos1 : gpos.rank = 1) (hgneg1 : gneg.rank = 1)
-    (hmin : ∀ (p' n' : Gene),
+    (_ : ∀ (p' n' : Gene),
       p'.rank = n'.rank →
         p'.type = .Positive → n'.type = .Negative →
           0 < X.1.1 p' → 0 < X.1.1 n' → gpos.rank ≤ p'.rank)
@@ -251,11 +251,11 @@ lemma exists_mutation_le_pair_finally_boundary
                 cases htg2 : g.type with
                 | NonPolarized => exact absurd htg2 hgpol
                 | Positive => exact absurd (htg2.trans htg.symm) hne
-                | Negative => show GeneType.Negative = -GeneType.Positive; decide
+                | Negative => change GeneType.Negative = -GeneType.Positive; decide
             | Negative =>
                 cases htg2 : g.type with
                 | NonPolarized => exact absurd htg2 hgpol
-                | Positive => show GeneType.Positive = -GeneType.Negative; decide
+                | Positive => change GeneType.Positive = -GeneType.Negative; decide
                 | Negative => exact absurd (htg2.trans htg.symm) hne
         rw [hg_eq_gkn] at hgX; omega
       exact exists_mutation_le_pair_finally_triple hgk_pol X Y hXY hn1 hseed1

@@ -170,7 +170,7 @@ lemma exists_mutation_le_pair_finally_triple {n : ℕ} {ε : GeneType}
           have hpred_fst : (signature (Chromosome.prime^[2 * n] X.1.1)).1 <
               (signature (Chromosome.prime^[2 * n] Y.1.1)).1 := by
             have := hpred_gap.1
-            simp only [Prod.fst_add, Prod.fst_one] at this; linarith
+            simp only [Prod.fst_add] at this; linarith
           simp only [Sigma.sigma] at hXdrop hYdrop hpred_fst ⊢
           linarith
         simpa [signature_ofRank_one_positive] using
@@ -230,7 +230,7 @@ lemma exists_mutation_le_pair_finally_triple {n : ℕ} {ε : GeneType}
           have hpred_snd : (signature (Chromosome.prime^[2 * n] X.1.1)).2 <
               (signature (Chromosome.prime^[2 * n] Y.1.1)).2 := by
             have := hpred_gap.2
-            simp only [Prod.snd_add, Prod.snd_one] at this; linarith
+            simp only [Prod.snd_add] at this; linarith
           simp only [Sigma.sigma] at hXdrop hYdrop hpred_snd ⊢
           linarith
         simpa [signature_ofRank_one_negative] using

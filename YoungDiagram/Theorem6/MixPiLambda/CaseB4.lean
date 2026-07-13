@@ -52,9 +52,11 @@ lemma branchB_aprop_bdef {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     ∀ j, 2 ≤ j → j ≤ k → (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1 := by
   have ha0 : (Sigma.sigma X.1.1 0).1 = (Sigma.sigma Y.1.1 0).1 := by
     have hXr : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+      simpa [Sigma.sigma, X.2] using this
     have hYr : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (N : ℚ) := by
-      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+      have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+      simpa [Sigma.sigma, Y.2] using this
     have h1 : (Sigma.sigma X.1.1 0).1 ≤ (Sigma.sigma Y.1.1 0).1 := (le_iff_dominates.mp hXY.le 0).1
     have h2 : (Sigma.sigma X.1.1 0).2 ≤ (Sigma.sigma Y.1.1 0).2 := (le_iff_dominates.mp hXY.le 0).2
     linarith
@@ -146,7 +148,7 @@ lemma branchB_case4_bdef (m : ℕ)
       have h1 : 1 ≤ X.1.1 g₁ := hXg₁; omega
     obtain ⟨g0, hg0mem, hg0ne⟩ : ∃ g ∈ X.1.1.support, g ≠ g₁ := by
       by_contra hcon
-      push_neg at hcon
+      push Not at hcon
       -- then `X = g₁` (mult 1), so `|X| = 1`, but `|Y| < |X|` and `|Y| ≥ 1`
       have hX1 : X.1.1.sum (fun _ m => (m : ℚ)) = 1 := by
         rw [Finsupp.sum, Finset.sum_eq_single g₁]
@@ -156,7 +158,7 @@ lemma branchB_case4_bdef (m : ℕ)
           exact absurd (Finsupp.mem_support_iff.mpr (by rw [hg₁mult1]; norm_num)) hni
       have hYpos : 1 ≤ Y.1.1.sum (fun _ m => (m : ℚ)) := by
         have hYne : Y.1.1 ≠ 0 := by
-          intro h0; have := Y.2; rw [h0] at this; simp [rank_zero] at this
+          intro h0; have := Y.2; rw [h0] at this; simp at this
         obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.mpr hYne
         calc (1 : ℚ) ≤ (Y.1.1 g : ℚ) := by
               exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Finsupp.mem_support_iff.mp hg)
@@ -168,7 +170,8 @@ lemma branchB_case4_bdef (m : ℕ)
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
         have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
-          have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+          have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+          simpa [Sigma.sigma] using this
         have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
             ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
         rw [h0, h1, Function.iterate_one]; exact cells.symm
@@ -176,14 +179,17 @@ lemma branchB_case4_bdef (m : ℕ)
           (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
             ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) := by
         have h0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
-          have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+          have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+          simpa [Sigma.sigma] using this
         have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
             ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
         rw [h0, h1, Function.iterate_one]; exact cells.symm
       have hr0X : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (m + 2 : ℕ) := by
-        have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+        simpa [Sigma.sigma, X.2] using this
       have hr0Y : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (m + 2 : ℕ) := by
-        have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+        simpa [Sigma.sigma, Y.2] using this
       rw [hXcellsdef] at hX1; rw [hYcellsdef] at hYpos
       push_cast at hr0X hr0Y
       linarith [hgap, hX1, hYpos, hr0X, hr0Y]
@@ -250,7 +256,9 @@ lemma branchB_case4_bdef (m : ℕ)
           have hgr : g₂.rank = 2 := by rcases hev with ⟨t, ht⟩; omega
           exact hne (Gene.ext (by rw [hg₁rank, hgr]) (by rw [hg₁pos, hch]))
         · exact hge2
-      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by rcases hev with ⟨t, ht⟩; exact ⟨t - 1, by omega⟩
+      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by
+        rcases hev with ⟨t, ht⟩
+        exact ⟨t - 1, by omega⟩
       have hmq : 0 < q := by omega
       have hpar : ∀ g ∈ X.1.1.support,
           (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank) :=
@@ -396,7 +404,8 @@ lemma branchB_case3_bdef (m : ℕ)
             ((Sigma.sigma X.1.1 (i + 1)).1 + (Sigma.sigma X.1.1 (i + 1)).2) :=
       fun i hio hi1 hik => hhal_lem i (by obtain ⟨r, hr⟩ := hio; omega)
     have hpropa := branchB_aprop_bdef X Y hXY hgap hmin2 hpar (2 * m' + 3) hk1 hbodd_fn hhal_fn
-    have hbanchor : (Sigma.sigma X.1.1 (2 * m' + 1)).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m' + 1)).2 := by
+    have hbanchor : (Sigma.sigma X.1.1 (2 * m' + 1)).2 + 1 ≤
+        (Sigma.sigma Y.1.1 (2 * m' + 1)).2 := by
       have := hbdeep m' (by omega); rwa [show 2 * 0 + 1 + 2 * m' = 2 * m' + 1 from by omega] at this
     refine branchB_case3_assembly_type8_double X Y hXY m' g₁ hm' hg₁pos hmult hbanchor ?_ ?_
     · intro j hjo hj1 hj2; exact hpropa j (by omega) (by omega)
@@ -419,7 +428,7 @@ lemma branchB_case3_bdef (m : ℕ)
     have hg₁one : X.1.1 g₁ = 1 := by have h1 : 1 ≤ X.1.1 g₁ := hXg₁; omega
     obtain ⟨g0, hg0mem, hg0ne⟩ : ∃ g ∈ X.1.1.support, g ≠ g₁ := by
       by_contra hcon
-      push_neg at hcon
+      push Not at hcon
       have hX1 : X.1.1.sum (fun _ m => (m : ℚ)) = 1 := by
         rw [Finsupp.sum, Finset.sum_eq_single g₁]
         · exact_mod_cast hg₁one
@@ -428,7 +437,7 @@ lemma branchB_case3_bdef (m : ℕ)
           exact absurd (Finsupp.mem_support_iff.mpr (by rw [hg₁one]; norm_num)) hni
       have hYpos : 1 ≤ Y.1.1.sum (fun _ m => (m : ℚ)) := by
         have hYne : Y.1.1 ≠ 0 := by
-          intro h0; have := Y.2; rw [h0] at this; simp [rank_zero] at this
+          intro h0; have := Y.2; rw [h0] at this; simp at this
         obtain ⟨g, hg⟩ := Finsupp.support_nonempty_iff.mpr hYne
         calc (1 : ℚ) ≤ (Y.1.1 g : ℚ) := by
               exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Finsupp.mem_support_iff.mp hg)
@@ -440,7 +449,8 @@ lemma branchB_case3_bdef (m : ℕ)
           (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 -
             ((Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2) := by
         have h0 : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (X.1.1.rank : ℚ) := by
-          have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma] using this
+          have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+          simpa [Sigma.sigma] using this
         have h1 : (Sigma.sigma X.1.1 1).1 + (Sigma.sigma X.1.1 1).2 =
             ((Chromosome.prime^[1] X.1.1).rank : ℚ) := @signature_sum_eq_rank _
         rw [h0, h1, Function.iterate_one]; exact cells.symm
@@ -448,14 +458,17 @@ lemma branchB_case3_bdef (m : ℕ)
           (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 -
             ((Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2) := by
         have h0 : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (Y.1.1.rank : ℚ) := by
-          have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma] using this
+          have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+          simpa [Sigma.sigma] using this
         have h1 : (Sigma.sigma Y.1.1 1).1 + (Sigma.sigma Y.1.1 1).2 =
             ((Chromosome.prime^[1] Y.1.1).rank : ℚ) := @signature_sum_eq_rank _
         rw [h0, h1, Function.iterate_one]; exact cells.symm
       have hr0X : (Sigma.sigma X.1.1 0).1 + (Sigma.sigma X.1.1 0).2 = (m + 2 : ℕ) := by
-        have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1); simpa [Sigma.sigma, X.2] using this
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] X.1.1)
+        simpa [Sigma.sigma, X.2] using this
       have hr0Y : (Sigma.sigma Y.1.1 0).1 + (Sigma.sigma Y.1.1 0).2 = (m + 2 : ℕ) := by
-        have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1); simpa [Sigma.sigma, Y.2] using this
+        have := @signature_sum_eq_rank (Chromosome.prime^[0] Y.1.1)
+        simpa [Sigma.sigma, Y.2] using this
       rw [hXc] at hX1; rw [hYc] at hYpos; push_cast at hr0X hr0Y
       linarith [hgap, hX1, hYpos, hr0X, hr0Y]
     obtain ⟨g₂, hg₂mem, hg₂minS⟩ := Finset.exists_min_image
@@ -515,7 +528,9 @@ lemma branchB_case3_bdef (m : ℕ)
           have hgr : g₂.rank = 2 * m' + 2 := by rcases hev with ⟨t, ht⟩; omega
           exact hne (Gene.ext (by rw [hm', hgr]) (by rw [hg₁pos, hch]))
         · exact hge2
-      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by rcases hev with ⟨t, ht⟩; exact ⟨t - 1, by omega⟩
+      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by
+        rcases hev with ⟨t, ht⟩
+        exact ⟨t - 1, by omega⟩
       have hmq : m' < q := by omega
       have hk1 : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * q + 3 ≤ g.rank := by
         intro g hg hgnp
@@ -599,7 +614,8 @@ lemma branchB_pos_bdef (m : ℕ)
   rcases Nat.eq_zero_or_pos m' with hm0 | hmpos
   · exact branchB_case4_bdef m X Y hXY hcommon hsigeq hXpn hgap hbd g₁ hXg₁ hg₁min hg₁pos
       (by rw [hm', hm0])
-  · exact branchB_case3_bdef m X Y hXY hcommon hsigeq hXpn hgap hbd g₁ hXg₁ hg₁min hg₁pos m' hm' hmpos
+  · exact branchB_case3_bdef m X Y hXY hcommon hsigeq hXpn hgap hbd
+      g₁ hXg₁ hg₁min hg₁pos m' hm' hmpos
 
 /-- §16 Branch B, negative charge (`g₁ = g⁻(m)`): sign-dual to the `g⁺` problem on `(-X, -Y)`.
 When `b₁ < d₁` the dual has the level-1 `a`-deficiency (`branchB_pos`); otherwise `b₁ = d₁`

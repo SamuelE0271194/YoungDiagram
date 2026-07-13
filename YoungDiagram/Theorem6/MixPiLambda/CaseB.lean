@@ -35,7 +35,7 @@ lemma branchB_case4_exists {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (hmin2 : ∀ g ∈ X.1.1.support, 2 ≤ g.rank) :
     ∃ g ∈ X.1.1.support, g.type ≠ .Positive := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hk : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * N + 3 ≤ g.rank :=
     fun g hg hgnp => absurd (hcon g hg) hgnp
   have hprop := branchB_case4_aprop_gen X Y hXY ha hmin2 (branchB_hpar X) (2 * N + 3) hk

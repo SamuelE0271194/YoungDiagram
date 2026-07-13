@@ -66,7 +66,7 @@ private lemma type13_zero_Y_sig {n j : ℕ} (hj : 0 < j) :
     signature (Chromosome.prime^[j] (Y13 (Nat.zero_le n)).1) =
       (((2 * n + 2 - j : ℕ) : ℚ), ((2 * n + 2 - j : ℕ) : ℚ)) := by
   simp only [Y13_eq, iterate_map_add, prime_iterate_ofRank, map_add,
-    show 2 * 0 - j = 0 by omega, Gene.ofRank_zero, map_zero,
+    show 2 * 0 - j = 0 by omega, Gene.ofRank_zero,
     zero_add, signature_ofRank_nonPolarized, Prod.mk_add_mk]
   norm_num
 
@@ -86,7 +86,7 @@ private lemma type13_zero_signature_mid {n j : ℕ} (hjlo : 0 < j)
         signature (Chromosome.prime^[j] (X13 (Nat.zero_le n)).1) := by
   rw [type13_zero_X_sig hjlo, type13_zero_Y_sig hjlo]
   ext <;>
-    simp only [Prod.fst_add, Prod.snd_add, Prod.fst_one, Prod.snd_one] <;>
+    simp only [Prod.fst_add, Prod.snd_add] <;>
     rw [Nat.cast_sub (by omega : j ≤ 2 * n + 2),
       Nat.cast_sub (by omega : j ≤ 2 * n + 1)] <;>
     push_cast <;> ring

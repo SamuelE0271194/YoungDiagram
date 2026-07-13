@@ -28,7 +28,7 @@ private lemma type13_diagonal_signature_eq_before
       signature (Gene.ofRank a .NonPolarized) +
         signature (Gene.ofRank a .NonPolarized) = ((a : ℚ), (a : ℚ)) := by
     rw [signature_ofRank_nonPolarized]
-    ext <;> simp <;> ring
+    ext <;> simp
   rw [show
       signature (Gene.ofRank (2 * p + 2 - j) .Positive) +
             signature (Gene.ofRank (2 * p + 2 - j) .Negative) +

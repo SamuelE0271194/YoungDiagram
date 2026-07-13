@@ -114,7 +114,7 @@ lemma branchB_case3_assembly_type6 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 1 ≤ j → j < 2 * n' + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   let Y6' : Mix (Lambda, Pi) := Y6 h_le hε
   let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
@@ -178,10 +178,10 @@ lemma branchB_case3_assembly_type6 {N : ℕ}
           have h_sigma := hprop_even j hj2 (by omega) h_even_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
       · rw [if_neg hpar]
@@ -216,7 +216,7 @@ lemma branchB_case3_assembly_type7 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 1 ≤ j → j ≤ 2 * n' + 1 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   let Y7' : Mix (Lambda, Pi) := Y7 h_le
   let restval : Chromosome := X.1.1 - Finsupp.single gm 1 - Finsupp.single gk 1
@@ -293,10 +293,10 @@ lemma branchB_case3_assembly_type7 {N : ℕ}
           have h_sigma := hprop_even j hj2 hjle h_even_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
 
@@ -674,7 +674,9 @@ lemma branchB_case3 (m : ℕ)
     | Positive =>
       -- `g₂ = g⁺(k)`: type8 `g⁺(m) + g⁺(k) → g⁺(m-2) + g⁺(k+2)`.
       have hodd : Odd g₂.rank := rank_odd_of_polarized X.1.2 (by rw [hch]; decide) hXg₂'
-      obtain ⟨n', hn'⟩ : ∃ n', g₂.rank = 2 * n' + 1 := by obtain ⟨t, ht⟩ := hodd; exact ⟨t, by omega⟩
+      obtain ⟨n', hn'⟩ : ∃ n', g₂.rank = 2 * n' + 1 := by
+        obtain ⟨t, ht⟩ := hodd
+        exact ⟨t, by omega⟩
       have hmltn : m' < n' := by
         have hge := hg₁min g₂ hg₂supp
         have hne' : g₂.rank ≠ g₁.rank := fun h => hne (Gene.ext h.symm (by rw [hg₁pos, hch]))
@@ -700,7 +702,8 @@ lemma branchB_case3 (m : ℕ)
         · exact hge2
       -- propagations
       have hpropa := branchB_case5_aprop_gen X Y hXY ha (2 * n' + 2) hk1
-      have htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1 : Chromosome).support, 2 * n' + 1 ≤ g.rank := by
+      have htail : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1 : Chromosome).support,
+          2 * n' + 1 ≤ g.rank := by
         intro g hg
         have hgne : g ≠ g₁ := by
           rintro rfl
@@ -715,7 +718,8 @@ lemma branchB_case3 (m : ℕ)
         (fun g hg _ => by have := hg₁min g hg; omega)
       have hbanchor0 : (Sigma.sigma X.1.1 (2 * m')).2 + 1 ≤ (Sigma.sigma Y.1.1 (2 * m')).2 :=
         hba (2 * m') (by omega) (by omega) ⟨m', by ring⟩
-      have hdeep := branchB_case3_deep_bprop X Y hXY ha m' g₁ hm1 hg₁mult (2 * n' + 1) htail hbanchor0
+      have hdeep := branchB_case3_deep_bprop X Y hXY ha m' g₁ hm1 hg₁mult
+        (2 * n' + 1) htail hbanchor0
       have hhal := branchB_case3_halive X Y hXY ha m' g₁ hm1 hg₁mult (2 * n' + 1) htail
       -- index bridge: p = m'-1, q = n'-1
       have hp3 : 2 * (m' - 1) + 3 = 2 * m' + 1 := by omega
@@ -732,7 +736,9 @@ lemma branchB_case3 (m : ℕ)
       · -- hbeven: even j ∈ [2p+3, 2q+3]
         intro j hje hj1 hj2
         rw [hp3] at hj1; rw [hq3] at hj2
-        obtain ⟨t, ht⟩ : ∃ t, j = 2 * m' + 2 * t := by obtain ⟨r, hr⟩ := hje; exact ⟨r - m', by omega⟩
+        obtain ⟨t, ht⟩ : ∃ t, j = 2 * m' + 2 * t := by
+          obtain ⟨r, hr⟩ := hje
+          exact ⟨r - m', by omega⟩
         rw [ht]; exact hdeep t (by omega)
       · -- hoddabsorb: odd j ∈ [2p+3, 2q+3]
         intro j hjo hj1 hj2

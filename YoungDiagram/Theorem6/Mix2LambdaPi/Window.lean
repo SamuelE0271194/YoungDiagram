@@ -105,7 +105,7 @@ private lemma shift_ge {N : ℕ} (X : nMix2LambdaPi N) (gm : Gene)
   have h3 : Chromosome.prime^[i] (Finsupp.single gm 1) = 0 := by
     rw [← prime_iterate_eq_zero_rank_le]
     intro g hg
-    rw [Finsupp.support_single_ne_zero _ (by norm_num), Finset.mem_singleton] at hg
+    rw [Finsupp.support_single _ (by norm_num), Finset.mem_singleton] at hg
     subst hg; omega
   have hsub : X.1.1 = (X.1.1 - Finsupp.single gm 1) + Finsupp.single gm 1 := by
     ext g

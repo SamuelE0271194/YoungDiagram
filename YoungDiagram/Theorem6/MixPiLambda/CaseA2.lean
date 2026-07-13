@@ -101,7 +101,8 @@ lemma branchA_case2_Ynonzero_top {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y
     (n' : ℕ) (gk : Gene) (hgk_rank : gk.rank = 2 * n' + 2)
     (hgk_pos : gk.type = .Positive) (hXgk : 0 < X.1.1 gk) :
     Chromosome.prime^[2 * n' + 2] Y.1.1 ≠ 0 := by
-  push_neg at hcommon
+  have hcommon := hcommon
+  push Not at hcommon
   intro hYzero
   have haX : 1 ≤ (signature (Chromosome.prime^[2 * n' + 1] X.1.1)).1 := by
     have := one_le_signature_fst_of_contains_positive_mix X.1.2 hgk_pos hXgk
@@ -130,8 +131,8 @@ lemma branchA_case2_Ynonzero_top {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y
       have hWh : W h = Y.1.1 ⟨h.rank + (2 * n' + 1), h.type,
           Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * n' + 1) Y.1.1 h
       have hge : (⟨h.rank + (2 * n' + 1), h.type, Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = gk :=
-        Gene.ext (by show h.rank + (2 * n' + 1) = gk.rank; rw [hgk_rank]; omega)
-          (by show h.type = gk.type; rw [hpos, hgk_pos])
+        Gene.ext (by change h.rank + (2 * n' + 1) = gk.rank; rw [hgk_rank]; omega)
+          (by change h.type = gk.type; rw [hpos, hgk_pos])
       rw [hge] at hWh
       have hYgk : Y.1.1 gk = 0 := Nat.le_zero.mp (hcommon gk hXgk)
       rw [hYgk] at hWh
@@ -219,9 +220,9 @@ lemma branchA_case2_full {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
 `Y` of equal rank with `X ≤ Y` forces `Y = X` (the unique odd-rank gene shape). -/
 lemma branchA_single_gene (m : ℕ)
     (X Y : nMixPiLambda (m + 2)) (hXY : X.1 < Y.1)
-    (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
-    (g₁ : Gene) (hXg₁ : 0 < X.1.1 g₁) (hg₁NP : g₁.type = .NonPolarized)
-    (m' : ℕ) (hm' : g₁.rank = 2 * m' + 1) (hmult1 : X.1.1 g₁ = 1)
+    (_ : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
+    (g₁ : Gene) (_ : 0 < X.1.1 g₁) (hg₁NP : g₁.type = .NonPolarized)
+    (m' : ℕ) (hm' : g₁.rank = 2 * m' + 1) (_ : X.1.1 g₁ = 1)
     (hsingle : X.1.1 = Finsupp.single g₁ 1) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
   exfalso
@@ -241,7 +242,7 @@ lemma branchA_single_gene (m : ℕ)
     exact hX_ne (signature_eq_zero (le_antisymm hle (signature_nonneg _)))
   have hmaxY_ge : m + 2 ≤ Y.1.1.maxRank := by
     by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     exact hY_ne (prime_iterate_zero_of_maxRank_le (by omega))
   have hmaxY_le : Y.1.1.maxRank ≤ m + 2 := by
     have h := maxRank_le_rank Y.1.1; rwa [Y.2] at h
@@ -370,7 +371,8 @@ lemma branchA_case2_full_neg {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (h2nd : ∀ g ∈ (X.1.1 - Finsupp.single gm 1).support, 2 * n' + 2 ≤ g.rank)
     (ha_anchor : (Sigma.sigma X.1.1 (2 * m' + 1)).1 < (Sigma.sigma Y.1.1 (2 * m' + 1)).1) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  have hg₁neg : (-gm : Gene) = gm := Gene.ext (Gene.neg_rank gm) (by rw [Gene.neg_type, hgm_np]; rfl)
+  have hg₁neg : (-gm : Gene) = gm :=
+    Gene.ext (Gene.neg_rank gm) (by rw [Gene.neg_type, hgm_np]; rfl)
   set Xd : nMixPiLambda N := ⟨- X.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, X.2]⟩ with Xd_def
   set Yd : nMixPiLambda N := ⟨- Y.1, by rw [Mix.Pi_Lambda_neg_val, rank_neg, Y.2]⟩ with Yd_def
   have hXdYd : Xd.1 < Yd.1 := by change (- X.1) < (- Y.1); exact Chromosome.neg_lt_neg_iff.2 hXY
@@ -459,14 +461,13 @@ lemma branchA_case2_g3 (m : ℕ)
     (ha : (Sigma.sigma X.1.1 1).1 < (Sigma.sigma Y.1.1 1).1)
     (g₁ g₂ : Gene) (n' : ℕ)
     (hg₁NP : g₁.type = .NonPolarized) (hg₁rank : g₁.rank = 1)
-    (hXg₁ : 0 < X.1.1 g₁) (hmult1 : X.1.1 g₁ = 1)
+    (_ : 0 < X.1.1 g₁) (hmult1 : X.1.1 g₁ = 1)
     (hg₂pos : g₂.type = .Positive) (hg₂rank : g₂.rank = 2 * n' + 2)
     (hXg₂ : 0 < (X.1.1 - Finsupp.single g₁ 1 : Chromosome) g₂)
     (hg₁min : ∀ g ∈ X.1.1.support, g₁.rank ≤ g.rank)
     (hg₂min : ∀ g ∈ (X.1.1 - Finsupp.single g₁ 1).support, g₂.rank ≤ g.rank)
-    (hb1 : (Sigma.sigma X.1.1 1).2 = (Sigma.sigma Y.1.1 1).2) :
+    (_ : (Sigma.sigma X.1.1 1).2 = (Sigma.sigma Y.1.1 1).2) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  clear hb1 hXg₁
   -- Extract the minimal-rank negative/nonpolarized gene `g₃` of `X - g₁ - g₂`.
   set Xr : Chromosome := X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₂ 1 with hXr
   have hSne : (Xr.support.filter (fun g => g.type ≠ .Positive)).Nonempty := by

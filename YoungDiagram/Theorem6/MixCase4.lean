@@ -29,9 +29,9 @@ namespace MixVarietyJoint
 /-- Case A of §15.10 for `Mix (Lambda, Pi)`: the additional hypothesis is
 `(sigma X 1).1 < (sigma Y 1).1`. This is the sorried core. -/
 lemma exists_mutation_le_fifteen_ten_LP_caseA (m : ℕ)
-    (ihLP : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
+    (_ : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
       ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
-    (ihPL : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
+    (_ : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
       ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1)
     (X Y : nMixLambdaPi (m + 2)) (hXY : X.1 < Y.1)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)
@@ -150,9 +150,9 @@ lemma exists_mutation_le_fifteen_ten_LP (m : ℕ)
 /-- Case A of §15.10 for `Mix (Pi, Lambda)`: the additional hypothesis is
 `(sigma X 1).1 < (sigma Y 1).1`. This is the sorried core. -/
 lemma exists_mutation_le_fifteen_ten_PL_caseA (m : ℕ)
-    (ihLP : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
+    (_ : ∀ k, k < m + 2 → ∀ X Y : nMixLambdaPi k, X.1 < Y.1 →
       ∃ Z : Mix (Lambda, Pi), MixLambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
-    (ihPL : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
+    (_ : ∀ k, k < m + 2 → ∀ X Y : nMixPiLambda k, X.1 < Y.1 →
       ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1)
     (X Y : nMixPiLambda (m + 2)) (hXY : X.1 < Y.1)
     (hcommon : ¬∃ g : Gene, 0 < X.1.1 g ∧ 0 < Y.1.1 g)

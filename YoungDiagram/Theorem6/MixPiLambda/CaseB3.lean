@@ -137,7 +137,9 @@ lemma branchB_case3 (m : ℕ)
             rcases hev with ⟨t, ht⟩; omega
           exact hne (Gene.ext (by rw [hm', hgr]) (by rw [hg₁pos, hch]))
         · exact hge2
-      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by rcases hev with ⟨t, ht⟩; exact ⟨t - 1, by omega⟩
+      obtain ⟨q, hq⟩ : ∃ q, g₂.rank = 2 * q + 2 := by
+        rcases hev with ⟨t, ht⟩
+        exact ⟨t - 1, by omega⟩
       have hmq : m' < q := by omega
       have hk1 : ∀ g ∈ X.1.1.support, g.type ≠ .Positive → 2 * q + 3 ≤ g.rank := by
         intro g hg hgnp
@@ -169,7 +171,8 @@ lemma branchB_case3 (m : ℕ)
           rw [Finsupp.mem_support_iff] at hg ⊢
           rwa [Finsupp.tsub_apply, Finsupp.single_apply, if_neg (Ne.symm hgne), Nat.sub_zero] at hg
         have := hk2 g hgX hgne; rwa [hq] at this
-      have hdeep := branchB_case3_deep_bprop X Y hXY hgap m' g₁ hg₁mult1.ge (2 * q + 2) htail hbanchor
+      have hdeep := branchB_case3_deep_bprop X Y hXY hgap m' g₁
+        hg₁mult1.ge (2 * q + 2) htail hbanchor
       have hhal := branchB_case3_halive X Y hXY hgap g₁ (by omega) (2 * q + 2) htail
       refine branchB_case3_assembly_type8 X Y hXY m' q (by omega) g₁ g₂
         hm' hg₁pos hq hch hXg₁ hXg₂ hne hbanchor ?_ ?_ ?_

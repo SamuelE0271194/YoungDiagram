@@ -36,20 +36,20 @@ private lemma exists_mutation_le_type10_pair_rank_one_boundary
       (Chromosome.prime^[k] X.1.1).rank <
         (Chromosome.prime^[k] Y.1.1).rank)
     (hXpol : X.1.1.IsPolarized)
-    (hnodouble : ¬ ∃ (gpos gneg : Gene),
+    (_ : ¬ ∃ (gpos gneg : Gene),
       gpos.rank = gneg.rank ∧
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       2 ≤ X.1.1 gpos ∧ 2 ≤ X.1.1 gneg)
     (gpos gneg : Gene)
     (hrank : gpos.rank = gneg.rank)
     (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
-    (hXpos : 0 < X.1.1 gpos) (hXneg : 0 < X.1.1 gneg)
+    (_ : 0 < X.1.1 gpos) (_ : 0 < X.1.1 gneg)
     (hmin : ∀ (p' n' : Gene),
       p'.rank = n'.rank →
         p'.type = .Positive → n'.type = .Negative →
           0 < X.1.1 p' → 0 < X.1.1 n' → gpos.rank ≤ p'.rank)
     (hone_one : X.1.1 gpos = 1 ∧ X.1.1 gneg = 1)
-    (htype15 : ¬ ∃ q : ℕ, gpos.rank = 2 * q + 3 ∧
+    (_ : ¬ ∃ q : ℕ, gpos.rank = 2 * q + 3 ∧
       (((signature (Chromosome.prime^[2 * q + 2] X.1.1)).1 <
           (signature (Chromosome.prime^[2 * q + 2] Y.1.1)).1 ∧
         (signature (Chromosome.prime^[2 * q + 4] X.1.1)).1 <
@@ -73,12 +73,12 @@ private lemma exists_mutation_le_type10_rank_one_remainder_double
       (Chromosome.prime^[k] X.1.1).rank <
         (Chromosome.prime^[k] Y.1.1).rank)
     (hXpol : X.1.1.IsPolarized)
-    (hnodouble : ¬ ∃ (gpos gneg : Gene),
+    (_ : ¬ ∃ (gpos gneg : Gene),
       gpos.rank = gneg.rank ∧
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       2 ≤ X.1.1 gpos ∧ 2 ≤ X.1.1 gneg)
     (gpos gneg : Gene)
-    (hrank : gpos.rank = gneg.rank)
+    (_ : gpos.rank = gneg.rank)
     (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
     (hone_one : X.1.1 gpos = 1 ∧ X.1.1 gneg = 1)
     (hgpos_rank_q : gpos.rank = 2 * q + 3)
@@ -94,7 +94,7 @@ private lemma exists_mutation_le_type10_rank_one_remainder_double
           Finsupp.single gOneNeg (restPair gOneNeg))
     (hrest_no_rank_one_pair :
       ¬ (0 < restPair gOnePos ∧ 0 < restPair gOneNeg))
-    (hY_double_np_succ :
+    (_ :
       2 ≤ Y.1.1 ⟨2 * q + 4, GeneType.NonPolarized, by omega⟩)
     (hrest_double_rank_one :
       2 ≤ restPair gOnePos ∨ 2 ≤ restPair gOneNeg) :
@@ -139,7 +139,7 @@ private lemma exists_mutation_le_type10_rank_one_remainder_double
             if_neg (fun he => hhp he.symm), if_neg (fun he => hhn he.symm)]
           simpa using hh
         by_contra hcon
-        push_neg at hcon
+        push Not at hcon
         obtain ⟨_, _, hne1p, hne1n⟩ := hcon
         have : restPair h = 0 := by
           rw [hrest_support_rank_one, Finsupp.add_apply,

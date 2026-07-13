@@ -307,12 +307,12 @@ lemma rank_one_double_same_gene_tail_cases
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
     (g g₂ : Gene)
-    (hgX : 0 < X.1.1 g)
+    (_ : 0 < X.1.1 g)
     (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
     (hg_pol : g.type ≠ .NonPolarized)
-    (hp : g.rank = 2 * p + 1) (hp0 : p = 0)
+    (_ : g.rank = 2 * p + 1) (_ : p = 0)
     (hg_rank_one : g.rank = 1)
-    (hXneg_zero : X.1.1 (-g) = 0)
+    (_ : X.1.1 (-g) = 0)
     (hg_two : 2 ≤ X.1.1 g)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
@@ -329,27 +329,27 @@ lemma rank_one_double_same_gene_tail_cases
       ((1 : ℚ), (1 : ℚ)) + signature (Chromosome.prime^[1] X.1.1) ≤
         signature (Chromosome.prime^[1] Y.1.1))
     (restAfterDouble restAfterTriple tailAfterG : Chromosome)
-    (hrestAfterDouble_eq :
+    (_ :
       restAfterDouble =
         X.1.1 - Finsupp.single g 1 - Finsupp.single g 1)
-    (hrestAfterDouble_ne : restAfterDouble ≠ 0)
-    (hrestAfterDouble_mem : restAfterDouble ∈ Mix (2 • Lambda, Pi))
-    (hprimeX_eq_restAfterDouble :
+    (_ : restAfterDouble ≠ 0)
+    (_ : restAfterDouble ∈ Mix (2 • Lambda, Pi))
+    (_ :
       Chromosome.prime^[1] X.1.1 =
         Chromosome.prime^[1] restAfterDouble)
-    (hrestAfterDouble_total :
+    (_ :
       restAfterDouble.sum (fun _ n => n) + 2 = X.1.1.sum (fun _ n => n))
-    (hg₂_rest : 0 < restAfterDouble g₂)
-    (hg₂min : ∀ g' : Gene, 0 < restAfterDouble g' → g₂.rank ≤ g'.rank)
-    (hXg₂ : 0 < X.1.1 g₂)
-    (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
-    (hg₂_odd : Odd g₂.rank)
-    (hX_rank_ge_three_of_ne_g :
+    (_ : 0 < restAfterDouble g₂)
+    (_ : ∀ g' : Gene, 0 < restAfterDouble g' → g₂.rank ≤ g'.rank)
+    (_ : 0 < X.1.1 g₂)
+    (_ : g₂.type ≠ GeneType.NonPolarized)
+    (_ : Odd g₂.rank)
+    (_ :
       ∀ h : Gene, 0 < X.1.1 h → h ≠ g → 3 ≤ h.rank)
-    (hg₂min_X_ne_g :
+    (_ :
       ∀ h : Gene, 0 < X.1.1 h → h ≠ g → g₂.rank ≤ h.rank)
-    (hg₂_same_extra : g₂ = g → 3 ≤ X.1.1 g)
-    (hg₂_rank_ge_three_of_ne_g : g₂ ≠ g → 3 ≤ g₂.rank)
+    (_ : g₂ = g → 3 ≤ X.1.1 g)
+    (_ : g₂ ≠ g → 3 ≤ g₂.rank)
     (htype16_boundary :
       ∀ {q : ℕ} (gsingle : Gene),
         gsingle.type = -g.type →
@@ -368,19 +368,19 @@ lemma rank_one_double_same_gene_tail_cases
             (X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 -
               Finsupp.single gopp 1 - Finsupp.single gopp 1) ≤ Y.1.1 →
         ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
-    (hsame : g₂ = g)
-    (hg_extra : 3 ≤ X.1.1 g)
+    (_ : g₂ = g)
+    (_ : 3 ≤ X.1.1 g)
     (hrestAfterTriple_eq :
       restAfterTriple =
         X.1.1 - Finsupp.single g 1 - Finsupp.single g 1 -
           Finsupp.single g 1)
-    (hprimeX_eq_restAfterTriple :
+    (_ :
       Chromosome.prime^[1] X.1.1 =
         Chromosome.prime^[1] restAfterTriple)
-    (hrestAfterTriple_total :
+    (_ :
       restAfterTriple.sum (fun _ n => n) + 3 = X.1.1.sum (fun _ n => n))
     (htailAfterG_def : tailAfterG = X.1.1 - Finsupp.single g (X.1.1 g))
-    (htailAfterG_g_zero : tailAfterG g = 0)
+    (_ : tailAfterG g = 0)
     (htailAfterG_pos_X_ne :
       ∀ h : Gene, 0 < tailAfterG h → 0 < X.1.1 h ∧ h ≠ g)
       (htailAfterG_rank_ge_three :

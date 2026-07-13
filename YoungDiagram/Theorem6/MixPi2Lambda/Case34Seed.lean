@@ -117,7 +117,7 @@ lemma sigma_zero_eq {N : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1) :
 of multiplicity one, every other gene of rank `≥ k`, and a both-component strict
 level-1 gap, the first component is strict at level 2. -/
 lemma case4_seed_fst {N k : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
-    (hr1 : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
+    (_ : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
           (signature (Chromosome.prime^[1] Y.1.1)).1 ∧
@@ -148,7 +148,7 @@ lemma case4_seed_fst {N k : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
 
 /-- §17 Case 4 level-2 seed (second component). -/
 lemma case4_seed_snd {N k : ℕ} (X Y : nMixPi2Lambda N) (hXY : X.1 < Y.1)
-    (hr1 : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
+    (_ : (Chromosome.prime^[1] X.1.1).rank < (Chromosome.prime^[1] Y.1.1).rank)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
           (signature (Chromosome.prime^[1] Y.1.1)).1 ∧

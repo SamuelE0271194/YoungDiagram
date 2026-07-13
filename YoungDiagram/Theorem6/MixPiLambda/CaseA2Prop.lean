@@ -42,7 +42,7 @@ lemma branchA_g3_exists {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     ∃ g₃ ∈ (X.1.1 - Finsupp.single g₁ 1 - Finsupp.single g₂ 1).support,
       g₃.type ≠ .Positive := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hpar : ∀ g ∈ X.1.1.support,
       (g.type = .Positive → Even g.rank) ∧ (g.type = .Negative → Even g.rank) := by
     intro g hg
@@ -115,7 +115,7 @@ lemma branchA_g3_Ynonzero_top {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
     (nn : ℕ) (g₃ : Gene) (hg₃_rank : g₃.rank = 2 * nn + 2)
     (hg₃_neg : g₃.type = .Negative) (hXg₃ : 0 < X.1.1 g₃) :
     Chromosome.prime^[2 * nn + 2] Y.1.1 ≠ 0 := by
-  push_neg at hcommon
+  push Not at hcommon
   intro hYzero
   have hbX : 1 ≤ (signature (Chromosome.prime^[2 * nn + 1] X.1.1)).2 := by
     have := one_le_signature_snd_of_contains_negative_mix hg₃_neg hXg₃
@@ -147,8 +147,8 @@ lemma branchA_g3_Ynonzero_top {N : ℕ} (X Y : nMixPiLambda N) (hXY : X.1 < Y.1)
           Nat.le_add_right_of_le h.rank_pos⟩ := prime_iterate_coeff (2 * nn + 1) Y.1.1 h
       have hge : (⟨h.rank + (2 * nn + 1), h.type,
           Nat.le_add_right_of_le h.rank_pos⟩ : Gene) = g₃ :=
-        Gene.ext (by show h.rank + (2 * nn + 1) = g₃.rank; rw [hg₃_rank]; omega)
-          (by show h.type = g₃.type; rw [hneg, hg₃_neg])
+        Gene.ext (by change h.rank + (2 * nn + 1) = g₃.rank; rw [hg₃_rank]; omega)
+          (by change h.type = g₃.type; rw [hneg, hg₃_neg])
       rw [hge] at hWh
       have hYg₃ : Y.1.1 g₃ = 0 := Nat.le_zero.mp (hcommon g₃ hXg₃)
       rw [hYg₃] at hWh
@@ -187,7 +187,7 @@ lemma branchA_g3_assembly_type6 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 2 * n' + 1 ≤ j → j < 2 * nn + 3 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   let Y6' : Mix (Pi, Lambda) := Y6 hmn hε
   let restval : Chromosome := X.1.1 - Finsupp.single g₂ 1 - Finsupp.single g₃ 1
@@ -250,10 +250,10 @@ lemma branchA_g3_assembly_type6 {N : ℕ}
           have h_sigma := hprop_odd j (by omega) (by omega) hodd_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
       · rw [if_neg hpar]
@@ -287,7 +287,7 @@ lemma branchA_g3_assembly_type7 {N : ℕ}
         (Sigma.sigma X.1.1 j).1 + 1 ≤ (Sigma.sigma Y.1.1 j).1)
     (hYwin : ∀ j, 2 * n' + 1 ≤ j → j ≤ 2 * nn + 2 → Chromosome.prime^[j] Y.1.1 ≠ 0) :
     ∃ Z : Mix (Pi, Lambda), MixPiLambda.Step X.1 Z ∧ Z ≤ Y.1 := by
-  push_neg at hsigeq
+  push Not at hsigeq
   have hε : GeneType.Positive ≠ .NonPolarized := by decide
   let Y7' : Mix (Pi, Lambda) := Y7 hmn
   let restval : Chromosome := X.1.1 - Finsupp.single g₂ 1 - Finsupp.single g₃ 1
@@ -363,10 +363,10 @@ lemma branchA_g3_assembly_type7 {N : ℕ}
           have h_sigma := hprop_odd j (by omega) hjle hodd_j
           simpa [Sigma.sigma] using h_sigma
         refine ⟨?_, ?_⟩
-        · show (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).1 + 1 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).1
           exact h_sigXj
-        · show (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
+        · change (signature (Chromosome.prime^[j] X.1.1)).2 + 0 ≤
             (signature (Chromosome.prime^[j] Y.1.1)).2
           rw [add_zero]; exact hXYj.2
 

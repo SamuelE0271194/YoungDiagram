@@ -25,9 +25,9 @@ lemma rank_odd_of_polarized {X : Chromosome} (hX : X ∈ Mix (Lambda, Pi))
 /-- The polarized parts of two genes in `X ∈ Mix (Lambda, Pi)` with equal rank have
 odd rank (= `2 * m + 1`). -/
 private lemma rank_eq_two_mul_succ_of_pn {gpos gneg : Gene}
-    (hgpos : gpos.type = .Positive) (hgneg : gneg.type = .Negative)
-    (hrank : gpos.rank = gneg.rank) {X : Chromosome}
-    (hX : X ∈ Mix (Lambda, Pi)) (hXgpos : 0 < X gpos) (hXgneg : 0 < X gneg) :
+    (hgpos : gpos.type = .Positive) (_ : gneg.type = .Negative)
+    (_ : gpos.rank = gneg.rank) {X : Chromosome}
+    (hX : X ∈ Mix (Lambda, Pi)) (hXgpos : 0 < X gpos) (_ : 0 < X gneg) :
     ∃ m : ℕ, gpos.rank = 2 * m + 1 := by
   have hodd : Odd gpos.rank :=
     rank_odd_of_polarized hX (by rw [hgpos]; decide) hXgpos
@@ -114,7 +114,7 @@ private lemma signature_type7_source_self_eq_zero {ε : GeneType}
     (hε : ε ≠ .NonPolarized) {m : ℕ} :
     signature (Chromosome.prime^[2 * m + 1] (X7 (le_refl m) hε).1) = 0 := by
   rw [X7_eq, iterate_map_add, prime_iterate_ofRank, prime_iterate_ofRank]
-  simp [Nat.sub_self, Gene.ofRank_zero]
+  simp [Gene.ofRank_zero]
 
 /-- At iterate `j = 2m+1 = r`, the type-7 target has signature `(1/2, 1/2)`. -/
 private lemma signature_type7_target_self_eq_half {m : ℕ} :
@@ -219,7 +219,7 @@ lemma prime_ne_zero_of_Y_no_gene_mix {Y : Chromosome} {r : ℕ} (hr : 1 ≤ r)
 /-- For `X ∈ Mix (Lambda, Pi)`, if `X` contains a positive gene of rank `r`,
 then `signature (prime^[r-1] X) .1 ≥ 1`. -/
 lemma one_le_signature_fst_of_contains_positive_mix {X : Chromosome}
-    (hX : X ∈ Mix (Lambda, Pi)) {gpos : Gene}
+    (_ : X ∈ Mix (Lambda, Pi)) {gpos : Gene}
     (hgpos : gpos.type = .Positive) (hXgpos : 0 < X gpos) :
     1 ≤ (signature (Chromosome.prime^[gpos.rank - 1] X)).1 := by
   let r := gpos.rank
@@ -376,7 +376,7 @@ lemma exists_mutation_le_disjoint_pair {m : ℕ}
   let Y7' : Mix (Lambda, Pi) := Y7 (m := mr) (n := mr) (le_refl mr)
   let rest_M : Mix (Lambda, Pi) := ⟨restval, rest_mem⟩
   have hX7_val : X7'.1 = Finsupp.single gpos 1 + Finsupp.single gneg 1 := by
-    show (X7 (m := mr) (n := mr) (le_refl mr) hε).1 = _
+    change (X7 (m := mr) (n := mr) (le_refl mr) hε).1 = _
     rw [X7_eq, ← hr_eq, GeneType.neg_positive, hgpos_eq, hgneg_eq]
   have hX_eq : X7'.1 + restval = X.1.1 := by
     rw [hX7_val]

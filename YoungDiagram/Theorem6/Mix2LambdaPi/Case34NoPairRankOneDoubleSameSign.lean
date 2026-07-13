@@ -25,12 +25,12 @@ lemma rank_one_double_same_sign_remaining
       gpos.type = .Positive ∧ gneg.type = .Negative ∧
       0 < X.1.1 gpos ∧ 0 < X.1.1 gneg)
     (g g₂ : Gene)
-    (hgX : 0 < X.1.1 g)
+    (_ : 0 < X.1.1 g)
     (hgmin : ∀ g' : Gene, 0 < X.1.1 g' → g.rank ≤ g'.rank)
     (hg_pol : g.type ≠ .NonPolarized)
-    (hp : g.rank = 2 * p + 1) (hp0 : p = 0)
+    (_ : g.rank = 2 * p + 1) (_ : p = 0)
     (hg_rank_one : g.rank = 1)
-    (hXneg_zero : X.1.1 (-g) = 0)
+    (_ : X.1.1 (-g) = 0)
     (hg_two : 2 ≤ X.1.1 g)
     (hseed1 :
       (signature (Chromosome.prime^[1] X.1.1)).1 <
@@ -38,26 +38,26 @@ lemma rank_one_double_same_sign_remaining
         (signature (Chromosome.prime^[1] X.1.1)).2 <
           (signature (Chromosome.prime^[1] Y.1.1)).2)
     (restAfterDouble : Chromosome)
-    (hrestAfterDouble_eq :
+    (_ :
       restAfterDouble =
         X.1.1 - Finsupp.single g 1 - Finsupp.single g 1)
-    (hrestAfterDouble_ne : restAfterDouble ≠ 0)
-    (hrestAfterDouble_total :
+    (_ : restAfterDouble ≠ 0)
+    (_ :
       restAfterDouble.sum (fun _ n => n) + 2 = X.1.1.sum (fun _ n => n))
-    (hg₂_rest : 0 < restAfterDouble g₂)
-    (hg₂min : ∀ g' : Gene, 0 < restAfterDouble g' → g₂.rank ≤ g'.rank)
-    (hXg₂ : 0 < X.1.1 g₂)
-    (hg₂_pol : g₂.type ≠ GeneType.NonPolarized)
-    (hsame : ¬ g₂ = g)
-    (hg₂_rank_q : g₂.rank = 2 * q₂ + 3)
-    (hopp : ¬ g₂.type = -g.type)
-    (hg₂_same_type : g₂.type = g.type)
-    (hXneg_g₂_zero : X.1.1 (-g₂) = 0)
-    (hrestAfterDouble_g₂_eq_X : restAfterDouble g₂ = X.1.1 g₂)
-    (hrestAfterDouble_neg_g₂_zero : restAfterDouble (-g₂) = 0)
-    (htail_after_double_same :
+    (_ : 0 < restAfterDouble g₂)
+    (_ : ∀ g' : Gene, 0 < restAfterDouble g' → g₂.rank ≤ g'.rank)
+    (_ : 0 < X.1.1 g₂)
+    (_ : g₂.type ≠ GeneType.NonPolarized)
+    (_ : ¬ g₂ = g)
+    (_ : g₂.rank = 2 * q₂ + 3)
+    (_ : ¬ g₂.type = -g.type)
+    (_ : g₂.type = g.type)
+    (_ : X.1.1 (-g₂) = 0)
+    (_ : restAfterDouble g₂ = X.1.1 g₂)
+    (_ : restAfterDouble (-g₂) = 0)
+    (_ :
       ∀ h ∈ restAfterDouble.support, 2 * q₂ + 3 ≤ h.rank)
-    (hgap_middle_same :
+    (_ :
       (∀ j, 1 ≤ j → j ≤ 2 * q₂ + 3 → ¬ Even j → j ≠ 1 →
         ((1 : ℚ), (1 : ℚ)) +
             signature (Chromosome.prime^[j] X.1.1) ≤
@@ -67,23 +67,23 @@ lemma rank_one_double_same_sign_remaining
               signature (Gene.ofRank 1 g.type)) +
             signature (Chromosome.prime^[j] X.1.1) ≤
           signature (Chromosome.prime^[j] Y.1.1)))
-    (hgap_pred_even_same :
+    (_ :
       (signature (Gene.ofRank 1 g₂.type) +
             signature (Gene.ofRank 1 g₂.type)) +
           signature (Chromosome.prime^[2 * q₂ + 2] X.1.1) ≤
         signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1))
-    (hgap_succ_same_double :
+    (_ :
       signature (Gene.ofRank 1 g₂.type) +
           signature (Chromosome.prime^[2 * q₂ + 4] X.1.1) ≤
         signature (Chromosome.prime^[2 * q₂ + 4] Y.1.1))
-    (htype10_same_double_of_pred_gap :
+    (_ :
       2 ≤ X.1.1 g₂ →
         (((1 : ℚ), (1 : ℚ)) +
             signature (Chromosome.prime^[2 * q₂ + 2] X.1.1) ≤
           signature (Gene.ofRank 1 g₂.type) +
             signature (Chromosome.prime^[2 * q₂ + 2] Y.1.1)) →
         ∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1)
-    (hdouble_same_pred_or_done :
+    (_ :
       2 ≤ X.1.1 g₂ →
         (∃ Z : Mix (2 • Lambda, Pi), Mix2LambdaPi.Step X.1 Z ∧ Z ≤ Y.1) ∨
           (g₂.type = GeneType.Positive ∧
@@ -141,4 +141,3 @@ lemma rank_one_double_same_sign_remaining
     linarith [hseed1.2, ha1b1, hB0A1, hB0D0, hD1D0]
 
 end Mix2LambdaPi
-
