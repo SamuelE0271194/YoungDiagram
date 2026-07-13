@@ -691,7 +691,7 @@
 
 \begin{lemma}[Disjoint positive-negative pair reduction]
   \label{lem:Theorem6.disjoint_pair}
-  \lean{exists_mutation_le_disjoint_pair}
+  \lean{Pi.exists_mutation_le_disjoint_pair}
   \leanok
   \uses{def:Chromosome.prime, def:Variety.Pi, def:Pi.X1Y1, def:Chromosome.signature}
   In the disjoint-support case, if $X$ contains a positive and a negative
@@ -1234,95 +1234,3 @@ separate parity-specific classification cores.
   points are \texttt{MixVarietyJoint.exists\_mutation\_le\_joint} and
   \texttt{Mix2LambdaJoint.exists\_mutation\_le\_joint}.
 \end{theorem}
-
-% ================================================================
-
-% \chapter{Lie Algebra Connection}
-
-% \section{Classical Lie groups}
-
-% \begin{definition}[Series index]
-%   \label{def:SeriesIndex}
-%   \lean{SeriesIndex}
-%   \leanok
-%   The five classical series of real Lie groups are indexed as:
-%   $\mathrm{U}$ (unitary), $\mathrm{O}$ (orthogonal), $\mathrm{O}^*$ (split orthogonal),
-%   $\mathrm{Sp}_{\mathbb{R}}$ (real symplectic), $\mathrm{Sp}_{\mathbb{H}}$ (quaternionic symplectic).
-% \end{definition}
-
-% \begin{definition}[Associated variety]
-%   \label{def:SeriesIndex.variety}
-%   \lean{SeriesIndex.variety}
-%   \leanok
-%   \uses{def:SeriesIndex, def:Variety.Label}
-%   Each series index $j$ is associated with one of the five labeled varieties $V_i$.
-% \end{definition}
-
-% \section{Nilpotent orbits}
-
-% \begin{definition}[Nilpotent block]
-%   \label{def:NilpotentBlock}
-%   \lean{NilpotentBlock}
-%   \leanok
-%   \uses{def:SeriesIndex}
-%   A \emph{nilpotent block} for series $j$ consists of a size $m$ and a polarization type,
-%   subject to validity constraints depending on $j$.
-% \end{definition}
-
-% \begin{definition}[Nilpotent type]
-%   \label{def:NilpotentType}
-%   \lean{NilpotentType}
-%   \leanok
-%   \uses{def:NilpotentBlock}
-%   A \emph{nilpotent type} for series $j$ is a finitely supported function
-%   $\Delta \colon \mathtt{NilpotentBlock}\, j \to \mathbb{N}$, i.e.\ a formal sum of nilpotent blocks.
-% \end{definition}
-
-% \begin{definition}[Block to chromosome]
-%   \label{def:NilpotentBlock.toChromosome}
-%   \lean{NilpotentBlock.toChromosome}
-%   \leanok
-%   \uses{def:NilpotentBlock, def:Chromosome}
-%   Each nilpotent block maps to a chromosome via iterated lifting.
-% \end{definition}
-
-% \begin{definition}[Type to chromosome]
-%   \label{def:NilpotentType.toChromosome}
-%   \lean{NilpotentType.toChromosome}
-%   \leanok
-%   \uses{def:NilpotentType, def:NilpotentBlock.toChromosome}
-%   The chromosome of a nilpotent type is the additive extension of the block-to-chromosome map.
-% \end{definition}
-
-% \begin{theorem}[Valid blocks land in the correct variety]
-%   \label{thm:toChromosome_mem_variety}
-%   \lean{NilpotentBlock.toChromosome_mem_variety}
-%   \uses{def:NilpotentBlock.toChromosome, def:SeriesIndex.variety}
-%   For a valid nilpotent block $b$ of series $j$, we have $\mathrm{toChromosome}(b) \in V_j$.
-% \end{theorem}
-
-% \begin{theorem}[Valid types land in the correct variety]
-%   \label{thm:NilpotentType.toChromosome_mem_variety}
-%   \lean{NilpotentType.toChromosome_mem_variety}
-%   \uses{def:NilpotentType.toChromosome, def:SeriesIndex.variety, thm:toChromosome_mem_variety}
-%   For a valid nilpotent type $\Delta$ of series $j$,
-%   $\mathrm{toChromosome}(\Delta) \in V_j$.
-% \end{theorem}
-
-% \section{Orbit closure}
-
-% \begin{definition}[Classical setup]
-%   \label{def:ClassicalSetup}
-%   \lean{ClassicalSetup}
-%   \uses{def:SeriesIndex}
-%   A \emph{classical setup} for series $j$ bundles together the base field, vector space,
-%   bilinear/sesquilinear form, and the associated Lie algebra and group.
-% \end{definition}
-
-% \begin{theorem}[Orbit closure iff dominance]
-%   \label{thm:orbit_closure_iff_dominance}
-%   \lean{orbit_closure_iff_dominance}
-%   \uses{def:ClassicalSetup, def:NilpotentType.toChromosome, def:Chromosome.Dominates, thm:exists_mutation_le}
-%   The closure of a nilpotent orbit contains another orbit if and only if the
-%   corresponding chromosomes satisfy the dominance relation.
-% \end{theorem}
