@@ -72,13 +72,9 @@ lemma mutation_lifting : ∃ (Z : Chromosome) (hZ : Z ∈ φ idx),
     ∀ i ≤ k, signature (prime^[i] X) = signature (prime^[i] Z) := by
   match idx with
   | 0 =>
-    refine Pi.mutation_lifting hX ?_ ?_
-    · exact congrArg (U ∈ ·)
-        (congrArg Label Label.prime_iterate_zero).symm |>.mpr hU
-    · change Step 0 ⟨prime^[k] X, prime_mem_Pi_iterate hX⟩ ⟨U, _⟩
-      convert hMu
-      · exact Label.prime_iterate_zero.symm
-      · rfl
+    have hidx : Label.prime^[k] (0 : Fin 5) = 0 := Label.prime_iterate_zero
+    obtain ⟨hpX, hU', hMu'⟩ := Mutation.Step.cast_idx hidx _ hU hMu
+    exact Pi.mutation_lifting hX hU' hMu'
   | 1 =>
     by_cases hk : Even k
     · -- Even: `Label.prime^[k] 1 = 1`, hMu is a `MixLambdaPi.Step`.

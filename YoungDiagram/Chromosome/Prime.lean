@@ -174,7 +174,7 @@ lemma signature_prime_le (X : Chromosome) :
 lemma prime_coeff {X : Chromosome} {g : Gene} :
     X.prime g = X ⟨g.rank + 1, g.type, Nat.le_add_right_of_le g.rank_pos⟩ := by
   induction X using Finsupp.induction with
-  | zero => rw [map_zero, zero_apply, zero_apply]
+  | zero => rw [map_zero, Finsupp.zero_apply, Finsupp.zero_apply]
   | single_add b n X hb hn hX =>
     simp only [map_add, prime_single, smul_dite, nsmul_zero, smul_single,
       smul_eq_mul, mul_one, coe_add, Pi.add_apply, single_apply, ← hX,
@@ -199,7 +199,7 @@ lemma prime_iterate_eq_zero_rank_le {X : Chromosome} {k : ℕ} :
     (∀ g ∈ X.support, g.rank ≤ k) ↔ prime^[k] X = 0 := by
   constructor
   · intro hk; ext g
-    rw [zero_apply, prime_iterate_coeff, ← notMem_support_iff]
+    rw [Finsupp.zero_apply, prime_iterate_coeff, ← notMem_support_iff]
     intro h; specialize hk _ h
     rw [add_le_iff_nonpos_left, nonpos_iff_eq_zero] at hk
     absurd g.rank_pos
@@ -210,7 +210,7 @@ lemma prime_iterate_eq_zero_rank_le {X : Chromosome} {k : ℕ} :
     have heq : ⟨g.rank - k + k, g.type, Nat.le_add_right_of_le hpos⟩ = g :=
       Gene.ext (Nat.sub_add_cancel h.le) rfl
     have h_coeff := prime_iterate_coeff k X ⟨g.rank - k, g.type, hpos⟩
-    rw [heq, hk, zero_apply] at h_coeff
+    rw [heq, hk, Finsupp.zero_apply] at h_coeff
     exact (mem_support_iff.1 hg) h_coeff.symm
 
 lemma rank_one_of_prime_eq_zero {X : Chromosome} (hprime : X.prime = 0)

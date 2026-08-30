@@ -251,7 +251,7 @@ structure SigmaPair (v₁ v₂ : Variety) : Prop where
   rankOne_left : RankOneSigInj v₁
   rankOne_right : RankOneSigInj v₂
 
-def SigmaPair.symm (h : SigmaPair v₁ v₂) : SigmaPair v₂ v₁ where
+lemma SigmaPair.symm (h : SigmaPair v₁ v₂) : SigmaPair v₂ v₁ where
   prime_left := h.prime_right
   prime_right := h.prime_left
   rankOne_left := h.rankOne_right

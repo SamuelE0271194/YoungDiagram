@@ -10,10 +10,10 @@ section Mix
 def Mix (v : Variety × Variety) : Variety where
   carrier := {X : Chromosome | X.evenPart ∈ v.1 ∧ X.oddPart ∈ v.2}
   add_mem' ha hb := by
-    simp only [Set.mem_setOf_eq, map_add]
+    simp only [Set.mem_ofPred_eq, map_add]
     exact ⟨add_mem ha.1 hb.1, add_mem ha.2 hb.2⟩
   zero_mem' := by
-    simp only [Set.mem_setOf_eq, map_zero, zero_mem, and_self]
+    simp only [Set.mem_ofPred_eq, map_zero, zero_mem, and_self]
 
 lemma mem_Mix_iff {X : Chromosome} {v : Variety × Variety} :
   X ∈ Mix v ↔ X.evenPart ∈ v.1 ∧ X.oddPart ∈ v.2 := .rfl
