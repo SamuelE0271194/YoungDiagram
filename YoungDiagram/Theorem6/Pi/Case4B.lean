@@ -1,7 +1,4 @@
-import YoungDiagram.Theorem6.Pi.Case4B.EvenGapEvenRank
-import YoungDiagram.Theorem6.Pi.Case4B.EvenGapOddRank
-import YoungDiagram.Theorem6.Pi.Case4B.OddGapEvenRank
-import YoungDiagram.Theorem6.Pi.Case4B.OddGapOddRank
+import YoungDiagram.Theorem6.Pi.Case4A
 
 open Variety hiding prime prime_def
 open Chromosome
@@ -28,18 +25,6 @@ lemma exists_mutation_le_case4b
     (hg₂min : ∀ g' : Gene, 0 < X.1.val g' → g₁.rank < g'.rank → g₂.rank ≤ g'.rank)
     (hε₂ : ¬ g₂.type = -g₁.type) :
     ∃ Z : Pi, Pi.Step X.1 Z ∧ Z ≤ Y.1 := by
-  by_cases hparity : Even (g₂.rank - g₁.rank)
-  · by_cases h_g1_rank_even : Even g₁.rank
-    · exact exists_mutation_le_case4b_evenGap_evenRank X Y hXY hXpn ha hε₁ hXg₁
-        hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity
-        h_g1_rank_even
-    · exact exists_mutation_le_case4b_evenGap_oddRank X Y hXY hXpn ha hε₁ hXg₁
-        hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity
-        h_g1_rank_even
-  · by_cases h_g1_rank_even : Even g₁.rank
-    · exact exists_mutation_le_case4b_oddGap_evenRank X Y hXY hXpn ha hε₁
-        hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
-    · exact exists_mutation_le_case4b_oddGap_oddRank X Y hXY hXpn ha hε₁
-        hXg₁ hXg₁pos hg₁min hg₁_ge2 hg₁_one hg₂pos hg₂rank hg₂min hε₂ hparity h_g1_rank_even
+  sorry
 
 end Pi
