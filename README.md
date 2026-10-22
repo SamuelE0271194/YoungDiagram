@@ -5,29 +5,55 @@
 
 [![Compile blueprint](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/blueprint.yml/badge.svg)](https://github.com/SamuelE0271194/YoungDiagram/actions/workflows/blueprint.yml)
 
-This Lean 4 project aims to formalize parts of Dragomir Djokovic's paper *Closures of Conjugacy Classes in Classical Real Linear Lie Groups. II* (1982).
+This Lean 4 project formalizes the combinatorial layer of Dragomir Djokovic's paper *Closures of Conjugacy Classes in Classical Real Linear Lie Groups. II* (1982).
 
 ## Current state
 
-### Combinatorial layer
+### Combinatorial layer — complete
 
-- `YoungDiagram/Gene.lean` defines genes and their signatures.
-- `YoungDiagram/Chromosome.lean` defines chromosomes, rank, signature, and the prime operation.
-- `YoungDiagram/Variety.lean` develops varieties and lift/filter constructions.
-- `YoungDiagram/Mutations.lean` formalizes several primitive mutation patterns.
-- `YoungDiagram/Sigma.lean` contains work toward the sigma conditions.
+The **Enough Mutations theorem** is proved for all five varieties: every strict dominance relation between chromosomes of equal signature decomposes into a finite, nonempty chain of primitive mutations, and every such chain gives a mutation. The final results are in [YoungDiagram/Theorem6.lean](YoungDiagram/Theorem6.lean).
+
+Each namespace below exports `isMutation_iff_transGen_step`, with the statement `IsMutation X Y ↔ Relation.TransGen Step X Y`:
+
+| Variety | Lean namespace |
+|---|---|
+| `Pi` | `Pi` |
+| `Mix (Lambda, Pi)` | `MixLambdaPi` |
+| `Mix (Pi, Lambda)` | `MixPiLambda` |
+| `Mix (2 • Lambda, Pi)` | `Mix2LambdaPi` |
+| `Mix (Pi, 2 • Lambda)` | `MixPi2Lambda` |
+
+The completed development includes:
+
+- [Genes](YoungDiagram/Gene.lean) and [chromosomes](YoungDiagram/Chromosome.lean): rank, signature, prime iteration, and dominance.
+- [Varieties](YoungDiagram/Variety.lean): the five varieties and their lift/filter constructions.
+- [Primitive mutations](YoungDiagram/Mutations.lean): the mutation families and their signature and dominance properties.
+- [Sigma conditions](YoungDiagram/Sigma.lean): inequalities, uniqueness, and mutation lemmas.
+- [Mutation lifting](YoungDiagram/Lifting/Lifting.lean): the uniform `mutation_lifting` theorem for all five varieties.
+- [Enough Mutations](YoungDiagram/Theorem6.lean): the one-step existence results and their iteration into finite primitive-mutation chains.
+
+The declaration audit currently reports `SUMMARY checked=6639 bad=0`: the audited `YoungDiagram` declarations have no `sorryAx` or other axioms beyond `propext`, `Classical.choice`, and `Quot.sound`. [Guard.lean](Guard.lean) also checks the statements and axiom dependencies of all five final theorems and records hashes of their specification closures.
+
+This completion covers the combinatorial layer. The Lie-theoretic classification, geometric realization of mutations as orbit degenerations, and the full orbit/conjugacy-class closure results are outside the completed scope of this repository. The reference table and diagram below give the broader mathematical context.
 
 ## Building
 
+The project pins Lean **v4.33.1** in `lean-toolchain` and mathlib **v4.33.1** in `lakefile.toml`.
+
 ```bash
 lake build
+lake env lean Guard.lean
 ```
+
+Run the guard command separately: `Guard.lean` is not a default Lake build target. It prints the declaration-audit summary and verifies the `#guard_msgs` expectations. Specification hashes depend on elaborated declarations and may change after a Lean/mathlib upgrade; review the diagnostics and refresh the expected hashes for the pinned toolchain when needed.
 
 For a few small experiments, see `YoungDiagram/Examples.lean`.
 
 ---
 
 ## Theorem & Lemma Reference Table
+
+This table is a guide to the papers, not a checklist of formalized results. The completed combinatorial endpoint is the **Enough Mutations** row (Theorem 6 in Part I / Theorem 7 in Part II; named `Theorem6` in the Lean project).
  
 | Label | Section | Statement (summary) | Paper |
 |---|---|---|---|
@@ -45,6 +71,8 @@ For a few small experiments, see `YoungDiagram/Examples.lean`.
 | **Lemma 9** *(Lifting)* | §14 (II) | *Lifting Property.* If $X \in \Phi$ and $X^k \to U$ is a $\Phi^k$-mutation, then there exists a $\Phi$-mutation $X \to Z$ such that $Z^k = U$ and $\text{sig}(X^i) = \text{sig}(Z^i)$ for $0 \leq i \leq k$. Core inductive tool for proving Theorem 6/7. | II |
 
 ## Proof Chain Diagram
+
+The diagram shows the broader proof strategy of the papers. Only the combinatorial development described above is claimed as complete here.
 
 ```mermaid
 graph TD
